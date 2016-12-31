@@ -1,3 +1,5 @@
+let s:is_windows = has('win32') || has('win64')
+
 Describe gina#util
   Before
     let Path = vital#gina#import('System.Filepath')
@@ -81,11 +83,19 @@ Describe gina#util
     End
 
     It returns a shellescaped {value} with {prefix}
-      let result = gina#util#shellescape('v a l u e')
-      Assert Equals(result, '''v a l u e''')
+      if s:is_windows
+        let result = gina#util#shellescape('v a l u e')
+        Assert Equals(result, '"v a l u e"')
 
-      let result = gina#util#shellescape('v a l u e', '--prefix=')
-      Assert Equals(result, '--prefix=''v a l u e''')
+        let result = gina#util#shellescape('v a l u e', '--prefix=')
+        Assert Equals(result, '--prefix="v a l u e"')
+      else
+        let result = gina#util#shellescape('v a l u e')
+        Assert Equals(result, '''v a l u e''')
+
+        let result = gina#util#shellescape('v a l u e', '--prefix=')
+        Assert Equals(result, '--prefix=''v a l u e''')
+      endif
     End
   End
 
