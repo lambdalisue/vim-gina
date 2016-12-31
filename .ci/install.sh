@@ -8,4 +8,4 @@ git clone -q --depth 1 --single-branch https://github.com/thinca/vim-themis /tmp
 git clone -q --depth 1 --single-branch https://github.com/vim-jp/vital.vim  /tmp/vital
 
 PYTHONUSERBASE=$HOME/.local pip install --user vim-vint
-bash $root/installer/${TRAVIS_OS_NAME}.sh
+bash $root/install/${TRAVIS_OS_NAME}.sh
