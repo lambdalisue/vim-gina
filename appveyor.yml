@@ -1,0 +1,26 @@
+version: '{build}'
+clone_depth: 1
+environment:
+  matrix:
+    - VIM_URL: http://vim-jp.org/redirects/koron/vim-kaoriya/vim80/oldest/win64/
+    - VIM_URL: http://vim-jp.org/redirects/koron/vim-kaoriya/latest/win64/
+install:
+  - ps: |
+      $zip = $Env:APPVEYOR_BUILD_FOLDER + '\vim.zip'
+      $vim = $Env:APPVEYOR_BUILD_FOLDER + '\vim\'
+      $redirect = Invoke-WebRequest -URI $Env:VIM_URL
+      (New-Object Net.WebClient).DownloadFile($redirect.Links[0].href, $zip)
+      [Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem') > $null
+      [System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $vim)
+      $Env:THEMIS_VIM = $vim + (Get-ChildItem $vim).Name + '\vim.exe'
+  - 'reg copy HKLM\SOFTWARE\Python\PythonCore\2.7 HKLM\SOFTWARE\Python\PythonCore\2.7-32 /s /reg:32'
+  - 'reg copy HKLM\SOFTWARE\Python\PythonCore\2.7 HKLM\SOFTWARE\Python\PythonCore\2.7-32 /s /reg:64'
+  - 'git clone -q --depth 1 --single-branch https://github.com/vim-jp/vital.vim  %TEMP%\vital'
+  - 'git clone -q --depth 1 --single-branch https://github.com/thinca/vim-themis %TEMP%\vim-themis'
+  - 'git config --global user.name "Appveyor"'
+  - 'git config --global user.email appveyor@example.com'
+build: off
+test_script:
+  - '%THEMIS_VIM% --version'
+  - '%TEMP%\vim-themis\bin\themis.bat --reporter dot --runtimepath %TEMP%\vital'
+deploy: off
