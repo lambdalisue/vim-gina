@@ -1,4 +1,8 @@
 Describe gina#util#path
+  Before all
+    let Path = vital#gina#import('System.Filepath')
+  End
+
   Describe #params({expr})
     It returns an empty dictionary when {bufname} does not start from 'gina:'
       let params = gina#util#path#params('autoload/gina.vim')
@@ -69,7 +73,7 @@ Describe gina#util#path
 
     It returns a path when {expr} is a path
       let actual = gina#util#path#expand('autoload/gina.vim')
-      let expect = 'autoload/gina.vim'
+      let expect = Path.realpath('autoload/gina.vim')
       Assert Equals(actual, expect)
     End
 
