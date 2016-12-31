@@ -112,27 +112,6 @@ function! s:get_hashref_of(git, ref) abort
 endfunction
 
 
-" Obsolute --------------------------------------------------------------------
-function! s:relpath(git, abspath) abort
-  let abspath = s:Path.realpath(expand(a:abspath))
-  if s:Path.is_relative(abspath)
-    return abspath
-  endif
-  let pattern = s:String.escape_pattern(a:git.worktree . s:Path.separator())
-  return abspath =~# '^' . pattern
-        \ ? matchstr(abspath, '^' . pattern . '\zs.*')
-        \ : abspath
-endfunction
-
-function! s:abspath(git, relpath) abort
-  let relpath = s:Path.realpath(expand(a:relpath))
-  if s:Path.is_absolute(relpath)
-    return relpath
-  endif
-  return s:Path.join(a:git.worktree, relpath)
-endfunction
-
-
 " Private --------------------------------------------------------------------
 function! s:_normalize_ref(git, ref) abort
   if a:ref =~# '^refs/'
