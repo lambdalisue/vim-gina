@@ -1,0 +1,146 @@
+*Vital/Vim/Console.txt*				echo/echomsg/input library
+
+Version: 1.0.0
+Author : Alisue <lambdalisue@hashnote.net>
+License: MIT license
+Support: Vim 7.3 and above
+
+
+==============================================================================
+CONTENTS				*Vital.Vim.Console-contents*
+
+INTRODUCTIONS			|Vital.Vim.Console-introductions|
+USAGE				|Vital.Vim.Console-usage|
+FUNCTIONS			|Vital.Vim.Console-functions|
+CHANGELOG			|Vital.Vim.Console-changelog|
+
+==============================================================================
+INTRODUCTIONS				*Vital.Vim.Console-introductions*
+
+This module provides several utility functions for message such as |echo|.
+The basic usage is something like:
+
+>
+	let s:Console = vital#vital#import('Vim.Console')
+
+	if s:Console.ask('Do you like Vim?')
+	  call s:Console.echo('Title', 'I knew')
+	else
+	  call s:Console.error('What did you say?')
+	endif
+<
+
+==============================================================================
+FUNCTIONS				*Vital.Vim.Console-functions*
+
+					*Vital.Vim.Console.get_config()*
+get_config()
+	Returns a config |Dictionary| which has
+
+	batch	A value used in |Vital.Vim.Console.is_batch()|, default 0.
+	debug	A value used in |Vital.Vim.Console.is_debug()|, default -1.
+
+					*Vital.Vim.Console.set_config()*
+set_config({config})
+	Apply {config} to the config.
+
+					*Vital.Vim.Console.is_batch()*
+is_batch()
+	Returns the 'batch' value of a config which is returned from
+	|Vital.Vim.Console.get_config()|.
+	Additionally, if 'batch' is a funcref, it returns the result of the
+	function rather than the value itself.
+
+					*Vital.Vim.Console.is_debug()*
+is_debug()
+	Returns the 'debug' value of a config which is returned from
+	|Vital.Vim.Console.get_config()|.
+	Additionally, if 'debug' is a funcref, it returns the result of the
+	function rather than the value itself.
+	Or if 'debug' is -1 (default), it return the value of 'verbose'
+	option.
+
+					*Vital.Vim.Console.echo()*
+echo({hl}[, {msg}...])
+	Execute |:echo| with {hl} (|highlight-groups|).
+	When multiple {msg} are specified, each {msg} are echoed individually.
+>
+	call s:Console.echo('None', 'a', 'b', 'c')
+	" a
+	" b
+	" c
+<
+					*Vital.Vim.Console.echomsg()*
+echomsg({hl}[, {msg}...])
+	Execute |:echomsg| with {hl} (|highlight-groups|).
+	When multiple {msg} are specified, each {msg} are echoed individually.
+
+					*Vital.Vim.Console.input()*
+input({hl}, {msg}[, {text}, {completion}])
+	Execute |:input| with {hl} (|highlight-groups|).
+	|inputsave()| and |inputrestore()| are used internally to guard
+	typeahead.
+	It does nothing and returns an empty string when
+	|Vital.Vim.Console.is_batch()| returns truthy value.
+
+					*Vital.Vim.Console.inputlist()*
+inputlist({hl}, {textlist}])
+	Execute |:inputlist| with {hl} (|highlight-groups|).
+	|inputsave()| and |inputrestore()| are used internally to guard
+	typeahead.
+	It does nothing and returns an empty string when
+	|Vital.Vim.Console.is_batch()| returns truthy value.
+
+					*Vital.Vim.Console.debug()*
+debug([{msg}...])
+	Echo {msg} by |:echomsg| with hl-Comment highlight group only when the
+	|Vital.Vim.Console.is_debug()| returns truthy value.
+
+					*Vital.Vim.Console.warn()*
+warn[{msg}...])
+	Echo {msg} by |:echomsg| with |hl-WarningMsg| highlight group.
+
+					*Vital.Vim.Console.error()*
+error([{msg}...])
+	Echo {msg} by |:echomsg| with |hl-ErrorMsg| highlight group.
+
+					*Vital.Vim.Console.ask()*
+ask({msg}[, {default}, {completion}])
+	Ask {msg} to users with |hl-Question| highlight group..
+	It does nothing and returns an empty string when
+	|Vital.Vim.Console.is_batch()| returns truthy value.
+
+					*Vital.Vim.Console.select()*
+select({msg}, {candidates}[, {canceled}])
+	Ask users to select one of the {candidates} with |hl-Question|
+	highlight group.
+	When user cancel, the value of {canceled} is returned.
+	It does nothing and returns an empty string when
+	|Vital.Vim.Console.is_batch()| returns truthy value.
+
+					*Vital.Vim.Console.confirm()*
+confirm({msg}[, {default}])
+	Confirm yes/no question to users.
+	It returns 1 if users answered yes.
+	The {default} is assigned to the default value of the |:input|.
+	It does nothing and returns an empty string when
+	|Vital.Vim.Console.is_batch()| returns truthy value.
+
+					*Vital.Vim.Console.capture()*
+capture({command})
+	Capture consoles for execution {command} and return a |List|.
+	Note that this method use |redir| internally.
+
+					*Vital.Vim.Console.clear()*
+clear()
+	Clear messages.
+
+
+==============================================================================
+CHANGELOG				*Vital.Vim.Console-changelog*
+
+1.0.0	2016-08-26
+	- Initial stable version
+
+==============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

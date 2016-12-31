@@ -1,0 +1,133 @@
+*Vital/ProgressBar.txt*				A progress bar module
+
+Version: 0.1.0
+Author:  Alisue <lambdalisue@hashnote.net>	*Vital.ProgressBar-author*
+Support: Vim 7.4 and above
+License: MIT license
+
+    Copyright (c) 2016 Alisue, hashnote.net
+
+    Permission is hereby granted, free of charge, to any person obtaining
+    a copy of this software and associated documentation files
+    (the "Software"), to deal in the Software without restriction,
+    including without limitation the rights to use, copy, modify, merge,
+    publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so,
+    subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=============================================================================
+CONTENTS					*Vital.ProgressBar-contents*
+
+Introduction			|Vital.ProgressBar-introduction|
+Install				|Vital.ProgressBar-install|
+Usage				|Vital.ProgressBar-usage|
+Functions			|Vital.ProgressBar-functions|
+Methods				|Vital.ProgressBar-methods|
+
+
+=============================================================================
+INTRODUCTION					*Vital.ProgressBar-introduction*
+
+|Vital.ProgressBar| is a progress bar vital module.
+
+
+=============================================================================
+INSTALL						*Vital.ProgressBar-install*
+
+Use Plug.vim, neobundle.vim, or whatever you want like:
+>
+	" Plug.vim
+	Plug 'lambdalisue/Vital.ProgressBar'
+
+	" dein.vim
+	call dein#add('lambdalisue/Vital.ProgressBar')
+<
+If you does not use any vim plugin manager, you can copy the repository to
+one of directory in |runtimepath| to enable the plugin.
+
+
+=============================================================================
+USAGE						*Vital.ProgressBar-usage*
+
+Create a new progress bar instance by |Vital.ProgressBar.new()| and call
+update() method in loop. Finalize by exit() method.
+>
+	let s:ProgressBar = s:V.import('ProgressBar')
+
+	function! s:some_heavy_function() abort
+	  let candidate_count = 123456789
+	  let progressbar = s:ProgressBar.new(candidate_count)
+	  try
+	    for i in range(candidate_count)
+	      " some heavy action
+	      call progressbar.update()
+	    endfor
+	  finally
+	    call progressbar.exit()
+	  endtry
+	endfunction
+<
+
+=============================================================================
+FUNCTIONS					*Vital.ProgressBar-functions*
+
+					*Vital.ProgressBar.new()*
+new({maxvalue}[, {options}])
+
+	Create a new progress bar instance for {maxvalue}.
+	The following attributes in {options} are allowed:
+
+	'barwidth'
+	A width of progress bar.
+	Default: 80
+
+	'nullchar'
+	A character for indicating a non finished part.
+	Default: '.'
+
+	'fillchar'
+	A character for indicating a finished part.
+	Default: '|'
+
+	'format'
+	A progress bar format. The followings are replaced in update() method.
+	%(fill)s     replaced with several 'fillchar'
+	%(null)s     replaced with several 'nullchar'
+	%(percent)s  replaced with percentage (intager)
+	Default: '|%(fill)s%(null)s| %(percent)s%'
+
+	'method'
+	How a progress bar is shown. A correct value is echo or statusline.
+	Default: 'echo'
+
+-----------------------------------------------------------------------------
+METHODS						*Vital.ProgressBar-methods*
+
+				*Vital.ProgressBar-instance.update()*
+update([{value}])
+
+	Update a progress bar with {value}. If no {value} is specified, a
+	current value + 1 is used.
+	If {value} is grathar than maxvalue, a maxvalue is used instead.
+	It redraw progress bar as well.
+
+				*Vital.ProgressBar-instance.exit()*
+exit()
+
+	Exit progress bar. It restore options used so developer must call this
+	method. Use |finally| to make sure that this method is called.
+
+
+=============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

@@ -1,0 +1,171 @@
+Describe Data.String.Formatter
+  Before all
+    let Path = vital#gina#import('System.Filepath')
+    let sfile = Path.realpath('autoload/vital/__gina__/Data/String/Formatter.vim')
+    let scope = themis#helper('scope')
+  End
+
+  Before
+    let Formatter = vital#gina#import('Data.String.Formatter')
+    let sf = scope.funcs(sfile)
+  End
+
+  Context s:_smart_string({value})
+    It should return {value} if {value} is string
+      let exp = 'foobar'
+      let ret = sf._smart_string(exp)
+      Assert Equals(exp, ret)
+      Assert Same(exp, ret)
+    End
+
+    It should return an empty string if {value} is 0
+      let ret = sf._smart_string(0)
+      Assert Equals(ret, '')
+    End
+
+    It should return an empty string if {value} is an empty list
+      let ret = sf._smart_string([])
+      Assert Equals(ret, '')
+    End
+
+    It should return an empty string if {value} is an empty dictionary
+      let ret = sf._smart_string({})
+      Assert Equals(ret, '')
+    End
+
+    It should return a string({value}) if {value} is number
+      let ret = sf._smart_string(1)
+      Assert Equals(ret, string(1))
+    End
+
+    It should return a string({value}) if {value} is list
+      let ret = sf._smart_string(['foo'])
+      Assert Equals(ret, string(['foo']))
+    End
+
+    It should return a string({value}) if {value} is dictionary
+      let ret = sf._smart_string({'foo': 'bar'})
+      Assert Equals(ret, string({'foo': 'bar'}))
+    End
+
+    It should return a string({value}) if {value} is otherwise (e.g. funcref)
+      let ret = sf._smart_string(sf._smart_string)
+      let exp = string(sf._smart_string)
+      Assert Equals(ret, exp)
+    End
+  End
+
+  Context .format()
+    It should return an empty string if an empty {format} is given
+      let ret = Formatter.format('', {}, {})
+      Assert Equals(ret, '')
+    End
+
+    It should return a formatted string
+      let format = '%foo %bar %hoge'
+      let format_map = {
+            \ 'foo': 'foo_value',
+            \ 'bar': 'bar_value',
+            \ 'hoge': 'hoge_value',
+            \}
+      let data = {
+            \ 'foo_value': 'Hello',
+            \ 'bar_value': 'Good',
+            \ 'hoge_value': 'Bye',
+            \}
+      let ret = Formatter.format(format, format_map, data)
+      Assert Equals(ret, 'Hello Good Bye')
+    End
+
+    It should add <left> value of %{<left>}<key> format if <key> is not empty
+      let format = '%{Very }bar'
+      let format_map = {
+            \ 'bar': 'bar_value',
+            \}
+      let data = {
+            \ 'bar_value': 'Good',
+            \}
+      let ret = Formatter.format(format, format_map, data)
+      Assert Equals(ret, 'Very Good')
+    End
+
+    It should NOT add <left> value of %{<left>}<key> format if <key> is empty
+      let format = '%{Very }bar'
+      let format_map = {
+            \ 'bar': 'bar_value',
+            \}
+      let data = {
+            \ 'bar_value': '',
+            \}
+      let ret = Formatter.format(format, format_map, data)
+      Assert Equals(ret, '')
+    End
+
+    It should add <right> value of %{|<right>}<key> format if <key> is not empty
+      let format = '%{| Bye}bar'
+      let format_map = {
+            \ 'bar': 'bar_value',
+            \}
+      let data = {
+            \ 'bar_value': 'Good',
+            \}
+      let ret = Formatter.format(format, format_map, data)
+      Assert Equals(ret, 'Good Bye')
+    End
+
+    It should NOT add <right> value of %{|<right>}<key> format if <key> is empty
+      let format = '%{| Bye}bar'
+      let format_map = {
+            \ 'bar': 'bar_value',
+            \}
+      let data = {
+            \ 'bar_value': '',
+            \}
+      let ret = Formatter.format(format, format_map, data)
+      Assert Equals(ret, '')
+    End
+
+    It should add <left> and <right> value of %{<left>|<right>}<key> format if <key> is not empty
+      let format = '%{Hello | Bye}bar'
+      let format_map = {
+            \ 'bar': 'bar_value',
+            \}
+      let data = {
+            \ 'bar_value': 'Good',
+            \}
+      let ret = Formatter.format(format, format_map, data)
+      Assert Equals(ret, 'Hello Good Bye')
+    End
+
+    It should NOT add <left> and <right> value of %{<left>|<right>}<key> format if <key> is empty
+      let format = '%{Hello | Bye}bar'
+      let format_map = {
+            \ 'bar': 'bar_value',
+            \}
+      let data = {
+            \ 'bar_value': '',
+            \}
+      let ret = Formatter.format(format, format_map, data)
+      Assert Equals(ret, '')
+    End
+
+    It should call a function specified n {format_map}
+      let format = '%foo %bar'
+      let format_map = {
+            \ 'foo': 'foo_value',
+            \}
+      function! format_map.bar(data) abort
+        let self._bar = 'bar'
+        return toupper(a:data.bar_value)
+      endfunction
+      let data = {
+            \ 'foo_value': 'Hello',
+            \ 'bar_value': 'Goodbye',
+            \}
+      let ret = Formatter.format(format, format_map, data)
+      Assert Equals(ret, 'Hello GOODBYE')
+      Assert Equals(format_map._bar, 'bar')
+    End
+  End
+End
+

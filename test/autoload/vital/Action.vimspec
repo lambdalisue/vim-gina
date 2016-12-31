@@ -1,0 +1,81 @@
+Describe Action
+  Before
+    let Action = vital#gina#import('Action')
+  End
+
+  After
+    windo bwipeout!
+  End
+
+  Describe .attach({name}[, {candidates}])
+    It returns an instance of Action
+      let binder = Action.attach('action')
+      Assert KeyExists(binder, 'get_alias')
+      Assert KeyExists(binder, 'get_action')
+      Assert KeyExists(binder, 'get_candidates')
+      Assert KeyExists(binder, 'define')
+      Assert KeyExists(binder, 'alias')
+      Assert KeyExists(binder, 'call')
+      Assert KeyExists(binder, 'smart_map')
+    End
+
+    It defines builtin actions
+      let binder = Action.attach('action')
+      Assert Equals(sort(keys(binder.actions)), sort([
+            \ 'builtin:echo',
+            \ 'builtin:help',
+            \ 'builtin:help:all',
+            \ 'builtin:choice',
+            \ 'builtin:repeat',
+            \]))
+    End
+
+    It defines default aliases
+      let binder = Action.attach('action')
+      Assert Equals(sort(keys(binder.aliases)), sort([
+            \ 'echo',
+            \ 'help',
+            \ 'help:all',
+            \ 'choice',
+            \ 'repeat',
+            \]))
+    End
+
+    It defines default mappings
+      call Action.attach('action')
+      Assert Equals(mapcheck('?', 'n'), '<Plug>(action-builtin-help)')
+      Assert Equals(mapcheck('<Tab>', 'n'), '<Plug>(action-builtin-choice)')
+      Assert Equals(mapcheck('<Tab>', 'v'), '<Plug>(action-builtin-choice)gv')
+      Assert Equals(mapcheck('<Tab>', 'i'), '<Plug>(action-builtin-choice)')
+      Assert Equals(mapcheck('.', 'n'), '<Plug>(action-builtin-repeat)')
+      Assert Equals(mapcheck('.', 'v'), '<Plug>(action-builtin-repeat)gv')
+      Assert Equals(mapcheck('.', 'i'), '<Plug>(action-builtin-repeat)')
+    End
+  End
+
+  Describe .get({name})
+    It returns an attached Action instance
+      let binder1 = Action.attach('action')
+      let binder2 = Action.get('action')
+      Assert Same(binder1, binder2)
+    End
+  End
+
+  Describe Instance
+    Before
+      let binder = Action.attach('action')
+    End
+
+    Describe .get_alias({name})
+      It returns an alias name of an action
+        let result = binder.get_alias('builtin:echo')
+        Assert Equals(result, 'echo')
+      End
+
+      It returns {name} if no alias is found
+        let result = binder.get_alias('foobar')
+        Assert Equals(result, 'foobar')
+      End
+    End
+  End
+End

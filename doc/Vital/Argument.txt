@@ -1,0 +1,446 @@
+*Vital/Argument.txt*			An argument manipulation library
+
+Version: 0.1.0
+Author : Alisue <lambdalisue@hashnote.net>
+License: MIT license
+
+
+=============================================================================
+CONTENTS					*Vital.Argument-content*
+
+INTRODUCTION					|Vital.Argument-introduction|
+  DEFINITION					|Vital.Argument-definition|
+INTERFACE					|Vital.Argument-interface|
+  FUNCTION					|Vital.Argument-function|
+  INSTANCE					|Vital.Argument-instance|
+
+
+=============================================================================
+INTRODUCTION					*Vital.Argument-introduction*
+
+*Vital.Argument* is a |Vital| module used for parsing a command-line argument.
+This library provides fundamental features to manipulate a command-line
+argument like:
+>
+	let s:Argument = vital#vital#import('Argument')
+
+	function! s:command_cat(qargs) abort
+	  let args = s:Argument.new(a:qargs)
+
+	  let options = {}
+	  let options.show_all = args.get('-A|--show-all')
+	  let options.number_nonblock = args.get('-b|--number-nonblank')
+	  let options.show_ends = args.get('-E|--show-ends')
+	  let options.number = args.get('-n|--number')
+	  let options.squeeze_blank = args.get('-s|--squeeze-blank')
+	  let options.show_tabs = args.get('-T|--show-tabs')
+	  let options.show_nonprinting = args.get('-v|--show-nonprinting')
+
+	  if args.get('-e')
+	    let options.show_ends = 1
+	    let options.show_nonprinting = 1
+	  endif
+	  if args.get('-t')
+	    let options.show_tabs = 1
+	    let options.show_nonprinting = 1
+	  endif
+
+	  let options.files = args.map_p(
+	        \ 'v:val ==# ''%'' ? expand(v:val) : v:val'
+	        \).list_p()
+
+	  " DO SOMETHING WITH A PARSED OPTIONS
+	endfunction
+
+	command! -nargs=* Cat call s:command_cat(<q-args>)
+<
+See also:
+
+  Vital.OptionParser
+  https://github.com/vim-jp/vital.vim
+
+  Vital.ArgumentParser
+  https://github.com/lambdalisue/vital-ArgumentParser
+
+
+-----------------------------------------------------------------------------
+DEFINITION					*Vital.Argument-definition*
+
+This library provides term manipulations for optional, positional, and
+residual defined as below:
+
+Name		Definition~
+optional	Terms which starts from -\w or --\w
+positional	Terms which does not starts from -\w and --\w
+residual	Terms after "--"
+>
+In short, each names are defined as the following scheme:
+>
+	-f  --bar  mayuri  christina  --  -h  rukako  steins;gate
+	~~  ~~~~~  ~~~~~~  ~~~~~~~~~      ~~  ~~~~~~  ~~~~~~~~~~~
+	 |    |      |         |           |     |         |
+	 |    |      |         |           *-----|---------*
+	 |    |      *---------|                 v
+	 |    |                |              residual
+	 *----|                v
+	      |            positional
+	      v
+	   optional
+<
+Manipulation methods without suffix are for optional terms, methods with a
+suffix "_p" are for positional terms, and methods with a suffix "_r" are for
+residual terms.
+
+Note that there are less manipulation method for residual terms while residual
+terms are assumed as non argument terms. So you may need to parse deeply to
+find terms in residual like:
+>
+	let args1 = Argument.new('-f --bar ... -- -h rukako steins;gate')
+	let args2 = Argument.new(args1.list_r())
+	echo args1.get('-h')
+	" -> 0
+	echo args2.get('-h')
+	" -> 1
+<
+
+=============================================================================
+INTERFACE					*Vital.Argument-interface*
+
+-----------------------------------------------------------------------------
+FUNCTION					*Vital.Argument-function*
+
+			*Vital.Argument.new()*
+.new([{init}])
+	Returns a new args instance which has initialized with {init}.
+	When |List| is specified to {init}, the list is used as a term list.
+	When |String| is specified to {init}, the string is parsed by
+	|Vital.Argument.parse()| and a result list is used as a term list.
+	See |Vital.Argument-instance| for the instance detail.
+
+			*Vital.Argument.parse()*
+.parse({cmdline})
+	Parses a {cmdline} and returns a term list.
+>
+	echo Argument.parse('foo')
+	" -> ['foo']
+	echo Argument.parse('foo bar')
+	" -> ['foo', 'bar']
+	echo Argument.parse('"foo foo" "bar bar"')
+	" -> ['foo foo', 'bar bar']
+	echo Argument.parse('foo "bar bar" hoge')
+	" -> ['foo', 'bar bar', 'hoge']
+	echo Argument.parse('--foo="foo" -b"bar"')
+	" -> ['--foo=foo', '-bbar']
+	echo Argument.parse('foo\ bar\ hoge')
+	" -> ['foo\ bar\ hoge']
+<
+			*Vital.Argument.build_pattern()*
+.build_pattern({query})
+	Builds a pattern from {query} used to search optional arguments.
+>
+	echo Argument.build_pattern('-f|--foo')
+	" -> '^\%(-f\|--foo\>\)'
+<
+			*Vital.Argument.strip_quotes()*
+.strip_quotes({str})
+	Strips quotes from {str}.
+>
+	echo Argument.strip_quotes('"aaa"')
+	" -> 'aaa'
+	echo Argument.strip_quotes("'aaa'")
+	" -> 'aaa'
+<
+			*Vital.Argument.parse_term()*
+.parse_term({term})
+	Parses a {term} and returns a [key, value] list.
+>
+	echo Argument.parse_term('A positional argument')
+	" -> ['', 'A positional argument']
+
+	echo Argument.parse_term('-f')
+	" -> ['-f', 1]
+
+	echo Argument.parse_term('--foo')
+	" -> ['--foo', 1]
+
+	echo Argument.parse_term('-fFOO')
+	" -> ['-f', 'FOO']
+
+	echo Argument.parse_term('--foo=F O O')
+	" -> ['--foo', 'F O O']
+<
+	See also |Vital.Argument.build_term()|.
+
+			*Vital.Argument.build_term()*
+.build_term({key}, {value})
+	Builds a term from {key} and {value} returns.
+>
+	echo Argument.build_term('', 'A positional argument')
+	" -> 'A positional argument'
+
+	echo Argument.build_term('-f', 1)
+	" -> '-f'
+
+	echo Argument.build_term('--foo', 1)
+	" -> '--foo'
+
+	echo Argument.build_term('-f', 'FOO')
+	" -> '-fFOO'
+
+	echo Argument.build_term('--foo', 'F O O')
+	" -> '--foo=F O O'
+<
+	See also |Vital.Argument.parse_term()|.
+
+
+-----------------------------------------------------------------------------
+INSTANCE					*Vital.Argument-instance*
+
+			*Vital.Argument-args.raw*
+args.raw
+	A raw term list. When a complex operation is required, modify this
+	list directly.
+
+			*Vital.Argument-args.lock()*
+args.lock()
+	Locks "raw" attribute by |:lockvar|.
+
+			*Vital.Argument-args.clone()*
+args.clone()
+	Copies minimum requirements of the instance and returns a new args
+	instance. The "raw" attribute of cloned instance is automatically
+	unlocked.
+	Note that user defined attributes are not copied so use |deepcopy()|
+	instead if you need that.
+
+			*Vital.Argument-args.list()*
+args.list()
+	Returns an optional term list.
+>
+	let args = Argument.new(['-a', 'alpha', '-b', 'beta', '--', '-c'])
+	echo args.list()
+	" -> ['-a', '-b']
+<
+			*Vital.Argument-args.search()*
+args.search({query}[, {start})
+	Searches an optional term for {query} and returns an index.
+	It returns -1 when no optional term is found.
+	It starts searching from {start} if specified.
+>
+	let args = Argument.new(['--foo', '--bar', '--', '--wow'])
+	echo args.search('-f|--foo')
+	" -> 0
+	echo args.search('-b|--bar')
+	" -> 1
+	echo args.search('-w|--wow')
+	" -> -1
+<
+			*Vital.Argument-args.has()*
+args.has({query})
+	Returns 1 if an optional term is found for {query}. Otherwise 0.
+
+			*Vital.Argument-args.get()*
+args.get({query}[, {default}])
+	Returns a value of an optional term found for {query}.
+	It returns {default} if no term is found.
+>
+	let args = Argument.new(['--foo', '--bar=bar'])
+	echo args.get('-f|--foo')
+	" -> 1
+	echo args.get('-b|--bar')
+	" -> 'bar'
+<
+			*Vital.Argument-args.set()*
+args.set({query}, {value})
+	Sets a {value} to each optional terms found for {query}.
+	It removes the terms when the {value} is 0.
+	It returns an instance itself (method chain).
+>
+	let args = Argument.new(['--foo', '-f', '--bar=bar', '-bbar'])
+	call args.set('-f|--foo', 'FOO')
+	echo args.raw
+	" -> ['--foo=FOO', '-fFOO', '--bar=bar', '-bbar']
+
+	call args.set('-b|--bar', 0)
+	echo args.raw
+	" -> ['--foo=FOO', '-fFOO']
+<
+			*Vital.Argument-args.default()*
+args.default({query}, {value})
+	Sets a {value} for {query} when there is no term for {query}.
+	It does nothing when the {value} is 0.
+	It returns an instance itself (method chain).
+>
+	let args = Argument.new(['--foo', '-f', '--bar=bar', '-bbar'])
+	call args.default('-f|--foo', 'FOO')
+	echo args.raw
+	" -> ['--foo', '-f', '--bar=bar', '-bbar']
+
+	call args.default('-h|--hoge', 'hoge')
+	echo args.raw
+	" -> ['--foo', '-f', '--bar=bar', '-bbar', '--hoge=hoge']
+<
+			*Vital.Argument-args.pop()*
+args.pop({query}[, {default}])
+	Returns a value of a first optional term found for {query} and remove
+	all optional terms for {query}.
+	It returns {default} if no term is found.
+>
+	let args = Argument.new(['--foo', '-f', '--bar=bar', '-bBAR'])
+	echo args.pop('-b|--bar')
+	" -> 'bar'
+	echo args.raw
+	" -> ['--foo', '-f']
+<
+			*Vital.Argument-args.apply()*
+args.apply({query}, {fn}[, {default}])
+	Calls {fn} on optional terms found for {query} and assign the {fn}
+	result. The {fn} is called with [key, value] of an optional term.
+	It returns the function result of first term found.
+	See |Vital.Argument-definition| for what the "optional term" is.
+>
+	let args = Argument.new(['--foo=FOO', '-fBOO', '--bar=bar', '-bbar'])
+	echo args.apply('-f|--foo', { k, v -> [k, tolower(v)] })
+	" -> 'foo'
+	echo args.raw
+	" -> ['--foo=foo', '-fboo', '--bar=bar', '-bbar']
+<
+			*Vital.Argument-args.map()*
+args.map({fn})
+	Calls {fn} on each optional terms and assign the {fn} result.
+	The {fn} is called with [key, value] of an optional term.
+	It returns an instance itself (method chain).
+	See |Vital.Argument-definition| for what the "optional term" is.
+>
+	let args = Argument.new(['--foo', '-f', '--', '--bar=bar', '-bbar'])
+	call args.map({ k, v -> [toupper(k), v] })
+	echo args.raw
+	" -> ['--FOO', '-F', '--', '--bar=bar', '-bbar']
+<
+			*Vital.Argument-args.filter()*
+args.filter({fn})
+	Calls {fn} on each optional terms and remove the term when the {fn}
+	returns a negative value.
+	The {fn} is called with [key, value] of an optional term.
+	It returns an instance itself (method chain).
+	See |Vital.Argument-definition| for what the "optional term" is.
+>
+	let args = Argument.new(['--foo', '-f', '--', '--bar=bar', '-bbar'])
+	call args.filter({ k, v -> k =~# '^--' })
+	echo args.raw
+	" -> ['--foo', '--', '--bar=bar', '-bbar']
+<
+			*Vital.Argument-args.list_p()*
+args.list_p()
+	Returns a positional term list.
+>
+	let args = Argument.new(['-a', 'alpha', '-b', 'beta', '--', 'c'])
+	echo args.list_p()
+	" -> ['alpha', 'beta']
+<
+			*Vital.Argument-args.search_p()*
+args.search_p({nth}[, {start}])
+	Returns an index for a {nth} positional term.
+	It returns -1 when no term is found.
+	It starts searching from {start} if specified.
+>
+	let args = Argument.new(['--foo', 'foo', '--bar', 'bar'])
+	echo args.search_p(1)
+	" -> 3
+<
+			*Vital.Argument-args.has_p()*
+args.has_p({nth})
+	Returns 1 if a {nth} positional term is found. Otherwise 0.
+
+			*Vital.Argument-args.get_p()*
+args.get_p({nth}[, {default}])
+	Returns a value of a {nth} positional term.
+	It returns {default} if no term is found.
+>
+	let args = Argument.new(['--foo', 'foo', '--bar', 'bar'])
+	echo args.get_p(1)
+	" -> 'bar'
+<
+			*Vital.Argument-args.set_p()*
+args.set_p({nth}, {value})
+	Sets a value of a {nth} positional term to {value}.
+	It automatically adds required number of empty terms when the number
+	of positional terms is not enough for {nth}.
+	It returns an instance itself (method chain).
+>
+	let args = Argument.new(['--foo', 'foo', '--bar', 'bar'])
+	call args.set_p(1, 'hoge')
+	echo args.raw
+	" -> ['--foo', 'foo', '--bar', 'hoge']
+
+	call args.set_p(4, 'piyo')
+	echo args.raw
+	" -> ['--foo', 'foo', '--bar', 'hoge', '', '', 'piyo']
+<
+			*Vital.Argument-args.default_p()*
+args.default_p({nth}, {value})
+	Sets a value of a {nth} positional term to {value} when a {nth}
+	positional term is missing.
+	It automatically adds required number of empty terms when the number
+	of positional terms is not enough for {nth}.
+	It returns an instance itself (method chain).
+>
+	let args = Argument.new(['--foo', 'foo', '--bar', 'bar'])
+	call args.default_p(1, 'hoge')
+	echo args.raw
+	" -> ['--foo', 'foo', '--bar', 'bar']
+
+	call args.default_p(4, 'piyo')
+	echo args.raw
+	" -> ['--foo', 'foo', '--bar', 'bar', '', '', 'piyo']
+<
+			*Vital.Argument-args.pop_p()*
+args.pop_p({nth}[, {default}])
+	Returns a value of a {nth} positional term and remove the term.
+	It returns {default} if no term is found.
+
+			*Vital.Argument-args.apply_p()*
+args.apply_p({nth}, {fn}[, {default}])
+	Calls {fn} on a {nth} positional terms and assign the function result
+	to the term.
+	It returns the function result.
+	See |Vital.Argument-definition| for what the "positional term" is.
+
+			*Vital.Argument-args.map_p()*
+args.map_p({fn})
+	Calls {fn} on each positional terms and assign the {fn} result.
+	The {fn} is called with a value of a positional term.
+	It returns an instance itself (method chain).
+	See |Vital.Argument-definition| for what the "positional term" is.
+
+			*Vital.Argument-args.filter_p()*
+args.filter_p({fn})
+	Calls {fn} on each positional terms and remove a term which the {fn}
+	returns a negative value.
+	The {fn} is called with a value of a positional term.
+	It returns an instance itself (method chain).
+	See |Vital.Argument-definition| for what the "positional term" is.
+
+			*Vital.Argument-args.list_r()*
+args.list_r()
+	Returns a list of residual terms.
+	See |Vital.Argument-definition| for what the "residual term" is.
+
+			*Vital.Argument-args.map_r()*
+args.map_r({fn})
+	Calls {fn} on each residual terms and assign the {fn} result.
+	The {fn} is called with a value of a residual term.
+	It returns an instance itself (method chain).
+	See |Vital.Argument-definition| for what the "residual term" is.
+
+			*Vital.Argument-args.filter_r()*
+args.filter_r({fn})
+	Calls {fn} on each residual terms and remove a term which the {fn}
+	returns a negative value.
+	The {fn} is called with a value of a residual term.
+	It returns an instance itself (method chain).
+	See |Vital.Argument-definition| for what the "residual term" is.
+
+
+=============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

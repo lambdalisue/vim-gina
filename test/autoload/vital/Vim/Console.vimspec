@@ -1,0 +1,238 @@
+Describe Vim.Console
+  Before all
+    function! TestVitalVimConsoleTrue() abort
+      return 1
+    endfunction
+
+    function! TestVitalVimConsoleFalse() abort
+      return 0
+    endfunction
+
+    function! s:messages() abort
+      redir => contents
+      messages
+      redir END
+      let l:messages = filter(split(contents, '\r\?\n'), '!empty(v:val)')
+      " Remove a title console if exists
+      if get(l:messages, 0, '') =~# '^Messages maintainer:'
+        return l:messages[1:]
+      else
+        return l:messages
+      endif
+    endfunction
+  End
+
+  After all
+    delfunction TestVitalVimConsoleTrue
+    delfunction TestVitalVimConsoleFalse
+  End
+
+  Before
+    let Console = vital#gina#import('Vim.Console')
+    let DEFAULT_CONFIG = {
+          \ 'debug': 0,
+          \ 'batch': 1,
+          \}
+    call Console.set_config(DEFAULT_CONFIG)
+    call Console.clear()
+  End
+
+  Describe .get_config()
+    It returns a copy of a config dictionary
+      let config = Console.get_config()
+      Assert IsDict(config)
+      Assert KeyExists(config, 'debug')
+      Assert KeyExists(config, 'batch')
+      Assert Equal(config, DEFAULT_CONFIG)
+
+      let config2 = Console.get_config()
+      Assert Equal(config, config2)
+      Assert NotSame(config, config2)
+    End
+  End
+
+  Describe .set_config({config})
+    It overwrites existing config with {config}
+      call Console.set_config({
+            \ 'debug': 1,
+            \ 'batch': 0,
+            \})
+      let config = Console.get_config()
+      Assert Equal(config, {
+            \ 'debug': 1,
+            \ 'batch': 0,
+            \})
+    End
+    It ignores missing attributes
+      call Console.set_config({
+            \ 'debug': 1,
+            \})
+      let config = Console.get_config()
+      Assert Equal(config, extend(copy(DEFAULT_CONFIG), {
+            \ 'debug': 1,
+            \}))
+    End
+  End
+
+  Describe .is_batch()
+    It returns 0 if {config}.batch is 0
+      call Console.set_config({'batch': 0})
+      Assert False(Console.is_batch())
+    End
+    It returns 1 if {config}.batch is 1
+      call Console.set_config({'batch': 1})
+      Assert True(Console.is_batch())
+    End
+    It executes {config}.batch and return if it is funcref
+      call Console.set_config({'batch': function('TestVitalVimConsoleTrue')})
+      Assert True(Console.is_batch())
+
+      call Console.set_config({'batch': function('TestVitalVimConsoleFalse')})
+      Assert False(Console.is_batch())
+    End
+  End
+
+  Describe .is_debug()
+    It returns 0 if {config}.debug is 0
+      call Console.set_config({'debug': 0})
+      Assert False(Console.is_debug())
+    End
+    It returns 1 if {config}.debug is 1
+      call Console.set_config({'debug': 1})
+      Assert True(Console.is_debug())
+    End
+    It executes {config}.debug and return if it is funcref
+      call Console.set_config({'debug': function('TestVitalVimConsoleTrue')})
+      Assert True(Console.is_debug())
+
+      call Console.set_config({'debug': function('TestVitalVimConsoleFalse')})
+      Assert False(Console.is_debug())
+    End
+  End
+
+  Describe .echo({hl} [, {msg}...])
+    It echo a {msg}
+      redir => contents
+      call Console.echo('None', "foo", "bar")
+      redir END
+      Assert Equals(split(contents, '\r\?\n'), ['foo bar'])
+      let messages = s:messages()
+      Assert Equals(messages, [])
+    End
+  End
+
+  Describe .echomsg({hl} [, {msg}...])
+    It echomsg a {msg}
+      redir => contents
+      call Console.echomsg('None', "foo", "bar")
+      redir END
+      Assert Equals(split(contents, '\r\?\n'), ['foo bar'])
+      let messages = s:messages()
+      Assert Equals(messages, ['foo bar'])
+    End
+  End
+
+  Describe .input({hl}, {msg}[, {text}, {complete}])
+    It returns '' while batch is 1
+      Assert Equals(Console.input('None', 'foo'), '')
+    End
+  End
+
+  Describe .inputlist({hl}, {textlist})
+    It returns 0 while batch is 1
+      Assert Equals(Console.inputlist('None', ['foo', 'bar']), 0)
+    End
+  End
+
+  Describe .clear()
+    It fills up messages with empty strings
+      echomsg "foo"
+      echomsg "foo"
+      echomsg "foo"
+      echomsg "foo"
+      call Console.clear()
+      let messages = s:messages()
+      Assert Equals(len(messages), 0)
+    End
+  End
+
+  Describe .debug([{msg}, ...])
+    It echomsg messages with spaces if debug is 1
+      call Console.set_config({'debug': 1})
+
+      redir => contents
+      call Console.debug('foo', 'bar', 0)
+      redir END
+      Assert Equals(split(contents, '\r\?\n'), ['foo bar 0'])
+
+      let messages = s:messages()
+      Assert Equals(messages, ['foo bar 0'])
+    End
+    It does nothing if debug is 0
+      call Console.set_config({'debug': 0})
+
+      redir => contents
+      call Console.debug('foo', 'bar', 0)
+      redir END
+      Assert Equals(split(contents, '\r\?\n'), [])
+
+      let messages = s:messages()
+      Assert Equals(messages, [])
+    End
+  End
+
+  Describe .warn([{msg}, ...])
+    It echomsg messages with spaces
+      redir => contents
+      call Console.warn('foo', 'bar', 0)
+      redir END
+      Assert Equals(split(contents, '\r\?\n'), ['foo bar 0'])
+
+      let messages = s:messages()
+      Assert Equals(messages, ['foo bar 0'])
+    End
+  End
+
+  Describe .error([{msg}, ...])
+    It echomsg messages with spaces
+      redir => contents
+      call Console.error('foo', 'bar', 0)
+      redir END
+      Assert Equals(split(contents, '\r\?\n'), ['foo bar 0'])
+
+      let messages = s:messages()
+      Assert Equals(messages, ['foo bar 0'])
+    End
+
+    It sets v:errmsg
+      redir => contents
+      call Console.error('foo', 'bar', 0)
+      redir END
+      Assert Equals(v:errmsg, 'foo bar 0')
+    End
+  End
+
+  Describe .ask({msg}[, {text}, {complete}])
+    It returns '' when batch is 1
+      Assert Equals(Console.ask('foo'), '')
+    End
+  End
+
+  Describe .select({msg}, {candidates}[, {canceled}])
+    It returns {canceled} when batch is 1
+      Assert Equals(Console.select('foo', ['foo', 'bar']), '')
+    End
+  End
+
+  Describe .confirm({msg}[, {text}])
+    It returns 0 when batch is 1
+      Assert Equals(Console.confirm('foo'), 0)
+    End
+  End
+
+  Describe .capture({command})
+    It return messages of {command}
+      Assert Equals(Console.capture('echo "Hello"'), ['', 'Hello'])
+    End
+  End
+End

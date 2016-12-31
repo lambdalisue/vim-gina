@@ -1,0 +1,12 @@
+Describe gina#action
+  Before
+    let Action = vital#gina#import('Action')
+  End
+
+  Describe #attach()
+  End
+
+  Describe #include({scheme})
+
+  End
+End

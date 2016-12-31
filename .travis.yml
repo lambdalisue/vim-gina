@@ -1,0 +1,31 @@
+language: generic
+sudo: false
+env:
+  - VERSION=HEAD
+  - VERSION=v8.0.0134
+  - VERSION=nvim
+os:
+  - linux
+  - osx
+osx_image: xcode8
+
+addons:
+  apt:
+    packages:
+      - vim
+      - gettext
+      - libncurses5-dev
+      - libacl1-dev
+      - libgpm-dev
+      - libperl-dev
+      - ruby-dev
+      - python-dev
+      - python3-dev
+      - lua5.2
+      - liblua5.2-dev
+
+install:
+  - bash .ci/install.sh
+
+script:
+  - bash .ci/script.sh

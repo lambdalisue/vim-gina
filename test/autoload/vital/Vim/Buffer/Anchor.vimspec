@@ -1,0 +1,632 @@
+Describe Vim.Buffer.Anchor
+  Before
+    let Guard = vital#gina#import('Vim.Guard')
+    let Anchor = vital#gina#import('Vim.Buffer.Anchor')
+    let config_saved = Anchor.get_config()
+  End
+
+  After
+    call Anchor.set_config(config_saved)
+    windo bwipeout!
+  End
+
+  Describe .get_config()
+    It should return a copy of a config dictionary
+      let config = Anchor.get_config()
+      Assert IsDict(config)
+      Assert KeyExists(config, 'buflisted_required')
+      Assert KeyExists(config, 'unsuitable_buftype_pattern')
+      Assert KeyExists(config, 'unsuitable_bufname_pattern')
+      Assert KeyExists(config, 'unsuitable_filetype_pattern')
+      Assert Equal(config, config_saved)
+
+      let config2 = Anchor.get_config()
+      Assert Equal(config, config2)
+      Assert NotSame(config, config2)
+    End
+  End
+
+  Describe .set_config({config})
+    It should overwrite existing config with {config}
+      call Anchor.set_config({
+            \ 'buflisted_required': 0,
+            \ 'unsuitable_buftype_pattern': 'foo',
+            \ 'unsuitable_bufname_pattern': 'foo',
+            \ 'unsuitable_filetype_pattern': 'foo',
+            \})
+      let config = Anchor.get_config()
+      Assert Equal(config, {
+            \ 'buflisted_required': 0,
+            \ 'unsuitable_buftype_pattern': 'foo',
+            \ 'unsuitable_bufname_pattern': 'foo',
+            \ 'unsuitable_filetype_pattern': 'foo',
+            \})
+    End
+
+    It should ignore unknown attributes
+      call Anchor.set_config({
+            \ 'buflisted_required': 0,
+            \ 'unsuitable_buftype_pattern': 'foo',
+            \ 'unsuitable_bufname_pattern': 'foo',
+            \ 'unsuitable_filetype_pattern': 'foo',
+            \ 'unknown_attribute': 'bar',
+            \})
+      let config = Anchor.get_config()
+      Assert Equal(config, {
+            \ 'buflisted_required': 0,
+            \ 'unsuitable_buftype_pattern': 'foo',
+            \ 'unsuitable_bufname_pattern': 'foo',
+            \ 'unsuitable_filetype_pattern': 'foo',
+            \})
+    End
+
+    It should ignore missing attributes
+      call Anchor.set_config({
+            \ 'unsuitable_bufname_pattern': 'foo',
+            \ 'unsuitable_filetype_pattern': 'foo',
+            \ 'unknown_attribute': 'bar',
+            \})
+      let config = Anchor.get_config()
+      Assert Equal(config, extend(copy(config_saved), {
+            \ 'unsuitable_bufname_pattern': 'foo',
+            \ 'unsuitable_filetype_pattern': 'foo',
+            \}))
+    End
+  End
+
+  Describe .is_available({opener})
+    It returns 0 for 'ptag'
+      Assert False(Anchor.is_available('pta'))
+      Assert False(Anchor.is_available('ptag'))
+      Assert False(Anchor.is_available('pta!'))
+      Assert False(Anchor.is_available('ptag!'))
+      Assert False(Anchor.is_available('topleft pta'))
+      Assert False(Anchor.is_available('topleft ptag'))
+      Assert False(Anchor.is_available('topleft pta!'))
+      Assert False(Anchor.is_available('topleft ptag!'))
+      Assert False(Anchor.is_available('botright pta'))
+      Assert False(Anchor.is_available('botright ptag'))
+      Assert False(Anchor.is_available('botright pta!'))
+      Assert False(Anchor.is_available('botright ptag!'))
+      Assert False(Anchor.is_available('vertical pta'))
+      Assert False(Anchor.is_available('vertical ptag'))
+      Assert False(Anchor.is_available('vertical pta!'))
+      Assert False(Anchor.is_available('vertical ptag!'))
+      Assert False(Anchor.is_available('vertical topleft pta'))
+      Assert False(Anchor.is_available('vertical topleft ptag'))
+      Assert False(Anchor.is_available('vertical topleft pta!'))
+      Assert False(Anchor.is_available('vertical topleft ptag!'))
+      Assert False(Anchor.is_available('vertical botright pta'))
+      Assert False(Anchor.is_available('vertical botright ptag'))
+      Assert False(Anchor.is_available('vertical botright pta!'))
+      Assert False(Anchor.is_available('vertical botright ptag!'))
+    End
+
+    It returns 0 for 'pedit'
+      Assert False(Anchor.is_available('ped'))
+      Assert False(Anchor.is_available('pedi'))
+      Assert False(Anchor.is_available('pedit'))
+      Assert False(Anchor.is_available('ped!'))
+      Assert False(Anchor.is_available('pedi!'))
+      Assert False(Anchor.is_available('pedit!'))
+      Assert False(Anchor.is_available('topleft ped'))
+      Assert False(Anchor.is_available('topleft pedi'))
+      Assert False(Anchor.is_available('topleft pedit'))
+      Assert False(Anchor.is_available('topleft ped!'))
+      Assert False(Anchor.is_available('topleft pedi!'))
+      Assert False(Anchor.is_available('topleft pedit!'))
+      Assert False(Anchor.is_available('botright ped'))
+      Assert False(Anchor.is_available('botright pedi'))
+      Assert False(Anchor.is_available('botright pedit'))
+      Assert False(Anchor.is_available('botright ped!'))
+      Assert False(Anchor.is_available('botright pedi!'))
+      Assert False(Anchor.is_available('botright pedit!'))
+      Assert False(Anchor.is_available('vertical topleft ped'))
+      Assert False(Anchor.is_available('vertical topleft pedi'))
+      Assert False(Anchor.is_available('vertical topleft pedit'))
+      Assert False(Anchor.is_available('vertical topleft ped!'))
+      Assert False(Anchor.is_available('vertical topleft pedi!'))
+      Assert False(Anchor.is_available('vertical topleft pedit!'))
+      Assert False(Anchor.is_available('vertical botright ped'))
+      Assert False(Anchor.is_available('vertical botright pedi'))
+      Assert False(Anchor.is_available('vertical botright pedit'))
+      Assert False(Anchor.is_available('vertical botright ped!'))
+      Assert False(Anchor.is_available('vertical botright pedi!'))
+      Assert False(Anchor.is_available('vertical botright pedit!'))
+    End
+
+    It returns 0 for 'psearch'
+      Assert False(Anchor.is_available('ps'))
+      Assert False(Anchor.is_available('pse'))
+      Assert False(Anchor.is_available('psea'))
+      Assert False(Anchor.is_available('psear'))
+      Assert False(Anchor.is_available('psearc'))
+      Assert False(Anchor.is_available('psearch'))
+      Assert False(Anchor.is_available('ps!'))
+      Assert False(Anchor.is_available('pse!'))
+      Assert False(Anchor.is_available('psea!'))
+      Assert False(Anchor.is_available('psear!'))
+      Assert False(Anchor.is_available('psearc!'))
+      Assert False(Anchor.is_available('psearch!'))
+      Assert False(Anchor.is_available('topleft ps'))
+      Assert False(Anchor.is_available('topleft pse'))
+      Assert False(Anchor.is_available('topleft psea'))
+      Assert False(Anchor.is_available('topleft psear'))
+      Assert False(Anchor.is_available('topleft psearc'))
+      Assert False(Anchor.is_available('topleft psearch'))
+      Assert False(Anchor.is_available('topleft ps!'))
+      Assert False(Anchor.is_available('topleft pse!'))
+      Assert False(Anchor.is_available('topleft psea!'))
+      Assert False(Anchor.is_available('topleft psear!'))
+      Assert False(Anchor.is_available('topleft psearc!'))
+      Assert False(Anchor.is_available('topleft psearch!'))
+      Assert False(Anchor.is_available('botright ps'))
+      Assert False(Anchor.is_available('botright pse'))
+      Assert False(Anchor.is_available('botright psea'))
+      Assert False(Anchor.is_available('botright psear'))
+      Assert False(Anchor.is_available('botright psearc'))
+      Assert False(Anchor.is_available('botright psearch'))
+      Assert False(Anchor.is_available('botright ps!'))
+      Assert False(Anchor.is_available('botright pse!'))
+      Assert False(Anchor.is_available('botright psea!'))
+      Assert False(Anchor.is_available('botright psear!'))
+      Assert False(Anchor.is_available('botright psearc!'))
+      Assert False(Anchor.is_available('botright psearch!'))
+      Assert False(Anchor.is_available('vertical botright ps'))
+      Assert False(Anchor.is_available('vertical botright pse'))
+      Assert False(Anchor.is_available('vertical botright psea'))
+      Assert False(Anchor.is_available('vertical botright psear'))
+      Assert False(Anchor.is_available('vertical botright psearc'))
+      Assert False(Anchor.is_available('vertical botright psearch'))
+      Assert False(Anchor.is_available('vertical botright ps!'))
+      Assert False(Anchor.is_available('vertical botright pse!'))
+      Assert False(Anchor.is_available('vertical botright psea!'))
+      Assert False(Anchor.is_available('vertical botright psear!'))
+      Assert False(Anchor.is_available('vertical botright psearc!'))
+      Assert False(Anchor.is_available('vertical botright psearch!'))
+    End
+
+    It returns 0 for 'tabedit' or 'tabnew'
+      Assert False(Anchor.is_available('tabe'))
+      Assert False(Anchor.is_available('tabed'))
+      Assert False(Anchor.is_available('tabedi'))
+      Assert False(Anchor.is_available('tabedit'))
+      Assert False(Anchor.is_available('tabnew'))
+    End
+
+    It returns 0 for 'tabfind'
+      Assert False(Anchor.is_available('tabf'))
+      Assert False(Anchor.is_available('tabfi'))
+      Assert False(Anchor.is_available('tabfin'))
+      Assert False(Anchor.is_available('tabfind'))
+    End
+
+    It returns 1 for 'edit' or 'ex'
+      Assert True(Anchor.is_available('e'))
+      Assert True(Anchor.is_available('ed'))
+      Assert True(Anchor.is_available('edi'))
+      Assert True(Anchor.is_available('edit'))
+      Assert True(Anchor.is_available('ex'))
+      Assert True(Anchor.is_available('e!'))
+      Assert True(Anchor.is_available('ed!'))
+      Assert True(Anchor.is_available('edi!'))
+      Assert True(Anchor.is_available('edit!'))
+      Assert True(Anchor.is_available('topleft e'))
+      Assert True(Anchor.is_available('topleft ed'))
+      Assert True(Anchor.is_available('topleft edi'))
+      Assert True(Anchor.is_available('topleft edit'))
+      Assert True(Anchor.is_available('topleft ex'))
+      Assert True(Anchor.is_available('topleft e!'))
+      Assert True(Anchor.is_available('topleft ed!'))
+      Assert True(Anchor.is_available('topleft edi!'))
+      Assert True(Anchor.is_available('topleft edit!'))
+      Assert True(Anchor.is_available('botright e'))
+      Assert True(Anchor.is_available('botright ed'))
+      Assert True(Anchor.is_available('botright edi'))
+      Assert True(Anchor.is_available('botright edit'))
+      Assert True(Anchor.is_available('botright ex'))
+      Assert True(Anchor.is_available('botright e!'))
+      Assert True(Anchor.is_available('botright ed!'))
+      Assert True(Anchor.is_available('botright edi!'))
+      Assert True(Anchor.is_available('botright edit!'))
+      Assert True(Anchor.is_available('vertical topleft e'))
+      Assert True(Anchor.is_available('vertical topleft ed'))
+      Assert True(Anchor.is_available('vertical topleft edi'))
+      Assert True(Anchor.is_available('vertical topleft edit'))
+      Assert True(Anchor.is_available('vertical topleft ex'))
+      Assert True(Anchor.is_available('vertical topleft e!'))
+      Assert True(Anchor.is_available('vertical topleft ed!'))
+      Assert True(Anchor.is_available('vertical topleft edi!'))
+      Assert True(Anchor.is_available('vertical topleft edit!'))
+      Assert True(Anchor.is_available('vertical botright e'))
+      Assert True(Anchor.is_available('vertical botright ed'))
+      Assert True(Anchor.is_available('vertical botright edi'))
+      Assert True(Anchor.is_available('vertical botright edit'))
+      Assert True(Anchor.is_available('vertical botright ex'))
+      Assert True(Anchor.is_available('vertical botright e!'))
+      Assert True(Anchor.is_available('vertical botright ed!'))
+      Assert True(Anchor.is_available('vertical botright edi!'))
+      Assert True(Anchor.is_available('vertical botright edit!'))
+    End
+
+    It returns 1 for 'enew'
+      Assert True(Anchor.is_available('ene'))
+      Assert True(Anchor.is_available('enew'))
+      Assert True(Anchor.is_available('ene!'))
+      Assert True(Anchor.is_available('enew!'))
+      Assert True(Anchor.is_available('topleft ene'))
+      Assert True(Anchor.is_available('topleft enew'))
+      Assert True(Anchor.is_available('topleft ene!'))
+      Assert True(Anchor.is_available('topleft enew!'))
+      Assert True(Anchor.is_available('botright ene'))
+      Assert True(Anchor.is_available('botright enew'))
+      Assert True(Anchor.is_available('botright ene!'))
+      Assert True(Anchor.is_available('botright enew!'))
+      Assert True(Anchor.is_available('vertical topleft ene'))
+      Assert True(Anchor.is_available('vertical topleft enew'))
+      Assert True(Anchor.is_available('vertical topleft ene!'))
+      Assert True(Anchor.is_available('vertical topleft enew!'))
+      Assert True(Anchor.is_available('vertical botright ene'))
+      Assert True(Anchor.is_available('vertical botright enew'))
+      Assert True(Anchor.is_available('vertical botright ene!'))
+      Assert True(Anchor.is_available('vertical botright enew!'))
+    End
+
+    It returns 1 for 'new' or 'vnew'
+      Assert True(Anchor.is_available('new'))
+      Assert True(Anchor.is_available('vne'))
+      Assert True(Anchor.is_available('vnew'))
+    End
+
+    It returns 1 for 'find'
+      Assert True(Anchor.is_available('fin'))
+      Assert True(Anchor.is_available('find'))
+      Assert True(Anchor.is_available('fin!'))
+      Assert True(Anchor.is_available('find!'))
+      Assert True(Anchor.is_available('topleft fin'))
+      Assert True(Anchor.is_available('topleft find'))
+      Assert True(Anchor.is_available('topleft fin!'))
+      Assert True(Anchor.is_available('topleft find!'))
+      Assert True(Anchor.is_available('botright fin'))
+      Assert True(Anchor.is_available('botright find'))
+      Assert True(Anchor.is_available('botright fin!'))
+      Assert True(Anchor.is_available('botright find!'))
+      Assert True(Anchor.is_available('vertical topleft fin'))
+      Assert True(Anchor.is_available('vertical topleft find'))
+      Assert True(Anchor.is_available('vertical topleft fin!'))
+      Assert True(Anchor.is_available('vertical topleft find!'))
+      Assert True(Anchor.is_available('vertical botright fin'))
+      Assert True(Anchor.is_available('vertical botright find'))
+      Assert True(Anchor.is_available('vertical botright fin!'))
+      Assert True(Anchor.is_available('vertical botright find!'))
+    End
+
+    It returns 1 for 'view'
+      Assert True(Anchor.is_available('vie'))
+      Assert True(Anchor.is_available('view'))
+      Assert True(Anchor.is_available('vie!'))
+      Assert True(Anchor.is_available('view!'))
+      Assert True(Anchor.is_available('topleft vie'))
+      Assert True(Anchor.is_available('topleft view'))
+      Assert True(Anchor.is_available('topleft vie!'))
+      Assert True(Anchor.is_available('topleft view!'))
+      Assert True(Anchor.is_available('botright vie'))
+      Assert True(Anchor.is_available('botright view'))
+      Assert True(Anchor.is_available('botright vie!'))
+      Assert True(Anchor.is_available('botright view!'))
+      Assert True(Anchor.is_available('vertical topleft vie'))
+      Assert True(Anchor.is_available('vertical topleft view'))
+      Assert True(Anchor.is_available('vertical topleft vie!'))
+      Assert True(Anchor.is_available('vertical topleft view!'))
+      Assert True(Anchor.is_available('vertical botright vie'))
+      Assert True(Anchor.is_available('vertical botright view'))
+      Assert True(Anchor.is_available('vertical botright vie!'))
+      Assert True(Anchor.is_available('vertical botright view!'))
+    End
+
+    It returns 1 for 'split'
+      Assert True(Anchor.is_available('sp'))
+      Assert True(Anchor.is_available('spl'))
+      Assert True(Anchor.is_available('spli'))
+      Assert True(Anchor.is_available('split'))
+      Assert True(Anchor.is_available('vertical sp'))
+      Assert True(Anchor.is_available('vertical spl'))
+      Assert True(Anchor.is_available('vertical spli'))
+      Assert True(Anchor.is_available('vertical split'))
+    End
+
+    It returns 1 for 'vsplit'
+      Assert True(Anchor.is_available('vs'))
+      Assert True(Anchor.is_available('vsp'))
+      Assert True(Anchor.is_available('vspl'))
+      Assert True(Anchor.is_available('vspli'))
+      Assert True(Anchor.is_available('vsplit'))
+    End
+  End
+
+  Describe .is_suitable({winnr})
+    It returns 1 for no named buffer (a new buffer)
+      0file | setlocal nobuflisted
+      Assert True(Anchor.is_suitable(0))
+    End
+
+    Context with buflisted_required
+      Before
+        call Anchor.set_config({
+              \ 'buflisted_required': 1,
+              \ 'unsuitable_buftype_pattern': '',
+              \ 'unsuitable_bufname_pattern': '',
+              \ 'unsuitable_filetype_pattern': '',
+              \})
+      End
+
+      It should return 0 for a buffer which is not listed in buflist
+        file foobar | setlocal nobuflisted
+        Assert False(Anchor.is_suitable(0))
+      End
+
+      It should return 1 for a buffer which is listed in buflist
+        file foobar | setlocal buflisted
+        Assert True(Anchor.is_suitable(0))
+      End
+    End
+
+    Context with unsuitable_buftype_pattern
+      Before
+        call Anchor.set_config({
+              \ 'buflisted_required': 0,
+              \ 'unsuitable_buftype_pattern': '^nofile$',
+              \ 'unsuitable_bufname_pattern': '',
+              \ 'unsuitable_filetype_pattern': '',
+              \})
+      End
+
+      It should return 0 for a buffer which buftype follow unsuitable pattern
+        file foobar
+        setlocal buftype=nofile
+        Assert False(Anchor.is_suitable(0))
+        " quickfix/help assignment is not allowed
+        "setlocal buftype=quickfix
+        "Assert False(Anchor.is_suitable(0))
+        "setlocal buftype=help
+        "Assert False(Anchor.is_suitable(0))
+      End
+
+      It should return 1 for a buffer which buftype does not follow unsuitable pattern
+        file foobar
+        setlocal buftype=
+        Assert True(Anchor.is_suitable(0))
+        setlocal buftype=nowrite
+        Assert True(Anchor.is_suitable(0))
+        setlocal buftype=acwrite
+        Assert True(Anchor.is_suitable(0))
+      End
+    End
+
+    Context with unsuitable_bufname_pattern
+      Before
+        call Anchor.set_config({
+              \ 'buflisted_required': 0,
+              \ 'unsuitable_buftype_pattern': '',
+              \ 'unsuitable_bufname_pattern': '^invalid$',
+              \ 'unsuitable_filetype_pattern': '',
+              \})
+      End
+
+      It should return 0 for a buffer which bufname follow unsuitable pattern
+        file invalid
+        Assert False(Anchor.is_suitable(0))
+      End
+
+      It should return 1 for a buffer which bufname does not follow unsuitable pattern
+        file foobar
+        Assert True(Anchor.is_suitable(0))
+      End
+    End
+
+    Context with unsuitable_filetype_pattern
+      Before
+        call Anchor.set_config({
+              \ 'buflisted_required': 0,
+              \ 'unsuitable_buftype_pattern': '',
+              \ 'unsuitable_bufname_pattern': '',
+              \ 'unsuitable_filetype_pattern': '^invalid$',
+              \})
+      End
+
+      It should return 0 for a buffer which filetype follow unsuitable pattern
+        file foobar | setlocal filetype=invalid
+        Assert False(Anchor.is_suitable(0))
+      End
+
+      It should return 1 for a buffer which filetype does not follow unsuitable pattern
+        file foobar | setlocal filetype=valid
+        Assert True(Anchor.is_suitable(0))
+      End
+    End
+  End
+
+  Describe .find_suitable({winnr}[, {reverse}])
+    It returns 1 when there is only a single window
+      Assert Equals(winnr('$'), 1)
+      Assert Equals(Anchor.find_suitable(winnr()), 1)
+    End
+
+    It returns a winnum of the next suitable window from the specified window
+      " NOTE: the current window (suitable) will be 1
+      0file | setlocal nobuflisted
+      rightbelow new unsuitable2 | setlocal nobuflisted
+      rightbelow new unsuitable3 | setlocal buflisted buftype=nofile
+      rightbelow new suitable4   | setlocal buflisted
+      rightbelow new unsuitable5 | setlocal nobuflisted
+      let ret = [
+            \ Anchor.find_suitable(1),
+            \ Anchor.find_suitable(2),
+            \ Anchor.find_suitable(3),
+            \ Anchor.find_suitable(4),
+            \ Anchor.find_suitable(5),
+            \]
+      Assert Equals(ret, [1, 4, 4, 4, 1])
+
+      windo bwipeout!
+      file unsuitable1 | setlocal nobuflisted
+      rightbelow new suitable2   | setlocal buflisted
+      rightbelow new unsuitable3 | setlocal buflisted buftype=nofile
+      rightbelow new suitable4   | setlocal buflisted
+      rightbelow new unsuitable5 | setlocal nobuflisted
+      let ret = [
+            \ Anchor.find_suitable(1),
+            \ Anchor.find_suitable(2),
+            \ Anchor.find_suitable(3),
+            \ Anchor.find_suitable(4),
+            \ Anchor.find_suitable(5),
+            \]
+      Assert Equals(ret, [2, 2, 4, 4, 2])
+    End
+
+    It returns a winnum of the previous suitable window from the specified window when {reverse} is specified
+      " NOTE: the current window (suitable) will be 1
+      0file | setlocal nobuflisted
+      rightbelow new unsuitable2 | setlocal nobuflisted
+      rightbelow new unsuitable3 | setlocal buflisted buftype=nofile
+      rightbelow new suitable4   | setlocal buflisted
+      rightbelow new unsuitable5 | setlocal nobuflisted
+
+      let ret = [
+            \ Anchor.find_suitable(1, 1),
+            \ Anchor.find_suitable(2, 1),
+            \ Anchor.find_suitable(3, 1),
+            \ Anchor.find_suitable(4, 1),
+            \ Anchor.find_suitable(5, 1),
+            \]
+      Assert Equals(ret, [1, 1, 1, 4, 4])
+
+      windo bwipeout!
+      file unsuitable1 | setlocal nobuflisted
+      rightbelow new suitable2   | setlocal buflisted
+      rightbelow new unsuitable3 | setlocal buflisted buftype=nofile
+      rightbelow new suitable4   | setlocal buflisted
+      rightbelow new unsuitable5 | setlocal nobuflisted
+      let ret = [
+            \ Anchor.find_suitable(1, 4),
+            \ Anchor.find_suitable(2, 4),
+            \ Anchor.find_suitable(3, 4),
+            \ Anchor.find_suitable(4, 4),
+            \ Anchor.find_suitable(5, 4),
+            \]
+      Assert Equals(ret, [4, 2, 2, 4, 4])
+    End
+
+    It returns 0 if there is no suitable window
+      file unsuitable1 | setlocal nobuflisted
+      rightbelow new unsuitable2 | setlocal nobuflisted
+      rightbelow new unsuitable3 | setlocal nobuflisted
+      rightbelow new unsuitable4 | setlocal nobuflisted
+      rightbelow new unsuitable5 | setlocal nobuflisted
+
+      let ret = [
+            \ Anchor.find_suitable(1),
+            \ Anchor.find_suitable(2),
+            \ Anchor.find_suitable(3),
+            \ Anchor.find_suitable(4),
+            \ Anchor.find_suitable(5),
+            \]
+      Assert Equals(ret, [0, 0, 0, 0, 0])
+    End
+  End
+
+  Describe .focus([{reverse}])
+    It should focus a next suitable window
+      file unsuitable1 | setlocal nobuflisted
+      rightbelow new suitable2   | setlocal buflisted buftype=nowrite
+      rightbelow new suitable3   | setlocal buflisted buftype=acwrite
+      rightbelow new unsuitable4 | setlocal buflisted buftype=nofile
+      rightbelow new unsuitable5 | setlocal nobuflisted buftype=nofile
+
+      " Note:
+      "   focus is in 'unsuitable5' now, thus the next suitable
+      "   window is 'suitable2'
+      call Anchor.focus()
+      Assert Equals(bufname('%'), 'suitable2')
+    End
+
+    It should focus a previous suitable window when {reverse} is specified
+      file unsuitable1 | setlocal nobuflisted
+      rightbelow new suitable2   | setlocal buflisted buftype=nowrite
+      rightbelow new suitable3   | setlocal buflisted buftype=acwrite
+      rightbelow new unsuitable4 | setlocal buflisted buftype=nofile
+      rightbelow new unsuitable5 | setlocal nobuflisted buftype=nofile
+
+      " Note:
+      "   focus is in 'unsuitable5' now, thus the previous suitable
+      "   window is 'suitable3'
+      call Anchor.focus(1)
+      Assert Equals(bufname('%'), 'suitable3')
+    End
+
+    It should focus a previous window if there is no suitable window found
+      file unsuitable1 | setlocal nobuflisted
+      rightbelow new unsuitable2 | setlocal buflisted buftype=nofile
+      rightbelow new unsuitable3 | setlocal buflisted buftype=nofile
+      rightbelow new unsuitable4 | setlocal nobuflisted buftype=nofile
+      rightbelow new unsuitable5 | setlocal nobuflisted buftype=nofile
+
+      " Note:
+      "   focus is in 'unsuitable5' now, thus the previous
+      "   window is 'unsuitable4'
+      call Anchor.focus()
+      Assert Equals(bufname('%'), 'unsuitable4')
+    End
+  End
+
+  Describe .focus_if_available({opener}[, {reverse}])
+    It should focus a next suitable window when {opener} is an available opener
+      file unsuitable1 | setlocal nobuflisted
+      rightbelow new suitable2   | setlocal buflisted buftype=nowrite
+      rightbelow new suitable3   | setlocal buflisted buftype=acwrite
+      rightbelow new unsuitable4 | setlocal buflisted buftype=nofile
+      rightbelow new unsuitable5 | setlocal nobuflisted buftype=nofile
+      " Note:
+      "   focus is in 'unsuitable5' now, thus the next suitable
+      "   window is 'suitable2'
+      call Anchor.focus_if_available('edit')
+      Assert Equals(bufname('%'), 'suitable2')
+    End
+
+    It should NOT focus a next suitable window when {opener} is NOT an available opener
+      file unsuitable1 | setlocal nobuflisted
+      rightbelow new suitable2   | setlocal buflisted buftype=nowrite
+      rightbelow new suitable3   | setlocal buflisted buftype=acwrite
+      rightbelow new unsuitable4 | setlocal buflisted buftype=nofile
+      rightbelow new unsuitable5 | setlocal nobuflisted buftype=nofile
+      Assert Equals(bufname('%'), 'unsuitable5')
+    End
+  End
+
+  Describe .attach()
+    It focuses a previous suitable window when attached window is closed
+
+      " Without attach, focus will be moved into previous window
+      file suitable1 | setlocal buflisted
+      rightbelow new unsuitable2 | setlocal nobuflisted
+      rightbelow new suitable3   | setlocal buflisted buftype=acwrite
+      rightbelow new unsuitable4 | setlocal buflisted buftype=nofile
+      rightbelow new unsuitable5 | setlocal nobuflisted buftype=nofile
+      close
+      Assert Equals(winnr('$'), 4)
+      Assert Equals(bufname('%'), 'unsuitable4')
+      windo bwipeout!
+
+      " With attach, focus will be moved into a previous suitable window
+      file suitable1 | setlocal buflisted
+      rightbelow new unsuitable2 | setlocal nobuflisted
+      rightbelow new suitable3   | setlocal buflisted buftype=acwrite
+      rightbelow new unsuitable4 | setlocal buflisted buftype=nofile
+      rightbelow new unsuitable5 | setlocal nobuflisted buftype=nofile
+      call Anchor.attach()
+      close
+      Assert Equals(winnr('$'), 4)
+      Assert Equals(bufname('%'), 'suitable3')
+    End
+  End
+End

@@ -1,0 +1,84 @@
+let s:Argument = vital#gina#import('Argument')
+let s:Doom = vital#gina#import('Vim.Buffer.Doom')
+let s:Exception = vital#gina#import('Vim.Exception')
+let s:Opener = vital#gina#import('Vim.Buffer.Opener')
+let s:WORKTREE = '@@'
+
+
+function! gina#command#compare#command(range, qargs, qmods) abort
+  let git = gina#core#get_or_fail()
+  let args = s:build_args(git, a:qargs)
+
+  let [commit1, commit2] = gina#util#commit#split(
+        \ git, args.params.commit
+        \)
+  if args.params.cached
+    let commit1 = empty(commit1) ? 'HEAD' : commit1
+    let commit2 = empty(commit2) ? '' : commit2
+  else
+    let commit1 = empty(commit1) ? '' : commit1
+    let commit2 = empty(commit2) ? s:WORKTREE : commit2
+  endif
+  if args.params.R
+    let [commit2, commit1] = [commit1, commit2]
+  endif
+
+  let doom = s:Doom.new('gina-compare')
+  let opener1 = args.params.opener
+  let opener2 = empty(matchstr(&diffopt, 'vertical'))
+        \ ? 'split'
+        \ : 'vsplit'
+  call s:open(args.params.path, commit1, opener1, args.params.selection)
+  call gina#util#diffthis()
+  call doom.involve('%')
+  call s:open(args.params.path, commit2, opener2, args.params.selection)
+  call gina#util#diffthis()
+  call doom.involve('%')
+endfunction
+
+
+" Private --------------------------------------------------------------------
+function! s:build_args(git, qargs) abort
+  let args = s:Argument.new(a:qargs)
+  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.selection = args.pop('--selection', '')
+  let args.params.cached = args.get('--cached')
+  let args.params.R = args.get('-R')
+  let args.params.commit = args.pop_p(1, '')
+  let args.params.path = gina#util#path#relpath(
+        \ a:git,
+        \ gina#util#path#expand(get(args.list_r(), 0, '%'))
+        \)
+  return args.lock()
+endfunction
+
+function! s:open(path, commit, opener, selection) abort
+  if s:Opener.is_preview_opener(a:opener)
+    throw s:Exception.error(printf(
+          \ 'An opener "%s" is not allowed.',
+          \ a:opener,
+          \))
+  endif
+  if a:commit ==# s:WORKTREE
+    execute printf(
+          \ 'Gina edit %s %s -- %s',
+          \ gina#util#shellescape(a:opener, '--opener='),
+          \ gina#util#shellescape(
+          \   a:selection,
+          \   '--selection='
+          \ ),
+          \ gina#util#fnameescape(a:path),
+          \)
+  else
+    execute printf(
+          \ 'Gina show %s %s %s -- %s',
+          \ gina#util#shellescape(a:opener, '--opener='),
+          \ gina#util#shellescape(
+          \   a:selection,
+          \   '--selection='
+          \ ),
+          \ gina#util#shellescape(a:commit),
+          \ gina#util#fnameescape(a:path),
+          \)
+  endif
+endfunction

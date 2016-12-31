@@ -1,0 +1,170 @@
+Describe gina#util
+  Before
+    let Path = vital#gina#import('System.Filepath')
+  End
+
+  Describe #yank({value})
+    It assigns {value} to v:register
+      call gina#util#yank('foobar')
+      let result = getreg(v:register)
+      Assert Equals(result, 'foobar')
+    End
+  End
+
+  Describe #open({uri})
+    Before
+      let scope = themis#helper('scope')
+      let vars = scope.vars(Path.realpath('autoload/gina/util.vim'))
+
+      function! vars.File.open(...) abort
+        let self._open_called_with = a:000
+      endfunction
+    End
+
+    It calls "System.File.open()" to open {uri} with a system browser
+      call gina#util#open('https://github.com/lambdalisue/gina.vim')
+      Assert Equals(
+            \ vars.File._open_called_with,
+            \ ['https://github.com/lambdalisue/gina.vim']
+            \)
+    End
+  End
+
+  Describe #filter({arglead} {candidates}[, {hidden_pattern}])
+    Before
+      let candidates = [
+            \ 'f',
+            \ 'fo',
+            \ 'foo',
+            \ 'foobar',
+            \ 'bar',
+            \ 'hoge',
+            \]
+    End
+
+    It returns {candidates}
+      let result = gina#util#filter('', candidates)
+      Assert Equals(result, candidates)
+    End
+
+    It returns {candidates} except items which match with {hidden_pattern}
+      let result = gina#util#filter('', candidates, 'bar')
+      Assert Equals(result, [
+            \ 'f',
+            \ 'fo',
+            \ 'foo',
+            \ 'hoge',
+            \])
+    End
+
+    It returns a partial {candidates} start from {arglead}
+      let result = gina#util#filter('foo', candidates)
+      Assert Equals(result, ['foo', 'foobar'])
+
+      let result = gina#util#filter('b', candidates)
+      Assert Equals(result, ['bar'])
+    End
+
+    It returns a partial {candidates} start {arglead}, ignore {hidden_pattern}
+      let result = gina#util#filter('foo', candidates, 'bar')
+      Assert Equals(result, ['foo', 'foobar'])
+    End
+  End
+
+  Describe #shellescape({value}[, {prefix}])
+    It returns an empty string for an empty {value}
+      let result = gina#util#shellescape('')
+      Assert Equals(result, '')
+
+      let result = gina#util#shellescape('', '--prefix=')
+      Assert Equals(result, '')
+    End
+
+    It returns a shellescaped {value} with {prefix}
+      let result = gina#util#shellescape('v a l u e')
+      Assert Equals(result, '''v a l u e''')
+
+      let result = gina#util#shellescape('v a l u e', '--prefix=')
+      Assert Equals(result, '--prefix=''v a l u e''')
+    End
+  End
+
+  Describe #fnameescape({value}[, {prefix}])
+    It returns an empty string for an empty {value}
+      let result = gina#util#fnameescape('')
+      Assert Equals(result, '')
+
+      let result = gina#util#fnameescape('', '--prefix=')
+      Assert Equals(result, '')
+    End
+
+    It returns a fnameescaped {value} with {prefix}
+      let result = gina#util#fnameescape('v a l u e')
+      Assert Equals(result, 'v\ a\ l\ u\ e')
+
+      let result = gina#util#fnameescape('v a l u e', '--prefix=')
+      Assert Equals(result, '--prefix=v\ a\ l\ u\ e')
+    End
+  End
+
+  Describe #doautocmd({name}[, {pattern})
+    After
+      augroup gina_test_util_doautocmd
+        autocmd! *
+      augroup END
+      silent! unlet g:gina_test_util_doautocmd
+    End
+
+    It calls {name} autocmd
+      augroup gina_test_util_doautocmd
+        autocmd! *
+        autocmd BufReadPre * let g:gina_test_util_doautocmd = 1
+      augroup END
+      Assert False(exists('g:gina_test_util_doautocmd'))
+      call gina#util#doautocmd('BufReadPre')
+      Assert True(g:gina_test_util_doautocmd)
+    End
+
+    It calls {name} autocmd with {pattern}
+      augroup gina_test_util_doautocmd
+        autocmd! *
+        autocmd User gina_test_util_doautocmd let g:gina_test_util_doautocmd = 1
+      augroup END
+      Assert False(exists('g:gina_test_util_doautocmd'))
+      call gina#util#doautocmd('User', 'gina_test_util_doautocmd')
+      Assert True(g:gina_test_util_doautocmd)
+    End
+
+    It does not show 'No matching autocommands' warning even the {name} autocmd is not registered
+      augroup gina_test_util_doautocmd
+        autocmd! *
+        autocmd BufReadPre foo:* let g:gina_test_util_doautocmd = 1
+      augroup END
+      " exists('#BufReadPre') returns 1 while BufReadPre foo:* is registered
+      Assert True(exists('#BufReadPre'))
+      " But a builtin doautocmd shows 'No matching autocommands' warning while
+      " a current buffer does not match with the registered pattern.
+      try
+        redir => content
+        doautocmd BufReadPre
+      finally
+        redir END
+      endtry
+      Assert Equals(split(content, "\n"), ['No matching autocommands'])
+      " But gina#util#doautocmd does not call autocmd in this case
+      try
+        redir => content
+        call gina#util#doautocmd('BufReadPre')
+      finally
+        redir END
+      endtry
+      Assert Equals(split(content, "\n"), [])
+      " The registered autocmd should not be called
+      Assert False(exists('g:gina_test_util_doautocmd'))
+    End
+  End
+
+  Describe #syncbind()
+    " TODO
+  End
+End

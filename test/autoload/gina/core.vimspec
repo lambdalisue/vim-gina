@@ -1,0 +1,52 @@
+Describe gina#core
+  Before all
+    call g:git_tester.attach(l:)
+    let Path = vital#gina#import('System.Filepath')
+    let scope = themis#helper('scope')
+  End
+
+  Describe #get_or_fail()
+    It throws an exception for a non git working-tree directory
+      execute 'edit' outside
+      Throws /No git repository/ gina#core#get_or_fail()
+    End
+
+    It returns a git instance for a git working-tree directory
+      execute 'edit' inside
+      let git = gina#core#get_or_fail()
+      Assert Equals(git.refname, 'inside')
+      Assert Equals(git.worktree, inside)
+      Assert Equals(git.repository, Path.join(inside, '.git'))
+      Assert Equals(git.commondir, '')
+    End
+  End
+
+  Describe #get()
+    It returns an empty dictionary for a non git working-tree directory
+      execute 'edit' outside
+      let git = gina#core#get()
+      Assert Equals(git, {})
+    End
+
+    It returns a git instance for a git working-tree directory
+      execute 'edit' inside
+      let git = gina#core#get()
+      Assert Equals(git.refname, 'inside')
+      Assert Equals(git.worktree, inside)
+      Assert Equals(git.repository, Path.join(inside, '.git'))
+      Assert Equals(git.commondir, '')
+    End
+
+    It returns a git instance for a git worktree directory
+      if !g:git_supported.worktree
+        Skip This git does not support 'worktree' feature.
+      endif
+      execute 'edit' worktree
+      let git = gina#core#get()
+      Assert Equals(git.refname, 'worktree')
+      Assert Equals(git.worktree, worktree)
+      Assert Equals(git.repository, Path.join(inside, '.git', 'worktrees', 'worktree'))
+      Assert Equals(git.commondir, Path.join(inside, '.git'))
+    End
+  End
+End

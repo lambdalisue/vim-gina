@@ -1,0 +1,115 @@
+Describe ProgressBar
+  Before all
+    let Path = vital#gina#import('System.Filepath')
+    let sfile = Path.realpath('autoload/vital/__gina__/ProgressBar.vim')
+    let scope = themis#helper('scope')
+
+    function! VitalProgressBarLet(dict, name, value) abort
+      let a:dict[a:name] = a:value
+    endfunction
+  End
+
+  After all
+    delfunction VitalProgressBarLet
+  End
+
+  Before
+    let ProgressBar = vital#gina#import('ProgressBar')
+    let sf = scope.funcs(sfile)
+  End
+
+  Describe .new({maxvalue}[, {options}])
+    It returns a progressbar instance with {maxvalue}
+      let progressbar = ProgressBar.new(100)
+      Assert KeyExists(progressbar, 'maxvalue')
+      Assert KeyExists(progressbar, 'current')
+      Assert KeyExists(progressbar, 'format')
+      Assert KeyExists(progressbar, 'update')
+      Assert KeyExists(progressbar, 'exit')
+      " Several options are readonly
+      let readonly_options = [
+            \ 'maxvalue', 'barwidth', 'alpha', 'nullchar', 'fillchar',
+            \ 'nullbar', 'fillbar', 'method',
+            \]
+      for name in readonly_options
+        Throws /E741: Value is locked:/ VitalProgressBarLet(progressbar, name, 0)
+      endfor
+    End
+
+    It initialize required parameters from {maxvalue} and {options}
+      let progressbar = ProgressBar.new(100, {
+            \ 'barwidth': 100,
+            \ 'nullchar': '.',
+            \ 'fillchar': '|',
+            \})
+      Assert Equals(progressbar.maxvalue, 100)
+      Assert Equals(progressbar.barwidth, 100)
+      Assert Equals(progressbar.alpha, 1)
+      Assert Equals(progressbar.nullbar, repeat('.', 100))
+      Assert Equals(progressbar.fillbar, repeat('|', 100))
+
+      let progressbar = ProgressBar.new(100, {
+            \ 'barwidth': 50,
+            \ 'nullchar': '.',
+            \ 'fillchar': '|',
+            \})
+      Assert Equals(progressbar.maxvalue, 100)
+      Assert Equals(progressbar.barwidth, 50)
+      Assert Equals(progressbar.alpha, 0.5)
+      Assert Equals(progressbar.nullbar, repeat('.', 50))
+      Assert Equals(progressbar.fillbar, repeat('|', 50))
+    End
+
+    It throws an exception when 'method' is invalid
+      Throws /"foobar" is not a valid method/
+            \ ProgressBar.new(100, { 'method': 'foobar' })
+    End
+  End
+
+  Describe ._construct({progressbar}, {value})
+    It returns a indicator string from {value}
+      let progressbar = ProgressBar.new(100, {
+            \ 'barwidth': 10,
+            \ 'nullchar': '.',
+            \ 'fillchar': '|',
+            \ 'format': '%(fill)s%(null)s',
+            \})
+      Assert Equals(sf._construct(progressbar, 0),  '..........')
+      Assert Equals(sf._construct(progressbar, 1),  '|.........')
+
+      Assert Equals(sf._construct(progressbar, 10), '|.........')
+      Assert Equals(sf._construct(progressbar, 11), '||........')
+      Assert Equals(sf._construct(progressbar, 20), '||........')
+      Assert Equals(sf._construct(progressbar, 21), '|||.......')
+      Assert Equals(sf._construct(progressbar, 30), '|||.......')
+
+      Assert Equals(sf._construct(progressbar, 90),  '|||||||||.')
+      Assert Equals(sf._construct(progressbar, 91),  '||||||||||')
+      Assert Equals(sf._construct(progressbar, 100), '||||||||||')
+    End
+
+    It returns a indicator with specified {options.format} in .new() method
+      let progressbar = ProgressBar.new(100, {
+            \ 'barwidth': 10,
+            \ 'nullchar': '.',
+            \ 'fillchar': '|',
+            \ 'format': 'foobar',
+            \})
+      Assert Equals(sf._construct(progressbar, 0),  'foobar')
+    End
+
+    It returns a indicator with a substituted %(percent)s
+      let progressbar = ProgressBar.new(100, {
+            \ 'barwidth': 10,
+            \ 'nullchar': '.',
+            \ 'fillchar': '|',
+            \ 'format': '%(percent)s',
+            \})
+      Assert Equals(sf._construct(progressbar, 0),  '0')
+      Assert Equals(sf._construct(progressbar, 1),  '1')
+      Assert Equals(sf._construct(progressbar, 10),  '10')
+      Assert Equals(sf._construct(progressbar, 20),  '20')
+      Assert Equals(sf._construct(progressbar, 100),  '100')
+    End
+  End
+End
