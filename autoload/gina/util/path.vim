@@ -8,7 +8,7 @@ function! gina#util#path#params(expr) abort
   endif
   let m = matchlist(
         \ path,
-        \ '\v^gina:%(//)?([^:]+):([^:/]+)([^/]*)/?([^:]*):?(.*)$',
+        \ '\v^gina:%(//)?([^:]+):([^:\/]+)([^\/]*)[\/]?([^:]*):?(.*)$',
         \)
   return {
         \ 'repo': m[1],
