@@ -521,8 +521,6 @@ index:unstage
 index:toggle
 	Toggle stage/unstage of changes.
 	It uses "index:stage" and "index:unstage" internally.
-
-					*gina-action-merge*
 index:checkout
 index:checkout:force
 	Checkout the content.
