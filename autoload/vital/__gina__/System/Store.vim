@@ -10,22 +10,26 @@ function! s:get_slug_expr() abort
 endfunction
 
 function! s:of(pathlist) abort
-  let hash = s:hash(a:pathlist)
+  let pathlist = type(a:pathlist) == s:t_list
+        \ ? a:pathlist
+        \ : [a:pathlist]
+  let hash = s:hash(pathlist)
   if has_key(s:store_cache, hash)
     return s:store_cache[hash]
   endif
   let store = copy(s:store)
   let store.caches = {}
-  let store.pathlist = type(a:pathlist) == s:t_list
-        \ ? a:pathlist
-        \ : [a:pathlist]
+  let store.pathlist = copy(pathlist)
   lockvar store.pathlist
   let s:store_cache[hash] = store
   return store
 endfunction
 
 function! s:remove(pathlist) abort
-  let hash = s:hash(a:pathlist)
+  let pathlist = type(a:pathlist) == s:t_list
+        \ ? a:pathlist
+        \ : [a:pathlist]
+  let hash = s:hash(pathlist)
   silent! unlet s:store_cache[hash]
 endfunction
 
@@ -38,9 +42,8 @@ function! s:store.is_expired(name) abort
   if empty(cache)
     return 1
   endif
-  let pathlist = get(self.pathlist, a:name, [])
-  for i in range(len(pathlist))
-    let uptime1 = getftime(pathlist[i])
+  for i in range(len(self.pathlist))
+    let uptime1 = getftime(self.pathlist[i])
     let uptime2 = cache.uptimes[i]
     if uptime1 != uptime2 && (uptime1 == -1 || uptime2 == -1)
       return 1
@@ -60,8 +63,7 @@ function! s:store.get(name, ...) abort
 endfunction
 
 function! s:store.set(name, value) abort
-  let pathlist = get(self.pathlist, a:name, [])
-  let uptimes = map(copy(pathlist), 'getftime(v:val)')
+  let uptimes = map(copy(self.pathlist), 'getftime(v:val)')
   let cache = {
         \ 'cache': a:value,
         \ 'uptimes': uptimes

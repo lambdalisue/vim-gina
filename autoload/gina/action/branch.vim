@@ -80,7 +80,7 @@ function! s:on_new(candidates, options) abort
           \)
     let from = s:Console.ask(
           \ 'From: ', candidate.branch,
-          \ function('gina#complete#commit#branch'),
+          \ 'customlist,gina#complete#commit#branch',
           \)
     execute printf(
           \ 'Gina checkout -b %s %s',
