@@ -2,7 +2,8 @@
 
 Version: 0.1.0-dev
 Author:  Alisue <lambdalisue@hashnote.net>
-Support: Neovim 0.1.7 or Vim 8.0 and above
+Support: Vim 8.0.0134 and above
+Support: Neovim 0.1.7 and above
 License: MIT license
 
 =============================================================================

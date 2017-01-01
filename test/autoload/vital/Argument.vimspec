@@ -128,6 +128,12 @@ Describe Argument
               \])
       End
 
+      Describe .hash()
+        It returns a string build from "raw"
+          Assert Equals(args.hash(), 'b51c70ec0c5976d67d85cd466a75d6bdf0dadb387f5ff0873a6507f0a29ab037')
+        End
+      End
+
       Describe .lock()
         It locks "raw"
           Assert Same(args.lock(), args)
@@ -909,6 +915,17 @@ Describe Argument
                 \ '-3b a r',
                 \ '--optional3=B A R',
                 \])
+        End
+      End
+
+      Describe .set_r()
+        It replaces residuals to {list}
+          call args.set_r(['a', 'b', 'c'])
+          Assert Equals(args.list_r(), ['a', 'b', 'c'])
+          Assert Equals(args.raw[-4:], ['--', 'a', 'b', 'c'])
+          call args.set_r(['foo', 'bar'])
+          Assert Equals(args.list_r(), ['foo', 'bar'])
+          Assert Equals(args.raw[-3:], ['--', 'foo', 'bar'])
         End
       End
 

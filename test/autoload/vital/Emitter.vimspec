@@ -1,0 +1,43 @@
+Describe Emitter
+  Before
+    let Emitter = vital#gina#import('Emitter')
+    let listener = { 'called_with': [] }
+
+    function! listener.func(...) abort
+      let self.called_with = a:000
+    endfunction
+  End
+  It calls {listener} which subscribe {name}
+    let foo = deepcopy(listener)
+    let bar = deepcopy(listener)
+    call Emitter.subscribe('foo', foo.func, foo)
+    call Emitter.subscribe('bar', foo.func, foo)
+    call Emitter.subscribe('bar', bar.func, bar)
+
+    call Emitter.emit('foo', 0, 1, 2)
+    Assert Equals(foo.called_with, [0, 1, 2])
+    Assert Equals(bar.called_with, [])
+
+    call Emitter.emit('bar', 1, 1, 1)
+    Assert Equals(foo.called_with, [1, 1, 1])
+    Assert Equals(bar.called_with, [1, 1, 1])
+
+    call Emitter.unsubscribe('bar', foo.func, foo)
+    call Emitter.emit('bar', 2, 2, 2)
+    Assert Equals(foo.called_with, [1, 1, 1])
+    Assert Equals(bar.called_with, [2, 2, 2])
+
+    call Emitter.block_start()
+    call Emitter.block_start()
+    call Emitter.emit('bar', 3, 3, 3)
+    Assert Equals(bar.called_with, [2, 2, 2])
+
+    call Emitter.block_end()
+    call Emitter.emit('bar', 3, 3, 3)
+    Assert Equals(bar.called_with, [2, 2, 2])
+
+    call Emitter.block_end()
+    call Emitter.emit('bar', 3, 3, 3)
+    Assert Equals(bar.called_with, [3, 3, 3])
+  End
+End

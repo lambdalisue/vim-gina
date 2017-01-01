@@ -3,7 +3,9 @@
 Version: 1.0.1
 Author : Alisue <lambdalisue@hashnote.net>
 License: MIT license
-Support: Vim 7.3 and above
+Support: Vim 8.0.0134 and above
+Support: Neovim 0.1.7 and above
+
 
 ==============================================================================
 CONTENTS				*Vital.Vim.Buffer.Anchor-contents*

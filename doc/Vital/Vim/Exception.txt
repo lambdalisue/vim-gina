@@ -1,0 +1,117 @@
+*Vital/Vim/Exception.txt*	An exception framework
+
+Version: 0.1.0
+Author : Alisue <lambdalisue@hashnote.net>
+License: MIT license
+Support: Vim 8.0.0134 and above
+Support: Neovim 0.1.7 and above
+
+
+=============================================================================
+CONTENTS				*Vital.Vim.Exception-contents*
+
+USAGE				|Vital.Vim.Exception-usage|
+FUNCTIONS			|Vital.Vim.Exception-functions|
+
+
+=============================================================================
+USAGE					 *Vital.Vim.Exception-usage*
+
+Throw exceptions through the helper function and call a target function with
+|Vital.Vim.Exception.call()| like:
+>
+	let s:Exception = vital#vital#import('Exception')
+
+	function! s:foobar(x) abort
+	  if x == 0
+	    throw s:Exception.info('foo')
+	  elseif x == 1
+	    throw s:Exception.warn('foo')
+	  elseif x == 2
+	    throw s:Exception.error('foo')
+	  elseif x == 3
+	    throw s:Exception.critical'foo')
+	  endif
+	  echomsg "This line should not be called."
+	endfunction
+
+	call s:Exception.call(function('s:foobar'), [0])
+	" foo
+	call s:Exception.call(function('s:foobar'), [1])
+	" foo (With WarningMsg highlight)
+	call s:Exception.call(function('s:foobar'), [2])
+	" foo (With ErrorMsg highlight)
+	call s:Exception.call(function('s:foobar'), [3])
+	" foo (With ErrorMsg highlight and traceback and throwpoint)
+<
+
+=============================================================================
+FUNCTIONS				*Vital.Vim.Exception-functions*
+
+					*Vital.Vim.Exception.info()*
+info({msg})
+	Return an information message with {msg}.
+
+					*Vital.Vim.Exception.warn()*
+warn{msg})
+	Return a warning message with {msg}.
+
+					*Vital.Vim.Exception.error()*
+error{msg})
+	Return an error message with {msg}.
+
+					*Vital.Vim.Exception.critical()*
+critical{msg})
+	Return a critical message with {msg}.
+
+					*Vital.Vim.Exception.handle()*
+handle([{exception}])
+	Handle exception with registered handlers.
+	When {exception} is omitted, |v:exception| is used instead.
+
+					*Vital.Vim.Exception.call()*
+call({funcref}, {args}[, {instance}])
+	Call {funcref} with {args} like a builtin |call()| function and
+	handle exceptions raised in {funcref} with registered handlers.
+	Note that handlers registered in {funcref} will be removed after the
+	function call.
+	If {instance} is specified, the {funcref} is called as a dictionary
+	function with the {instance}.
+
+					*Vital.Vim.Exception.register()*
+register({handler})
+	Register a new exception {handler}.
+	The {handler} function accept {exception} argument and return 1 when
+	the {exception} has handled.
+>
+	function! s:handler(exception) abort
+	  let m = matchlist(
+	        \ a:exception,
+	        \ '^vital: Vim\.Exception: \(\w\+\): \(.*\)'
+	        \)
+	  if empty(m)
+	    return
+	  endif
+	  let category = m[1]
+	  let message = m[2]
+	  if category ==# 'Error'
+	    call writefile(split(message, '\r\?\n'), 'error.log')
+	    " Comment out the following if you would like to skip the default
+	    " handler in this case.
+	    " return 1
+	  endif
+	endfunction
+
+	call s:Exception.register(function('s:handler'))
+<
+					*Vital.Vim.Exception.unregister()*
+unregister({handler})
+	Unregister an exception {handler}.
+
+				*Vital.Vim.Exception.get_default_handler()*
+get_default_handler()
+	Return a default exception handler.
+
+
+=============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

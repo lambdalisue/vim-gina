@@ -1,0 +1,71 @@
+*Vital/Emitter.txt*			An emitter library
+
+Version: 0.1.0
+Author : Alisue <lambdalisue@hashnote.net>
+License: MIT license
+Support: Vim 8.0.0134 and above
+Support: Neovim 0.1.7 and above
+
+
+=============================================================================
+CONTENTS					*Vital.Emitter-content*
+
+INTRODUCTION					|Vital.Emitter-introduction|
+INTERFACE					|Vital.Emitter-interface|
+  FUNCTION					|Vital.Emitter-function|
+
+
+=============================================================================
+INTRODUCTION					*Vital.Emitter-introduction*
+
+*Vital.Emitter* is a |Vital| module used for emit an event.
+
+
+=============================================================================
+INTERFACE					*Vital.Emitter-interface*
+
+-----------------------------------------------------------------------------
+FUNCTION					*Vital.Emitter-function*
+
+			*Vital.Emitter.subscribe()*
+.subscribe({name}, {listener}[, {instance}])
+	Subscribe {name} event with {listener}.
+	If {instance} is registered, the {listener} is called as a dictionary
+	function with the {instance}.
+
+			*Vital.Emitter.unsubscribe()*
+.unsubscribe({name}, {listener}[, {instance}])
+	Unsubscribe {name} event with {listener}.
+
+			*Vital.Emitter.emit()*
+.emit({name}[, {args}...])
+	Call registered listeners of {name} with {args}.
+	This does nothing when |Vital.Emitter.is_blocked()| return 1.
+
+			*Vital.Emitter.block_start()*
+.block_start()
+	Block emittion until |Vital.Emitter.block_end()| is called.
+	The block can be nested like:
+>
+	call Emitter.emit('foo')   " Emit
+	call Emitter.block_start() " -----+
+	call Emitter.emit('foo')   "      | <- Do nothing
+	call Emitter.block_start() " --+  |
+	call Emitter.emit('foo')   "   |  | <- Do nothing
+	call Emitter.block_end()   " --+  |
+	call Emitter.emit('foo')   "      | <- Do nothing
+	call Emitter.block_end()   " -----+
+	call Emitter.emit('foo')   " Emit
+<
+			*Vital.Emitter.block_end()*
+.block_end()
+	End block. See |Vital.Emitter.block_start()|.
+
+			*Vital.Emitter.is_blocked()*
+.is_blocked()
+	Return 1 if the emitter is in block mode.
+	See |Vital.Emitter.block_start()|
+
+
+=============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

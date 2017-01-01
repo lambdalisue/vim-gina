@@ -1,0 +1,57 @@
+*Vital/Vim/Buffer/Doom.txt*	Close related buffers at one time
+
+Version: 0.1.0
+Author : Alisue <lambdalisue@hashnote.net>
+License: MIT license
+Support: Vim 8.0.0134 and above
+Support: Neovim 0.1.7 and above
+
+
+=============================================================================
+CONTENTS				*Vital.Vim.Buffer.Doom-contents*
+
+USAGE			  	|Vital.Vim.Buffer.Doom-usage|
+FUNCTION 			|Vital.Vim.Buffer.Doom-function|
+INSTANCE			|Vital.Vim.Buffer.Doom-instance|
+
+
+=============================================================================
+USAGE					*Vital.Vim.Buffer.Doom-usage*
+
+Create an unique doom instance and register buffers with "involve()" method.
+>
+	let s:Doom = vital#vital#import('Vim.Buffer.Doom')
+	let s:doom = s:Doom.new('a unique name')
+	new a
+	call s:doom.involve('%')
+	new b
+	call s:doom.involve('%')
+	new c
+	call s:doom.involve('%')
+<
+
+=============================================================================
+FUNCTION 				*Vital.Vim.Buffer.Doom-function*
+
+			*Vital.Vim.Buffer.Doom.new()*
+new({name})
+	Create a new doom instance with {name}.
+	The {name} requires to be a unique due to the autocmd.
+
+
+=============================================================================
+INSTANCE				*Vital.Vim.Buffer.Doom-instance*
+
+			*Vital.Vim.Buffer.Doom-instance.involve()*
+doom.involve({expr}[, {options}])
+	Involve {expr} buffer to the doom instance. The involved buffers will
+	be closed when one of the involved buffer has closed.
+
+			*Vital.Vim.Buffer.Doom-instance.annihilate()*
+doom.annihilate()
+	Annihilate (close) involved buffers.
+	It is automatically called when one of the involved buffer has closed.
+
+
+=============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

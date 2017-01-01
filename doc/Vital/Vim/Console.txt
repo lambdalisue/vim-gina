@@ -3,7 +3,8 @@
 Version: 1.0.0
 Author : Alisue <lambdalisue@hashnote.net>
 License: MIT license
-Support: Vim 7.3 and above
+Support: Vim 8.0.0134 and above
+Support: Neovim 0.1.7 and above
 
 
 ==============================================================================
@@ -129,7 +130,8 @@ confirm({msg}[, {default}])
 					*Vital.Vim.Console.capture()*
 capture({command})
 	Capture consoles for execution {command} and return a |List|.
-	Note that this method use |redir| internally.
+	Note that this method use |redir| internally if |execute()| function
+	is not available.
 
 					*Vital.Vim.Console.clear()*
 clear()

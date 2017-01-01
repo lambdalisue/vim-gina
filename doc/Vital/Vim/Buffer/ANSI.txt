@@ -1,0 +1,86 @@
+*Vital/Vim/Buffer/ANSI.txt*		Highlight ANSI color sequences
+
+Version: 0.1.0
+Author : Alisue <lambdalisue@hashnote.net>
+License: MIT license
+Support: Vim 8.0.0134 and above
+Support: Neovim 0.1.7 and above
+
+
+=============================================================================
+CONTENTS				*Vital.Vim.Buffer.ANSI-contents*
+
+USAGE				|Vital.Vim.Buffer.ANSI-usage|
+FUNCTIONS			|Vital.Vim.Buffer.ANSI-functions|
+HIGHLIGHTS			|Vital.Vim.Buffer.ANSI-highlights|
+
+
+==============================================================================
+USAGE					*Vital.Vim.Buffer.ANSI-usage*
+>
+    let s:ANSI = vital#vital#import('Vim.Buffer.ANSI')
+
+    function! s:demo() abort
+      let content = [
+            \ "\e[31mRed\e[m",
+            \ "\e[32mGreen\e[m",
+            \ "\e[33mYellow\e[m",
+            \]
+      new
+      call append(0, content)
+      call s:ANSI.define_syntax()
+      setlocal conceallevel=3 concealcursor=nvi
+    endfunction
+
+    call s:demo()
+<
+
+==============================================================================
+FUNCTIONS				*Vital.Vim.Buffer.ANSI-functions*
+
+				*Vital.Vim.Buffer.ANSI.define_syntax()*
+define_syntax([{prefix}])
+	Define |syntax| for ANSI color sequences.
+	Note taht 'conceallevel' and 'concealcursor' options requires to be
+	configured properly (see usage above.)
+
+	It defines the following syntaxes.
+
+	Name		Description~
+	AnsiSuppress	To supress ANSI sequence.
+	AnsiColor0-15	See |Vital.Vim.Buffer.ANSI-highlights|.
+	AnsiColors	Syntax group of the above 16 colors.
+
+	If {prefix} is specified, it define AnsiColor0-15 and AnsiColors with
+	the specified {prefix} instead.
+
+
+==============================================================================
+HIGHLIGHTS				*Vital.Vim.Buffer.ANSI-highlights*
+
+This module define the following default highlights.
+
+	Name		ANSI sequence~
+	AnsiColor0	\e[30m
+	AnsiColor1	\e[31m
+	AnsiColor2	\e[32m
+	AnsiColor3	\e[33m
+	AnsiColor4	\e[34m
+	AnsiColor5	\e[35m
+	AnsiColor6	\e[36m
+	AnsiColor7	\e[37m
+	AnsiColor8	\e[1;30m or \e[30;1m
+	AnsiColor9	\e[1;31m or \e[31;1m
+	AnsiColor10     \e[1;32m or \e[32;1m
+	AnsiColor11     \e[1;33m or \e[33;1m
+	AnsiColor12     \e[1;34m or \e[34;1m
+	AnsiColor13     \e[1;35m or \e[35;1m
+	AnsiColor14     \e[1;36m or \e[36;1m
+	AnsiColor15     \e[1;37m or \e[37;1m
+
+The color for the default highlights above were taken from
+https://github.com/w0ng/vim-hybrid
+
+
+==============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
