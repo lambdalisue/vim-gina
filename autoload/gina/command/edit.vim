@@ -10,6 +10,7 @@ function! gina#command#edit#command(range, qargs, qmods) abort
         \ args.params.selection,
         \)
   call gina#util#buffer#open(bufname, {
+        \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'selection': selection,
         \})
@@ -19,6 +20,7 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
+  let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.selection = args.pop('--selection', '')
   let args.params.path = gina#util#path#abspath(

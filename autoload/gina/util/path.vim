@@ -1,6 +1,7 @@
 let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
 
+
 function! gina#util#path#params(expr) abort
   let path = expand(a:expr)
   if path !~# '^gina:'

@@ -23,15 +23,17 @@ function! gina#command#compare#command(range, qargs, qmods) abort
     let [commit2, commit1] = [commit1, commit2]
   endif
 
+  silent! windo diffoff!
+
   let doom = s:Doom.new('gina-compare')
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
-  call s:open(args.params.path, commit1, opener1, args.params.selection)
+  call s:open('l', args.params.path, commit1, opener1, args.params.selection)
   call gina#util#diffthis()
   call doom.involve('%')
-  call s:open(args.params.path, commit2, opener2, args.params.selection)
+  call s:open('r', args.params.path, commit2, opener2, args.params.selection)
   call gina#util#diffthis()
   call doom.involve('%')
 endfunction
@@ -52,7 +54,7 @@ function! s:build_args(git, qargs) abort
   return args.lock()
 endfunction
 
-function! s:open(path, commit, opener, selection) abort
+function! s:open(suffix, path, commit, opener, selection) abort
   if s:Opener.is_preview_opener(a:opener)
     throw s:Exception.error(printf(
           \ 'An opener "%s" is not allowed.',
@@ -61,7 +63,8 @@ function! s:open(path, commit, opener, selection) abort
   endif
   if a:commit ==# s:WORKTREE
     execute printf(
-          \ 'Gina edit %s %s -- %s',
+          \ 'Gina edit %s %s %s -- %s',
+          \ printf('--group=compare-%s', a:suffix),
           \ gina#util#shellescape(a:opener, '--opener='),
           \ gina#util#shellescape(
           \   a:selection,
@@ -71,7 +74,8 @@ function! s:open(path, commit, opener, selection) abort
           \)
   else
     execute printf(
-          \ 'Gina show %s %s %s -- %s',
+          \ 'Gina show %s %s %s %s -- %s',
+          \ printf('--group=compare-%s', a:suffix),
           \ gina#util#shellescape(a:opener, '--opener='),
           \ gina#util#shellescape(
           \   a:selection,

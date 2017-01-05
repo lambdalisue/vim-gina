@@ -13,19 +13,21 @@ function! gina#command#patch#command(range, qargs, qmods) abort
   let args = s:build_args(git, a:qargs)
   let doom = s:Doom.new('gina-patch')
 
+  silent windo diffoff!
+
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
-  call s:open(args.params.path, 'HEAD', opener1, args.params.selection)
+  call s:open('l', args.params.path, 'HEAD', opener1, args.params.selection)
   call gina#util#diffthis()
   call doom.involve('%')
   let bufnr1 = bufnr('%')
-  call s:open(args.params.path, '', opener2, args.params.selection)
+  call s:open('c', args.params.path, '', opener2, args.params.selection)
   call gina#util#diffthis()
   call doom.involve('%')
   let bufnr2 = bufnr('%')
-  call s:open(args.params.path, s:WORKTREE, opener2, args.params.selection)
+  call s:open('r', args.params.path, s:WORKTREE, opener2, args.params.selection)
   call gina#util#diffthis()
   call doom.involve('%')
   let bufnr3 = bufnr('%')
@@ -78,10 +80,11 @@ function! s:build_args(git, qargs) abort
   return args.lock()
 endfunction
 
-function! s:open(path, commit, opener, selection) abort
+function! s:open(suffix, path, commit, opener, selection) abort
   if a:commit ==# s:WORKTREE
     execute printf(
-          \ 'Gina edit %s %s -- %s',
+          \ 'Gina edit %s %s %s -- %s',
+          \ printf('--group=patch-%s', a:suffix),
           \ gina#util#shellescape(a:opener, '--opener='),
           \ gina#util#shellescape(
           \   a:selection,
@@ -91,7 +94,8 @@ function! s:open(path, commit, opener, selection) abort
           \)
   else
     execute printf(
-          \ 'Gina show %s %s %s %s -- %s',
+          \ 'Gina show %s %s %s %s %s -- %s',
+          \ printf('--group=patch-%s', a:suffix),
           \ gina#util#shellescape(a:opener, '--opener='),
           \ gina#util#shellescape(
           \   a:selection,
