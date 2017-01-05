@@ -16,4 +16,5 @@ setlocal nonumber norelativenumber
 setlocal foldcolumn=0 colorcolumn=0
 
 " Mappings
-call gina#util#nmap('<C-^>', '<Plug>(gina-commit-toggle)')
+call gina#util#nmap('<C-^>', '<Plug>(gina-commit-status)')
+call gina#util#nmap('!', '<Plug>(gina-commit-toggle-amend)')

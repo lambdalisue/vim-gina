@@ -28,7 +28,7 @@ function! s:open(buffer, ...) abort
     sandbox let opener = eval(opener[1:])
   endwhile
 
-  let preview = s:_is_preview_opener(opener)
+  let preview = s:is_preview_opener(opener)
   let bufloaded = bufloaded(a:buffer)
   let bufexists = bufexists(a:buffer)
 
@@ -56,6 +56,17 @@ function! s:open(buffer, ...) abort
   return extend(context, s:context)
 endfunction
 
+function! s:is_preview_opener(opener) abort
+  if a:opener =~# '\<ptag\?!\?\>'
+    return 1
+  elseif a:opener =~# '\<ped\%[it]!\?\>'
+    return 1
+  elseif a:opener =~# '\<ps\%[earch]!\?\>'
+    return 1
+  endif
+  return 0
+endfunction
+
 
 " Context --------------------------------------------------------------------
 let s:context = {}
@@ -70,17 +81,6 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:_is_preview_opener(opener) abort
-  if a:opener =~# '\<ptag\?!\?\>'
-    return 1
-  elseif a:opener =~# '\<ped\%[it]!\?\>'
-    return 1
-  elseif a:opener =~# '\<ps\%[earch]!\?\>'
-    return 1
-  endif
-  return 0
-endfunction
-
 function! s:_get_buffer_manager(group) abort
   let group = substitute(a:group, '-', '_', 'g')
   if exists('s:_bm_' . group)

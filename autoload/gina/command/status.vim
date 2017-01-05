@@ -60,6 +60,10 @@ function! s:init(args) abort
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
   augroup END
+
+  nnoremap <silent><buffer>
+        \ <Plug>(gina-status-commit)
+        \ :<C-u>Gina commit<CR>
 endfunction
 
 function! s:BufReadCmd() abort

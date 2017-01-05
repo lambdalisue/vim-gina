@@ -35,3 +35,5 @@ call gina#util#vmap('<<', '<Plug>(gina-index-stage)')
 call gina#util#vmap('>>', '<Plug>(gina-index-unstage)')
 call gina#util#vmap('--', '<Plug>(gina-index-toggle)')
 call gina#util#vmap('==', '<Plug>(gina-index-discard)')
+
+call gina#util#nmap('<C-^>', '<Plug>(gina-status-commit)')

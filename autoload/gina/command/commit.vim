@@ -16,6 +16,7 @@ function! gina#command#commit#command(range, qargs, qmods) abort
         \ git.refname,
         \)
   call gina#util#buffer#open(bufname, {
+        \ 'group': 'quick',
         \ 'opener': args.params.opener,
         \ 'callback': {
         \   'fn': function('s:init'),
@@ -56,7 +57,10 @@ function! s:init(args) abort
   augroup END
 
   nnoremap <silent><buffer>
-        \ <Plug>(gina-commit-toggle)
+        \ <Plug>(gina-commit-status)
+        \ :<C-u>Gina status<CR>
+  nnoremap <silent><buffer>
+        \ <Plug>(gina-commit-toggle-amend)
         \ :<C-u>call <SID>toggle_amend()<CR>
 endfunction
 
@@ -171,6 +175,7 @@ function! s:commit_commitmsg(git, args) abort
     if result.status
       throw gina#util#process#error(result)
     endif
+    execute 'Gina status'
   finally
     call delete(tempfile)
   endtry
