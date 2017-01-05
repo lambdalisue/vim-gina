@@ -1,3 +1,4 @@
+let s:Guard = vital#gina#import('Vim.Guard')
 let s:Emitter = vital#gina#import('Emitter')
 
 
@@ -18,6 +19,16 @@ function! gina#util#command#async#call(git, args) abort
     silent! call b:gina_job.stop()
     silent! unlet b:gina_job
   endif
+  " Remove buffer content in case
+  let guard = s:Guard.store(['&l:modifiable'])
+  let view = winsaveview()
+  try
+    setlocal modifiable
+    silent lockmarks keepjumps $delete _
+  finally
+    call winrestview(view)
+    call guard.restore()
+  endtry
   let b:gina_job = gina#util#process#pipe_to(bufnr, a:git, a:args, {
         \ 'scheme': get(gina#util#path#params('%'), 'scheme', v:null),
         \ 'winview': get(b:, 'gina_winview', {}),
