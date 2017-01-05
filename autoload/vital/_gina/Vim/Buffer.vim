@@ -135,7 +135,7 @@ function! s:read_content(content, ...) abort
           \)
   finally
     call delete(tempfile)
-    silent! execute 'bwipeout!' tempfile
+    execute 'bwipeout!' tempfile
   endtry
 endfunction
 

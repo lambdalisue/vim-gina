@@ -1,5 +1,5 @@
 let s:Argument = vital#gina#import('Argument')
-let s:Config = vital#gina#import('Data.Dict.Config')
+let s:Config = vital#gina#import('Config')
 let s:Path = vital#gina#import('System.Filepath')
 
 

@@ -1,6 +1,6 @@
 let s:Argument = vital#gina#import('Argument')
 let s:Buffer = vital#gina#import('Vim.Buffer')
-let s:Config = vital#gina#import('Data.Dict.Config')
+let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Guard = vital#gina#import('Vim.Guard')

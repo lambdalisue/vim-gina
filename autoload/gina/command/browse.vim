@@ -1,5 +1,5 @@
 let s:Argument = vital#gina#import('Argument')
-let s:Config = vital#gina#import('Data.Dict.Config')
+let s:Config = vital#gina#import('Config')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Formatter = vital#gina#import('Data.String.Formatter')
 let s:Git = vital#gina#import('Git')

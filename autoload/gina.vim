@@ -1,4 +1,4 @@
-let s:Config = vital#gina#import('Data.Dict.Config')
+let s:Config = vital#gina#import('Config')
 
 
 " Default variable -----------------------------------------------------------
