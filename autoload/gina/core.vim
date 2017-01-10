@@ -103,12 +103,11 @@ endfunction
 
 function! s:get_available_refname(refname, git) abort
   let refname = a:refname
-  let pseudo = { 'worktree': a:git.worktree }
-  let params = s:reference.get(refname, pseudo)
+  let ref = s:reference.get(refname, '')
   let index = 1
-  while !empty(params.worktree) && params.worktree !=# a:git.worktree
+  while !empty(ref) && ref !=# a:git.worktree
     let refname = a:refname . '~' . index
-    let params = s:reference.get(refname, pseudo)
+    let ref = s:reference.get(refname, '')
     let index += 1
   endwhile
   return refname
