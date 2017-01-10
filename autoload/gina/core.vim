@@ -124,20 +124,7 @@ function! s:get_from_cache(reference) abort
 endfunction
 
 function! s:get_from_path(path) abort
-  " Try to find from a cache registry
   let path = simplify(fnamemodify(a:path, ':p'))
-  let curr = path
-  let prev = ''
-  while prev !=# curr
-    let git = s:get_from_cache(curr)
-    if !empty(git)
-      return git
-    endif
-    " Go up
-    let prev = curr
-    let curr = fnamemodify(curr, ':h')
-  endwhile
-  " Create a new git info
   let git = s:Git.new(path)
   if empty(git)
     return {}
