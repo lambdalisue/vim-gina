@@ -10,3 +10,4 @@ Vim.Buffer.Opener
 Vim.Console
 Config
 System.Cache.Memory
+Data.String.Formatter
