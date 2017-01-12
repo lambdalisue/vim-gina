@@ -1,20 +1,3 @@
-" Console --------------------------------------------------------------------
-let s:Console = vital#gina#import('Vim.Console')
-
-function! s:console_is_batch() abort
-  return g:gina#test
-endfunction
-
-function! s:console_is_debug() abort
-  return g:gina#debug == -1 ? &verbose : g:gina#debug
-endfunction
-
-call s:Console.set_config({
-      \ 'batch': function('s:console_is_batch'),
-      \ 'debug': function('s:console_is_debug'),
-      \})
-
-
 " Emitter / Observer ---------------------------------------------------------
 let s:Emitter = vital#gina#import('Emitter')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')

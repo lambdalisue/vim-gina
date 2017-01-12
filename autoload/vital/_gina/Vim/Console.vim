@@ -3,95 +3,69 @@
 " Do not mofidify the code nor insert new lines before '" ___vital___'
 if v:version > 703 || v:version == 703 && has('patch1170')
   function! vital#_gina#Vim#Console#import() abort
-    return map({'ask': '', 'clear': '', 'capture': '', 'echomsg': '', 'echo': '', 'confirm': '', 'input': '', 'set_config': '', 'error': '', 'select': '', 'get_config': '', 'is_debug': '', 'info': '', 'warn': '', 'inputlist': '', 'is_batch': '', '_vital_created': '', 'debug': ''},  'function("s:" . v:key)')
+    return map({'capture': '', 'info': '', 'echo': '', 'ask': '', 'select': '', 'error': '', '_vital_created': '', 'debug': '', 'warn': '', 'inputlist': '', 'confirm': '', 'input': '', 'echomsg': '', 'clear': ''},  'function("s:" . v:key)')
   endfunction
 else
   function! s:_SID() abort
     return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
   endfunction
-  execute join(['function! vital#_gina#Vim#Console#import() abort', printf("return map({'ask': '', 'clear': '', 'capture': '', 'echomsg': '', 'echo': '', 'confirm': '', 'input': '', 'set_config': '', 'error': '', 'select': '', 'get_config': '', 'is_debug': '', 'info': '', 'warn': '', 'inputlist': '', 'is_batch': '', '_vital_created': '', 'debug': ''}, \"function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+  execute join(['function! vital#_gina#Vim#Console#import() abort', printf("return map({'capture': '', 'info': '', 'echo': '', 'ask': '', 'select': '', 'error': '', '_vital_created': '', 'debug': '', 'warn': '', 'inputlist': '', 'confirm': '', 'input': '', 'echomsg': '', 'clear': ''}, \"function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
   delfunction s:_SID
 endif
 " ___vital___
 let s:save_cpo = &cpo
 set cpo&vim
 
+let s:t_string = type('')
+let s:STATUS_DEBUG = 'debug'
+let s:STATUS_BATCH = 'batch'
+
+
 function! s:_vital_created(module) abort
-  let s:config = {
-        \ 'debug': -1,
-        \ 'batch': 0,
-        \}
+  let a:module.STATUS_DEBUG = s:STATUS_DEBUG
+  let a:module.STATUS_BATCH = s:STATUS_BATCH
+  lockvar a:module.STATUS_DEBUG
+  lockvar a:module.STATUS_BATCH
+  let a:module.status = ''
 endfunction
 
-function! s:get_config() abort
-  return deepcopy(s:config)
+function! s:echo(msg, ...) abort
+  let hl = get(a:000, 0, 'None')
+  let msg = s:_ensure_string(a:msg)
+  execute 'echohl' hl
+  for line in split(msg, '\r\?\n')
+    echo line
+  endfor
+  echohl None
 endfunction
 
-function! s:set_config(config) abort
-  let s:config = extend(s:config, a:config)
+function! s:echomsg(msg, ...) abort
+  let hl = get(a:000, 0, 'None')
+  let msg = s:_ensure_string(a:msg)
+  execute 'echohl' hl
+  for line in split(msg, '\r\?\n')
+    echomsg line
+  endfor
+  echohl None
 endfunction
 
-function! s:is_batch() abort
-  if type(s:config.batch) == 2
-    return s:config.batch()
-  else
-    return s:config.batch
-  endif
-endfunction
-
-function! s:is_debug() abort
-  if type(s:config.debug) == 2
-    return s:config.debug()
-  else
-    return s:config.debug == -1 ? &verbose : s:config.debug
-  endif
-endfunction
-
-" echo({hl}[, {msg} ...])
-function! s:echo(hl, ...) abort
-  let msg = join(map(copy(a:000), 's:_ensure_string(v:val)'))
-  execute 'echohl' a:hl
-  try
-    echo msg
-  finally
-    echohl None
-  endtry
-endfunction
-
-" echomsg({hl}[, {msg} ...])
-function! s:echomsg(hl, ...) abort
-  let msg = join(map(copy(a:000), 's:_ensure_string(v:val)'))
-  execute 'echohl' a:hl
-  try
-    echomsg msg
-  finally
-    echohl None
-  endtry
-endfunction
-
-" input({hl}, {msg} [, {text} [, {completion}]])
-function! s:input(hl, msg, ...) abort
-  if s:is_batch()
+function! s:input(hl, msg, ...) abort dict
+  if s:_is_status_batch(self)
     return ''
   endif
   let msg = s:_ensure_string(a:msg)
   execute 'echohl' a:hl
   call inputsave()
   try
-    if empty(get(a:000, 1, ''))
-      return input(msg, get(a:000, 0, ''))
-    else
-      return input(msg, get(a:000, 0, ''), get(a:000, 1, ''))
-    endif
+    return call('input', [msg] + a:000)
   finally
     echohl None
     call inputrestore()
   endtry
 endfunction
 
-" inputlist({hl}, {textlist})
-function! s:inputlist(hl, textlist) abort
-  if s:is_batch()
+function! s:inputlist(hl, textlist) abort dict
+  if s:_is_status_batch(self)
     return 0
   endif
   let textlist = map(copy(a:textlist), 's:_ensure_string(v:val)')
@@ -105,73 +79,60 @@ function! s:inputlist(hl, textlist) abort
   endtry
 endfunction
 
-" debug([{msg}...])
-function! s:debug(...) abort
-  if !s:is_debug()
+function! s:debug(msg) abort dict
+  if !s:_is_status_debug(self)
     return
   endif
-  call call('s:echomsg', ['Comment'] + a:000)
+  call s:echomsg(a:msg, 'Comment')
 endfunction
 
-" info([{msg}...])
-function! s:info(...) abort
-  call call('s:echomsg', ['None'] + a:000)
+function! s:info(msg) abort
+  let v:statusmsg = s:_ensure_string(a:msg)
+  call s:echomsg(a:msg, 'Title')
 endfunction
 
-" warn([{msg}...])
-function! s:warn(...) abort
-  call call('s:echomsg', ['WarningMsg'] + a:000)
+function! s:warn(msg) abort
+  let v:warningmsg = s:_ensure_string(a:msg)
+  call s:echomsg(a:msg, 'WarningMsg')
 endfunction
 
-" error([{msg}...])
-function! s:error(...) abort
-  let v:errmsg = join(map(
-        \ copy(a:000),
-        \ 'type(v:val) == 1 ? v:val : string(v:val)',
-        \))
-  call call('s:echomsg', ['ErrorMsg'] + a:000)
+function! s:error(msg) abort
+  let v:errmsg = s:_ensure_string(a:msg)
+  call s:echomsg(a:msg, 'ErrorMsg')
 endfunction
 
-" ask({msg} [, {default} [, {completion}]])
-function! s:ask(msg, ...) abort
-  if s:is_batch()
+function! s:ask(...) abort dict
+  if s:_is_status_batch(self)
     return ''
   endif
-  let result = s:input(
-        \ 'Question',
-        \ a:msg,
-        \ get(a:000, 0, ''),
-        \ get(a:000, 1, ''),
-        \)
+  let result = call('s:input', ['Question'] + a:000, self)
   redraw
   return result
 endfunction
 
-" select({msg}, {candidates} [, {canceled}])
-function! s:select(msg, candidates, ...) abort
+function! s:select(msg, candidates, ...) abort dict
   let canceled = get(a:000, 0, '')
-  if s:is_batch()
+  if s:_is_status_batch(self)
     return canceled
   endif
   let candidates = map(
         \ copy(a:candidates),
         \ 'v:key+1 . ''. '' . s:_ensure_string(v:val)'
         \)
-  let result = s:inputlist('Question', extend([a:msg], candidates))
+  let result = self.inputlist('Question', [a:msg] + candidates)
   redraw
   return result == 0 ? canceled : a:candidates[result-1]
 endfunction
 
-" confirm({msg} [, {default}])
-function! s:confirm(msg, ...) abort
-  if s:is_batch()
+function! s:confirm(msg, ...) abort dict
+  if s:_is_status_batch(self)
     return 0
   endif
   let completion = printf(
         \ 'customlist,%s',
         \ s:_get_function_name(function('s:_confirm_complete'))
         \)
-  let result = s:input(
+  let result = self.input(
         \ 'Question',
         \ printf('%s (y[es]/n[o]): ', a:msg),
         \ get(a:000, 0, ''),
@@ -180,11 +141,11 @@ function! s:confirm(msg, ...) abort
   while result !~? '^\%(y\%[es]\|n\%[o]\)$'
     redraw
     if result ==# ''
-      call s:echo('WarningMsg', 'Canceled.')
+      call s:echo('Canceled.', 'WarningMsg')
       break
     endif
-    call s:echo('WarningMsg', 'Invalid input.')
-    let result = s:input(
+    call s:echo('Invalid input.', 'WarningMsg')
+    let result = self.input(
           \ 'Question',
           \ printf('%s (y[es]/n[o]): ', a:msg),
           \ get(a:000, 0, ''),
@@ -195,7 +156,6 @@ function! s:confirm(msg, ...) abort
   return result =~? 'y\%[es]'
 endfunction
 
-" capture({command})
 if exists('*execute')
   function! s:capture(command) abort
     let content = execute(a:command)
@@ -231,8 +191,24 @@ function! s:_confirm_complete(arglead, cmdline, cursorpos) abort
   return filter(['yes', 'no'], 'v:val =~# ''^'' . a:arglead')
 endfunction
 
+function! s:_is_status_debug(module) abort
+  if a:module.status ==# s:STATUS_DEBUG
+    return 1
+  elseif &verbose
+    return 1
+  endif
+  return 0
+endfunction
+
+function! s:_is_status_batch(module) abort
+  if a:module.status ==# s:STATUS_BATCH
+    return 1
+  endif
+  return 0
+endfunction
+
 function! s:_ensure_string(x) abort
-  return type(a:x) == 1 ? a:x : string(a:x)
+  return type(a:x) == s:t_string ? a:x : string(a:x)
 endfunction
 
 if has('patch-7.4.1842')

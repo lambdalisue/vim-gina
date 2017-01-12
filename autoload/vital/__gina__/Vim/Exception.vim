@@ -95,35 +95,23 @@ function! s:_default_handler(exception) abort
     let message = m[2]
     if category ==# 'Info'
       redraw
-      for line in split(message, '\r\?\n')
-        call s:Console.echo('None', line)
-      endfor
+      call s:Console.info(message)
       call s:Console.debug(v:throwpoint)
       return 1
     elseif category ==# 'Warning'
       redraw
-      for line in split(message, '\r\?\n')
-        call s:Console.warn(line)
-      endfor
+      call s:Console.warn(message)
       call s:Console.debug(v:throwpoint)
       return 1
     elseif category ==# 'Error'
       redraw
-      for line in split(message, '\r\?\n')
-        call s:Console.error(line)
-      endfor
-      for line in split(v:throwpoint, '\r\?\n')
-        call s:Console.debug(line)
-      endfor
+      call s:Console.error(message)
+      call s:Console.debug(v:throwpoint)
       return 1
     elseif category ==# 'Critical'
       redraw
-      for line in split(message, '\r\?\n')
-        call s:Console.debug(line)
-      endfor
-      for line in split(v:throwpoint, '\r\?\n')
-        call s:Console.debug(line)
-      endfor
+      call s:Console.error(message)
+      call s:Console.error(v:throwpoint)
     endif
     throw message
   endif

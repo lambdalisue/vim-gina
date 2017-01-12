@@ -301,12 +301,14 @@ function! s:on_discard(candidates, options) abort dict
     endif
   endfor
   if !options.force
-    call s:Console.warn(
+    call s:Console.warn(join([
           \ 'A discard action will discard all local changes on the working ',
           \ 'tree and the operation is irreversible, mean that you have no ',
           \ 'chance to revert the operation.',
+          \], "\n"))
+    call s:Console.info(
+          \ 'This operation will be performed to the following candidates:'
           \)
-    echo 'This operation will be performed to the following candidates:'
     for candidate in extend(copy(delete_candidates), checkout_candidates)
       echo '- ' . s:Path.relpath(candidate.path)
     endfor
