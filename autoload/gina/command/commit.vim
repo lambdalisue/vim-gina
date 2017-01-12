@@ -175,7 +175,6 @@ function! s:commit_commitmsg(git, args) abort
     if result.status
       throw gina#util#process#error(result)
     endif
-    execute 'Gina status'
   finally
     call delete(tempfile)
   endtry
