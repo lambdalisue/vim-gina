@@ -1,96 +1,115 @@
-let s:Argument = vital#gina#import('Argument')
+let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Console = vital#gina#import('Vim.Console')
+let s:Guard = vital#gina#import('Vim.Guard')
 let s:Emitter = vital#gina#import('Emitter')
-let s:Exception = vital#gina#import('Vim.Exception')
-let s:command_alias = {}
 
 
-function! gina#command#alias(scheme, qargs) abort
-  let s:command_alias[a:scheme] = a:qargs
+function! gina#command#call(git, args, ...) abort
+  let options = get(a:000, 0, {})
+  let result = gina#process#call(a:git, a:args.raw, options)
+  if result.status
+    throw gina#process#error(result)
+  endif
+  call s:Emitter.emit('gina:modified')
+  return result
 endfunction
 
-function! gina#command#command(bang, range, qargs, qmods) abort
-  if a:bang ==# '!'
-    let git = gina#core#get()
-    let args = s:Argument.new(s:normalize_qargs(a:qargs))
-    let result = gina#util#process#call(git, args.raw)
-    call gina#util#process#inform(result)
-    call s:Emitter.emit('gina:modified')
-  else
-    let qargs = s:normalize_qargs(a:qargs)
-    let scheme = substitute(
-          \ matchstr(qargs, '^\S\+'),
-          \ '-', '_', 'g'
-          \)
-    if !empty(scheme)
-      try
-        return s:Exception.call(
-              \ printf('gina#command#%s#command', scheme),
-              \ [a:range, qargs, a:qmods]
-              \)
-      catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#command#[^#]\+#command/
-        call s:Console.debug(v:exception)
-        call s:Console.debug(v:throwpoint)
-      endtry
+function! gina#command#async(git, args, ...) abort
+  let options = extend(copy(s:async), get(a:000, 0, {}))
+  return gina#process#open(a:git, a:args.raw, options)
+endfunction
+
+function! gina#command#stream(git, args, ...) abort
+  let options = extend(copy(s:stream), get(a:000, 0, {}))
+  let options.__bufnr = bufnr('%')
+  let options.__winview = get(b:, 'gina_winview', {})
+  " Kill remaining process
+  silent! call b:gina_job.stop()
+  " Remove buffer content
+  let guard = s:Guard.store(['&l:modifiable'])
+  try
+    setlocal modifiable
+    silent lockmarks keepjumps %delete _
+  finally
+    call guard.restore()
+  endtry
+  " Start a new process
+  let b:gina_job = gina#process#open(a:git, a:args.raw, options)
+  return b:gina_job
+endfunction
+
+
+" Pipe -----------------------------------------------------------------------
+let s:async = {}
+
+function! s:async.on_stdout(job, msg, event) abort
+  redraw | call s:Console.echon(join(a:msg, "\n"))
+endfunction
+
+function! s:async.on_stderr(job, msg, event) abort
+  redraw | call s:Console.echon(join(a:msg, "\n"), 'WarningMsg')
+endfunction
+
+function! s:async.on_exit(job, msg, event) abort
+  call s:Emitter.emit('gina:modified')
+endfunction
+
+let s:stream = {}
+
+function! s:stream.on_stdout(job, msg, event) abort
+  let focus = gina#util#buffer#focus(self.__bufnr)
+  if empty(focus)
+    return self.stop()
+  endif
+  let guard = s:Guard.store(['&l:modifiable'])
+  let view = winsaveview()
+  try
+    setlocal modifiable
+    let leading = getline('$')
+    let content = [leading . get(a:msg, 0, '')] + a:msg[1:]
+    silent lockmarks keepjumps $delete _
+    silent call s:Buffer.read_content(content, {
+          \ 'edit': 1,
+          \ 'lockmarks': 1,
+          \})
+    if empty(getline(1))
+      silent lockmarks keepjumps 1delete _
     endif
-    " Fallback to a raw git command
-    call gina#command#command('!', a:range, a:qargs, a:qmods)
+  finally
+    call winrestview(view)
+    call guard.restore()
+    call focus.restore()
+  endtry
+endfunction
+
+function! s:stream.on_stderr(job, msg, event) abort
+  call self.on_stdout(a:job, a:msg, a:event)
+endfunction
+
+function! s:stream.on_exit(job, msg, event) abort
+  let focus = gina#util#buffer#focus(self.__bufnr)
+  if empty(focus)
+    return
   endif
-endfunction
-
-function! gina#command#complete(arglead, cmdline, cursorpos) abort
-  if a:cmdline =~# printf('^Gina %s$', a:arglead)
-    return filter(s:get_installed_commands(), 'v:val =~# ''^'' . a:arglead')
-  endif
-  let cmdline = matchstr(a:cmdline, '^Gina \zs.*')
-  let scheme = matchstr(cmdline, '^\S\+')
-  if !empty(scheme)
-    try
-      return s:Exception.call(
-            \ printf('gina#command#%s#complete', scheme),
-            \ [a:arglead, cmdline, a:cursorpos]
-            \)
-    catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#command#[^#]\+#complete/
-      call s:Console.debug(v:exception)
-      call s:Console.debug(v:throwpoint)
-    endtry
-  endif
-  return gina#complete#filename#any(a:arglead, cmdline, a:cursorpos)
-endfunction
-
-function! gina#command#autocmd(name) abort
-  let params = gina#util#path#params(expand('<afile>'))
-  let scheme = substitute(
-        \ params.scheme,
-        \ '-', '_', 'g'
-        \)
-  return s:Exception.call(
-        \ printf('gina#command#%s#%s', scheme, a:name),
-        \ []
-        \)
+  let guard = s:Guard.store(['&l:modifiable'])
+  try
+    setlocal modifiable
+    if empty(getline('$'))
+      silent lockmarks keepjumps $delete _
+    endif
+    setlocal nomodified
+  finally
+    call winrestview(self.__winview)
+    call guard.restore()
+    call focus.restore()
+  endtry
 endfunction
 
 
-" Private --------------------------------------------------------------------
-function! s:normalize_qargs(qargs) abort
-  let scheme = matchstr(a:qargs, '^\w\+')
-  let option = matchstr(a:qargs, '^\w\+ \zs.*')
-  let alias = get(s:command_alias, scheme, scheme)
-  if a:qargs =~# '^' . alias
-    return a:qargs
-  endif
-  return substitute(a:qargs, '^\w\+', alias, '')
-endfunction
-
-function! s:get_installed_commands() abort
-  let commands = []
-  for path in split(&runtimepath, ',')
-    let names = map(
-          \ glob(path . '/autoload/gina/command/*.vim', 0, 1),
-          \ 'matchstr(v:val, ''[^/]\+\ze\.vim$'')',
-          \)
-    call map(names, 'substitute(v:val, ''_'', ''-'', ''g'')')
-    call extend(commands, names)
-  endfor
-  return sort(commands)
-endfunction
+" NOTE:
+" In BufReadCmd, the content of the buffer is cleared so save winview every
+" after cursor has moved and use that to restore winview.
+augroup gina_internal_command_winview_assignment
+  autocmd! *
+  autocmd CursorMoved gina:* let b:gina_winview = winsaveview()
+augroup END

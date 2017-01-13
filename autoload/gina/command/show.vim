@@ -3,13 +3,20 @@ let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
 
 
-function! gina#command#show#command(range, qargs, qmods) abort
+function! gina#command#show#define() abort
+  return s:command
+endfunction
+
+
+" Instance -------------------------------------------------------------------
+let s:command = {}
+
+function! s:command.command(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
   let bufname = printf(
-        \ 'gina://%s:show%s/%s',
+        \ 'gina://%s:show/%s',
         \ git.refname,
-        \ args.params.patch ? ':patch' : '',
         \ args.params.object,
         \)
   let selection = gina#util#selection#from(
@@ -23,7 +30,7 @@ function! gina#command#show#command(range, qargs, qmods) abort
         \})
 endfunction
 
-function! gina#command#show#BufReadCmd() abort
+function! s:command.BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = s:build_args_from_params(
         \ gina#util#path#params(expand('<afile>'))
@@ -40,7 +47,6 @@ function! s:build_args(git, qargs) abort
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.selection = args.pop('--selection', '')
-  let args.params.patch = args.pop('--patch')
   let args.params.commit = gina#util#commit#resolve(
         \ a:git, args.pop_p(1, '')
         \)
@@ -79,17 +85,16 @@ function! s:init(args) abort
   endif
   let b:gina_initialized = 1
 
-  setlocal buftype=acwrite
+  setlocal buftype=nowrite
   setlocal bufhidden=unload
-  setlocal modifiable
+  setlocal nomodifiable
 endfunction
 
 function! s:BufReadCmd() abort
-  let git = gina#core#get_or_fail()
-  let args = gina#util#meta#get_or_fail('args')
-
-  call gina#util#command#call(git, args.raw)
-
+  call gina#command#stream(
+        \ gina#core#get_or_fail(),
+        \ gina#util#meta#get_or_fail('args'),
+        \)
   let params = gina#util#path#params('%')
   if empty(params.path)
     setlocal filetype=git

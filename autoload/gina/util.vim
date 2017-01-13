@@ -74,15 +74,9 @@ endfunction
 
 function! gina#util#syncbind() abort
   " NOTE:
-  " Somehow syncbind does not work just after opening a buffer so use
-  " CursorHold and CursorMoved to call a bit later
-  augroup gina_internal_util_syncbind
-    autocmd! * <buffer>
-    autocmd CursorHold   <buffer> call s:syncbind()
-    autocmd CursorHoldI  <buffer> call s:syncbind()
-    autocmd CursorMoved  <buffer> call s:syncbind()
-    autocmd CursorMovedI <buffer> call s:syncbind()
-  augroup END
+  " 'syncbind' does not work just after a buffer has opened
+  " so use timer to delay the command.
+  call timer_start(100, function('s:syncbind'))
 endfunction
 
 function! gina#util#diffthis() abort
@@ -94,6 +88,13 @@ function! gina#util#diffthis() abort
     autocmd BufDelete <buffer> call s:diffoff()
     autocmd BufWipeout <buffer> call s:diffoff()
   augroup END
+endfunction
+
+function! gina#util#diffupdate() abort
+  " NOTE:
+  " 'diffupdate' does not work just after a buffer has opened
+  " so use timer to delay the command.
+  call timer_start(100, function('s:diffupdate'))
 endfunction
 
 function! gina#util#map(mode, lhs, rhs) abort
@@ -116,17 +117,19 @@ function! gina#util#vmap(lhs, rhs) abort
   call gina#util#map('v', a:lhs, a:rhs)
 endfunction
 
-function! s:syncbind() abort
-  augroup gina_internal_util_syncbind
-    autocmd! * <buffer>
-  augroup END
+function! s:syncbind(...) abort
   syncbind
 endfunction
 
 function! s:diffoff() abort
-  diffoff
-  diffupdate
   augroup gina_internal_util_diffthis
     autocmd! * <buffer>
   augroup END
+  diffoff
+  diffupdate
+endfunction
+
+function! s:diffupdate(...) abort
+  diffupdate
+  syncbind
 endfunction

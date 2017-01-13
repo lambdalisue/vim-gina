@@ -2,7 +2,15 @@ let s:Argument = vital#gina#import('Argument')
 let s:Exception = vital#gina#import('Vim.Exception')
 
 
-function! gina#command#diff#command(range, qargs, qmods) abort
+function! gina#command#diff#define() abort
+  return s:command
+endfunction
+
+
+" Instance -------------------------------------------------------------------
+let s:command = {}
+
+function! s:command.command(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
 
@@ -71,10 +79,9 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  let git = gina#core#get_or_fail()
-  let args = gina#util#meta#get_or_fail('args')
-
-  call gina#util#command#call(git, args.raw)
-
+  call gina#command#stream(
+        \ gina#core#get_or_fail(),
+        \ gina#util#meta#get_or_fail('args'),
+        \)
   setlocal filetype=diff
 endfunction

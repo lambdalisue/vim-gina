@@ -1,42 +1,61 @@
 let s:Argument = vital#gina#import('Argument')
-let s:Doom = vital#gina#import('Vim.Buffer.Doom')
 let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
+let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:String = vital#gina#import('Data.String')
 
 let s:is_windows = has('win32') || has('win64')
 let s:WORKTREE = '@@'
 
 
-function! gina#command#patch#command(range, qargs, qmods) abort
+function! gina#command#patch#define() abort
+  return s:command
+endfunction
+
+
+" Instance -------------------------------------------------------------------
+let s:command = {}
+
+function! s:command.command(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
-  let doom = s:Doom.new('gina-patch')
+  let group = s:Group.new()
 
-  silent windo diffoff!
+  silent diffoff!
 
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
+
   call s:open('l', args.params.path, 'HEAD', opener1, args.params.selection)
   call gina#util#diffthis()
-  call doom.involve('%')
+  call group.add()
   let bufnr1 = bufnr('%')
+
   call s:open('c', args.params.path, '', opener2, args.params.selection)
   call gina#util#diffthis()
-  call doom.involve('%')
+  call group.add()
   let bufnr2 = bufnr('%')
+
   call s:open('r', args.params.path, s:WORKTREE, opener2, args.params.selection)
   call gina#util#diffthis()
-  call doom.involve('%')
+  call group.add({'keep': 1})
   let bufnr3 = bufnr('%')
+
+  " WORKTREE
   execute printf(
         \ 'nnoremap <silent><buffer> <Plug>(gina-diffput) :diffput %d<CR>',
         \ bufnr2,
         \)
+  execute printf(
+        \ 'nnoremap <silent><buffer> <Plug>(gina-diffget) :diffget %d<CR>',
+        \ bufnr2,
+        \)
   nmap dp <Plug>(gina-diffput)
+  nmap do <Plug>(gina-diffget)
 
+  " HEAD
   execute printf('%dwincmd w', bufwinnr(bufnr1))
   execute printf(
         \ 'nnoremap <silent><buffer> <Plug>(gina-diffput) :diffput %d<CR>',
@@ -44,7 +63,12 @@ function! gina#command#patch#command(range, qargs, qmods) abort
         \)
   nmap dp <Plug>(gina-diffput)
 
+  " INDEX
   execute printf('%dwincmd w', bufwinnr(bufnr2))
+  execute printf(
+        \ 'nnoremap <silent><buffer> <Plug>(gina-diffput) :diffput %d<CR>',
+        \ bufnr3,
+        \)
   execute printf(
         \ 'nnoremap <silent><buffer> <Plug>(gina-diffget-l) :diffget %d<CR>',
         \ bufnr1,
@@ -53,18 +77,19 @@ function! gina#command#patch#command(range, qargs, qmods) abort
         \ 'nnoremap <silent><buffer> <Plug>(gina-diffget-r) :diffget %d<CR>',
         \ bufnr3,
         \)
+  nmap dp <Plug>(gina-diffput)
   nmap dol <Plug>(gina-diffget-l)
   nmap dor <Plug>(gina-diffget-r)
+
   setlocal buftype=acwrite
   setlocal modifiable
   augroup gina_internal_command
     autocmd! * <buffer>
     autocmd BufWriteCmd <buffer> call s:BufWriteCmd()
   augroup END
-endfunction
 
-function! gina#command#patch#patch(...) abort
-  return call('s:patch', a:000)
+  " Update diff
+  call gina#util#diffupdate()
 endfunction
 
 
@@ -110,7 +135,7 @@ endfunction
 
 function! s:patch(git) abort
   let path = gina#util#path#expand('%')
-  call gina#util#process#call(a:git, [
+  call gina#process#call(a:git, [
         \ 'add',
         \ '--intent-to-add',
         \ '--',
@@ -136,7 +161,7 @@ function! s:diff(git, path, buffer) abort
     " --no-index force --exit-code option.
     " --exit-code mean that the program exits with 1 if there were differences
     " and 0 means no differences
-    let result = gina#util#process#call(a:git, [
+    let result = gina#process#call(a:git, [
           \ 'diff',
           \ '--no-index',
           \ '--unified=1',
@@ -162,10 +187,7 @@ function! s:diff(git, path, buffer) abort
 endfunction
 
 function! s:index(git, path) abort
-  let result = gina#util#process#call(a:git, [
-        \ 'show',
-        \ ':' . a:path
-        \])
+  let result = gina#process#call(a:git, ['show', ':' . a:path])
   if result.status
     return []
   endif
@@ -207,17 +229,13 @@ function! s:apply(git, content) abort
     if writefile(a:content, tempfile) == -1
       return
     endif
-    let result = gina#util#process#call(a:git, [
+    let result = gina#process#call(a:git, [
           \ 'apply',
           \ '--verbose',
           \ '--cached',
           \ '--',
           \ tempfile,
           \])
-    if result.status
-      return result
-      "throw gina#util#process#error(result)
-    endif
     return result
   finally
     silent! call delete(tempfile)
@@ -228,7 +246,7 @@ function! s:BufWriteCmd() abort
   let git = gina#core#get_or_fail()
   let result = s:Exception.call(function('s:patch'), [git])
   if !empty(result)
-    call gina#util#process#inform(result)
+    call gina#process#inform(result)
     call timer_start(100, function('s:emit'))
     setlocal nomodified
   endif

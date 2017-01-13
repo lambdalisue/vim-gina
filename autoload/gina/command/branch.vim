@@ -1,20 +1,27 @@
+let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Argument = vital#gina#import('Argument')
+let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
 
 
-function! gina#command#branch#command(range, qargs, qmods) abort
+function! gina#command#branch#define() abort
+  return s:command
+endfunction
+
+
+" Instance -------------------------------------------------------------------
+let s:command = {}
+
+function! s:command.command(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
 
   if s:is_raw_command(args)
-    return gina#command#command('!', a:range, a:qargs, a:qmods)
+    return gina#router#command('!', a:range, a:qargs, a:qmods)
   endif
 
-  let bufname = printf(
-        \ 'gina:%s:branch',
-        \ git.refname,
-        \)
+  let bufname = printf('gina:%s:branch', git.refname)
   call gina#util#buffer#open(bufname, {
         \ 'group': 'quick',
         \ 'opener': args.params.opener,
@@ -68,8 +75,8 @@ function! s:init(args) abort
   setlocal conceallevel=3 concealcursor=nvic
 
   " Attach modules
-  call gina#util#command#attach()
-  call gina#util#command#async#attach()
+  call s:Anchor.attach()
+  call s:Observer.attach()
   call gina#action#attach(function('s:get_candidates'))
   call gina#action#include('branch')
   call gina#action#include('browse')
@@ -84,11 +91,10 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  let git = gina#core#get_or_fail()
-  let args = gina#util#meta#get_or_fail('args')
-
-  call gina#util#command#async#call(git, args.raw)
-
+  call gina#command#stream(
+        \ gina#core#get_or_fail(),
+        \ gina#util#meta#get_or_fail('args'),
+        \)
   setlocal filetype=gina-branch
 endfunction
 

@@ -1,8 +1,18 @@
+let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Argument = vital#gina#import('Argument')
 let s:Exception = vital#gina#import('Vim.Exception')
+let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 
 
-function! gina#command#changes#command(range, qargs, qmods) abort
+function! gina#command#changes#define() abort
+  return s:command
+endfunction
+
+
+" Instance -------------------------------------------------------------------
+let s:command = {}
+
+function! s:command.command(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
 
@@ -51,8 +61,8 @@ function! s:init(args) abort
   setlocal nomodifiable
 
   " Attach modules
-  call gina#util#command#attach()
-  call gina#util#command#async#attach()
+  call s:Anchor.attach()
+  call s:Observer.attach()
   call gina#action#attach(function('s:get_candidates'))
   call gina#action#include('browse')
   call gina#action#include('compare')
@@ -67,11 +77,10 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  let git = gina#core#get_or_fail()
-  let args = gina#util#meta#get_or_fail('args')
-
-  call gina#util#command#async#call(git, args.raw)
-
+  call gina#command#stream(
+        \ gina#core#get_or_fail(),
+        \ gina#util#meta#get_or_fail('args'),
+        \)
   setlocal filetype=gina-changes
 endfunction
 

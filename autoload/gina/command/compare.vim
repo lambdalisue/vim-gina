@@ -1,11 +1,19 @@
 let s:Argument = vital#gina#import('Argument')
-let s:Doom = vital#gina#import('Vim.Buffer.Doom')
 let s:Exception = vital#gina#import('Vim.Exception')
+let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:WORKTREE = '@@'
 
 
-function! gina#command#compare#command(range, qargs, qmods) abort
+function! gina#command#compare#define() abort
+  return s:command
+endfunction
+
+
+" Instance -------------------------------------------------------------------
+let s:command = {'name': 'compare'}
+
+function! s:command.command(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
 
@@ -25,17 +33,20 @@ function! gina#command#compare#command(range, qargs, qmods) abort
 
   silent! windo diffoff!
 
-  let doom = s:Doom.new('gina-compare')
+  let group = s:Group.new()
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
   call s:open('l', args.params.path, commit1, opener1, args.params.selection)
   call gina#util#diffthis()
-  call doom.involve('%')
+  call group.add()
+
   call s:open('r', args.params.path, commit2, opener2, args.params.selection)
   call gina#util#diffthis()
-  call doom.involve('%')
+  call group.add({'keep': 1})
+
+  call gina#util#diffupdate()
 endfunction
 
 

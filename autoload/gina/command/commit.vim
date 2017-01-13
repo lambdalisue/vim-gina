@@ -1,14 +1,24 @@
+let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Argument = vital#gina#import('Argument')
 let s:Console = vital#gina#import('Vim.Console')
 let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
+let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:Git = vital#gina#import('Git')
 
 let s:SCISSOR = '------------------------ >8 ------------------------'
 let s:messages = {}
 
 
-function! gina#command#commit#command(range, qargs, qmods) abort
+function! gina#command#commit#define() abort
+  return s:command
+endfunction
+
+
+" Instance -------------------------------------------------------------------
+let s:command = {}
+
+function! s:command.command(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(a:qargs)
   let bufname = printf(
@@ -131,10 +141,10 @@ function! s:get_commitmsg(git, args) abort
       call args.pop('-m|--message')
     endif
 
-    let result = gina#util#process#call(a:git, args.raw)
+    let result = gina#process#call(a:git, args.raw)
     if !result.status
       " NOTE: Operation should be fail while GIT_EDITOR=false
-      throw gina#util#process#error(result)
+      throw gina#process#error(result)
     endif
     return s:get_config_commitmsg(a:git)
   finally
@@ -169,12 +179,12 @@ function! s:commit_commitmsg(git, args) abort
     call args.pop('-C|--reuse-message')
     call args.pop('-m|--message')
     call args.pop('-e|--edit')
-    let result = gina#util#process#call(a:git, args.raw)
-    call s:Emitter.emit('gina:modified')
-    call s:remove_cached_commitmsg(a:git)
+    let result = gina#process#call(a:git, args.raw)
     if result.status
-      throw gina#util#process#error(result)
+      throw gina#process#error(result)
     endif
+    call s:remove_cached_commitmsg(a:git)
+    call s:Emitter.emit('gina:modified')
   finally
     call delete(tempfile)
   endtry

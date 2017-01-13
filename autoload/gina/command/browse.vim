@@ -6,7 +6,15 @@ let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
 
 
-function! gina#command#browse#command(range, qargs, qmods) abort
+function! gina#command#browse#define() abort
+  return s:command
+endfunction
+
+
+" Instance -------------------------------------------------------------------
+let s:command = {}
+
+function! s:command.command(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
   let url = s:build_url(git, args)

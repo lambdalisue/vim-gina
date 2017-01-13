@@ -26,34 +26,35 @@ function! gina#util#commit#resolve(git, commit) abort
   endif
 endfunction
 
-function! s:find_common_ancestor(git, commit1, commit2) abort
-  let lhs = empty(a:commit1) ? 'HEAD' : a:commit1
-  let rhs = empty(a:commit2) ? 'HEAD' : a:commit2
-  let result = gina#util#process#call(a:git, [
-        \ 'merge-base', lhs, rhs
-        \])
-  if result.status
-    throw gina#util#process#error(result)
-  endif
-  return get(result.stdout, 0, '')
-endfunction
-
 function! gina#util#commit#count_commits_ahead_of_remote(git) abort
-  let result = gina#util#process#call(a:git, [
+  let result = gina#process#call(a:git, [
         \ 'log', '--oneline', '@{upstream}..'
         \])
   if result.status
-    throw gina#util#process#error(result)
+    throw gina#process#error(result)
   endif
   return len(filter(result.stdout, '!empty(v:val)'))
 endfunction
 
 function! gina#util#commit#count_commits_behind_remote(git) abort
-  let result = gina#util#process#call(a:git, [
+  let result = gina#process#call(a:git, [
         \ 'log', '--oneline', '..@{upstream}'
         \])
   if result.status
-    throw gina#util#process#error(result)
+    throw gina#process#error(result)
   endif
   return len(filter(result.stdout, '!empty(v:val)'))
+endfunction
+
+
+function! s:find_common_ancestor(git, commit1, commit2) abort
+  let lhs = empty(a:commit1) ? 'HEAD' : a:commit1
+  let rhs = empty(a:commit2) ? 'HEAD' : a:commit2
+  let result = gina#process#call(a:git, [
+        \ 'merge-base', lhs, rhs
+        \])
+  if result.status
+    throw gina#process#error(result)
+  endif
+  return get(result.stdout, 0, '')
 endfunction

@@ -49,6 +49,9 @@ function! gina#util#buffer#focus(expr) abort
   let guard = copy(s:focus_guard)
   let bufnr = bufnr(a:expr)
   let winnr = bufwinnr(bufnr)
+  if bufnr == 0 || winnr == 0
+    return v:null
+  endif
   if winnr() != winnr
     let guard.bufnum = bufnr('%')
     call s:focus(winnr)

@@ -115,6 +115,7 @@ function! s:read_content(content, ...) abort
         \ 'bad': '',
         \ 'edit': 0,
         \ 'line': '',
+        \ 'lockmarks': 0,
         \}, get(a:000, 0, {}))
   let tempfile = empty(options.tempfile) ? tempname() : options.tempfile
   let optnames = [
@@ -128,30 +129,39 @@ function! s:read_content(content, ...) abort
   let optname = join(filter(optnames, '!empty(v:val)'))
   try
     call writefile(a:content, tempfile)
-    execute printf('keepalt keepjumps %sread %s%s',
+    execute printf('keepalt keepjumps %s%sread %s%s',
+          \ options.lockmarks ? 'lockmarks ' : '',
           \ options.line,
           \ empty(optname) ? '' : optname . ' ',
           \ fnameescape(tempfile),
           \)
   finally
     call delete(tempfile)
-    execute 'bwipeout!' tempfile
+    " To remove 'tempfile' from unlisted-buffer #439
+    silent execute 'bwipeout!' fnameescape(tempfile)
   endtry
 endfunction
 
 function! s:edit_content(content, ...) abort
   let options = extend({
         \ 'edit': 1,
+        \ 'lockmarks': 0,
         \}, get(a:000, 0, {}))
   let guard = s:G.store(['&l:modifiable'])
   let saved_view = winsaveview()
   try
     let &l:modifiable=1
-    silent keepjumps %delete _
+    silent execute printf(
+          \ 'keepjumps %s%%delete _',
+          \ options.lockmarks ? 'lockmarks ' : '',
+          \)
     silent call s:read_content(a:content, options)
-    silent keepjumps 1delete _
+    silent execute printf(
+          \ 'keepjumps %s1delete _',
+          \ options.lockmarks ? 'lockmarks ' : '',
+          \)
   finally
-    keepjump call winrestview(saved_view)
+    keepjumps call winrestview(saved_view)
     call guard.restore()
   endtry
   setlocal nomodified

@@ -3,13 +3,13 @@
 " Do not mofidify the code nor insert new lines before '" ___vital___'
 if v:version > 703 || v:version == 703 && has('patch1170')
   function! vital#_gina#Vim#Console#import() abort
-    return map({'capture': '', 'info': '', 'echo': '', 'ask': '', 'select': '', 'error': '', '_vital_created': '', 'debug': '', 'warn': '', 'inputlist': '', 'confirm': '', 'input': '', 'echomsg': '', 'clear': ''},  'function("s:" . v:key)')
+    return map({'ask': '', 'clear': '', 'capture': '', 'echomsg': '', 'echo': '', 'confirm': '', 'warn': '', 'error': '', 'select': '', 'info': '', 'input': '', 'inputlist': '', 'echon': '', '_vital_created': '', 'debug': ''},  'function("s:" . v:key)')
   endfunction
 else
   function! s:_SID() abort
     return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
   endfunction
-  execute join(['function! vital#_gina#Vim#Console#import() abort', printf("return map({'capture': '', 'info': '', 'echo': '', 'ask': '', 'select': '', 'error': '', '_vital_created': '', 'debug': '', 'warn': '', 'inputlist': '', 'confirm': '', 'input': '', 'echomsg': '', 'clear': ''}, \"function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+  execute join(['function! vital#_gina#Vim#Console#import() abort', printf("return map({'ask': '', 'clear': '', 'capture': '', 'echomsg': '', 'echo': '', 'confirm': '', 'warn': '', 'error': '', 'select': '', 'info': '', 'input': '', 'inputlist': '', 'echon': '', '_vital_created': '', 'debug': ''}, \"function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
   delfunction s:_SID
 endif
 " ___vital___
@@ -36,6 +36,14 @@ function! s:echo(msg, ...) abort
   for line in split(msg, '\r\?\n')
     echo line
   endfor
+  echohl None
+endfunction
+
+function! s:echon(msg, ...) abort
+  let hl = get(a:000, 0, 'None')
+  let msg = s:_ensure_string(a:msg)
+  execute 'echohl' hl
+  echon msg
   echohl None
 endfunction
 

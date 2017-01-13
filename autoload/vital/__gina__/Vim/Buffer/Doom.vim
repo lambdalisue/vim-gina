@@ -20,6 +20,7 @@ function! s:doom.involve(expr, ...) abort
         \}, get(a:000, 0, {})
         \)
   let bufnr = bufnr(a:expr)
+  let winid = bufwinid(a:expr)
   let self.companies += [bufnr]
   let self.properties[string(bufnr)] = property
   call setbufvar(bufnr, printf('_%s_%s', s:prefix, self.name), self)

@@ -1,7 +1,15 @@
 let s:Argument = vital#gina#import('Argument')
 
 
-function! gina#command#edit#command(range, qargs, qmods) abort
+function! gina#command#edit#define() abort
+  return s:command
+endfunction
+
+
+" Instance -------------------------------------------------------------------
+let s:command = {}
+
+function! s:command.command(range, qargs, qmods) abort
   let git = gina#core#get()
   let args = s:build_args(git, a:qargs)
   let bufname = args.params.path
