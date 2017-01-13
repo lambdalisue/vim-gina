@@ -3,13 +3,13 @@
 " Do not mofidify the code nor insert new lines before '" ___vital___'
 if v:version > 703 || v:version == 703 && has('patch1170')
   function! vital#_gina#Vim#Buffer#Opener#import() abort
-    return map({'_vital_depends': '', 'open': '', '_vital_loaded': ''},  'function("s:" . v:key)')
+    return map({'_vital_depends': '', 'is_preview_opener': '', 'open': '', '_vital_loaded': ''},  'function("s:" . v:key)')
   endfunction
 else
   function! s:_SID() abort
     return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
   endfunction
-  execute join(['function! vital#_gina#Vim#Buffer#Opener#import() abort', printf("return map({'_vital_depends': '', 'open': '', '_vital_loaded': ''}, \"function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+  execute join(['function! vital#_gina#Vim#Buffer#Opener#import() abort', printf("return map({'_vital_depends': '', 'is_preview_opener': '', 'open': '', '_vital_loaded': ''}, \"function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
   delfunction s:_SID
 endif
 " ___vital___
@@ -43,7 +43,7 @@ function! s:open(buffer, ...) abort
     let opener = eval(opener[1:])
   endwhile
 
-  let preview = s:_is_preview_opener(opener)
+  let preview = s:is_preview_opener(opener)
   let bufloaded = bufloaded(a:buffer)
   let bufexists = bufexists(a:buffer)
 
@@ -71,6 +71,18 @@ function! s:open(buffer, ...) abort
   return extend(context, s:context)
 endfunction
 
+function! s:is_preview_opener(opener) abort
+  if a:opener =~# '\<ptag\?!\?\>'
+    return 1
+  elseif a:opener =~# '\<ped\%[it]!\?\>'
+    return 1
+  elseif a:opener =~# '\<ps\%[earch]!\?\>'
+    return 1
+  endif
+  return 0
+endfunction
+
+
 
 " Context --------------------------------------------------------------------
 let s:context = {}
@@ -85,17 +97,6 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:_is_preview_opener(opener) abort
-  if a:opener =~# '\<ptag\?!\?\>'
-    return 1
-  elseif a:opener =~# '\<ped\%[it]!\?\>'
-    return 1
-  elseif a:opener =~# '\<ps\%[earch]!\?\>'
-    return 1
-  endif
-  return 0
-endfunction
-
 function! s:_get_buffer_manager(group) abort
   let group = substitute(a:group, '-', '_', 'g')
   if exists('s:_bm_' . group)
