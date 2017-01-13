@@ -86,7 +86,7 @@ endfunction
 
 function! s:expand_percent(value) abort
   return a:value ==# '%'
-        \ ? gina#path#expand(a:value)
+        \ ? gina#util#path#expand(a:value)
         \ : a:value
 endfunction
 
