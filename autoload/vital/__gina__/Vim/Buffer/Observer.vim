@@ -21,8 +21,9 @@ function! s:update() abort
     for bufnum in keys(s:registry)
       let winnum = bufwinnr(str2nr(bufnum))
       if winnum > 0
-        silent execute printf('noautocmd keepjumps %dwincmd w', winnum)
+        silent execute printf('noautocmd keepalt keepjumps %dwincmd w', winnum)
         silent call s:_update()
+        continue
       elseif bufexists(str2nr(bufnum))
         execute printf('augroup %s_%s', s:prefix, s:name)
         execute printf('autocmd! * <buffer=%s>', bufnum)
@@ -35,13 +36,14 @@ function! s:update() abort
               \ bufnum,
               \)
         execute 'augroup END'
+        continue
       else
         silent unlet s:registry[bufnum]
       endif
     endfor
   finally
-    silent execute printf('noautocmd keepjumps %dwincmd w', winnum_saved)
-    silent keepjump call winrestview(winview_saved)
+    silent execute printf('noautocmd keepalt keepjumps %dwincmd w', winnum_saved)
+    silent keepjumps call winrestview(winview_saved)
   endtry
 endfunction
 
