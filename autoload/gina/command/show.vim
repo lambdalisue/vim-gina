@@ -1,4 +1,5 @@
 let s:Argument = vital#gina#import('Argument')
+let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
 
@@ -91,10 +92,12 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#command#stream(
+  let result = gina#command#call(
         \ gina#core#get_or_fail(),
         \ gina#util#meta#get_or_fail('args'),
         \)
+  call s:Buffer.edit_content(result.content)
+
   let params = gina#util#path#params('%')
   if empty(params.path)
     setlocal filetype=git
