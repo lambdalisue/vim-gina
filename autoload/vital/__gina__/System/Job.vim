@@ -2,35 +2,19 @@ if has('nvim')
   function! s:start(args, ...) abort
     " Build options for jobstart
     let options = get(a:000, 0, {})
-    let job_options = extend(copy(options), s:options)
+    let job = extend(copy(options), s:job)
     if has_key(options, 'on_exit')
-      let job_options._on_exit = options.on_exit
+      let job._on_exit = options.on_exit
     endif
     " Start job and return a job instance
-    let jobid = jobstart(a:args, job_options)
-    let job = extend(copy(s:job), {
-          \ 'args': a:args,
-          \ '_id': jobid,
-          \ '_status': jobid > 0 ? 'run' : 'fail',
-          \})
-    let job_options._job = job
+    let job._job = jobstart(a:args, job)
+    let job._status = job._job > 0 ? 'run' : 'fail'
+    let job.args = a:args
     return job
   endfunction
 
 
   " Instance -------------------------------------------------------------------
-  let s:options = {}
-
-  function! s:options.on_exit(jobid, msg, event) abort
-    " Update job status
-    let self._job._status = 'dead'
-    " Call user specified callback if exists
-    if has_key(self, '_on_exit')
-      call call(self._on_exit, [a:jobid, a:msg, a:event], self)
-    endif
-  endfunction
-
-
   let s:job = { '_status': 'fail' }
 
   function! s:job.status() abort
@@ -38,20 +22,29 @@ if has('nvim')
   endfunction
 
   function! s:job.send(data) abort
-    return jobsend(self._id, a:data)
+    return jobsend(self._job, a:data)
   endfunction
 
   function! s:job.wait(...) abort
     let timeout = get(a:000, 0, v:null)
     if timeout is v:null
-      return jobwait([self._id])[0]
+      return jobwait([self._job])[0]
     else
-      return jobwait([self._id], timeout)[0]
+      return jobwait([self._job], timeout)[0]
     endif
   endfunction
 
   function! s:job.stop() abort
-    return jobstop(self._id)
+    return jobstop(self._job)
+  endfunction
+
+  function! s:job.on_exit(jobid, msg, event) abort
+    " Update job status
+    let self._status = 'dead'
+    " Call user specified callback if exists
+    if has_key(self, '_on_exit')
+      call call(self._on_exit, [a:jobid, a:msg, a:event], self)
+    endif
   endfunction
 else
   function! s:start(args, ...) abort
