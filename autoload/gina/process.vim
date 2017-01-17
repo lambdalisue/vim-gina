@@ -42,8 +42,6 @@ function! gina#process#inform(result) abort
   redraw | echo
   if a:result.status
     call s:Console.warn('Fail: ' . join(a:result.args))
-  else
-    call s:Console.info('Ok: ' . join(a:result.args))
   endif
   call s:Console.echo(join(a:result.content, "\n"))
 endfunction

@@ -7,9 +7,7 @@ let s:Emitter = vital#gina#import('Emitter')
 function! gina#command#call(git, args, ...) abort
   let options = get(a:000, 0, {})
   let result = gina#process#call(a:git, a:args.raw, options)
-  if result.status
-    throw gina#process#error(result)
-  endif
+  call gina#process#inform(result)
   call s:Emitter.emit('gina:modified')
   return result
 endfunction
