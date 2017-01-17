@@ -127,10 +127,10 @@ function! s:_ch_read_and_call_callbacks(job) abort
   if status ==# 'open' || status ==# 'buffered'
     let stdout = ch_read(a:job._channel)
     let stderr = ch_read(a:job._channel, {'part': 'err'})
-    if has_key(self, 'on_stdout') && !empty(stdout)
+    if has_key(a:job, 'on_stdout') && !empty(stdout)
       call s:_job_callback('stdout', a:job, a:job._job, stdout)
     endif
-    if has_key(self, 'on_stderr') && !empty(stderr)
+    if has_key(a:job, 'on_stderr') && !empty(stderr)
       call s:_job_callback('stderr', a:job, a:job._job, stderr)
     endif
   endif
