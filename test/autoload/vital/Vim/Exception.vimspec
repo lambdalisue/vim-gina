@@ -39,10 +39,7 @@ Describe Vim.Exception
       call Console.clear()
       call Exception.handle(Exception.info('foobar'))
       let messages = join(Console.capture('messages'), "\n")
-      " NOTE:
-      " 'echo' is used instead of 'echomsg' so no message should be appeared
-      " on 'messages' command
-      Assert NotMatch(messages, '\<foobar\>')
+      Assert Match(messages, '\<foobar\>')
     End
 
     It echomsgs message part of {exception} if the category is Warning
