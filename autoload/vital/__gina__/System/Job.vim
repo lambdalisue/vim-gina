@@ -63,6 +63,7 @@ else
       let job_options.exit_cb = function('s:_job_callback', ['exit', job])
     endif
     let job._job = job_start(a:args, job_options)
+    let job._channel = job_getchannel(job._job)
     let job.args = a:args
     return job
   endfunction
@@ -108,15 +109,9 @@ else
     while timeout is v:null || start_time + timeout > reltime()
       let status = self.status()
       if status ==# 'run'
-        let stdout = ch_read(self._job)
-        let stderr = ch_read(self._job, {'part': 'err'})
-        if has_key(self, 'on_stdout') && !empty(stdout)
-          call s:_job_callback('stdout', self, self._job, stdout)
-        endif
-        if has_key(self, 'on_stderr') && !empty(stderr)
-          call s:_job_callback('stderr', self, self._job, stderr)
-        endif
+        call s:_ch_read_and_call_callbacks(self)
       elseif status ==# 'dead'
+        call s:_ch_read_and_call_callbacks(self)
         let info = job_info(self._job)
         return info.exitval
       else
@@ -126,3 +121,17 @@ else
     return -1
   endfunction
 endif
+
+function! s:_ch_read_and_call_callbacks(job) abort
+  let status = ch_status(a:job._channel)
+  if status ==# 'open' || status ==# 'buffered'
+    let stdout = ch_read(a:job._channel)
+    let stderr = ch_read(a:job._channel, {'part': 'err'})
+    if has_key(self, 'on_stdout') && !empty(stdout)
+      call s:_job_callback('stdout', a:job, a:job._job, stdout)
+    endif
+    if has_key(self, 'on_stderr') && !empty(stderr)
+      call s:_job_callback('stderr', a:job, a:job._job, stderr)
+    endif
+  endif
+endfunction
