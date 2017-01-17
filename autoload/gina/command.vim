@@ -61,6 +61,9 @@ function! s:stream.on_stdout(job, msg, event) abort
   if empty(focus)
     return self.stop()
   endif
+  if get(b:, 'gina_job') isnot# self
+    return self.stop()
+  endif
   let guard = s:Guard.store(['&l:modifiable'])
   let view = winsaveview()
   try
@@ -89,6 +92,9 @@ endfunction
 function! s:stream.on_exit(job, msg, event) abort
   let focus = gina#util#buffer#focus(self.__bufnr)
   if empty(focus)
+    return
+  endif
+  if get(b:, 'gina_job') isnot# self
     return
   endif
   let guard = s:Guard.store(['&l:modifiable'])
