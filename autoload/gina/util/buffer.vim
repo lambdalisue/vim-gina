@@ -40,6 +40,7 @@ function! gina#util#buffer#open(bufname, ...) abort
     call gina#util#selection#set(options.selection)
   endif
   " Finalize
+  call gina#command#ready_stream()
   call gina#util#doautocmd('BufReadCmd')
   call context.end()
   return context

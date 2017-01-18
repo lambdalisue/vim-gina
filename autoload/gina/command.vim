@@ -31,6 +31,16 @@ function! gina#command#stream(git, args, ...) abort
   return b:gina_job
 endfunction
 
+function! gina#command#ready_stream() abort
+  " NOTE:
+  " In BufReadCmd, the content of the buffer is cleared so save winview every
+  " after cursor has moved and use that to restore winview.
+  augroup gina_internal_command_winview_assignment
+    autocmd! * <buffer>
+    autocmd CursorMoved <buffer> let b:gina_winview = winsaveview()
+  augroup END
+endfunction
+
 
 " Pipe -----------------------------------------------------------------------
 let s:stream = {}
@@ -73,9 +83,6 @@ function! s:stream.on_exit(job, msg, event) abort
   if empty(focus)
     return
   endif
-  if get(b:, 'gina_job') isnot# self
-    return
-  endif
   let guard = s:Guard.store(['&l:modifiable'])
   try
     setlocal modifiable
@@ -89,12 +96,3 @@ function! s:stream.on_exit(job, msg, event) abort
     call focus.restore()
   endtry
 endfunction
-
-
-" NOTE:
-" In BufReadCmd, the content of the buffer is cleared so save winview every
-" after cursor has moved and use that to restore winview.
-augroup gina_internal_command_winview_assignment
-  autocmd! *
-  autocmd CursorMoved gina:* let b:gina_winview = winsaveview()
-augroup END
