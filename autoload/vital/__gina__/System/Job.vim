@@ -129,16 +129,21 @@ else
     let timeout = get(a:000, 0, v:null)
     let timeout = timeout is# v:null ? v:null : timeout / 1000.0
     let start_time = reltime()
-    while timeout is# v:null || timeout > reltimefloat(reltime(start_time))
-      let status = self.status()
-      if status ==# 'fail'
-        return -3
-      elseif status ==# 'dead'
-        call s:_ch_read_and_call_callbacks(self)
-        let info = job_info(self.__job)
-        return info.exitval
-      endif
-    endwhile
+    try
+      while timeout is# v:null || timeout > reltimefloat(reltime(start_time))
+        let status = self.status()
+        if status ==# 'fail'
+          return -3
+        elseif status ==# 'dead'
+          call s:_ch_read_and_call_callbacks(self)
+          let info = job_info(self.__job)
+          return info.exitval
+        endif
+      endwhile
+    catch /^Vim:Interrupt$/
+      call self.stop()
+      return 1
+    endtry
     return -1
   endfunction
 endif
