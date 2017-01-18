@@ -21,20 +21,20 @@ function! gina#process#call(git, args, ...) abort
         \}, get(a:000, 0, {})
         \)
   let pipe = extend(copy(options), s:pipe)
-  let pipe.__on_stdout = options.on_stdout
-  let pipe.__on_stderr = options.on_stderr
-  let pipe.__on_exit = options.on_exit
-  let pipe.__stdout = []
-  let pipe.__stderr = []
-  let pipe.__content = []
+  let pipe._on_stdout = options.on_stdout
+  let pipe._on_stderr = options.on_stderr
+  let pipe._on_exit = options.on_exit
+  let pipe._stdout = []
+  let pipe._stderr = []
+  let pipe._content = []
   let job = gina#process#open(a:git, a:args, pipe)
   let status = job.wait(options.timeout)
   return {
         \ 'args': job.args,
         \ 'status': status,
-        \ 'stdout': pipe.__stdout,
-        \ 'stderr': pipe.__stderr,
-        \ 'content': pipe.__content,
+        \ 'stdout': pipe._stdout,
+        \ 'stderr': pipe._stderr,
+        \ 'content': pipe._content,
         \}
 endfunction
 
@@ -79,41 +79,41 @@ endfunction
 let s:pipe = {}
 
 function! s:pipe.on_stdout(job, msg, event) abort
-  let leading = get(self.__stdout, -1, '')
-  silent! call remove(self.__stdout, -1)
-  call extend(self.__stdout, [leading . get(a:msg, 0, '')] + a:msg[1:])
-  let leading = get(self.__content, -1, '')
-  silent! call remove(self.__content, -1)
-  call extend(self.__content, [leading . get(a:msg, 0, '')] + a:msg[1:])
-  if self.__on_stdout isnot# v:null
-    call self.__on_stdout(a:job, a:msg, a:event)
+  let leading = get(self._stdout, -1, '')
+  silent! call remove(self._stdout, -1)
+  call extend(self._stdout, [leading . get(a:msg, 0, '')] + a:msg[1:])
+  let leading = get(self._content, -1, '')
+  silent! call remove(self._content, -1)
+  call extend(self._content, [leading . get(a:msg, 0, '')] + a:msg[1:])
+  if self._on_stdout isnot# v:null
+    call self._on_stdout(a:job, a:msg, a:event)
   endif
 endfunction
 
 function! s:pipe.on_stderr(job, msg, event) abort
-  let leading = get(self.__stderr, -1, '')
-  silent! call remove(self.__stderr, -1)
-  call extend(self.__stderr, [leading . get(a:msg, 0, '')] + a:msg[1:])
-  let leading = get(self.__content, -1, '')
-  silent! call remove(self.__content, -1)
-  call extend(self.__content, [leading . get(a:msg, 0, '')] + a:msg[1:])
-  if self.__on_stderr isnot# v:null
-    call self.__on_stderr(a:job, a:msg, a:event)
+  let leading = get(self._stderr, -1, '')
+  silent! call remove(self._stderr, -1)
+  call extend(self._stderr, [leading . get(a:msg, 0, '')] + a:msg[1:])
+  let leading = get(self._content, -1, '')
+  silent! call remove(self._content, -1)
+  call extend(self._content, [leading . get(a:msg, 0, '')] + a:msg[1:])
+  if self._on_stderr isnot# v:null
+    call self._on_stderr(a:job, a:msg, a:event)
   endif
 endfunction
 
 function! s:pipe.on_exit(job, msg, event) abort
-  if empty(get(self.__stdout, -1, ''))
-    silent! call remove(self.__stdout, -1)
+  if empty(get(self._stdout, -1, ''))
+    silent! call remove(self._stdout, -1)
   endif
-  if empty(get(self.__stderr, -1, ''))
-    silent! call remove(self.__stderr, -1)
+  if empty(get(self._stderr, -1, ''))
+    silent! call remove(self._stderr, -1)
   endif
-  if empty(get(self.__content, -1, ''))
-    silent! call remove(self.__content, -1)
+  if empty(get(self._content, -1, ''))
+    silent! call remove(self._content, -1)
   endif
-  if self.__on_exit isnot# v:null
-    call self.__on_exit(a:job, a:msg, a:event)
+  if self._on_exit isnot# v:null
+    call self._on_exit(a:job, a:msg, a:event)
   endif
 endfunction
 
