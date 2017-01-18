@@ -1,5 +1,6 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Argument = vital#gina#import('Argument')
+let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
 let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
@@ -124,3 +125,8 @@ function! s:parse_record(git, record) abort
         \}
   return candidate
 endfunction
+
+
+cal s:Config.define('gina#command#grep', {
+      \ 'send_to_quickfix': 1,
+      \})

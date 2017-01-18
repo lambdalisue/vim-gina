@@ -27,6 +27,7 @@ function! gina#command#stream(git, args, ...) abort
     call guard.restore()
   endtry
   " Start a new process
+  call s:Emitter.emit('gina:stream:open', a:args.raw, options)
   let b:gina_job = gina#process#open(a:git, a:args.raw, options)
   return b:gina_job
 endfunction
@@ -67,6 +68,7 @@ function! s:stream.on_stdout(job, msg, event) abort
     if empty(getline(1))
       silent lockmarks keepjumps 1delete _
     endif
+    call s:Emitter.emit('gina:stream:out', a:job, a:msg, a:event)
   finally
     call winrestview(view)
     call guard.restore()
@@ -93,6 +95,7 @@ function! s:stream.on_exit(job, msg, event) abort
       silent lockmarks keepjumps $delete _
     endif
     setlocal nomodified
+    call s:Emitter.emit('gina:stream:exit', a:job, a:msg, a:event)
   finally
     call winrestview(self.__winview)
     call guard.restore()

@@ -24,3 +24,16 @@ if empty(get(params, 'commit'))
 else
   call gina#util#nmap('<Return>', '<Plug>(gina-show)zv')
 endif
+
+" Quickfix
+if g:gina#command#grep#send_to_quickfix
+  let s:Emitter = vital#gina#import('Emitter')
+  function! s:on_exit(job, msg, event) abort
+    let params = gina#util#path#params('%')
+    if empty(params) || params.scheme !=# 'grep'
+      return
+    endif
+    call gina#action#call('export:quickfix')
+  endfunction
+  call s:Emitter.subscribe('gina:stream:exit', function('s:on_exit'))
+endif
