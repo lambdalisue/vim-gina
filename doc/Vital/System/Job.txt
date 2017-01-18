@@ -35,8 +35,11 @@ start({args}[, {options}])
 	The following attributes are allowed in {options}.
 
 	"on_stdout"	A callback called when the process output to stdout.
+			The {msg} is a stdout data |List|.
 	"on_stderr"	A callback called when the process output to stderr.
+			The {msg} is a stderr data |List|.
 	"on_exit"	A callback called when the process terminated.
+			The {msg} is an exit status.
 
 	Note that double underscore (__) attributes in {options} are used
 	internally so users should NOT define such attributes on {options}.
@@ -56,13 +59,13 @@ start({args}[, {options}])
 	endfunction
 
 	function! s:on_exit(job, msg, event) abort dict
-	  let self.status = a:msg
+	  let self.exit_status = a:msg
 	endfunction
 
 	let job = s:Job.start(['git', 'status'], {
 	      \ 'stdout': [],
 	      \ 'stderr': [],
-	      \ 'status': 0,
+	      \ 'exit_status': -1,
 	      \ 'on_stdout': function('on_stdout'),
 	      \ 'on_stderr': function('on_stderr'),
 	      \ 'on_exit': function('on_exit'),
