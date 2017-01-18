@@ -1,2 +1,3 @@
 import sys
-print('Hello World', file=sys.stderr)
+
+sys.stderr.write('Hello World\n')
