@@ -444,7 +444,7 @@ function! s:combinations(list, r) abort
   if a:r > len(a:list)
     return []
   elseif a:r < 0
-    throw 'vital: Data:List: {r} must be non-negative integer'
+    throw 'vital: Data.List: {r} must be non-negative integer'
   endif
   let n = len(a:list)
   let result = []
