@@ -92,9 +92,9 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  let result = gina#command#call(
+  let result = gina#process#call(
         \ gina#core#get_or_fail(),
-        \ gina#util#meta#get_or_fail('args'),
+        \ gina#util#meta#get_or_fail('args').raw,
         \)
   call s:Buffer.edit_content(result.content)
 
