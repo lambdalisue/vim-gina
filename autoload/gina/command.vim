@@ -12,11 +12,6 @@ function! gina#command#call(git, args, ...) abort
   return result
 endfunction
 
-function! gina#command#async(git, args, ...) abort
-  let options = extend(copy(s:async), get(a:000, 0, {}))
-  return gina#process#open(a:git, a:args.raw, options)
-endfunction
-
 function! gina#command#stream(git, args, ...) abort
   let options = extend(copy(s:stream), get(a:000, 0, {}))
   let options.__bufnr = bufnr('%')
@@ -38,20 +33,6 @@ endfunction
 
 
 " Pipe -----------------------------------------------------------------------
-let s:async = {}
-
-function! s:async.on_stdout(job, msg, event) abort
-  redraw | call s:Console.echon(join(a:msg, "\n"))
-endfunction
-
-function! s:async.on_stderr(job, msg, event) abort
-  redraw | call s:Console.echon(join(a:msg, "\n"), 'WarningMsg')
-endfunction
-
-function! s:async.on_exit(job, msg, event) abort
-  call s:Emitter.emit('gina:modified')
-endfunction
-
 let s:stream = {}
 
 function! s:stream.on_stdout(job, msg, event) abort
