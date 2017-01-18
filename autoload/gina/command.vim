@@ -83,6 +83,9 @@ function! s:stream.on_exit(job, msg, event) abort
   if empty(focus)
     return
   endif
+  if get(b:, 'gina_job') isnot# self
+    return
+  endif
   let guard = s:Guard.store(['&l:modifiable'])
   try
     setlocal modifiable
