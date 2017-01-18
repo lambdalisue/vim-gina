@@ -2,6 +2,12 @@ let s:Console = vital#gina#import('Vim.Console')
 
 
 function! gina#action#branch#define(binder) abort
+  call a:binder.define('branch:refresh', function('s:on_refresh'), {
+        \ 'description': 'Refresh remote branches',
+        \ 'mapping_mode': 'nv',
+        \ 'requirements': [],
+        \ 'options': {},
+        \})
   call a:binder.define('branch:checkout', function('s:on_checkout'), {
         \ 'description': 'Checkout a branch',
         \ 'mapping_mode': 'n',
@@ -54,6 +60,11 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:on_refresh(candidates, options) abort
+  let git = gina#core#get_or_fail()
+  execute 'Gina remote update --prune'
+endfunction
+
 function! s:on_checkout(candidates, options) abort
   if empty(a:candidates)
     return

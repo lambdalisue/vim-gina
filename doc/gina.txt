@@ -419,6 +419,8 @@ branch:move:force
 	Rename a branch.
 branch:new
 	Create a new branch
+branch:refresh
+	Fetch remote branches and remove unexisting remote branches
 branch:set-upstream-to
 	Set upstream of the branch
 branch:unset-upstream
