@@ -99,7 +99,7 @@ else
 
   function! s:_job_callback(event, options, channel, ...) abort
     let raw = get(a:000, 0, '')
-    let msg = type(raw) == v:t_string ? split(raw, '\n', 1) : raw
+    let msg = type(raw) == v:t_string ? split(raw, '\r\?\n', 1) : raw
     call call(
           \ a:options['on_' . a:event],
           \ [a:channel, msg, a:event],
