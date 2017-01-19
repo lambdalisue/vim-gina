@@ -13,7 +13,7 @@ function! s:_vital_depends() abort
 endfunction
 
 function! s:new(path) abort
-  let path = expand(a:path)
+  let path = s:Path.remove_last_separator(expand(a:path))
   let dirpath = isdirectory(path) ? path : fnamemodify(path, ':p:h')
   let dirpath = simplify(s:Path.abspath(s:Path.realpath(path)))
 

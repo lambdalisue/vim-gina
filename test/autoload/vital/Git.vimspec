@@ -24,6 +24,20 @@ Describe Git
         Assert Equals(git.commondir, '')
       End
 
+      It returns a git instance of {path} which ends with path separator
+        let git = Git.new(fnamemodify(profile.valid1, ':p'))
+        " Attributes
+        Assert KeyExists(git, 'worktree')
+        Assert KeyExists(git, 'repository')
+        Assert KeyExists(git, 'commondir')
+        Assert True(islocked('git.worktree'))
+        Assert True(islocked('git.repository'))
+        Assert True(islocked('git.commondir'))
+        Assert Equals(git.worktree, profile.valid1)
+        Assert Equals(git.repository, Path.join(profile.valid1, '.git'))
+        Assert Equals(git.commondir, '')
+      End
+
       It returns a git instance of a worktree which {path} belongs
         let path1 = Path.join(profile.valid1, 'A', 'foo', 'bar.txt')
         let path2 = Path.join(profile.valid1, 'B', 'foo', 'bar.txt')
@@ -61,9 +75,54 @@ Describe Git
         Assert Equals(git.commondir, Path.join(profile.valid1, '.git'))
       End
 
+      It returns a git instance of {path} which ends with path separator
+        if !profile.git_support_worktree
+          Skip This git does not support 'git worktree' feature
+        endif
+
+        let git = Git.new(fnamemodify(profile.valid2, ':p'))
+        " Attributes
+        Assert KeyExists(git, 'worktree')
+        Assert KeyExists(git, 'repository')
+        Assert KeyExists(git, 'commondir')
+        Assert True(islocked('git.worktree'))
+        Assert True(islocked('git.repository'))
+        Assert True(islocked('git.commondir'))
+        Assert Equals(git.worktree, profile.valid2)
+        Assert Equals(git.repository, Path.join(
+              \ profile.valid1, '.git', 'worktrees', 'valid2'
+              \))
+        Assert Equals(git.commondir, Path.join(profile.valid1, '.git'))
+      End
+
+      It returns a git instance of a worktree which {path} belongs
+        if !profile.git_support_worktree
+          Skip This git does not support 'git worktree' feature
+        endif
+
+        let path1 = Path.join(profile.valid2, 'A', 'foo', 'bar.txt')
+        let path2 = Path.join(profile.valid2, 'B', 'foo', 'bar.txt')
+        let path3 = Path.join(profile.valid2, 'C', 'foo')
+
+        let git1 = Git.new(path1)
+        let git2 = Git.new(path2)
+        let git3 = Git.new(path3)
+        Assert Equals(git1.worktree, profile.valid2)
+        Assert Equals(git1.repository, Path.join(
+              \ profile.valid1, '.git', 'worktrees', 'valid2'
+              \))
+        Assert Equals(git1.commondir, Path.join(profile.valid1, '.git'))
+        Assert Equals(git1, git2)
+        Assert Equals(git1, git3)
+      End
+    End
+
     Context A non git repository
       It returns an empty dictionary of {path}
         let git = Git.new(profile.invalid)
+        Assert Equals(git, {})
+
+        let git = Git.new(fnamemodify(profile.invalid, ':p'))
         Assert Equals(git, {})
 
         let git = Git.new(Path.join(profile.invalid, 'A', 'foo', 'bar.txt'))
