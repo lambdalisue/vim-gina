@@ -326,6 +326,24 @@ COMMANDS					*gina-commands*
 
 	See "man git-status" for other available {options}.
 
+						*:Gina-tag*
+:Gina tag [{options}]
+	Open a "gina-tag" buffer to list tags.
+	The followings are allowed in {options}
+
+	--opener={opener}
+		An opener command for the new buffer (|gina-options-opener|)
+
+	The following action groups are available in the buffer.
+
+	|gina-action-branch|
+	|gina-action-browse|
+	|gina-action-changes|
+	|gina-action-commit|
+	|gina-action-show|
+
+	See "man git-tag" for other available {options}.
+
 -----------------------------------------------------------------------------
 VARIABLES					*gina-variables*
 
