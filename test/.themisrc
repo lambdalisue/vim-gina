@@ -3,6 +3,10 @@ if !has('nvim')
   set encoding=utf-8
 endif
 
+" Force English interface
+language message C
+set helplang=en
+
 let s:assert = themis#helper('assert')
 call themis#option('recursive', 1)
 call themis#option('reporter', 'dot')
