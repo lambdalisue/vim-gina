@@ -6,7 +6,7 @@ let s:Git = vital#gina#import('Git')
 let s:registry = s:Cache.new()
 let s:reference = s:Cache.new()
 
-let s:CACHE_NEVER = 'never'   " No cache. Search .git aloways.
+let s:CACHE_NEVER = 'never'   " No cache. Search .git always.
 let s:CACHE_TRUTH = 'truth'   " Use a cache when a git repository is found.
 let s:CACHE_ALWAYS = 'always' " Use a cache always.
 
@@ -17,7 +17,7 @@ function! gina#core#get_or_fail(...) abort
         \ 'cache': s:CACHE_TRUTH,
         \}, get(a:000, 0, {})
         \)
-  let git = gina#core#get()
+  let git = gina#core#get(options)
   if !empty(git)
     return git
   endif
