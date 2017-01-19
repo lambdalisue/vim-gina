@@ -1,4 +1,8 @@
 Describe gina#util#meta
+  Before
+    windo bwipeout!
+  End
+
   Describe #get()
     It returns a default value when {name} does not exist
       Assert Equals(gina#util#meta#get('foo'), '')

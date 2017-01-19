@@ -12,32 +12,116 @@ call themis#option('recursive', 1)
 call themis#option('reporter', 'dot')
 call themis#helper('command').with(s:assert)
 
-if empty($TRAVIS)
-  call themis#log('***********************************************************')
-  call themis#log('v:progname:     ' . v:progname)
-  call themis#log('v:version:      ' . v:version)
-  call themis#log('***********************************************************')
-else
-  call themis#log('***********************************************************')
-  call themis#log('v:progname:     ' . v:progname)
-  call themis#log('v:version:      ' . v:version)
-  call themis#log('has("lua"):     ' . has('lua'))
-  call themis#log('has("python"):  ' . has('python'))
-  call themis#log('has("python3"): ' . has('python3'))
-  call themis#log('$LANG:          ' . $LANG)
-  call themis#log('&encoding:      ' . &encoding)
-  call themis#log('&termencoding:  ' . &termencoding)
-  call themis#log('&fileencodings: ' . &fileencodings)
-  call themis#log('&fileformats:   ' . &fileformats)
-  call themis#log('&shellslash:    ' . (exists('&shellslash') ? &shellslash : 'DISABLED'))
-  call themis#log('&runtimepath:')
-  for s:runtimepath in split(&runtimepath, ',')
-    call themis#log('  ' . s:runtimepath)
-  endfor
-  call themis#log('***********************************************************')
-endif
+call themis#log('***********************************************************')
+call themis#log('v:progname:     ' . v:progname)
+call themis#log('v:version:      ' . v:version)
+call themis#log('has("lua"):     ' . has('lua'))
+call themis#log('has("python"):  ' . has('python'))
+call themis#log('has("python3"): ' . has('python3'))
+call themis#log('$LANG:          ' . $LANG)
+call themis#log('&encoding:      ' . &encoding)
+call themis#log('&termencoding:  ' . &termencoding)
+call themis#log('&fileencodings: ' . &fileencodings)
+call themis#log('&fileformats:   ' . &fileformats)
+call themis#log('&shellslash:    ' . (exists('&shellslash') ? &shellslash : 'DISABLED'))
+call themis#log('&runtimepath:')
+for s:runtimepath in split(&runtimepath, ',')
+  call themis#log('  ' . s:runtimepath)
+endfor
+call themis#log('-----------------------------------------------------------')
 
-execute printf(
-      \ 'set runtimepath+=%s',
-      \ shellescape(expand('<sfile>:h/startup.vim'))
-      \)
+" Git ------------------------------------------------------------------------
+function! s:new_profile() abort
+  let Path = vital#gina#import('System.Filepath')
+  let root = resolve(tempname())
+  let valid1 = Path.join(root, 'valid1')  " Normal
+  let valid2 = Path.join(root, 'valid2')  " Worktree (git worktree)
+  let valid3 = Path.join(root, 'valid3')  " For external remote
+  let invalid = Path.join(root, 'invalid')
+
+  " Build files and directories
+  for path in [valid1, valid3, invalid]
+    call mkdir(Path.join(path, 'A', 'foo'), 'p')
+    call mkdir(Path.join(path, 'B', 'foo'), 'p')
+    call mkdir(Path.join(path, 'C', 'foo'), 'p')
+    call writefile(['A'], Path.join(path, 'A', 'foo', 'bar.txt'))
+    call writefile(['B'], Path.join(path, 'B', 'foo', 'bar.txt'))
+    call writefile(['C'], Path.join(path, 'C', 'foo', 'bar.txt'))
+  endfor
+
+  " Configure git repository
+  let git = {}
+  let git_version = matchstr(system('git --version'), '\%(\d\+\.\)\+\d')
+  let git_support_worktree = git_version !~# '^\%([01]\..*\|2\.4\..*\)$'
+
+  function! git.as(worktree) abort
+    let self.worktree = a:worktree
+    return self
+  endfunction
+
+  function! git.execute(...) abort
+    let command = a:0 == 1 ? a:1 : call('printf', a:000)
+    let args = [
+          \ 'git',
+          \ '-c color.ui=false',
+          \ '-c core.editor=false',
+          \ '--no-pager',
+          \]
+    if !empty(get(self, 'worktree'))
+      let args += ['-C', fnameescape(self.worktree)]
+    endif
+    let output = system(join(args + [command]))
+    return substitute(output, '\r\?\n$', '', '')
+  endfunction
+
+  let git.worktree = valid1
+  call git.execute('init')
+  call git.execute('add %s', fnameescape(Path.realpath('A/foo/bar.txt')))
+  call git.execute('commit --quiet -m "First"')
+  call git.execute('checkout --track -b develop')
+  call git.execute('add %s', fnameescape(Path.realpath('B/foo/bar.txt')))
+  call git.execute('commit --quiet -m "Second"')
+  call git.execute('checkout master')
+  call git.execute('add %s', fnameescape(Path.realpath('C/foo/bar.txt')))
+  call git.execute('commit --quiet -m "Third"')
+
+  if git_support_worktree
+    call git.execute('worktree add %s develop', fnameescape(valid2))
+  endif
+
+  let git.worktree = valid3
+  call git.execute('init')
+  call git.execute('add %s', fnameescape(Path.realpath('A/foo/bar.txt')))
+  call git.execute('commit --quiet -m "Fourth"')
+
+  let git.worktree = valid1
+  call git.execute('remote add ext %s', fnameescape(valid3))
+  call git.execute('fetch ext')
+  call git.execute('checkout --track -b ext/master remotes/ext/master')
+  call git.execute('checkout master')
+
+  return {
+        \ 'root': root,
+        \ 'valid1': valid1,
+        \ 'valid2': valid2,
+        \ 'valid3': valid3,
+        \ 'invalid': invalid,
+        \ 'git_version': git_version,
+        \ 'git_support_worktree': git_support_worktree,
+        \ 'git': git,
+        \}
+endfunction
+
+let s:profile = s:new_profile()
+let g:git_profile = s:profile
+
+call themis#log('git version:     ' . s:profile.git_version)
+call themis#log('  worktree:      ' . s:profile.git_support_worktree)
+call themis#log('valid1:          ' . s:profile.valid1)
+call themis#log(s:profile.git.as(s:profile.valid1).execute('branch -av'))
+call themis#log('valid2:          ' . s:profile.valid2)
+call themis#log(s:profile.git.as(s:profile.valid2).execute('branch -av'))
+call themis#log('valid3:          ' . s:profile.valid3)
+call themis#log(s:profile.git.as(s:profile.valid3).execute('branch -av'))
+call themis#log('invalid:         ' . s:profile.invalid)
+call themis#log('***********************************************************')

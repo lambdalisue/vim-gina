@@ -1,52 +1,57 @@
 Describe gina#core
   Before all
-    call g:git_tester.attach(l:)
     let Path = vital#gina#import('System.Filepath')
     let scope = themis#helper('scope')
   End
 
+  Before
+    windo bwipeout!
+  End
+
   Describe #get_or_fail()
     It throws an exception for a non git working-tree directory
-      execute 'edit' outside
+      execute 'edit' fnameescape(g:git_profile.invalid)
       Throws /No git repository/ gina#core#get_or_fail()
     End
 
     It returns a git instance for a git working-tree directory
-      execute 'edit' inside
+      execute 'edit' fnameescape(g:git_profile.valid1)
       let git = gina#core#get_or_fail()
-      Assert Equals(git.refname, 'inside')
-      Assert Equals(git.worktree, inside)
-      Assert Equals(git.repository, Path.join(inside, '.git'))
+      Assert Equals(git.refname, 'valid1')
+      Assert Equals(git.worktree, g:git_profile.valid1)
+      Assert Equals(git.repository, Path.join(g:git_profile.valid1, '.git'))
       Assert Equals(git.commondir, '')
     End
   End
 
   Describe #get()
     It returns an empty dictionary for a non git working-tree directory
-      execute 'edit' outside
+      execute 'edit' fnameescape(g:git_profile.invalid)
       let git = gina#core#get()
       Assert Equals(git, {})
     End
 
     It returns a git instance for a git working-tree directory
-      execute 'edit' inside
+      execute 'edit' fnameescape(g:git_profile.valid1)
       let git = gina#core#get()
-      Assert Equals(git.refname, 'inside')
-      Assert Equals(git.worktree, inside)
-      Assert Equals(git.repository, Path.join(inside, '.git'))
+      Assert Equals(git.refname, 'valid1')
+      Assert Equals(git.worktree, g:git_profile.valid1)
+      Assert Equals(git.repository, Path.join(g:git_profile.valid1, '.git'))
       Assert Equals(git.commondir, '')
     End
 
     It returns a git instance for a git worktree directory
-      if !g:git_supported.worktree
+      if !g:git_profile.git_support_worktree
         Skip This git does not support 'worktree' feature.
       endif
-      execute 'edit' worktree
+      execute 'edit' fnameescape(g:git_profile.valid2)
       let git = gina#core#get()
-      Assert Equals(git.refname, 'worktree')
-      Assert Equals(git.worktree, worktree)
-      Assert Equals(git.repository, Path.join(inside, '.git', 'worktrees', 'worktree'))
-      Assert Equals(git.commondir, Path.join(inside, '.git'))
+      Assert Equals(git.refname, 'valid2')
+      Assert Equals(git.worktree, g:git_profile.valid2)
+      Assert Equals(git.repository, Path.join(
+            \ g:git_profile.valid1, '.git', 'worktrees', 'valid2'
+            \))
+      Assert Equals(git.commondir, Path.join(g:git_profile.valid1, '.git'))
     End
   End
 End
