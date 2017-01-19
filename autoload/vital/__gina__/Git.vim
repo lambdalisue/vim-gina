@@ -52,11 +52,15 @@ function! s:new(path) abort
     let commondir = s:Path.join(repository, commondir)
   endif
 
-  return {
-        \ 'worktree': simplify(worktree),
-        \ 'repository': simplify(repository),
-        \ 'commondir': simplify(commondir),
+  let git = {
+        \ 'worktree': simplify(s:Path.realpath(worktree)),
+        \ 'repository': simplify(s:Path.realpath(repository)),
+        \ 'commondir': simplify(s:Path.realpath(commondir)),
         \}
+  lockvar git.worktree
+  lockvar git.repository
+  lockvar git.commondir
+  return git
 endfunction
 
 function! s:resolve(git, path) abort
