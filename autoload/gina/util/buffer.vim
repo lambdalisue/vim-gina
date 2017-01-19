@@ -1,7 +1,8 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Buffer = vital#gina#import('Vim.Buffer')
-let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:Guard = vital#gina#import('Vim.Guard')
+let s:Opener = vital#gina#import('Vim.Buffer.Opener')
+let s:Path = vital#gina#import('System.Filepath')
 
 
 function! gina#util#buffer#open(bufname, ...) abort
@@ -12,6 +13,9 @@ function! gina#util#buffer#open(bufname, ...) abort
         \ 'callback': v:null,
         \}, get(a:000, 0, {}),
         \)
+  " The {bufname} could not be opened randomly in Vim 8 when the {bufname}
+  " ends with a slash so remove the trailing one.
+  let bufname = s:Path.remove_last_separator(a:bufname)
   " Move focus to an anchor buffer if necessary
   if !s:Anchor.is_suitable(winnr())
     call s:Anchor.focus_if_available(options.opener)
@@ -20,7 +24,7 @@ function! gina#util#buffer#open(bufname, ...) abort
   let guard = s:Guard.store(['&eventignore'])
   try
     set eventignore+=BufReadCmd
-    silent let context = s:Opener.open(a:bufname, {
+    silent let context = s:Opener.open(bufname, {
           \ 'group':  options.group,
           \ 'opener': options.opener,
           \})
