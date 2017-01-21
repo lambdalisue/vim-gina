@@ -34,14 +34,15 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
+  let args.params = {}
   let args.params.opener = args.pop('--opener', 'botright 10split')
-  let args.params.commit = args.get_p(1, 'HEAD')
+  let args.params.commit = args.get(1, 'HEAD')
 
   call args.set('--full-name', 1)
   call args.set('--full-tree', 1)
   call args.set('--name-only', 1)
   call args.set('-r', 1)
-  call args.set_p(1, args.params.commit)
+  call args.set(1, args.params.commit)
   return args.lock()
 endfunction
 

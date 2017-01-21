@@ -29,6 +29,7 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
+  let args.params = {}
   let args.params.yank = args.pop('--yank')
   let args.params.exact = args.pop('--exact')
   let args.params.remote = args.pop('--remote', '')
@@ -36,13 +37,13 @@ function! s:build_args(git, qargs) abort
   let args.params.selection = empty(args.params.selection)
         \ ? gina#util#selection#get()
         \ : gina#util#selection#parse(args.params.selection)
-  let args.params.commit = args.pop_p(
+  let args.params.commit = args.pop(
         \ 1,
         \ get(gina#util#path#params('%'), 'commit', '')
         \)
   let args.params.path = s:Path.unixpath(gina#util#path#relpath(
         \ a:git,
-        \ gina#util#path#expand(get(args.list_r(), 0, '%'))
+        \ gina#util#path#expand(get(args.residual(), 0, '%'))
         \))
   let args.params.scheme = args.pop(
         \ '--scheme',

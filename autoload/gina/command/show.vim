@@ -44,12 +44,13 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
+  let args.params = {}
   let args.params.repository = args.pop('--repository')
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.selection = args.pop('--selection', '')
   let args.params.commit = gina#util#commit#resolve(
-        \ a:git, args.pop_p(1, '')
+        \ a:git, args.pop(1, '')
         \)
 
   if args.params.repository
@@ -58,12 +59,13 @@ function! s:build_args(git, qargs) abort
   else
     let args.params.path = gina#util#path#relpath(
           \ a:git,
-          \ gina#util#path#expand(get(args.list_r(), 0, '%'))
+          \ gina#util#path#expand(get(args.residual(), 0, '%'))
           \)
     let args.params.object = args.params.commit . ':' . args.params.path
   endif
 
-  call args.set_p(1, args.params.object)
+  call args.set(1, args.params.object)
+  call args.residual([])
   return args.lock()
 endfunction
 
@@ -74,7 +76,7 @@ function! s:build_args_from_params(params) abort
   else
     let object = printf('%s:%s', a:params.commit, a:params.path)
   endif
-  call args.set_p(1, object)
+  call args.set(1, object)
   return args.lock()
 endfunction
 

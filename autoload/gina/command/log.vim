@@ -35,8 +35,9 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
+  let args.params = {}
   let args.params.opener = args.pop('--opener', 'botright 10split')
-  let args.params.path = args.pop_p(1, '')
+  let args.params.path = get(args.residual(), 0, '')
 
   if !empty(args.params.path)
     let args.params.path = gina#util#path#relpath(
@@ -47,7 +48,7 @@ function! s:build_args(git, qargs) abort
   call args.set('--color', 'always')
   call args.set('--graph', 1)
   call args.set('--pretty', "format:\e[32m%h\e[m - %s \e[33;1m%cr\e[m \e[35;1m<%an>\e[m\e[36;1m%d\e[m")
-  call args.set_p(1, args.params.path)
+  call args.residual([args.params.path])
   return args.lock()
 endfunction
 

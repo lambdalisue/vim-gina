@@ -36,13 +36,14 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
+  let args.params = {}
   let args.params.opener = args.pop('--opener', 'botright 10split')
   let args.params.cached = args.get('--cached')
-  let args.params.commit = args.get_p(1, '')
+  let args.params.commit = args.get(1, '')
 
   call args.set('--numstat', 1)
-  call args.set_p(0, 'diff')
-  call args.set_p(1, args.params.commit)
+  call args.set(0, 'diff')
+  call args.set(1, args.params.commit)
   return args.lock()
 endfunction
 

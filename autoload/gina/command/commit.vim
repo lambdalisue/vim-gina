@@ -39,6 +39,7 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(qargs) abort
   let args = s:Argument.new(a:qargs)
+  let args.params = {}
   let args.params.amend = args.get('--amend')
   let args.params.opener = args.get('--opener', 'edit')
   return args.lock()

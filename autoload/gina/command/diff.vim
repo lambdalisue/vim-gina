@@ -33,17 +33,18 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
+  let args.params = {}
   let args.params.repository = args.pop('--repository')
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.cached = args.get('--cached')
-  let args.params.commit = args.get_p(1, '')
+  let args.params.commit = args.get(1, '')
 
   let args.params.path = ''
   let args.params.object = args.params.commit
   if args.params.repository
     let pathlist = []
   else
-    let pathlist = args.list_r()
+    let pathlist = args.residual()
     let pathlist = map(
           \ empty(pathlist) ? ['%'] : pathlist,
           \ 'gina#util#path#relpath(a:git, gina#util#path#expand(v:val))'
@@ -54,8 +55,8 @@ function! s:build_args(git, qargs) abort
     endif
   endif
 
-  call args.set_p(1, args.params.commit)
-  call args.set_r(pathlist)
+  call args.set(1, args.params.commit)
+  call args.residual(pathlist)
   return args.lock()
 endfunction
 

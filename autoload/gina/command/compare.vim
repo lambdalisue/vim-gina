@@ -53,14 +53,15 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
+  let args.params = {}
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.selection = args.pop('--selection', '')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
-  let args.params.commit = args.pop_p(1, '')
+  let args.params.commit = args.pop(1, '')
   let args.params.path = gina#util#path#relpath(
         \ a:git,
-        \ gina#util#path#expand(get(args.list_r(), 0, '%'))
+        \ gina#util#path#expand(get(args.residual(), 0, '%'))
         \)
   return args.lock()
 endfunction

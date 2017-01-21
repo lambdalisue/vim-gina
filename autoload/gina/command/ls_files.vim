@@ -33,6 +33,7 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
+  let args.params = {}
   let args.params.opener = args.pop('--opener', 'botright 10split')
 
   call args.set('--full-name', 1)

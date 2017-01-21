@@ -19,7 +19,8 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
-  let args.params.path = args.pop_p(1, '.')
+  let args.params = {}
+  let args.params.path = args.pop(1, '.')
 
   if !empty(args.params.path)
     let args.params.path = gina#util#path#abspath(

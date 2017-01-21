@@ -38,9 +38,10 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
+  let args.params = {}
   let args.params.opener = args.pop('--opener', 'botright 10split')
-  let args.params.pattern = args.pop_p(1, '')
-  let args.params.commit = args.pop_p(1, '')
+  let args.params.pattern = args.pop(1, '')
+  let args.params.commit = args.pop(1, '')
 
   " Check if available grep patterns has specified and ask if not
   if empty(args.params.pattern) && !(args.has('-e') || args.has('-f'))
@@ -53,8 +54,8 @@ function! s:build_args(git, qargs) abort
 
   call args.set('--line-number', 1)
   call args.set('--color', 'always')
-  call args.set_p(1, args.params.pattern)
-  call args.set_p(2, args.params.commit)
+  call args.set(1, args.params.pattern)
+  call args.set(2, args.params.commit)
   return args.lock()
 endfunction
 
