@@ -178,7 +178,7 @@ Describe gina#util
     End
   End
 
-  Describe #expand()
+  Describe #expand({expr})
     It returns an empty string for an empty {expr}
       let actual = gina#util#expand('')
       let expect = ''
@@ -211,6 +211,61 @@ Describe gina#util
       let actual = gina#util#expand('%:p')
       let expect = fnamemodify('README.md', ':p')
       Assert Equals(actual, expect)
+    End
+  End
+
+  Describe #abspath({path})
+    Before
+      silent! windo bwipeout!
+    End
+
+    It returns an absolute {path} of the current path
+      execute 'edit' fnameescape(g:git_profile.valid1)
+
+      let git = gina#core#get()
+      Assert Equals(
+            \ gina#util#abspath(Path.realpath('A/foo/bar.txt')),
+            \ Path.join(git.worktree, 'A', 'foo', 'bar.txt')
+            \)
+    End
+
+    It returns an absolute {path} from cwd when the buffer is not in a git working tree
+      execute 'edit' fnameescape(g:git_profile.invalid)
+      let cwd = getcwd()
+
+      Assert Equals(
+            \ gina#util#abspath(Path.realpath('A/foo/bar.txt')),
+            \ Path.join(cwd, 'A', 'foo', 'bar.txt')
+            \)
+    End
+  End
+
+  Describe #relpath({path})
+    Before
+      silent! windo bwipeout!
+    End
+
+    It returns a relative {path} of the current path
+      execute 'edit' fnameescape(g:git_profile.valid1)
+
+      let git = gina#core#get()
+      let path = Path.join(git.worktree, 'A', 'foo', 'bar.txt')
+      Assert Equals(
+            \ gina#util#relpath(path),
+            \ Path.realpath('A/foo/bar.txt')
+            \)
+    End
+
+    It returns a relative {path} from cwd when the buffer is not in a git working tree
+      execute 'edit' fnameescape(g:git_profile.invalid)
+
+      let cwd = getcwd()
+      let path = Path.join(cwd, 'A', 'foo', 'bar.txt')
+
+      Assert Equals(
+            \ gina#util#relpath(path),
+            \ Path.realpath('A/foo/bar.txt')
+            \)
     End
   End
 
