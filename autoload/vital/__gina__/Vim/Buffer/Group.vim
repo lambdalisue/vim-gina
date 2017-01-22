@@ -3,8 +3,8 @@ function! s:_vital_created(module) abort
 endfunction
 
 
-function! s:new(...) abort
-  let hash = get(a:000, 0, sha256(str2nr(reltimestr(reltime()))))
+function! s:new() abort
+  let hash = sha256(reltimestr(reltime()))
   let s:groups[hash] = copy(s:group)
   let s:groups[hash].__hash = hash
   let s:groups[hash].__tabnr = tabpagenr()
