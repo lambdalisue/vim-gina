@@ -137,6 +137,39 @@ Describe Git
     End
   End
 
+  Describe .relpath({git}, {path})
+    It returns a relative path of {path} in {git} repository
+      let git = Git.new(profile.valid1)
+      let abspath = Path.join(profile.valid1, 'A', 'foo', 'bar.txt')
+      let relpath = Path.join('A', 'foo', 'bar.txt')
+      Assert Equals(Git.relpath(git, abspath), relpath)
+    End
+
+    It returns {path} if {path} is already a relative path
+      let git = Git.new(profile.valid1)
+      let relpath = Path.join('A', 'foo', 'bar.txt')
+      Assert Equals(Git.relpath(git, relpath), relpath)
+      Assert Same(Git.relpath(git, relpath), relpath)
+    End
+  End
+
+  Describe .abspath({git}, {path})
+    It returns an absolute path of {path} in {git} repository
+      let git = Git.new(profile.valid1)
+      let abspath = Path.join(profile.valid1, 'A', 'foo', 'bar.txt')
+      let relpath = Path.join('A', 'foo', 'bar.txt')
+      Assert Equals(Git.abspath(git, relpath), abspath)
+    End
+
+    It returns {path} if {path} is already an absolute path
+      let git = Git.new(profile.valid1)
+      let abspath = Path.join(profile.valid1, 'A', 'foo', 'bar.txt')
+      Assert Equals(Git.abspath(git, abspath), abspath)
+      Assert Same(Git.abspath(git, abspath), abspath)
+    End
+  End
+
+
   Describe .resolve({git}, {path})
     It returns an absolute path of {path} in a .git directory
       let git = Git.new(profile.valid1)

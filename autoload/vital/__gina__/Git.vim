@@ -63,6 +63,25 @@ function! s:new(path) abort
   return git
 endfunction
 
+function! s:abspath(git, path) abort
+  let relpath = s:Path.realpath(expand(a:path))
+  if s:Path.is_absolute(relpath)
+    return relpath
+  endif
+  return s:Path.join(a:git.worktree, relpath)
+endfunction
+
+function! s:relpath(git, path) abort
+  let abspath = s:Path.realpath(expand(a:path))
+  if s:Path.is_relative(abspath)
+    return abspath
+  endif
+  let pattern = s:String.escape_pattern(a:git.worktree . s:Path.separator())
+  return abspath =~# '^' . pattern
+        \ ? matchstr(abspath, '^' . pattern . '\zs.*')
+        \ : abspath
+endfunction
+
 function! s:resolve(git, path) abort
   let path = s:Path.realpath(a:path)
   let path1 = s:Path.join(a:git.repository, path)

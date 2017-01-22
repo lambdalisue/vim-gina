@@ -1,3 +1,4 @@
+let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
 
@@ -21,28 +22,22 @@ function! gina#util#path#params(expr) abort
 endfunction
 
 function! gina#util#path#expand(expr) abort
-  if empty(a:expr)
+  if a:expr !~# '^[%#<]'
     return expand(a:expr)
   endif
-  let params = gina#util#path#params(a:expr)
-  return empty(params) ? expand(a:expr) : expand(params.path)
+  let m = matchlist(a:expr, '^\([%#]\|<\w\+>\)\(.*\)')
+  let expr = m[1]
+  let modifiers = m[2]
+  let params = gina#util#path#params(expr)
+  return empty(params)
+        \ ? expand(a:expr)
+        \ : fnamemodify(expand(params.path), modifiers)
 endfunction
 
-function! gina#util#path#abspath(git, relpath) abort
-  let relpath = s:Path.realpath(expand(a:relpath))
-  if s:Path.is_absolute(relpath)
-    return relpath
-  endif
-  return s:Path.join(a:git.worktree, relpath)
+function! gina#util#path#abspath(git, path) abort
+  return s:Git.abspath(a:git, a:path)
 endfunction
 
-function! gina#util#path#relpath(git, abspath) abort
-  let abspath = s:Path.realpath(expand(a:abspath))
-  if s:Path.is_relative(abspath)
-    return abspath
-  endif
-  let pattern = s:String.escape_pattern(a:git.worktree . s:Path.separator())
-  return abspath =~# '^' . pattern
-        \ ? matchstr(abspath, '^' . pattern . '\zs.*')
-        \ : abspath
+function! gina#util#path#relpath(git, path) abort
+  return s:Git.relpath(a:git, a:path)
 endfunction
