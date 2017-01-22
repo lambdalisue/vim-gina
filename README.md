@@ -10,4 +10,72 @@ gina
 [![Doc](https://img.shields.io/badge/doc-%3Ah%20gina-orange.svg?style=flat-square)](doc/gina.txt)
 
 
-Under development.
+**Under development..**
+**You should checkout [lambdalisue/vim-gita](https://github.com/lambdalisue/vim-gita) if you need a stable one.**
+
+gina.vim is a git manipulation plugin which use a job features of Vim 8 or Neovim.
+
+
+Features
+-------------------------------------------------------------------------------
+
+**While gina.vim is in alpha state. The following features are not settle yet.**
+
+- [x] Synchronous git command execution by `Gina[!] {command} {options}`
+- [ ] Asynchronous git command execution by `Gina[!] --async {command} {options}`
+- [x] Gina actions
+  - [x] Actions for branch manipulation
+  - [x] Actions for browsing a remote content
+  - [x] Actions for see changes
+  - [x] Actions for commit
+  - [x] Actions for comparing
+  - [x] Actions for diff
+  - [x] Actions for showing a content in a working tree
+  - [x] Actions for exporting candidates to quickfix
+  - [x] Actions for status manipulation
+  - [x] Actions for patching
+  - [x] Actions for showing a content in a particular commit
+- [ ] Gina commands
+  - [x] List branches by `Gina branch`
+  - [x] Open a system browser to see the remote content by `Gina browse`
+  - [ ] Blame a content by `Gina blame` (might goes to an external plugin)
+  - [x] Change current working directory by `Gina cd` or `Gina lcd`
+  - [x] List changes (files) between two particular commits by `Gina changes`
+  - [ ] Solve conflict by three-side diff by `Gina chaperon` (might goes to an external plugin)
+  - [x] Open a commit buffer by `Gina commit`
+  - [x] Compare changes by two-side diff by `Gina compare`
+  - [x] Compare changes by one-side diff by `Gina diff`
+  - [x] Show a content in the working tree by `Gina edit`
+  - [x] Grep contents by `Gina grep`
+  - [x] List commit logs of repository/file by `Gina log` or `Gina log -- {path}`
+  - [x] List files in the working tree by `Gina ls-files`
+  - [x] List files in a particular commit by `Gina ls-tree`
+  - [x] Patch changes by three-side diff by `Gina patch`
+  - [x] List reflogs by `Gina reflog`
+  - [x] Show a content in a particular commit by `Gina show`
+  - [x] Show a current working tree status by `Gina status`
+  - [x] List tags by `Gina tag`
+- [ ] Command completions
+- [ ] Statusline/Tabline components
+- [ ] `++enc` and `++ff` for command which open a window
+- [ ] Line/Column assignment for `Gina show` and `Gina edit`
+- [ ] Customization (e.g. opener/group/alias)
+
+
+Contribution
+-------------------------------------------------------------------------------
+
+**While gina.vim is in alpha state.
+Changes you've made will removed without any announcement/permission.
+PRs should NOT be sent without understanding this situation.**
+
+gina.vim use [thinca/vim-themis](https://github.com/thinca/vim-themis) to run tests.
+Contributers should install the plugin and test before sending a PR.
+PRs which does not pass tests won't be accepted.
+
+
+License
+-------------------------------------------------------------------------------
+The code in gina.vim follows MIT license texted in [LICENSE.md](./LICENSE.md).
+Contributors need to agree that any modifications sent in this repository follow the license.
+
