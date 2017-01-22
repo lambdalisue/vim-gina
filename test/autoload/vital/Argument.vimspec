@@ -411,8 +411,8 @@ Describe Argument
       End
     End
 
-    Context Test issues
-      It regulate args correctly
+    Context Real usage
+      It manipulate args as expected
         let args = Argument.new('grep gina HEAD')
         let pattern = args.pop(1, '')
         Assert Equals(pattern, 'gina')
