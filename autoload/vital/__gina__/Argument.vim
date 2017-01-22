@@ -237,54 +237,6 @@ function! s:args.set(query, value) abort
         \ : call('s:_set_p', [a:query, a:value], self)
 endfunction
 
-function! s:args.apply(query, fn) abort
-  if type(a:query) == s:t_string
-    let index = call('s:_index_o', [a:query], self)
-  else
-    let index = call('s:_index_p', [a:query], self)
-  endif
-  if index == -1
-    throw printf('No term for a query "%s" is found', a:query)
-  endif
-  let [key, value] = s:_parse_term(self.raw[index])
-  let [key, value] = a:fn(key, value)
-  let self.raw[index] = s:_build_term(key, value)
-  return self
-endfunction
-
-function! s:args.map(fn) abort
-  let indices = range(0, len(self.raw)-1)
-  for index in indices
-    let term = self.raw[index]
-    if term ==# '--'
-      return self
-    endif
-    let [key, value] = s:_parse_term(term)
-    let [key, value] = a:fn(key, value)
-    let self.raw[index] = s:_build_term(key, value)
-  endfor
-  return self
-endfunction
-
-function! s:args.filter(fn) abort
-  let indices = range(0, len(self.raw)-1)
-  let removes = []
-  for index in indices
-    let term = self.raw[index]
-    if term ==# '--'
-      break
-    endif
-    let [key, value] = s:_parse_term(term)
-    if !a:fn(key, value)
-      call add(removes, index)
-    endif
-  endfor
-  for index in reverse(removes)
-    call remove(self.raw, index)
-  endfor
-  return self
-endfunction
-
 function! s:args.split() abort
   let tail = index(self.raw, '--')
   if tail == -1
