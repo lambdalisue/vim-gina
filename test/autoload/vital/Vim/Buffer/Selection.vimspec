@@ -1,0 +1,95 @@
+Describe Vim.Buffer.Selection
+  Before
+    let Selection = vital#gina#import('Vim.Buffer.Selection')
+    silent! windo bwipeout!
+  End
+
+  Describe .format_locus({locus})
+    It returns a string expression of {locus} ([{line}, {col}])
+      Assert Equals(Selection.format_locus([10, 20]), '10:20')
+    End
+  End
+
+  Describe .format_selection({selection})
+    It returns a string expression of {selection} ([{start}, {end}])
+      Assert Equals(
+            \ Selection.format_selection([[10, 20], [30, 40]]),
+            \ '10:20-30:40'
+            \)
+    End
+  End
+
+  Describe .parse_locus({expr})
+    It returns a {locus} list of {expr}
+      Assert Equals(Selection.parse_locus('10:20'), [10, 20])
+      Assert Equals(Selection.parse_locus('10'), [10, 10])
+    End
+  End
+
+  Describe .parse_selection({expr})
+    It returns a {selection} list of {expr}
+      Assert Equals(
+            \ Selection.parse_selection('10:20-30:40'),
+            \ [[10, 20], [30, 40]]
+            \)
+      Assert Equals(
+            \ Selection.parse_selection('10:20'),
+            \ [[10, 20], [10, 20]]
+            \)
+      Assert Equals(
+            \ Selection.parse_selection('10-20'),
+            \ [[10, 10], [20, 20]]
+            \)
+      Assert Equals(
+            \ Selection.parse_selection('10:20-20'),
+            \ [[10, 20], [20, 20]]
+            \)
+      Assert Equals(
+            \ Selection.parse_selection('10-20:30'),
+            \ [[10, 10], [20, 30]]
+            \)
+    End
+  End
+
+  Describe .set_current_selection({selection} [, {prefer_visual}])
+    It moves cursor to {selection}
+      call setline(1, ['abc', 'def', 'ghi'])
+
+      call Selection.set_current_selection([])
+      Assert Equals(getpos('.')[1], 1)
+      Assert Equals(getpos('.')[2], 1)
+
+      call Selection.set_current_selection([[2, 2]])
+      Assert Equals(getpos('.')[1], 2)
+      Assert Equals(getpos('.')[2], 2)
+
+      " It seems the following is not testable?
+      "call Selection.set_current_selection([[2, 2], [3, 3]])
+      "Assert Equals(getpos("'<")[1], 2)
+      "Assert Equals(getpos("'<")[2], 2)
+      "Assert Equals(getpos("'>")[1], 3)
+      "Assert Equals(getpos("'>")[2], 3)
+    End
+  End
+
+  Describe .get_current_selection()
+    It returns a current selection
+      call setline(1, ['abc', 'def', 'ghi'])
+
+      let selection = Selection.get_current_selection()
+      Assert Equals(selection[0], [1, 1])
+      Assert Equals(selection[1], [1, 1])
+
+      call Selection.set_current_selection([[2, 2]])
+      let selection = Selection.get_current_selection()
+      Assert Equals(selection[0], [2, 2])
+      Assert Equals(selection[1], [2, 2])
+
+      " It seems the following is not testable?
+      "call Selection.set_current_selection([[2, 2], [3, 3]])
+      "let selection = Selection.get_current_selection()
+      "Assert Equals(selection[0], [2, 2])
+      "Assert Equals(selection[1], [3, 3])
+    End
+  End
+End

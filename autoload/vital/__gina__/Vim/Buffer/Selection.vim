@@ -6,7 +6,7 @@ endfunction
 
 function! s:format_selection(selection) abort
   let start = get(a:selection, 0, [])
-  let end = get(a:selection, 0, start)
+  let end = get(a:selection, 1, start)
   return printf('%s-%s', s:format_locus(start), s:format_locus(end))
 endfunction
 
