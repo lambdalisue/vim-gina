@@ -18,7 +18,7 @@ setlocal nonumber norelativenumber
 setlocal foldcolumn=0 colorcolumn=0
 
 " Mappings
-let params = gina#util#path#params('%')
+let params = gina#util#params('%')
 if empty(get(params, 'commit'))
   call gina#util#nmap('<Return>', '<Plug>(gina-edit)zv')
 else
@@ -29,7 +29,7 @@ endif
 if g:gina#command#grep#send_to_quickfix
   let s:Emitter = vital#gina#import('Emitter')
   function! s:on_exit(job, msg, event) abort
-    let params = gina#util#path#params('%')
+    let params = gina#util#params('%')
     if empty(params) || params.scheme !=# 'grep'
       return
     endif

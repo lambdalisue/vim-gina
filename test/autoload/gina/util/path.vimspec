@@ -1,16 +1,16 @@
-Describe gina#util#path
+Describe gina#util
   Before all
     let Path = vital#gina#import('System.Filepath')
   End
 
   Describe #params({expr})
     It returns an empty dictionary when {bufname} does not start from 'gina:'
-      let params = gina#util#path#params('autoload/gina.vim')
+      let params = gina#util#params('autoload/gina.vim')
       Assert Equals(params, {})
     End
 
     It returns a params dictionary for 'gina:gina.vim:status'
-      let params = gina#util#path#params('gina:gina.vim:status')
+      let params = gina#util#params('gina:gina.vim:status')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'status')
       Assert Equals(params.params, [])
@@ -19,7 +19,7 @@ Describe gina#util#path
     End
 
     It returns a params dictionary for 'gina:gina.vim:commit:amend'
-      let params = gina#util#path#params('gina:gina.vim:commit:amend')
+      let params = gina#util#params('gina:gina.vim:commit:amend')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'commit')
       Assert Equals(params.params, ['amend'])
@@ -28,7 +28,7 @@ Describe gina#util#path
     End
 
     It returns a params dictionary for 'gina:gina.vim:commit:ignore-submodule'
-      let params = gina#util#path#params('gina:gina.vim:commit:amend:ignore-submodule')
+      let params = gina#util#params('gina:gina.vim:commit:amend:ignore-submodule')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'commit')
       Assert Equals(params.params, ['amend', 'ignore-submodule'])
@@ -37,7 +37,7 @@ Describe gina#util#path
     End
 
     It returns a params dictionary for 'gina:gina.vim:show/HEAD:README.md'
-      let params = gina#util#path#params('gina:gina.vim:show/HEAD:README.md')
+      let params = gina#util#params('gina:gina.vim:show/HEAD:README.md')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'show')
       Assert Equals(params.params, [])
@@ -46,7 +46,7 @@ Describe gina#util#path
     End
 
     It returns a params dictionary for 'gina:gina.vim:show/:README.md'
-      let params = gina#util#path#params('gina:gina.vim:show/:README.md')
+      let params = gina#util#params('gina:gina.vim:show/:README.md')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'show')
       Assert Equals(params.params, [])
@@ -55,7 +55,7 @@ Describe gina#util#path
     End
 
     It returns a params dictionary for 'gina:gina.vim:show/HEAD'
-      let params = gina#util#path#params('gina:gina.vim:show/HEAD')
+      let params = gina#util#params('gina:gina.vim:show/HEAD')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'show')
       Assert Equals(params.params, [])
@@ -66,27 +66,27 @@ Describe gina#util#path
 
   Describe #expand()
     It returns an empty string for an empty {expr}
-      let actual = gina#util#path#expand('')
+      let actual = gina#util#expand('')
       let expect = ''
       Assert Equals(actual, expect)
     End
 
     It returns a path when {expr} is a path
-      let actual = gina#util#path#expand('autoload/gina.vim')
+      let actual = gina#util#expand('autoload/gina.vim')
       let expect = Path.realpath('autoload/gina.vim')
       Assert Equals(actual, expect)
     End
 
     It returns an expanded path of current buffer when {expr} is '%'
       execute 'edit foobar'
-      let actual = gina#util#path#expand('%')
+      let actual = gina#util#expand('%')
       let expect = 'foobar'
       Assert Equals(actual, expect)
     End
 
     It returns a path of current buffer when {expr} is 'gina:...'
       execute 'edit gina:gina.vim:show/HEAD:README.md'
-      let actual = gina#util#path#expand('%')
+      let actual = gina#util#expand('%')
       let expect = 'README.md'
       Assert Equals(actual, expect)
     End

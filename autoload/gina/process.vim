@@ -71,7 +71,7 @@ endfunction
 
 function! s:expand(value) abort
   if a:value =~# '^\%([%#]\|<\w\+>\)\%(:[p8~.htreS]\|:g\?s?\S\+?\S\+?\)*$'
-    return gina#util#path#expand(a:value)
+    return gina#util#expand(a:value)
   endif
   return a:value
 endfunction

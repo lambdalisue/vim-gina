@@ -21,7 +21,7 @@ function! gina#util#selection#from(bufname, selection) abort
   if !empty(a:selection)
     " Selection has specified so use it
     let selection = s:Selection.parse_selection(a:selection)
-  elseif gina#util#path#expand(a:bufname) ==# gina#util#path#expand('%')
+  elseif gina#util#expand(a:bufname) ==# gina#util#expand('%')
     " Going to open an alternative buffer of the current buffer
     " so use current selection
     let selection = s:Selection.get_current_selection()

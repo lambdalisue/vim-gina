@@ -156,7 +156,7 @@ function! s:on_add(candidates, options) abort
         \}, a:options)
   let pathlist = map(
         \ copy(a:candidates),
-        \ 'gina#util#fnameescape(gina#util#path#abspath(git, v:val.path))',
+        \ 'gina#util#fnameescape(gina#util#abspath(v:val.path))',
         \)
   execute printf(
         \ 'Gina add --ignore-errors %s %s -- %s',
@@ -177,7 +177,7 @@ function! s:on_rm(candidates, options) abort
         \}, a:options)
   let pathlist = map(
         \ copy(a:candidates),
-        \ 'gina#util#fnameescape(gina#util#path#abspath(git, v:val.path))',
+        \ 'gina#util#fnameescape(gina#util#abspath(v:val.path))',
         \)
   execute printf(
         \ 'Gina rm --quiet --ignore-unmatch %s %s -- %s',
@@ -195,7 +195,7 @@ function! s:on_reset(candidates, options) abort
   let options = extend({}, a:options)
   let pathlist = map(
         \ copy(a:candidates),
-        \ 'gina#util#fnameescape(gina#util#path#relpath(git, v:val.path))',
+        \ 'gina#util#fnameescape(gina#util#relpath(v:val.path))',
         \)
   execute printf(
         \ 'Gina reset --quiet -- %s',
@@ -213,11 +213,11 @@ function! s:on_checkout(candidates, options) abort
         \ 'ours': 0,
         \ 'theirs': 0,
         \}, a:options)
-  let params = gina#util#path#params('%')
+  let params = gina#util#params('%')
   let commit = get(options, 'commit', get(params, 'commit', ''))
   let pathlist = map(
         \ copy(a:candidates),
-        \ 'gina#util#fnameescape(gina#util#path#relpath(git, v:val.path))',
+        \ 'gina#util#fnameescape(gina#util#relpath(v:val.path))',
         \)
   execute printf(
         \ 'Gina! checkout --quiet %s %s %s %s -- %s',

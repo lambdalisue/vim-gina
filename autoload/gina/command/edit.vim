@@ -32,9 +32,8 @@ function! s:build_args(git, qargs) abort
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.selection = args.pop('--selection', '')
-  let args.params.path = gina#util#path#abspath(
-        \ a:git,
-        \ gina#util#path#expand(get(args.residual(), 0, '%'))
+  let args.params.path = gina#util#abspath(
+        \ gina#util#expand(get(args.residual(), 0, '%'))
         \)
   return args.lock()
 endfunction

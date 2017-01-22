@@ -51,7 +51,7 @@ function! gina#core#get(...) abort
     endif
   endif
 
-  let params = gina#util#path#params(options.expr)
+  let params = gina#util#params(options.expr)
   if empty(params)
     let git = {}
     let params.path = expand(options.expr)

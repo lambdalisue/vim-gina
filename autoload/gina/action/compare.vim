@@ -47,7 +47,7 @@ function! s:on_compare(candidates, options) abort
   let options = extend({
         \ 'opener': '',
         \}, a:options)
-  let params = gina#util#path#params('%')
+  let params = gina#util#params('%')
   let path = get(params, 'path', '')
   let commit = get(params, 'commit', '')
   for candidate in a:candidates

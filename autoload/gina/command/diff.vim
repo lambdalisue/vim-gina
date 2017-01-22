@@ -47,7 +47,7 @@ function! s:build_args(git, qargs) abort
     let pathlist = args.residual()
     let pathlist = map(
           \ empty(pathlist) ? ['%'] : pathlist,
-          \ 'gina#util#path#relpath(a:git, gina#util#path#expand(v:val))'
+          \ 'gina#util#relpath(gina#util#expand(v:val))'
           \)
     if len(pathlist) == 1
       let args.params.path = pathlist[0]

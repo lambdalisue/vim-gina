@@ -121,7 +121,7 @@ function! s:parse_record(git, record) abort
   let candidate = {
         \ 'word': m[3],
         \ 'abbr': a:record,
-        \ 'path': gina#util#path#abspath(a:git, m[1]),
+        \ 'path': gina#util#abspath(m[1]),
         \ 'selection': [[line, col], [line, col]],
         \}
   return candidate

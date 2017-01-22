@@ -39,11 +39,10 @@ function! s:build_args(git, qargs) abort
         \ : gina#util#selection#parse(args.params.selection)
   let args.params.commit = args.pop(
         \ 1,
-        \ get(gina#util#path#params('%'), 'commit', '')
+        \ get(gina#util#params('%'), 'commit', '')
         \)
-  let args.params.path = s:Path.unixpath(gina#util#path#relpath(
-        \ a:git,
-        \ gina#util#path#expand(get(args.residual(), 0, '%'))
+  let args.params.path = s:Path.unixpath(gina#util#relpath(
+        \ gina#util#expand(get(args.residual(), 0, '%'))
         \))
   let args.params.scheme = args.pop(
         \ '--scheme',

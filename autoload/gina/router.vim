@@ -55,7 +55,7 @@ function! gina#router#complete(arglead, cmdline, cursorpos) abort
 endfunction
 
 function! gina#router#autocmd(name) abort
-  let params = gina#util#path#params(expand('<afile>'))
+  let params = gina#util#params(expand('<afile>'))
   let command = s:get_command(params.scheme)
   if command is# v:null
     return s:Console.error(printf(

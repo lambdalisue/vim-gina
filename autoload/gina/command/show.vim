@@ -34,7 +34,7 @@ endfunction
 function! s:command.BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = s:build_args_from_params(
-        \ gina#util#path#params(expand('<afile>'))
+        \ gina#util#params(expand('<afile>'))
         \)
   call s:init(args)
   call s:BufReadCmd()
@@ -57,9 +57,8 @@ function! s:build_args(git, qargs) abort
     let args.params.path = ''
     let args.params.object = args.params.commit
   else
-    let args.params.path = gina#util#path#relpath(
-          \ a:git,
-          \ gina#util#path#expand(get(args.residual(), 0, '%'))
+    let args.params.path = gina#util#relpath(
+          \ gina#util#expand(get(args.residual(), 0, '%'))
           \)
     let args.params.object = args.params.commit . ':' . args.params.path
   endif
@@ -100,7 +99,7 @@ function! s:BufReadCmd() abort
         \)
   call s:Buffer.edit_content(result.content)
 
-  let params = gina#util#path#params('%')
+  let params = gina#util#params('%')
   if empty(params.path)
     setlocal filetype=git
   else

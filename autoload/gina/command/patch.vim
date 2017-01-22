@@ -99,9 +99,8 @@ function! s:build_args(git, qargs) abort
   let args.params = {}
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.selection = args.pop('--selection', '')
-  let args.params.path = gina#util#path#relpath(
-        \ a:git,
-        \ gina#util#path#expand(get(args.residual(), 0, '%'))
+  let args.params.path = gina#util#relpath(
+        \ gina#util#expand(get(args.residual(), 0, '%'))
         \)
   return args.lock()
 endfunction
@@ -135,12 +134,12 @@ function! s:open(suffix, path, commit, opener, selection) abort
 endfunction
 
 function! s:patch(git) abort
-  let path = gina#util#path#expand('%')
+  let path = gina#util#expand('%')
   call gina#process#call(a:git, [
         \ 'add',
         \ '--intent-to-add',
         \ '--',
-        \ gina#util#path#abspath(a:git, path),
+        \ gina#util#abspath(path),
         \])
   let diff = s:diff(a:git, path, getline(1, '$'))
   let result = s:apply(a:git, diff)

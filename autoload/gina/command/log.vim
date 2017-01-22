@@ -40,8 +40,8 @@ function! s:build_args(git, qargs) abort
   let args.params.path = get(args.residual(), 0, '')
 
   if !empty(args.params.path)
-    let args.params.path = gina#util#path#relpath(
-          \ a:git, gina#util#path#expand(args.params.path)
+    let args.params.path = gina#util#relpath(
+          \ gina#util#expand(args.params.path)
           \)
   endif
 
