@@ -54,7 +54,10 @@ endfunction
 
 function! s:define_syntax(...) abort
   let prefix = get(a:000, 0, '')
-  syntax match AnsiSuppress conceal /\e\[[0-9A-Z;]*m/
+  execute printf(
+        \ 'syntax match %sAnsiSuppress conceal /\e\[[0-9A-Z;]*m/',
+        \ prefix
+        \)
   for [code, name] in items(s:COLORS)
     execute printf(
           \ 'syn region %s%s contains=%s keepend start=/\e\[%sm/ end=/\e\[m/',

@@ -1,0 +1,68 @@
+Describe Vim.Buffer.ANSI
+  Before
+    let ANSI = vital#gina#import('Vim.Buffer.ANSI')
+
+    if exists('*execute')
+      function! Capture(command) abort
+        return execute(a:command)
+      endfunction
+    else
+      function! Capture(command) abort
+        redir => content
+        execute a:command
+        redir END
+        return join(split(a:command, '\r\?\n'), "\n")
+      endfunction
+    endif
+  End
+
+  It defines ColorScheme autocmd to define highlights for ANSI Colors
+    Assert True(exists('#vital_vim_buffer_ansi'))
+  End
+
+  Describe .define_syntac([{prefix}])
+    It define syntaxes for ANSI color sequence
+      call ANSI.define_syntax()
+      Assert False(empty(Capture('syntax list AnsiSuppress')))
+      Assert False(empty(Capture('syntax list AnsiColor0')))
+      Assert False(empty(Capture('syntax list AnsiColor1')))
+      Assert False(empty(Capture('syntax list AnsiColor2')))
+      Assert False(empty(Capture('syntax list AnsiColor3')))
+      Assert False(empty(Capture('syntax list AnsiColor4')))
+      Assert False(empty(Capture('syntax list AnsiColor5')))
+      Assert False(empty(Capture('syntax list AnsiColor6')))
+      Assert False(empty(Capture('syntax list AnsiColor7')))
+      Assert False(empty(Capture('syntax list AnsiColor8')))
+      Assert False(empty(Capture('syntax list AnsiColor9')))
+      Assert False(empty(Capture('syntax list AnsiColor10')))
+      Assert False(empty(Capture('syntax list AnsiColor11')))
+      Assert False(empty(Capture('syntax list AnsiColor12')))
+      Assert False(empty(Capture('syntax list AnsiColor13')))
+      Assert False(empty(Capture('syntax list AnsiColor14')))
+      Assert False(empty(Capture('syntax list AnsiColor15')))
+      Assert False(empty(Capture('syntax list @AnsiColors')))
+    End
+
+    It define syntaxes for ANSI color sequence with {prefix}
+      call ANSI.define_syntax('Test')
+      Assert False(empty(Capture('syntax list TestAnsiSuppress')))
+      Assert False(empty(Capture('syntax list TestAnsiColor0')))
+      Assert False(empty(Capture('syntax list TestAnsiColor1')))
+      Assert False(empty(Capture('syntax list TestAnsiColor2')))
+      Assert False(empty(Capture('syntax list TestAnsiColor3')))
+      Assert False(empty(Capture('syntax list TestAnsiColor4')))
+      Assert False(empty(Capture('syntax list TestAnsiColor5')))
+      Assert False(empty(Capture('syntax list TestAnsiColor6')))
+      Assert False(empty(Capture('syntax list TestAnsiColor7')))
+      Assert False(empty(Capture('syntax list TestAnsiColor8')))
+      Assert False(empty(Capture('syntax list TestAnsiColor9')))
+      Assert False(empty(Capture('syntax list TestAnsiColor10')))
+      Assert False(empty(Capture('syntax list TestAnsiColor11')))
+      Assert False(empty(Capture('syntax list TestAnsiColor12')))
+      Assert False(empty(Capture('syntax list TestAnsiColor13')))
+      Assert False(empty(Capture('syntax list TestAnsiColor14')))
+      Assert False(empty(Capture('syntax list TestAnsiColor15')))
+      Assert False(empty(Capture('syntax list @TestAnsiColors')))
+    End
+  End
+End
