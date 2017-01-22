@@ -315,7 +315,7 @@ Describe Argument
 
       It appends positonal terms when no enough positional terms exist for {query}-th
         let args = Argument.new('-f bar --foo BAR --hoge=hoge -- -hHOGE hoge')
-        Assert Equal s(args.set(2, 'foo').get(2), 'foo')
+        Assert Equals(args.set(2, 'foo').get(2), 'foo')
         Assert Equals(args.set(4, 'FOO').get(4), 'FOO')
         Assert Equals(args.set(9, 'HOGE').get(9), 'HOGE')
         Assert Equals(args.raw, [
