@@ -54,6 +54,10 @@ function! s:store.is_expired(name) abort
   return 0
 endfunction
 
+function! s:store.has(name) abort
+  return has_key(self.caches, a:name)
+endfunction
+
 function! s:store.get(name, ...) abort
   let default = get(a:000, 0)
   if self.is_expired(a:name)
@@ -69,12 +73,15 @@ function! s:store.set(name, value) abort
         \ 'uptimes': uptimes
         \}
   let self.caches[a:name] = cache
+  return self
 endfunction
 
 function! s:store.remove(name) abort
   silent! unlet self.caches[a:name]
+  return self
 endfunction
 
 function! s:store.clear() abort
   let self.caches = {}
+  return self
 endfunction
