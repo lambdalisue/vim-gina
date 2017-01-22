@@ -1,0 +1,89 @@
+Describe Vim.Buffer.Observer
+  Before
+    let Observer = vital#gina#import('Vim.Buffer.Observer')
+
+    function! VitalVimBufferObserverBufReadCmd() abort
+      call setline(1, ['BufReadCmd has called'])
+    endfunction
+
+    silent! windo bwipeout!
+  End
+
+  Describe behavior
+    It call an attached function/command on visible buffers when 'update()' has called
+      let bufnums = []
+
+      new foo1
+      autocmd BufReadCmd <buffer> call VitalVimBufferObserverBufReadCmd()
+      call Observer.attach()
+      call add(bufnums, bufnr('%'))
+
+      new foo2
+      autocmd BufReadCmd <buffer> call VitalVimBufferObserverBufReadCmd()
+      call Observer.attach('edit')
+      call add(bufnums, bufnr('%'))
+
+      new foo3
+      call Observer.attach(function('VitalVimBufferObserverBufReadCmd'))
+      call add(bufnums, bufnr('%'))
+
+      call Observer.update()
+
+      Assert Equals(getbufline(bufnums[0], 1, '$'), ['BufReadCmd has called'])
+      Assert Equals(getbufline(bufnums[1], 1, '$'), ['BufReadCmd has called'])
+      Assert Equals(getbufline(bufnums[2], 1, '$'), ['BufReadCmd has called'])
+    End
+
+    It register autocmd to call an attached function/command on hidden buffers when 'update()' has called
+      let bufnums = []
+
+      new foo1
+      setlocal bufhidden=hide
+      call Observer.attach(function('VitalVimBufferObserverBufReadCmd'))
+      call add(bufnums, bufnr('%'))
+      close
+
+      new foo2
+      setlocal bufhidden=unload
+      call Observer.attach(function('VitalVimBufferObserverBufReadCmd'))
+      call add(bufnums, bufnr('%'))
+      close
+
+      new foo3
+      setlocal bufhidden=delete
+      call Observer.attach(function('VitalVimBufferObserverBufReadCmd'))
+      call add(bufnums, bufnr('%'))
+      close
+
+      new foo4
+      setlocal bufhidden=wipe
+      call Observer.attach(function('VitalVimBufferObserverBufReadCmd'))
+      call add(bufnums, bufnr('%'))
+      close
+
+      call Observer.update()
+
+      Assert Equals(getbufline(bufnums[0], 1, '$'), [''])
+      Assert Equals(getbufline(bufnums[1], 1, '$'), [])
+      Assert Equals(getbufline(bufnums[2], 1, '$'), [])
+      Assert Equals(getbufline(bufnums[3], 1, '$'), [])
+
+      new foo1
+      Assert Equals(bufnr('%'), bufnums[0])
+      Assert Equals(getline(1, '$'), ['BufReadCmd has called'])
+
+      new foo2
+      Assert Equals(bufnr('%'), bufnums[1])
+      Assert Equals(getline(1, '$'), ['BufReadCmd has called'])
+
+      new foo3
+      Assert Equals(bufnr('%'), bufnums[2])
+      Assert Equals(getline(1, '$'), ['BufReadCmd has called'])
+
+      " NOTE: foo4 has wipeout
+      new foo4
+      Assert NotEquals(bufnr('%'), bufnums[3])
+      Assert Equals(getline(1, '$'), [''])
+    End
+  End
+End

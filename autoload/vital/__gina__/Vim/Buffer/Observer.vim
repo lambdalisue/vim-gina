@@ -1,14 +1,16 @@
-let s:name = sha256(expand('<sfile>'))
-let s:prefix = 'vital_internal_vim_buffer_observer'
-let s:registry = {}
-let s:t_string = type('')
+function! s:_vital_created(module) abort
+  let s:name = sha256(expand('<sfile>'))
+  let s:prefix = 'vital_internal_vim_buffer_observer'
+  let s:registry = {}
+  let s:t_string = type('')
+endfunction
 
 
 function! s:attach(...) abort
-  let function_or_command = get(a:000, 0, 'edit')
+  let Function_or_command = get(a:000, 0, 'edit')
   let bufnum = string(bufnr('%'))
   let s:registry[bufnum] = {
-        \ 'callback': function_or_command,
+        \ 'callback': Function_or_command,
         \ 'args': a:000[1 : ],
         \}
   return s:registry[bufnum]
@@ -45,6 +47,10 @@ function! s:update() abort
     silent execute printf('noautocmd keepalt keepjumps %dwincmd w', winnum_saved)
     silent keepjumps call winrestview(winview_saved)
   endtry
+endfunction
+
+function! s:clear() abort
+  let s:registry = {}
 endfunction
 
 function! s:_update() abort
