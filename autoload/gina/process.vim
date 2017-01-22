@@ -59,29 +59,21 @@ endfunction
 function! s:build_args(git, extra) abort
   let args = s:Argument.new(g:gina#process#command)
   if !empty(a:git) && isdirectory(a:git.worktree)
+    " NOTE
+    " git does not recognize -C{worktree} so "args.set()" could not be used
     let args.raw += ['-C', a:git.worktree]
   endif
-  let extra = s:Argument.new(a:extra)
-  call extra.map(function('s:expand_percent'))
-  call extra.residual(map(
-        \ extra.residual(),
-        \ 'v:val ==# ''%'' ? gina#util#path#expand(v:val) : v:val'
-        \))
-  call extend(args.raw, filter(extra.raw, '!empty(v:val)'))
+  call extend(args.raw, a:extra)
+  call map(args.raw, 's:expand(v:val)')
+  call filter(args.raw, '!empty(v:val)')
   return args
 endfunction
 
-function! s:expand_percent(key, value) abort
-  if type(a:value) == type('')
-    return [
-          \ a:key,
-          \ a:value ==# '%'
-          \   ? gina#util#path#expand(a:value)
-          \   : a:value
-          \]
-  else
-    return [a:key, a:value]
+function! s:expand(value) abort
+  if a:value =~# '^\%([%#]\|<\w\+>\)\%(:[p8~.htreS]\|:g\?s?\S\+?\S\+?\)*$'
+    return gina#util#path#expand(a:value)
   endif
+  return a:value
 endfunction
 
 
