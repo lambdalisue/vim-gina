@@ -7,7 +7,7 @@ Describe Argument
   End
 
   Before
-    let Argument = vital#vital#import('Argument')
+    let Argument = vital#gina#import('Argument')
   End
 
   Describe .parse({cmdline})
