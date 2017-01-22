@@ -96,6 +96,9 @@ function! s:resolve(git, path) abort
 endfunction
 
 function! s:get_config(git, ...) abort
+  if empty(a:git)
+    return {}
+  endif
   let path = s:resolve(a:git, 'config')
   return call(s:INI.parse_file, [path] + a:000, s:INI)
 endfunction
