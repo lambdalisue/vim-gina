@@ -43,6 +43,8 @@ function! gina#util#buffer#open(bufname, ...) abort
           \ options.callback
           \)
   endif
+  " Update content
+  execute 'edit' options.cmdarg
   " Move cursor if necessary
   call setpos('.', [
         \ 0,
@@ -50,8 +52,8 @@ function! gina#util#buffer#open(bufname, ...) abort
         \ options.col is# v:null ? col('.') : options.col,
         \ 0,
         \])
+  normal! zvzz
   " Finalize
-  execute 'edit' options.cmdarg
   call context.end()
   return context
 endfunction
