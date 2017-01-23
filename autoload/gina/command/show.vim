@@ -20,14 +20,11 @@ function! s:command.command(range, qargs, qmods) abort
         \ git.refname,
         \ args.params.object,
         \)
-  let selection = gina#util#selection#from(
-        \ bufname,
-        \ args.params.selection,
-        \)
   call gina#util#buffer#open(bufname, {
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
-        \ 'selection': selection,
+        \ 'line': args.params.line,
+        \ 'col': args.params.col,
         \})
 endfunction
 
@@ -48,7 +45,8 @@ function! s:build_args(git, qargs) abort
   let args.params.repository = args.pop('--repository')
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.selection = args.pop('--selection', '')
+  let args.params.line = args.pop('--line', v:null)
+  let args.params.col = args.pop('--col', v:null)
   let args.params.commit = gina#util#commit#resolve(
         \ a:git, args.pop(1, '')
         \)

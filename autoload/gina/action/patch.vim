@@ -50,14 +50,11 @@ function! s:on_patch(candidates, options) abort
   let params = gina#util#params('%')
   let path = get(params, 'path', '')
   for candidate in a:candidates
-    let selection = get(candidate, 'selection', [])
     execute printf(
-          \ 'Gina patch %s %s -- %s',
+          \ 'Gina patch %s %s %s -- %s',
           \ gina#util#shellescape(options.opener, '--opener='),
-          \ gina#util#shellescape(
-          \   gina#util#selection#format(selection),
-          \   '--selection='
-          \ ),
+          \ gina#util#shellescape(get(candidate, 'line'), '--line='),
+          \ gina#util#shellescape(get(candidate, 'col'), '--col='),
           \ gina#util#fnameescape(get(candidate, 'path', path)),
           \)
   endfor

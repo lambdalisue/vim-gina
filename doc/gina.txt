@@ -73,8 +73,6 @@ COMMANDS					*gina-commands*
 	If no {commit} has specified, the HEAD is used.
 	The followings are allowed in {options}
 
-	--selection={selection}
-		An initial selection (|gina-options-selection|)
 	--scheme={scheme}
 		Use a specified scheme to build a remote url.
 	--exact
@@ -137,8 +135,10 @@ COMMANDS					*gina-commands*
 
 	--opener={opener}
 		An opener command for the 1st buffer (|gina-options-opener|)
-	--selection={selection}
-		An initial selection (|gina-options-selection|)
+	--line={line}
+		An initial line number
+	--col={col}
+		An initial column number
 	--cached
 		Compare to the index rather than the working tree
 	-R
@@ -171,8 +171,10 @@ COMMANDS					*gina-commands*
 
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
-	--selection={selection}
-		An initial selection (|gina-options-selection|)
+	--line={line}
+		An initial line number
+	--col={col}
+		An initial column number
 
 	See "man git-diff" for other available {options}.
 
@@ -267,8 +269,10 @@ COMMANDS					*gina-commands*
 
 	--opener={opener}
 		An opener command for the 1st buffer (|gina-options-opener|)
-	--selection={selection}
-		An initial selection (|gina-options-selection|)
+	--line={line}
+		An initial line number
+	--col={col}
+		An initial column number
 
 	It respects 'diffopt' when opening the 2nd, 3rd buffer. Add "vertical"
 	to the option if you prefer to open the 2nd, 3rd buffer vertically.
@@ -298,8 +302,10 @@ COMMANDS					*gina-commands*
 
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
-	--selection={selection}
-		An initial selection (|gina-options-selection|)
+	--line={line}
+		An initial line number
+	--col={col}
+		An initial column number
 	--repository
 		Show a repository instead of the content of a specific file
 
@@ -390,17 +396,6 @@ OPTIONS						*gina-options*
 	:Gina show --opener="botright split"
 <
 	See |opening-window| for available values.
-
-						*gina-options-selection*
---selection={selection}
-	Specify an initial selection of the buffer. For example
->
-	:Gina show --selection=10
-	:Gina show --selection=10:5
-	:Gina show --selection=10-20
-	:Gina show --selection=10:5-20:10
-<
-	The format of the {selection} is "{line1}:{col1}-{line2}:{col2}".
 
 -----------------------------------------------------------------------------
 ACTIONS						*gina-actions*

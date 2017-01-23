@@ -16,7 +16,7 @@ let s:command = {}
 
 function! s:command.command(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:qargs)
+  let args = s:build_args(git, a:qargs, a:range)
   let url = s:build_url(git, args)
   if args.params.yank
     call gina#util#yank(url)
@@ -27,16 +27,13 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:build_args(git, qargs) abort
+function! s:build_args(git, qargs, range) abort
   let args = s:Argument.new(a:qargs)
   let args.params = {}
   let args.params.yank = args.pop('--yank')
   let args.params.exact = args.pop('--exact')
   let args.params.remote = args.pop('--remote', '')
-  let args.params.selection = args.pop('--selection', '')
-  let args.params.selection = empty(args.params.selection)
-        \ ? gina#util#selection#get()
-        \ : gina#util#selection#parse(args.params.selection)
+  let args.params.selection = a:range == [1, line('$')] ? [] : a:range
   let args.params.commit = args.pop(
         \ 1,
         \ get(gina#util#params('%'), 'commit', '')
@@ -98,8 +95,8 @@ endfunction
 
 function! s:build_url(git, args) abort
   let params = a:args.params
-  let line_start = get(get(params.selection, 0, []), 0, '')
-  let line_end = get(get(params.selection, 1, []), 0, '')
+  let line_start = get(params.selection, 0, '')
+  let line_end = get(params.selection, 1, '')
   let revision = params.exact ? params.hashref : params.commit
   let revision1 = params.exact ? params.hashref1 : params.commit1
   let revision2 = params.exact ? params.hashref2 : params.commit2

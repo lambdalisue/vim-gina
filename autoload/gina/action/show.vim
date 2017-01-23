@@ -57,14 +57,11 @@ function! s:on_show(candidates, options) abort
   let path = get(params, 'path', '')
   let commit = get(params, 'commit', '')
   for candidate in a:candidates
-    let selection = get(candidate, 'selection', [])
     execute printf(
-          \ 'Gina show %s %s %s -- %s',
+          \ 'Gina show %s %s %s %s -- %s',
           \ gina#util#shellescape(options.opener, '--opener='),
-          \ gina#util#shellescape(
-          \   gina#util#selection#format(selection),
-          \   '--selection='
-          \ ),
+          \ gina#util#shellescape(get(candidate, 'line'), '--line='),
+          \ gina#util#shellescape(get(candidate, 'col'), '--col='),
           \ gina#util#shellescape(get(candidate, 'commit', commit)),
           \ gina#util#fnameescape(get(candidate, 'path', path)),
           \)

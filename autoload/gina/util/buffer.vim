@@ -9,7 +9,8 @@ function! gina#util#buffer#open(bufname, ...) abort
   let options = extend({
         \ 'group': '',
         \ 'opener': '',
-        \ 'selection': v:null,
+        \ 'line': v:null,
+        \ 'col': v:null,
         \ 'callback': v:null,
         \}, get(a:000, 0, {}),
         \)
@@ -40,9 +41,12 @@ function! gina#util#buffer#open(bufname, ...) abort
           \)
   endif
   " Move cursor if necessary
-  if options.selection isnot v:null
-    call gina#util#selection#set(options.selection)
-  endif
+  call setpos('.', [
+        \ 0,
+        \ options.line is# v:null ? line('.') : options.line,
+        \ options.col is# v:null ? col('.') : options.col,
+        \ 0,
+        \])
   " Finalize
   call gina#command#ready_stream()
   call gina#util#doautocmd('BufReadCmd')

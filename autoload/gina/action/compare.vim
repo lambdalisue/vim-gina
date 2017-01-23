@@ -51,16 +51,15 @@ function! s:on_compare(candidates, options) abort
   let path = get(params, 'path', '')
   let commit = get(params, 'commit', '')
   for candidate in a:candidates
-    let selection = get(candidate, 'selection', [])
+    let line = get(candidate, 'line', '')
+    let col = get(candidate, 'col', '')
     let cached = get(candidate, 'sign', '!!') !~# '^\%(??\|!!\|.\w\)$'
     execute printf(
-          \ 'Gina compare %s %s %s %s -- %s',
+          \ 'Gina compare %s %s %s %s %s -- %s',
           \ cached ? '--cached' : '',
           \ gina#util#shellescape(options.opener, '--opener='),
-          \ gina#util#shellescape(
-          \   gina#util#selection#format(selection),
-          \   '--selection='
-          \ ),
+          \ gina#util#shellescape(get(candidate, 'line'), '--line='),
+          \ gina#util#shellescape(get(candidate, 'col'), '--col='),
           \ gina#util#shellescape(get(candidate, 'commit', commit)),
           \ gina#util#fnameescape(get(candidate, 'path', path)),
           \)

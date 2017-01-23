@@ -28,17 +28,26 @@ function! s:command.command(range, qargs, qmods) abort
         \ ? 'split'
         \ : 'vsplit'
 
-  call s:open('l', args.params.path, 'HEAD', opener1, args.params.selection)
+  call s:open(
+        \ 'l', args.params.path, 'HEAD', opener1,
+        \ args.params.line, args.params.col
+        \)
   call gina#util#diffthis()
   call group.add()
   let bufnr1 = bufnr('%')
 
-  call s:open('c', args.params.path, '', opener2, args.params.selection)
+  call s:open(
+        \ 'c', args.params.path, '', opener2,
+        \ args.params.line, args.params.col
+        \)
   call gina#util#diffthis()
   call group.add()
   let bufnr2 = bufnr('%')
 
-  call s:open('r', args.params.path, s:WORKTREE, opener2, args.params.selection)
+  call s:open(
+        \ 'r', args.params.path, s:WORKTREE, opener2,
+        \ args.params.line, args.params.col
+        \)
   call gina#util#diffthis()
   call group.add({'keep': 1})
   let bufnr3 = bufnr('%')
@@ -98,34 +107,31 @@ function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
   let args.params = {}
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.selection = args.pop('--selection', '')
+  let args.params.line = args.pop('--line', v:null)
+  let args.params.col = args.pop('--col', v:null)
   let args.params.path = gina#util#relpath(
         \ gina#util#expand(get(args.residual(), 0, '%'))
         \)
   return args.lock()
 endfunction
 
-function! s:open(suffix, path, commit, opener, selection) abort
+function! s:open(suffix, path, commit, opener, line, col) abort
   if a:commit ==# s:WORKTREE
     execute printf(
-          \ 'Gina edit %s %s %s -- %s',
+          \ 'Gina edit %s %s %s %s -- %s',
           \ printf('--group=patch-%s', a:suffix),
           \ gina#util#shellescape(a:opener, '--opener='),
-          \ gina#util#shellescape(
-          \   a:selection,
-          \   '--selection='
-          \ ),
+          \ gina#util#shellescape(a:line, '--line='),
+          \ gina#util#shellescape(a:col, '--col='),
           \ gina#util#fnameescape(a:path),
           \)
   else
     execute printf(
-          \ 'Gina show %s %s %s %s %s -- %s',
+          \ 'Gina show %s %s %s %s %s %s -- %s',
           \ printf('--group=patch-%s', a:suffix),
           \ gina#util#shellescape(a:opener, '--opener='),
-          \ gina#util#shellescape(
-          \   a:selection,
-          \   '--selection='
-          \ ),
+          \ gina#util#shellescape(a:line, '--line='),
+          \ gina#util#shellescape(a:col, '--col='),
           \ empty(a:commit) ? '--patch' : '',
           \ gina#util#shellescape(a:commit),
           \ gina#util#fnameescape(a:path),

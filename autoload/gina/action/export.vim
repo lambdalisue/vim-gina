@@ -33,11 +33,10 @@ function! s:on_quickfix(candidates, options) abort dict
 endfunction
 
 function! s:to_quickfix(candidate) abort
-  let selection = get(a:candidate, 'selection', [])
   return {
         \ 'filename': a:candidate.path,
-        \ 'lnum': get(get(selection, 0, []), 0, 1),
-        \ 'col': get(get(selection, 0, []), 1, 1),
+        \ 'lnum': get(a:candidate, 'line', 1),
+        \ 'col': get(a:candidate, 'col', 1),
         \ 'text': s:String.remove_ansi_sequences(a:candidate.word),
         \}
 endfunction

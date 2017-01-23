@@ -122,7 +122,8 @@ function! s:parse_record(git, record) abort
         \ 'word': m[3],
         \ 'abbr': a:record,
         \ 'path': gina#util#abspath(m[1]),
-        \ 'selection': [[line, col], [line, col]],
+        \ 'line': line,
+        \ 'col': col,
         \}
   return candidate
 endfunction

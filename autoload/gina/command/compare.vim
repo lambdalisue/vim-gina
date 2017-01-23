@@ -38,11 +38,17 @@ function! s:command.command(range, qargs, qmods) abort
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
-  call s:open('l', args.params.path, commit1, opener1, args.params.selection)
+  call s:open(
+        \ 'l', args.params.path, commit1, opener1,
+        \ args.params.line, args.params.col
+        \)
   call gina#util#diffthis()
   call group.add()
 
-  call s:open('r', args.params.path, commit2, opener2, args.params.selection)
+  call s:open(
+        \ 'r', args.params.path, commit2, opener2,
+        \ args.params.line, args.params.col
+        \)
   call gina#util#diffthis()
   call group.add({'keep': 1})
 
@@ -55,7 +61,8 @@ function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
   let args.params = {}
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.selection = args.pop('--selection', '')
+  let args.params.line = args.pop('--line')
+  let args.params.col = args.pop('--col')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
   let args.params.commit = args.pop(1, '')
@@ -65,7 +72,7 @@ function! s:build_args(git, qargs) abort
   return args.lock()
 endfunction
 
-function! s:open(suffix, path, commit, opener, selection) abort
+function! s:open(suffix, path, commit, opener, line, col) abort
   if s:Opener.is_preview_opener(a:opener)
     throw s:Exception.error(printf(
           \ 'An opener "%s" is not allowed.',
@@ -74,24 +81,20 @@ function! s:open(suffix, path, commit, opener, selection) abort
   endif
   if a:commit ==# s:WORKTREE
     execute printf(
-          \ 'Gina edit %s %s %s -- %s',
+          \ 'Gina edit %s %s %s %s -- %s',
           \ printf('--group=compare-%s', a:suffix),
           \ gina#util#shellescape(a:opener, '--opener='),
-          \ gina#util#shellescape(
-          \   a:selection,
-          \   '--selection='
-          \ ),
+          \ gina#util#shellescape(a:line, '--line='),
+          \ gina#util#shellescape(a:col, '--col='),
           \ gina#util#fnameescape(a:path),
           \)
   else
     execute printf(
-          \ 'Gina show %s %s %s %s -- %s',
+          \ 'Gina show %s %s %s %s %s -- %s',
           \ printf('--group=compare-%s', a:suffix),
           \ gina#util#shellescape(a:opener, '--opener='),
-          \ gina#util#shellescape(
-          \   a:selection,
-          \   '--selection='
-          \ ),
+          \ gina#util#shellescape(a:line, '--line='),
+          \ gina#util#shellescape(a:col, '--col='),
           \ gina#util#shellescape(a:commit),
           \ gina#util#fnameescape(a:path),
           \)

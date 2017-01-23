@@ -53,14 +53,11 @@ function! s:on_edit(candidates, options) abort
         \ 'opener': '',
         \}, a:options)
   for candidate in a:candidates
-    let selection = get(candidate, 'selection', [])
     execute printf(
-          \ 'Gina edit %s %s -- %s',
+          \ 'Gina edit %s %s %s -- %s',
           \ gina#util#shellescape(options.opener, '--opener='),
-          \ gina#util#shellescape(
-          \   gina#util#selection#format(selection),
-          \   '--selection='
-          \ ),
+          \ gina#util#shellescape(get(candidate, 'line'), '--line='),
+          \ gina#util#shellescape(get(candidate, 'col'), '--col='),
           \ gina#util#fnameescape(candidate.path),
           \)
   endfor
