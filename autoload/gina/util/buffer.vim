@@ -48,7 +48,6 @@ function! gina#util#buffer#open(bufname, ...) abort
         \ 0,
         \])
   " Finalize
-  call gina#command#ready_stream()
   call gina#util#doautocmd('BufReadCmd')
   call context.end()
   return context

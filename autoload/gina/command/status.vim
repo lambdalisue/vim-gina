@@ -78,10 +78,14 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#command#stream(
+  let result = gina#process#call(
         \ gina#core#get_or_fail(),
-        \ gina#util#meta#get_or_fail('args'),
+        \ gina#util#meta#get_or_fail('args').raw,
         \)
+  if result.status
+    throw gina#process#error(result)
+  endif
+  call gina#util#buffer#content(result.content)
   setlocal filetype=gina-status
 endfunction
 

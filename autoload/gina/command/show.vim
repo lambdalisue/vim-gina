@@ -95,7 +95,10 @@ function! s:BufReadCmd() abort
         \ gina#core#get_or_fail(),
         \ gina#util#meta#get_or_fail('args').raw,
         \)
-  call s:Buffer.edit_content(result.content)
+  if result.status
+    throw gina#process#error(result)
+  endif
+  call gina#util#buffer#content(result.content)
 
   let params = gina#util#params('%')
   if empty(params.path)

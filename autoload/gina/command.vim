@@ -12,36 +12,6 @@ function! gina#command#call(git, args, ...) abort
   return result
 endfunction
 
-function! gina#command#stream(git, args, ...) abort
-  let options = extend(copy(s:stream), get(a:000, 0, {}))
-  let options.__bufnr = bufnr('%')
-  let options.__winview = get(b:, 'gina_winview', {})
-  " Kill remaining process
-  silent! call b:gina_job.stop()
-  " Remove buffer content
-  let guard = s:Guard.store(['&l:modifiable'])
-  try
-    setlocal modifiable
-    silent lockmarks keepjumps %delete _
-  finally
-    call guard.restore()
-  endtry
-  " Start a new process
-  call s:Emitter.emit('gina:stream:open', a:args.raw, options)
-  let b:gina_job = gina#process#open(a:git, a:args.raw, options)
-  return b:gina_job
-endfunction
-
-function! gina#command#ready_stream() abort
-  " NOTE:
-  " In BufReadCmd, the content of the buffer is cleared so save winview every
-  " after cursor has moved and use that to restore winview.
-  augroup gina_internal_command_winview_assignment
-    autocmd! * <buffer>
-    autocmd CursorMoved <buffer> let b:gina_winview = winsaveview()
-  augroup END
-endfunction
-
 
 " Pipe -----------------------------------------------------------------------
 let s:stream = {}
