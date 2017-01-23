@@ -1,6 +1,3 @@
-let s:Argument = vital#gina#import('Argument')
-
-
 function! gina#command#edit#define() abort
   return s:command
 endfunction
@@ -26,7 +23,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
-  let args = s:Argument.new(a:qargs)
+  let args = gina#command#args(a:qargs)
   let args.params = {}
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')

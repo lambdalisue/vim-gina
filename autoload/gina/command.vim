@@ -1,7 +1,9 @@
+let s:Argument = vital#gina#import('Argument')
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Queue = vital#gina#import('Data.Queue')
 
+let s:custom = {}
 
 function! gina#command#call(git, args) abort
   if get(get(a:args, 'params', {}), 'async')
@@ -9,6 +11,24 @@ function! gina#command#call(git, args) abort
   else
     call s:sync_call(a:git, a:args)
   endif
+endfunction
+
+function! gina#command#args(qargs) abort
+  let args = s:Argument.new(a:qargs)
+  let scheme = substitute(args.get(0), '\W', '_', 'g')
+  let custom = s:get_custom(scheme)
+  for [query, value] in custom
+    if !args.has(query)
+      call args.set(query, value)
+    endif
+  endfor
+  return args
+endfunction
+
+function! gina#command#custom(scheme, query, value) abort
+  let scheme = substitute(a:scheme, '\W', '_', 'g')
+  let custom = s:get_custom(scheme)
+  call add(custom, [a:query, a:value])
 endfunction
 
 
@@ -43,6 +63,13 @@ function! s:async_call(git, args) abort
         \)
   let s:streams[stream._timer] = stream
   return stream
+endfunction
+
+function! s:get_custom(scheme) abort
+  if !exists('s:custom_' . a:scheme)
+    let s:custom_{a:scheme} = []
+  endif
+  return s:custom_{a:scheme}
 endfunction
 
 

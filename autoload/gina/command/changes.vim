@@ -1,5 +1,4 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
-let s:Argument = vital#gina#import('Argument')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 
@@ -24,7 +23,7 @@ function! s:command.command(range, qargs, qmods) abort
         \)
   call gina#util#buffer#open(bufname, {
         \ 'mods': a:qmods,
-        \ 'group': 'quick',
+        \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
         \ 'callback': {
@@ -37,10 +36,11 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
-  let args = s:Argument.new(a:qargs)
+  let args = gina#command#args(a:qargs)
   let args.params = {}
   let args.params.async = args.pop('--async')
-  let args.params.opener = args.pop('--opener', 'botright 10split')
+  let args.params.group = args.pop('--group', 'short')
+  let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.cmdarg = join([
         \ args.pop('^++enc'),
         \ args.pop('^++ff'),

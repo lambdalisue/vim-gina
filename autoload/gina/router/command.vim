@@ -20,7 +20,7 @@ endfunction
 function! gina#router#command#call(bang, range, args, mods) abort
   if a:bang ==# '!'
     let git = gina#core#get()
-    let args = s:Argument.new(a:args)
+    let args = gina#command#args(a:args)
     let args.params = {}
     let args.params.async = args.pop('--async')
     if args.params.async

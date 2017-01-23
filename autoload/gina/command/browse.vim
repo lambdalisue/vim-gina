@@ -1,4 +1,3 @@
-let s:Argument = vital#gina#import('Argument')
 let s:Config = vital#gina#import('Config')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Formatter = vital#gina#import('Data.String.Formatter')
@@ -28,7 +27,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs, range) abort
-  let args = s:Argument.new(a:qargs)
+  let args = gina#command#args(a:qargs)
   let args.params = {}
   let args.params.yank = args.pop('--yank')
   let args.params.exact = args.pop('--exact')

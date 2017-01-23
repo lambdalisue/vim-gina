@@ -1,4 +1,3 @@
-let s:Argument = vital#gina#import('Argument')
 let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Group = vital#gina#import('Vim.Buffer.Group')
@@ -28,29 +27,17 @@ function! s:command.command(range, qargs, qmods) abort
         \ ? 'split'
         \ : 'vsplit'
 
-  call s:open(
-        \ 'l', args.params.path, 'HEAD', opener1,
-        \ args.params.line, args.params.col,
-        \ args.params.cmdarg, a:qmods,
-        \)
+  call s:open(0, a:qargs, opener1, 'HEAD', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr1 = bufnr('%')
 
-  call s:open(
-        \ 'c', args.params.path, '', opener2,
-        \ args.params.line, args.params.col,
-        \ args.params.cmdarg, a:qmods,
-        \)
+  call s:open(1, a:qargs, opener2, '', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr2 = bufnr('%')
 
-  call s:open(
-        \ 'r', args.params.path, s:WORKTREE, opener2,
-        \ args.params.line, args.params.col,
-        \ args.params.cmdarg, a:qmods,
-        \)
+  call s:open(2, a:qargs, opener2, s:WORKTREE, args.params)
   call gina#util#diffthis()
   call group.add({'keep': 1})
   let bufnr3 = bufnr('%')
@@ -107,8 +94,14 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
-  let args = s:Argument.new(a:qargs)
+  let args = gina#command#args(a:qargs)
   let args.params = {}
+  let args.params.async = args.pop('--async')
+  let args.params.groups = [
+        \ args.pop('--group1', 'patch-l'),
+        \ args.pop('--group2', 'patch-c'),
+        \ args.pop('--group3', 'patch-r'),
+        \]
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.cmdarg = join([
         \ args.pop('^++enc'),
@@ -122,30 +115,31 @@ function! s:build_args(git, qargs) abort
   return args.lock()
 endfunction
 
-function! s:open(suffix, path, commit, opener, line, col, cmdarg, qmods) abort
+function! s:open(n, qmods, opener, commit, params) abort
   if a:commit ==# s:WORKTREE
     execute printf(
-          \ '%s Gina edit %s %s %s %s %s -- %s',
+          \ '%s Gina %s edit %s %s %s %s %s -- %s',
           \ a:qmods,
-          \ a:cmdarg,
-          \ printf('--group=patch-%s', a:suffix),
+          \ a:params.async ? '--async' : '',
+          \ a:params.cmdarg,
           \ gina#util#shellescape(a:opener, '--opener='),
-          \ gina#util#shellescape(a:line, '--line='),
-          \ gina#util#shellescape(a:col, '--col='),
-          \ gina#util#fnameescape(a:path),
+          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
+          \ gina#util#shellescape(a:params.line, '--line='),
+          \ gina#util#shellescape(a:params.col, '--col='),
+          \ gina#util#fnameescape(a:params.path),
           \)
   else
     execute printf(
-          \ '%s Gina show %s %s %s %s %s %s %s -- %s',
+          \ '%s Gina %s show %s %s %s %s %s %s %s -- %s',
           \ a:qmods,
-          \ a:cmdarg,
-          \ printf('--group=patch-%s', a:suffix),
+          \ a:params.async ? '--async' : '',
+          \ a:params.cmdarg,
           \ gina#util#shellescape(a:opener, '--opener='),
-          \ gina#util#shellescape(a:line, '--line='),
-          \ gina#util#shellescape(a:col, '--col='),
-          \ empty(a:commit) ? '--patch' : '',
+          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
+          \ gina#util#shellescape(a:params.line, '--line='),
+          \ gina#util#shellescape(a:params.col, '--col='),
           \ gina#util#shellescape(a:commit),
-          \ gina#util#fnameescape(a:path),
+          \ gina#util#fnameescape(a:params.path),
           \)
   endif
 endfunction

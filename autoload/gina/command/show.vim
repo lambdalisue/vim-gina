@@ -1,4 +1,3 @@
-let s:Argument = vital#gina#import('Argument')
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
@@ -42,7 +41,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
-  let args = s:Argument.new(a:qargs)
+  let args = gina#command#args(a:qargs)
   let args.params = {}
   let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', '')
@@ -74,7 +73,7 @@ function! s:build_args(git, qargs) abort
 endfunction
 
 function! s:build_args_from_params(params) abort
-  let args = s:Argument.new('show')
+  let args = gina#command#args('show')
   if empty(a:params.path)
     let object = a:params.commit
   else
