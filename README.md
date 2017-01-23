@@ -22,7 +22,7 @@ Features
 **While gina.vim is in alpha state. The following features are not settle yet.**
 
 - [x] Synchronous git command execution by `Gina[!] {command} {options}`
-- [ ] Asynchronous git command execution by `Gina[!] --async {command} {options}`
+- [x] Asynchronous git command execution by `Gina[!] --async {command} {options}`
 - [x] Gina actions
   - [x] Actions for branch manipulation
   - [x] Actions for browsing a remote content
@@ -59,7 +59,18 @@ Features
 - [ ] Statusline/Tabline components
 - [x] `++enc` and `++ff` for command which open a window
 - [x] Line/Column assignment for `Gina show` and `Gina edit`
-- [ ] Customization (e.g. opener/group/alias)
+- [x] Customization by `gina#command#custom({scheme}, {query}, {value})`
+  For example:
+  ```vim
+  " Add '--verbose' option to 'commit' command if not specified
+  call gina#command#custom('commit', '--verbose', 1)
+
+  " Use 'botright 10split' instead of the default opener
+  call gina#command#custom('status', '--opener', 'botright 10split')
+
+  " Open up in different window
+  call gina#command#custom('grep', '--group', 'grep-window')
+  ```
 
 
 Contribution
