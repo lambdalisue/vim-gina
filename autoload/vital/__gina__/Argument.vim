@@ -76,42 +76,79 @@ function! s:_build_pattern(query) abort
   return printf('^\%%(%s\)', join(patterns, '\|'))
 endfunction
 
+function! s:_is_query(query) abort
+  return a:query =~# '^--\?\S\+\%(|--\?\S\+\)*$'
+endfunction
+
 
 " Instance -------------------------------------------------------------------
 let s:args = {}
 
-function! s:_index_o(query) abort dict
+function! s:_index(pattern) abort dict
   let indices = range(0, len(self.raw)-1)
-  let pattern = s:_build_pattern(a:query)
   for index in indices
     let term = self.raw[index]
     if term ==# '--'
       return -1
-    elseif term =~# pattern
+    elseif term =~# a:pattern
       return index
     endif
   endfor
   return -1
 endfunction
 
-function! s:_has_o(query) abort dict
-  return call('s:_index_o', [a:query], self) != -1
+function! s:_has(pattern) abort dict
+  return call('s:_index', [a:pattern], self) != -1
 endfunction
 
-function! s:_get_o(query, ...) abort dict
-  let default = get(a:000, 0, 0)
+function! s:_get(pattern, default) abort dict
+  let index = call('s:_index', [a:pattern], self)
+  if index == -1
+    return a:default
+  endif
+  return self.raw[index]
+endfunction
+
+function! s:_pop(pattern, default) abort dict
+  let index = call('s:_index', [a:pattern], self)
+  if index == -1
+    return a:default
+  endif
+  return remove(self.raw, index)
+endfunction
+
+function! s:_set(pattern, term) abort dict
+  let index = call('s:_index', [a:pattern], self)
+  if index == -1
+    let tail = index(self.raw, '--')
+    let tail = tail == -1 ? len(self.raw) : tail
+    call insert(self.raw, a:term, tail)
+  else
+    let self.raw[index] = a:term
+  endif
+  return self
+endfunction
+
+function! s:_index_o(query) abort dict
+  return call('s:_index', [s:_build_pattern(a:query)], self)
+endfunction
+
+function! s:_has_o(query) abort dict
+  return call('s:_has', [s:_build_pattern(a:query)], self)
+endfunction
+
+function! s:_get_o(query, default) abort dict
   let index = call('s:_index_o', [a:query], self)
   if index == -1
-    return default
+    return a:default
   endif
   return s:_parse_term(self.raw[index])[1]
 endfunction
 
-function! s:_pop_o(query, ...) abort dict
-  let default = get(a:000, 0, 0)
+function! s:_pop_o(query, default) abort dict
   let index = call('s:_index_o', [a:query], self)
   if index == -1
-    return default
+    return a:default
   endif
   return s:_parse_term(remove(self.raw, index))[1]
 endfunction
@@ -209,31 +246,41 @@ endfunction
 
 function! s:args.index(query) abort
   return type(a:query) == s:t_string
-        \ ? call('s:_index_o', [a:query], self)
+        \ ? s:_is_query(a:query)
+        \   ? call('s:_index_o', [a:query], self)
+        \   : call('s:_index', [a:query], self)
         \ : call('s:_index_p', [a:query], self)
 endfunction
 
 function! s:args.has(query, ...) abort
   return type(a:query) == s:t_string
-        \ ? call('s:_has_o', [a:query], self)
+        \ ? s:_is_query(a:query)
+        \   ? call('s:_has_o', [a:query], self)
+        \   : call('s:_has', [a:query], self)
         \ : call('s:_has_p', [a:query], self)
 endfunction
 
 function! s:args.get(query, ...) abort
   return type(a:query) == s:t_string
-        \ ? call('s:_get_o', [a:query] + a:000, self)
-        \ : call('s:_get_p', [a:query] + a:000, self)
+        \ ? s:_is_query(a:query)
+        \   ? call('s:_get_o', [a:query, get(a:000, 0, 0)], self)
+        \   : call('s:_get', [a:query, get(a:000, 0, '')], self)
+        \ : call('s:_get_p', [a:query, get(a:000, 0, '')], self)
 endfunction
 
 function! s:args.pop(query, ...) abort
   return type(a:query) == s:t_string
-        \ ? call('s:_pop_o', [a:query] + a:000, self)
-        \ : call('s:_pop_p', [a:query] + a:000, self)
+        \ ? s:_is_query(a:query)
+        \   ? call('s:_pop_o', [a:query, get(a:000, 0, 0)], self)
+        \   : call('s:_pop', [a:query, get(a:000, 0, '')], self)
+        \ : call('s:_pop_p', [a:query, get(a:000, 0, '')], self)
 endfunction
 
 function! s:args.set(query, value) abort
   return type(a:query) == s:t_string
-        \ ? call('s:_set_o', [a:query, a:value], self)
+        \ ? s:_is_query(a:query)
+        \   ? call('s:_set_o', [a:query, a:value], self)
+        \   : call('s:_set', [a:query, a:value], self)
         \ : call('s:_set_p', [a:query, a:value], self)
 endfunction
 

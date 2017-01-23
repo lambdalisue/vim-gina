@@ -186,6 +186,16 @@ Describe Argument
     End
 
     Describe .index({query})
+      It returns an index of a term which match with a string {query}
+        let args = Argument.new('-f bar --foo BAR --hoge=hoge -- -hHOGE hoge')
+        Assert Equals(args.index('^-f$'), 0)
+        Assert Equals(args.index('^bar$'), 1)
+        Assert Equals(args.index('^--foo$'), 2)
+        Assert Equals(args.index('^BAR$'), 3)
+        Assert Equals(args.index('^--hoge='), 4)
+        Assert Equals(args.index('^-h'), -1)
+      End
+
       It returns an index of an optional term which match with a string {query}
         let args = Argument.new('-f bar --foo BAR --hoge=hoge -- -hHOGE hoge')
         Assert Equals(args.index('-f'), 0)
@@ -410,31 +420,119 @@ Describe Argument
               \])
       End
     End
+  End
 
-    Context Real usage
-      It manipulate args as expected
-        let args = Argument.new('grep gina HEAD')
-        let pattern = args.pop(1, '')
-        Assert Equals(pattern, 'gina')
-        Assert Equals(args.raw, ['grep', 'HEAD'])
-        let commit = args.pop(1, '')
-        Assert Equals(commit, 'HEAD')
-        Assert Equals(args.raw, ['grep'])
-        call args.set('--line-number', 1)
-        Assert Equals(args.raw, ['grep', '--line-number'])
-        call args.set('--color', 'always')
-        Assert Equals(args.raw, ['grep', '--line-number', '--color=always'])
-        call args.set(1, pattern)
-        Assert Equals(args.raw, [
-              \ 'grep', '--line-number', '--color=always',
-              \ 'gina',
-              \])
-        call args.set(2, commit)
-        Assert Equals(args.raw, [
-              \ 'grep', '--line-number', '--color=always',
-              \ 'gina', 'HEAD',
-              \])
-      End
+  Context Document sample
+    It Vital.Argument-usage
+      let args = Argument.new('grep gina HEAD')
+      let pattern = args.pop(1, '')
+      Assert Equals(pattern, 'gina')
+      Assert Equals(args.raw, ['grep', 'HEAD'])
+      let commit = args.pop(1, '')
+      Assert Equals(commit, 'HEAD')
+      Assert Equals(args.raw, ['grep'])
+      call args.set('--line-number', 1)
+      Assert Equals(args.raw, ['grep', '--line-number'])
+      call args.set('--color', 'always')
+      Assert Equals(args.raw, ['grep', '--line-number', '--color=always'])
+      call args.set(1, pattern)
+      Assert Equals(args.raw, [
+            \ 'grep', '--line-number', '--color=always',
+            \ 'gina',
+            \])
+      call args.set(2, commit)
+      Assert Equals(args.raw, [
+            \ 'grep', '--line-number', '--color=always',
+            \ 'gina', 'HEAD',
+            \])
+    End
+
+    It Vital.Argument.parse()
+      Assert Equals(Argument.parse('foo'), ['foo'])
+      Assert Equals(Argument.parse('foo bar'), ['foo', 'bar'])
+      Assert Equals(Argument.parse('"foo foo" "bar bar"'), ['foo foo', 'bar bar'])
+      Assert Equals(Argument.parse('foo "bar bar" hoge'), ['foo', 'bar bar', 'hoge'])
+      Assert Equals(Argument.parse('--foo="foo" -b"bar"'), ['--foo=foo', '-bbar'])
+      Assert Equals(Argument.parse('foo\ bar\ hoge'), ['foo\ bar\ hoge'])
+    End
+
+    It Vital.Argument.norm()
+      Assert Equals(Argument.norm(['foo']), ['foo'])
+      Assert Equals(Argument.norm(['foo', 'bar']), ['foo', 'bar'])
+      Assert Equals(Argument.norm(['"foo foo"', '"bar bar"']), ['foo foo', 'bar bar'])
+      Assert Equals(Argument.norm(['foo', '"bar bar"', 'hoge']), ['foo', 'bar bar', 'hoge'])
+      Assert Equals(Argument.norm(['--foo="foo"', '-b"bar"']), ['--foo=foo', '-bbar'])
+      Assert Equals(Argument.norm(['foo\ bar\ hoge']), ['foo\ bar\ hoge'])
+    End
+
+    It Vital.Argument-args.index()
+      let args = Argument.new([
+            \ '--foo', 'foo',
+            \ '--bar', 'bar',
+            \ '--',
+            \ '--wow', 'wow',
+            \])
+      " index({pattern})
+      Assert Equals(args.index('^--foo$'), 0)
+      Assert Equals(args.index('^foo$'), 1)
+      Assert Equals(args.index('^--wow$'), -1)
+
+      " index({query})
+      Assert Equals(args.index('-f|--foo'), 0)
+      Assert Equals(args.index('-b|--bar'), 2)
+      Assert Equals(args.index('-w|--wow'), -1)
+
+      " index({index})
+      Assert Equals(args.index(0), 1)
+      Assert Equals(args.index(1), 3)
+      Assert Equals(args.index(2), -1)
+    End
+
+    It Vital.Argument-args.get()
+      let args = Argument.new([
+            \ '--foo', 'foo',
+            \ '--bar=bar',
+            \ '--',
+            \ '--wow', 'wow',
+            \])
+      " args.get({pattern} [, {term}])
+      Assert Equals(args.get('^--foo$'), '--foo')
+      Assert Equals(args.get('^foo$'), 'foo')
+      Assert Equals(args.get('^--wow$'), '')
+      Assert Equals(args.get('^--wow$', 'default'), 'default')
+
+      " args.get({query} [, {value}])
+      Assert Equals(args.get('-f|--foo'), 1)
+      Assert Equals(args.get('-b|--bar'), 'bar')
+      Assert Equals(args.get('-w|--wow'), 0)
+      Assert Equals(args.get('-w|--wow', ''), '')
+
+      " args.get({index} [, {term}])
+      Assert Equals(args.get(0), 'foo')
+      Assert Equals(args.get(1), '')
+      Assert Equals(args.get(1, 0), 0)
+    End
+
+    It Vital.Argument-args.pop()
+      let args = Argument.new(['--foo', '-f', '--bar=bar', '-bBAR'])
+      Assert Equals(args.pop('-b|--bar'), 'bar')
+      Assert Equals(args.raw, ['--foo', '-f', '-bBAR'])
+    End
+
+    It Vital.Argument-args.set()
+      let args = Argument.new(['--foo', '-f', 'bar', '-bbar'])
+
+      " set({pattern}, {term})
+      call args.set('^--foo$', '--FOO')
+      Assert Equals(args.raw, ['--FOO', '-f', 'bar', '-bbar'])
+
+      " set({query}, {value})
+      call args.set('-f|--foo', 'FOO')
+      Assert Equals(args.raw, ['--FOO', '-fFOO', 'bar', '-bbar'])
+
+      " set({index}, {term})
+      call args.set(0, 'FOO')
+      Assert Equals(args.raw, ['--FOO', '-fFOO', 'FOO', '-bbar'])
     End
   End
 End
