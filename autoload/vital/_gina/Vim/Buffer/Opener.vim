@@ -28,6 +28,7 @@ endfunction
 " Public ---------------------------------------------------------------------
 function! s:open(buffer, ...) abort
   let config = extend({
+        \ 'mods': '',
         \ 'opener': 'edit',
         \ 'group': '',
         \ 'range': 'tabpage',
@@ -42,6 +43,8 @@ function! s:open(buffer, ...) abort
   while opener[0] ==# '='
     let opener = eval(opener[1:])
   endwhile
+  let opener = config.mods . ' ' . opener
+  let opener = substitute(opener, '^\%(\s\+\|\s\+\)$', '', 'g')
 
   let preview = s:is_preview_opener(opener)
   let bufloaded = bufloaded(a:buffer)

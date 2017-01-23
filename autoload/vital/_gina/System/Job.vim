@@ -141,6 +141,9 @@ else
   endfunction
 
   function! s:job.wait(...) abort
+    if !has('patch-8.0.0027')
+      throw 'vital: System.Job: Vim 8.0.0026 and earlier is not supported.'
+    endif
     let timeout = get(a:000, 0, v:null)
     let timeout = timeout is# v:null ? v:null : timeout / 1000.0
     let start_time = reltime()
