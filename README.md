@@ -57,8 +57,8 @@ Features
   - [x] List tags by `Gina tag`
 - [ ] Command completions
 - [ ] Statusline/Tabline components
-- [ ] `++enc` and `++ff` for command which open a window
-- [ ] Line/Column assignment for `Gina show` and `Gina edit`
+- [x] `++enc` and `++ff` for command which open a window
+- [x] Line/Column assignment for `Gina show` and `Gina edit`
 - [ ] Customization (e.g. opener/group/alias)
 
 
