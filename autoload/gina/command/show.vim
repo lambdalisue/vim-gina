@@ -23,6 +23,7 @@ function! s:command.command(range, qargs, qmods) abort
   call gina#util#buffer#open(bufname, {
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
+        \ 'cmdarg': args.params.cmdarg,
         \ 'line': args.params.line,
         \ 'col': args.params.col,
         \})
@@ -45,6 +46,10 @@ function! s:build_args(git, qargs) abort
   let args.params.repository = args.pop('--repository')
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.cmdarg = join([
+        \ args.pop('^++enc'),
+        \ args.pop('^++ff'),
+        \])
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
   let args.params.commit = gina#util#commit#resolve(

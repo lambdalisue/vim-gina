@@ -28,6 +28,7 @@ function! s:command.command(range, qargs, qmods) abort
   call gina#util#buffer#open(bufname, {
         \ 'group': 'quick',
         \ 'opener': args.params.opener,
+        \ 'cmdarg': args.params.cmdarg,
         \ 'callback': {
         \   'fn': function('s:init'),
         \   'args': [args],
@@ -40,8 +41,12 @@ endfunction
 function! s:build_args(qargs) abort
   let args = s:Argument.new(a:qargs)
   let args.params = {}
-  let args.params.amend = args.get('--amend')
   let args.params.opener = args.get('--opener', 'edit')
+  let args.params.cmdarg = join([
+        \ args.pop('^++enc'),
+        \ args.pop('^++ff'),
+        \])
+  let args.params.amend = args.get('--amend')
   return args.lock()
 endfunction
 

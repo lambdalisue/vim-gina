@@ -11,6 +11,7 @@ function! gina#util#buffer#open(bufname, ...) abort
         \ 'opener': '',
         \ 'line': v:null,
         \ 'col': v:null,
+        \ 'cmdarg': '',
         \ 'callback': v:null,
         \}, get(a:000, 0, {}),
         \)
@@ -48,7 +49,7 @@ function! gina#util#buffer#open(bufname, ...) abort
         \ 0,
         \])
   " Finalize
-  call gina#util#doautocmd('BufReadCmd')
+  execute 'edit' options.cmdarg
   call context.end()
   return context
 endfunction
@@ -67,8 +68,10 @@ function! gina#util#buffer#focus(expr) abort
   return guard
 endfunction
 
-function! gina#util#buffer#content(...) abort
-  lockmarks return call(s:Buffer.edit_content, a:000, s:Buffer)
+function! gina#util#buffer#content(content) abort
+  let options = s:Buffer.parse_cmdarg()
+  let options.lockmarks = 1
+  call s:Buffer.edit_content(a:content, options)
 endfunction
 
 
