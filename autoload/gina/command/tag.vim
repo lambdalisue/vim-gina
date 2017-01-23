@@ -16,7 +16,7 @@ function! s:command.command(range, qargs, qmods) abort
   let args = s:build_args(git, a:qargs)
 
   if s:is_raw_command(args)
-    return gina#router#command('!', a:range, a:qargs, a:qmods)
+    return gina#router#command#call('!', a:range, a:qargs, a:qmods)
   endif
 
   let bufname = printf('gina:%s:tag', git.refname)
