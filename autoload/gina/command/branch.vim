@@ -23,6 +23,7 @@ function! s:command.command(range, qargs, qmods) abort
 
   let bufname = printf('gina:%s:branch', git.refname)
   call gina#util#buffer#open(bufname, {
+        \ 'mods': a:qmods,
         \ 'group': 'quick',
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,

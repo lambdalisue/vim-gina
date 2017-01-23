@@ -21,6 +21,7 @@ function! s:command.command(range, qargs, qmods) abort
         \ args.params.object,
         \)
   call gina#util#buffer#open(bufname, {
+        \ 'mods': a:qmods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,

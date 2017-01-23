@@ -14,6 +14,7 @@ function! s:command.command(range, qargs, qmods) abort
   let args = s:build_args(git, a:qargs)
   let bufname = args.params.path
   call gina#util#buffer#open(bufname, {
+        \ 'mods': a:qmods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,

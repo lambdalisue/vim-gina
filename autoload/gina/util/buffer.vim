@@ -7,11 +7,12 @@ let s:Path = vital#gina#import('System.Filepath')
 
 function! gina#util#buffer#open(bufname, ...) abort
   let options = extend({
+        \ 'mods': '',
         \ 'group': '',
         \ 'opener': '',
+        \ 'cmdarg': '',
         \ 'line': v:null,
         \ 'col': v:null,
-        \ 'cmdarg': '',
         \ 'callback': v:null,
         \}, get(a:000, 0, {}),
         \)
@@ -27,6 +28,7 @@ function! gina#util#buffer#open(bufname, ...) abort
   try
     set eventignore+=BufReadCmd
     silent let context = s:Opener.open(bufname, {
+          \ 'mods': options.mods,
           \ 'group':  options.group,
           \ 'opener': options.opener,
           \})
