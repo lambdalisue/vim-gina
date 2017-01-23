@@ -20,6 +20,7 @@ function! s:command.command(range, qargs, qmods) abort
         \ git.refname,
         \)
   call gina#util#buffer#open(bufname, {
+        \ 'mods': a:qmods,
         \ 'group': 'quick',
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
