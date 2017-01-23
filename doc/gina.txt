@@ -186,6 +186,8 @@ COMMANDS					*gina-commands*
 
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
+	--async
+		Run grep command asynchronously
 
 	The following action groups are available in the buffer.
 
@@ -212,6 +214,8 @@ COMMANDS					*gina-commands*
 
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
+	--async
+		Run grep command asynchronously
 
 	The following action groups are available in the buffer.
 

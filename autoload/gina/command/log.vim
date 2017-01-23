@@ -37,6 +37,7 @@ endfunction
 function! s:build_args(git, qargs) abort
   let args = s:Argument.new(a:qargs)
   let args.params = {}
+  let args.params.async = args.pop('--async')
   let args.params.opener = args.pop('--opener', 'botright 10split')
   let args.params.cmdarg = join([
         \ args.pop('^++enc'),
@@ -91,14 +92,17 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  let result = gina#process#call(
-        \ gina#core#get_or_fail(),
-        \ gina#util#meta#get_or_fail('args').raw,
-        \)
-  if result.status
-    throw gina#process#error(result)
+  let git = gina#core#get_or_fail()
+  let args = gina#util#meta#get_or_fail('args')
+  if args.params.async
+    call gina#command#stream(git, args)
+  else
+    let result = gina#process#call(git, args.raw)
+    if result.status
+      throw gina#process#error(result)
+    endif
+    call gina#util#buffer#content(result.content)
   endif
-  call gina#util#buffer#content(result.content)
   setlocal filetype=gina-log
 endfunction
 
