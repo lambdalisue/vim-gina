@@ -93,17 +93,10 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  let git = gina#core#get_or_fail()
-  let args = gina#util#meta#get_or_fail('args')
-  if args.params.async
-    call gina#command#stream(git, args)
-  else
-    let result = gina#process#call(git, args.raw)
-    if result.status
-      throw gina#process#error(result)
-    endif
-    call gina#util#buffer#content(result.content)
-  endif
+  call gina#command#call(
+        \ gina#core#get_or_fail(),
+        \ gina#util#meta#get_or_fail('args'),
+        \)
   setlocal filetype=gina-log
 endfunction
 

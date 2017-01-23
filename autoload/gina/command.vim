@@ -1,20 +1,29 @@
 let s:Buffer = vital#gina#import('Vim.Buffer')
-let s:Console = vital#gina#import('Vim.Console')
 let s:Guard = vital#gina#import('Vim.Guard')
-let s:Emitter = vital#gina#import('Emitter')
 let s:Queue = vital#gina#import('Data.Queue')
 
 
-function! gina#command#call(git, args, ...) abort
-  let options = get(a:000, 0, {})
-  let result = gina#process#call(a:git, a:args.raw, options)
-  call gina#process#inform(result)
-  call s:Emitter.emit('gina:modified')
-  return result
+function! gina#command#call(git, args) abort
+  if get(get(a:args, 'params', {}), 'async')
+    call s:async_call(a:git, a:args)
+  else
+    call s:sync_call(a:git, a:args)
+  endif
 endfunction
 
-function! gina#command#stream(git, args, ...) abort
-  let options = extend(copy(s:stream), get(a:000, 0, {}))
+
+" Private --------------------------------------------------------------------
+function! s:sync_call(git, args) abort
+  let result = gina#process#call(a:git, a:args.raw)
+  if result.status
+    throw gina#process#error(result)
+  endif
+  let options = s:Buffer.parse_cmdarg()
+  let options.lockmarks = 1
+  call s:Buffer.edit_content(result.content, options)
+endfunction
+
+function! s:async_call(git, args) abort
   " Remove buffer content
   let guard = s:Guard.store(['&l:modifiable'])
   try
@@ -24,7 +33,7 @@ function! gina#command#stream(git, args, ...) abort
     call guard.restore()
   endtry
   " Start a new process
-  let stream = gina#process#open(a:git, a:args.raw, options)
+  let stream = gina#process#open(a:git, a:args.raw, copy(s:stream))
   let stream._bufnr = bufnr('%')
   let stream._queue = s:Queue.new()
   let stream._start = reltime()
@@ -34,18 +43,6 @@ function! gina#command#stream(git, args, ...) abort
         \)
   let s:streams[stream._timer] = stream
   return stream
-endfunction
-
-" For Debug
-function! gina#command#_print_streams() abort
-  for stream in values(s:streams)
-    echo printf('Stream [timer: %d]', stream._timer)
-    echo printf('| time:   %s', reltimestr(reltime(stream._start)))
-    echo printf('| args:   %s', join(stream._args))
-    echo printf('| bufnr:  %d', stream._bufnr)
-    echo printf('| count:  %d', len(stream._queue.__data))
-    echo printf('| status: %s', stream.status())
-  endfor
 endfunction
 
 
