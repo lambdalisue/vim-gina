@@ -13,16 +13,11 @@ function! gina#command#call(bang, range, args, mods) abort
     let args = gina#command#parse_args(a:args)
     let args.params = {}
     let args.params.async = args.pop('--async')
-    let args.params.emit = !args.pop('--no-emit')
     if args.params.async
-      let options = copy(s:async_process)
-      let options.params = args.params
-      call gina#process#open(git, args, options)
+      call gina#process#open(git, args, copy(s:async_process))
     else
       call gina#process#inform(gina#process#call(git, args))
-      if args.params.emit
-        call s:Emitter.emit('gina:modified')
-      endif
+      call s:Emitter.emit('gina:modified')
     endif
     return
   endif
@@ -123,7 +118,5 @@ function! s:async_process.on_stderr(job, msg, event) abort
 endfunction
 
 function! s:async_process.on_exit(job, msg, event) abort
-  if self.params.emit
-    call s:Emitter.emit('gina:modified')
-  endif
+  call s:Emitter.emit('gina:modified')
 endfunction

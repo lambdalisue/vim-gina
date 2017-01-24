@@ -2,6 +2,7 @@ let s:Argument = vital#gina#import('Argument')
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
+let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Job = vital#gina#import('System.Job')
@@ -95,6 +96,7 @@ function! s:exec_sync(git, args) abort
     throw gina#process#error(result)
   endif
   call gina#util#buffer#assign_content(result.content)
+  call s:Emitter.emit(printf('gina:%s:done', a:args.get(0)))
 endfunction
 
 function! s:exec_async(git, args) abort
@@ -107,6 +109,7 @@ function! s:exec_async(git, args) abort
   endtry
   " Start a new process
   let async_process = gina#process#open(a:git, a:args, copy(s:async_process))
+  let async_process._args = a:args
   let async_process._queue = s:Queue.new()
   let async_process._bufnr = bufnr('%')
   let async_process._timer = timer_start(
@@ -226,6 +229,7 @@ function! s:async_process.close() abort
       silent lockmarks keepjumps $delete _
     endif
     setlocal nomodified
+    call s:Emitter.emit(printf('gina:%s:async:done', self._args.get(0)))
   finally
     call winrestview(view)
     call guard.restore()

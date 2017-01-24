@@ -4,9 +4,9 @@ let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:WORKTREE = '@@'
 
 
-function! gina#command#compare#call(range, qargs, qmods) abort
+function! gina#command#compare#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:qargs)
+  let args = s:build_args(git, a:args)
 
   let [commit1, commit2] = gina#util#commit#split(
         \ git, args.params.commit
@@ -29,11 +29,11 @@ function! gina#command#compare#call(range, qargs, qmods) abort
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
-  call s:open(0, a:qmods, opener1, commit1, args.params)
+  call s:open(0, a:mods, opener1, commit1, args.params)
   call gina#util#diffthis()
   call group.add()
 
-  call s:open(1, a:qmods, opener2, commit2, args.params)
+  call s:open(1, a:mods, opener2, commit2, args.params)
   call gina#util#diffthis()
   call group.add({'keep': 1})
 
@@ -42,8 +42,8 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:build_args(git, qargs) abort
-  let args = gina#command#parse_args(a:qargs)
+function! s:build_args(git, args) abort
+  let args = gina#command#parse_args(a:args)
   let args.params = {}
   let args.params.async = args.pop('--async')
   let args.params.groups = [
@@ -66,7 +66,7 @@ function! s:build_args(git, qargs) abort
   return args.lock()
 endfunction
 
-function! s:open(n, qmods, opener, commit, params) abort
+function! s:open(n, mods, opener, commit, params) abort
   if s:Opener.is_preview_opener(a:opener)
     throw s:Exception.error(printf(
           \ 'An opener "%s" is not allowed.',
@@ -76,7 +76,7 @@ function! s:open(n, qmods, opener, commit, params) abort
   if a:commit ==# s:WORKTREE
     execute printf(
           \ '%s Gina %s edit %s %s %s %s %s -- %s',
-          \ a:qmods,
+          \ a:mods,
           \ a:params.async ? '--async' : '',
           \ a:params.cmdarg,
           \ gina#util#shellescape(a:opener, '--opener='),
@@ -88,7 +88,7 @@ function! s:open(n, qmods, opener, commit, params) abort
   else
     execute printf(
           \ '%s Gina %s show %s %s %s %s %s %s -- %s',
-          \ a:qmods,
+          \ a:mods,
           \ a:params.async ? '--async' : '',
           \ a:params.cmdarg,
           \ gina#util#shellescape(a:opener, '--opener='),

@@ -7,16 +7,16 @@ let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:String = vital#gina#import('Data.String')
 
 
-function! gina#command#grep#call(range, qargs, qmods) abort
+function! gina#command#grep#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:qargs)
+  let args = s:build_args(git, a:args)
   let bufname = printf(
         \ 'gina:%s:grep/%s',
         \ git.refname,
         \ args.params.commit,
         \)
   call gina#util#buffer#open(bufname, {
-        \ 'mods': a:qmods,
+        \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -29,8 +29,8 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:build_args(git, qargs) abort
-  let args = gina#command#parse_args(a:qargs)
+function! s:build_args(git, args) abort
+  let args = gina#command#parse_args(a:args)
   let args.params = {}
   let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', 'quick')

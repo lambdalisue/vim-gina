@@ -7,9 +7,9 @@ let s:is_windows = has('win32') || has('win64')
 let s:WORKTREE = '@@'
 
 
-function! gina#command#patch#call(range, qargs, qmods) abort
+function! gina#command#patch#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:qargs)
+  let args = s:build_args(git, a:args)
   let group = s:Group.new()
 
   silent diffoff!
@@ -19,17 +19,17 @@ function! gina#command#patch#call(range, qargs, qmods) abort
         \ ? 'split'
         \ : 'vsplit'
 
-  call s:open(0, a:qmods, opener1, 'HEAD', args.params)
+  call s:open(0, a:mods, opener1, 'HEAD', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr1 = bufnr('%')
 
-  call s:open(1, a:qmods, opener2, '', args.params)
+  call s:open(1, a:mods, opener2, '', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr2 = bufnr('%')
 
-  call s:open(2, a:qmods, opener2, s:WORKTREE, args.params)
+  call s:open(2, a:mods, opener2, s:WORKTREE, args.params)
   call gina#util#diffthis()
   call group.add({'keep': 1})
   let bufnr3 = bufnr('%')
@@ -85,8 +85,8 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:build_args(git, qargs) abort
-  let args = gina#command#parse_args(a:qargs)
+function! s:build_args(git, args) abort
+  let args = gina#command#parse_args(a:args)
   let args.params = {}
   let args.params.async = args.pop('--async')
   let args.params.groups = [
@@ -107,11 +107,11 @@ function! s:build_args(git, qargs) abort
   return args.lock()
 endfunction
 
-function! s:open(n, qmods, opener, commit, params) abort
+function! s:open(n, mods, opener, commit, params) abort
   if a:commit ==# s:WORKTREE
     execute printf(
           \ '%s Gina %s edit %s %s %s %s %s -- %s',
-          \ a:qmods,
+          \ a:mods,
           \ a:params.async ? '--async' : '',
           \ a:params.cmdarg,
           \ gina#util#shellescape(a:opener, '--opener='),
@@ -123,7 +123,7 @@ function! s:open(n, qmods, opener, commit, params) abort
   else
     execute printf(
           \ '%s Gina %s show %s %s %s %s %s %s -- %s',
-          \ a:qmods,
+          \ a:mods,
           \ a:params.async ? '--async' : '',
           \ a:params.cmdarg,
           \ gina#util#shellescape(a:opener, '--opener='),

@@ -27,8 +27,8 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:build_args(git, qargs) abort
-  let args = gina#command#parse_args(a:qargs)
+function! s:build_args(git, args) abort
+  let args = gina#command#parse_args(a:args)
   let args.params = {}
   let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', 'short')

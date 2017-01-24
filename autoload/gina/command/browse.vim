@@ -18,8 +18,8 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:build_args(git, qargs, range) abort
-  let args = gina#command#parse_args(a:qargs)
+function! s:build_args(git, args, range) abort
+  let args = gina#command#parse_args(a:args)
   let args.params = {}
   let args.params.yank = args.pop('--yank')
   let args.params.exact = args.pop('--exact')

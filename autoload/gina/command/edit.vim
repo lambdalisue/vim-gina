@@ -1,9 +1,9 @@
-function! gina#command#edit#call(range, qargs, qmods) abort
+function! gina#command#edit#call(range, args, mods) abort
   let git = gina#core#get()
-  let args = s:build_args(git, a:qargs)
+  let args = s:build_args(git, a:args)
   let bufname = args.params.path
   call gina#util#buffer#open(bufname, {
-        \ 'mods': a:qmods,
+        \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -14,8 +14,8 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:build_args(git, qargs) abort
-  let args = gina#command#parse_args(a:qargs)
+function! s:build_args(git, args) abort
+  let args = gina#command#parse_args(a:args)
   let args.params = {}
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
