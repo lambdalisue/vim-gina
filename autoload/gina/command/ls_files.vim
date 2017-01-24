@@ -65,10 +65,10 @@ function! s:init(args) abort
   call s:Anchor.attach()
   call s:Observer.attach()
   call gina#action#attach(function('s:get_candidates'))
-  call gina#action#include('browse')
+  call gina#action#include('browse', 1)
   call gina#action#include('compare')
   call gina#action#include('diff')
-  call gina#action#include('edit')
+  call gina#action#include('edit', 1)
   call gina#action#include('show')
 
   augroup gina_internal_command

@@ -68,8 +68,8 @@ function! s:init(args) abort
   call s:Observer.attach()
   call gina#action#attach(function('s:get_candidates'))
   call gina#action#include('changes')
-  call gina#action#include('commit')
-  call gina#action#include('show')
+  call gina#action#include('commit', 1)
+  call gina#action#include('show', 1)
 
   augroup gina_internal_command
     autocmd! * <buffer>

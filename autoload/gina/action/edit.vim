@@ -1,4 +1,4 @@
-function! gina#action#edit#define(binder) abort
+function! gina#action#edit#define(binder, ...) abort
   call a:binder.define('edit', function('s:on_edit'), {
         \ 'description': 'Open and edit a content',
         \ 'mapping_mode': 'n',
@@ -41,6 +41,14 @@ function! gina#action#edit#define(binder) abort
         \ 'requirements': ['path'],
         \ 'options': { 'opener': 'pedit' },
         \})
+  if get(a:000, 0, 0)
+    call gina#action#alias('above', 'edit:above')
+    call gina#action#alias('below', 'edit:below')
+    call gina#action#alias('left', 'edit:left')
+    call gina#action#alias('right', 'edit:right')
+    call gina#action#alias('tab', 'edit:tab')
+    call gina#action#alias('preview', 'edit:preview')
+  endif
 endfunction
 
 

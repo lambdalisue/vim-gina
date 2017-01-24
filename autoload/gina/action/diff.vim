@@ -1,4 +1,4 @@
-function! gina#action#diff#define(binder) abort
+function! gina#action#diff#define(binder, ...) abort
   call a:binder.define('diff', function('s:on_diff'), {
         \ 'description': 'Open a diff content',
         \ 'mapping_mode': 'n',

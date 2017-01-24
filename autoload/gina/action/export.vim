@@ -1,7 +1,7 @@
 let s:String = vital#gina#import('Data.String')
 
 
-function! gina#action#export#define(binder) abort
+function! gina#action#export#define(binder, ...) abort
   call a:binder.define('export:quickfix', function('s:on_quickfix'), {
         \ 'description': 'Replace quickfix list with the selected candidates',
         \ 'mapping_mode': 'nv',
@@ -14,6 +14,11 @@ function! gina#action#export#define(binder) abort
         \ 'requirements': ['path', 'word'],
         \ 'options': { 'replace': 0 },
         \})
+
+  if get(a:000, 0, 0)
+    call gina#action#alias('quickfix', 'export:quickfix')
+    call gina#action#alias('quickfix:add', 'export:quickfix:add')
+  endif
 endfunction
 
 

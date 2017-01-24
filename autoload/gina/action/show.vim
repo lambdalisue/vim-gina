@@ -1,4 +1,4 @@
-function! gina#action#show#define(binder) abort
+function! gina#action#show#define(binder, ...) abort
   call a:binder.define('show', function('s:on_show'), {
         \ 'description': 'Open and show a content',
         \ 'mapping_mode': 'n',
@@ -41,6 +41,15 @@ function! gina#action#show#define(binder) abort
         \ 'requirements': [],
         \ 'options': { 'opener': 'pedit' },
         \})
+
+  if get(a:000, 0, 0)
+    call gina#action#alias('above', 'show:above')
+    call gina#action#alias('below', 'show:below')
+    call gina#action#alias('left', 'show:left')
+    call gina#action#alias('right', 'show:right')
+    call gina#action#alias('tab', 'show:tab')
+    call gina#action#alias('preview', 'show:preview')
+  endif
 endfunction
 
 

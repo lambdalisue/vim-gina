@@ -4,7 +4,7 @@ let s:File = vital#gina#import('System.File')
 let s:Path = vital#gina#import('System.Filepath')
 
 
-function! gina#action#index#define(binder) abort
+function! gina#action#index#define(binder, ...) abort
   call a:binder.define('index:add', function('s:on_add'), {
         \ 'hidden': 1,
         \ 'description': 'Add a change to the status',
@@ -80,6 +80,7 @@ function! gina#action#index#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('index:checkout', function('s:on_checkout'), {
+        \ 'hidden': 1,
         \ 'description': 'Checkout a contents',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
@@ -105,6 +106,7 @@ function! gina#action#index#define(binder) abort
         \ 'options': { 'theirs': 1 },
         \})
   call a:binder.define('index:checkout:HEAD', function('s:on_checkout'), {
+        \ 'hidden': 1,
         \ 'description': 'Checkout a contents from HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
@@ -117,13 +119,13 @@ function! gina#action#index#define(binder) abort
         \ 'requirements': ['path'],
         \ 'options': { 'commit': 'HEAD', 'force': 1 },
         \})
-  call a:binder.define('index:checkout:origin/HEAD', function('s:on_checkout'), {
+  call a:binder.define('index:checkout:origin', function('s:on_checkout'), {
         \ 'description': 'Checkout a contents from origin/HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'commit': 'origin/HEAD' },
         \})
-  call a:binder.define('index:checkout:origin/HEAD:force', function('s:on_checkout'), {
+  call a:binder.define('index:checkout:origin:force', function('s:on_checkout'), {
         \ 'hidden': 1,
         \ 'description': 'Checkout a contents from origin/HEAD (force)',
         \ 'mapping_mode': 'nv',
@@ -137,11 +139,22 @@ function! gina#action#index#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('index:discard:force', function('s:on_discard'), {
+        \ 'hidden': 1,
         \ 'description': 'Discard changes on the working tree',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path', 'sign'],
         \ 'options': { 'force': 1 },
         \})
+
+  if get(a:000, 0, 0)
+    call gina#action#alias('stage', 'index:stage')
+    call gina#action#alias('unstage', 'index:unstage')
+    call gina#action#alias('toggle', 'index:toggle')
+    call gina#action#alias('checkout:ours', 'index:checkout:ours')
+    call gina#action#alias('checkout:theirs', 'index:checkout:theirs')
+    call gina#action#alias('checkout:origin', 'index:checkout:origin')
+    call gina#action#alias('discard', 'index:discard')
+  endif
 endfunction
 
 

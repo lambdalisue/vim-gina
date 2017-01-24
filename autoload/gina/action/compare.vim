@@ -1,4 +1,4 @@
-function! gina#action#compare#define(binder) abort
+function! gina#action#compare#define(binder, ...) abort
   call a:binder.define('compare', function('s:on_compare'), {
         \ 'description': 'Compare a content',
         \ 'mapping_mode': 'n',
