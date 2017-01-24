@@ -1,8 +1,11 @@
 let s:Argument = vital#gina#import('Argument')
+let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
 let s:Exception = vital#gina#import('Vim.Exception')
+let s:Guard = vital#gina#import('Vim.Guard')
 let s:Job = vital#gina#import('System.Job')
+let s:Queue = vital#gina#import('Data.Queue')
 
 let s:t_dict = type({})
 
@@ -38,6 +41,14 @@ function! gina#process#call(git, args, ...) abort
         \ 'stderr': pipe._stderr,
         \ 'content': pipe._content,
         \}
+endfunction
+
+function! gina#process#exec(git, args) abort
+  if get(get(a:args, 'params', {}), 'async')
+    call s:exec_async(a:git, a:args)
+  else
+    call s:exec_sync(a:git, a:args)
+  endif
 endfunction
 
 function! gina#process#inform(result) abort
@@ -78,6 +89,43 @@ function! s:expand(value) abort
   return a:value
 endfunction
 
+function! s:exec_sync(git, args) abort
+  let result = gina#process#call(a:git, a:args)
+  if result.status
+    throw gina#process#error(result)
+  endif
+  call gina#util#buffer#assign_content(result.content)
+endfunction
+
+function! s:exec_async(git, args) abort
+  let guard = s:Guard.store(['&l:modifiable'])
+  try
+    setlocal modifiable
+    silent lockmarks keepjumps %delete _
+  finally
+    call guard.restore()
+  endtry
+  " Start a new process
+  let async_process = gina#process#open(a:git, a:args, copy(s:async_process))
+  let async_process._queue = s:Queue.new()
+  let async_process._bufnr = bufnr('%')
+  let async_process._timer = timer_start(
+        \ g:gina#process#updatetime,
+        \ 's:async_process_callback',
+        \ { 'repeat': -1 }
+        \)
+  let s:async_processes[async_process._timer] = async_process
+  return async_process
+endfunction
+
+function! s:async_process_callback(timer) abort
+  let async_process = get(s:async_processes, a:timer, v:null)
+  if async_process is# v:null
+    call timer_stop(a:timer)
+    return
+  endif
+  call async_process.on_timer()
+endfunction
 
 " Pipe -----------------------------------------------------------------------
 let s:pipe = {}
@@ -122,6 +170,71 @@ function! s:pipe.on_exit(job, msg, event) abort
 endfunction
 
 
+" Async process --------------------------------------------------------------
+let s:async_processes = {}
+let s:async_process = {}
+
+function! s:async_process.on_stdout(job, msg, event) abort
+  call self._queue.put(a:msg)
+endfunction
+
+function! s:async_process.on_stderr(job, msg, event) abort
+  call self.on_stdout(a:job, a:msg, a:event)
+endfunction
+
+function! s:async_process.on_timer() abort
+  let msg = self._queue.get()
+  if msg is# v:null
+    if self.status() ==# 'dead'
+      call self.close()
+    endif
+  else
+    call self.flush(msg)
+  endif
+endfunction
+
+function! s:async_process.flush(msg) abort
+  let focus = gina#util#buffer#focus(self._bufnr)
+  if empty(focus) || bufnr('%') != self._bufnr
+    return self.close()
+  endif
+  let guard = s:Guard.store(['&l:modifiable'])
+  let view = winsaveview()
+  try
+    setlocal modifiable
+    call gina#util#buffer#extend_content(a:msg)
+  finally
+    call winrestview(view)
+    call guard.restore()
+    call focus.restore()
+  endtry
+endfunction
+
+function! s:async_process.close() abort
+  silent! unlet s:async_processes[self._timer]
+  silent! call timer_stop(self._timer)
+  silent! call self.stop()
+  let focus = gina#util#buffer#focus(self._bufnr)
+  if empty(focus) || bufnr('%') != self._bufnr
+    return
+  endif
+  let guard = s:Guard.store(['&l:modifiable'])
+  let view = winsaveview()
+  try
+    setlocal modifiable
+    if empty(getline('$'))
+      silent lockmarks keepjumps $delete _
+    endif
+    setlocal nomodified
+  finally
+    call winrestview(view)
+    call guard.restore()
+    call focus.restore()
+  endtry
+endfunction
+
+
 call s:Config.define('gina#process', {
       \ 'command': 'git --no-pager -c core.editor=false',
+      \ 'updatetime': 10,
       \})

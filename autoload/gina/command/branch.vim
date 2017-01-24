@@ -4,25 +4,17 @@ let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
 
 
-function! gina#command#branch#define() abort
-  return s:command
-endfunction
-
-
-" Instance -------------------------------------------------------------------
-let s:command = {}
-
-function! s:command.command(range, qargs, qmods) abort
+function! gina#command#branch#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:qargs)
+  let args = s:build_args(git, a:args)
 
   if s:is_raw_command(args)
-    return gina#router#command#call('!', a:range, a:qargs, a:qmods)
+    return gina#command#call('!', a:range, a:args, a:mods)
   endif
 
   let bufname = printf('gina:%s:branch', git.refname)
   call gina#util#buffer#open(bufname, {
-        \ 'mods': a:qmods,
+        \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -36,7 +28,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
-  let args = gina#command#parse(a:qargs)
+  let args = gina#command#parse_args(a:qargs)
   let args.params = {}
   let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', 'short')
@@ -99,7 +91,7 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#command#call(
+  call gina#process#exec(
         \ gina#core#get_or_fail(),
         \ gina#util#meta#get_or_fail('args'),
         \)

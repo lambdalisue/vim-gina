@@ -9,15 +9,7 @@ let s:SCISSOR = '------------------------ >8 ------------------------'
 let s:messages = {}
 
 
-function! gina#command#commit#define() abort
-  return s:command
-endfunction
-
-
-" Instance -------------------------------------------------------------------
-let s:command = {}
-
-function! s:command.command(range, qargs, qmods) abort
+function! gina#command#commit#call(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(a:qargs)
   let bufname = printf(
@@ -39,7 +31,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(qargs) abort
-  let args = gina#command#parse(a:qargs)
+  let args = gina#command#parse_args(a:qargs)
   let args.params = {}
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')

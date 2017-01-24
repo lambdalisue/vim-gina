@@ -4,15 +4,7 @@ let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:Path = vital#gina#import('System.Filepath')
 
 
-function! gina#command#status#define() abort
-  return s:command
-endfunction
-
-
-" Instance -------------------------------------------------------------------
-let s:command = {}
-
-function! s:command.command(range, qargs, qmods) abort
+function! gina#command#status#call(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
   let bufname = printf(
@@ -34,7 +26,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
-  let args = gina#command#parse(a:qargs)
+  let args = gina#command#parse_args(a:qargs)
   let args.params = {}
   let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', 'short')
@@ -86,7 +78,7 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#command#call(
+  call gina#process#exec(
         \ gina#core#get_or_fail(),
         \ gina#util#meta#get_or_fail('args'),
         \)

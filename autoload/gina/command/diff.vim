@@ -1,20 +1,12 @@
 let s:Exception = vital#gina#import('Vim.Exception')
 
 
-function! gina#command#diff#define() abort
-  return s:command
-endfunction
-
-
-" Instance -------------------------------------------------------------------
-let s:command = {}
-
-function! s:command.command(range, qargs, qmods) abort
+function! gina#command#diff#call(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
 
   let bufname = printf(
-        \ 'gina:%s:diff%s/%s',
+        \ 'gina://%s:diff%s/%s',
         \ git.refname,
         \ args.params.cached ? ':cached' : '',
         \ args.params.object,
@@ -34,7 +26,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
-  let args = gina#command#parse(a:qargs)
+  let args = gina#command#parse_args(a:qargs)
   let args.params = {}
   let args.params.async = args.get('--async')
   let args.params.group = args.pop('--group', '')
@@ -88,7 +80,7 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#command#call(
+  call gina#process#exec(
         \ gina#core#get_or_fail(),
         \ gina#util#meta#get_or_fail('args'),
         \)

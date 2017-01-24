@@ -7,15 +7,7 @@ let s:is_windows = has('win32') || has('win64')
 let s:WORKTREE = '@@'
 
 
-function! gina#command#patch#define() abort
-  return s:command
-endfunction
-
-
-" Instance -------------------------------------------------------------------
-let s:command = {}
-
-function! s:command.command(range, qargs, qmods) abort
+function! gina#command#patch#call(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
   let group = s:Group.new()
@@ -94,7 +86,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
-  let args = gina#command#parse(a:qargs)
+  let args = gina#command#parse_args(a:qargs)
   let args.params = {}
   let args.params.async = args.pop('--async')
   let args.params.groups = [

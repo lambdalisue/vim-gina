@@ -1,26 +1,70 @@
 let s:Argument = vital#gina#import('Argument')
 let s:Config = vital#gina#import('Config')
-let s:Buffer = vital#gina#import('Vim.Buffer')
-let s:Guard = vital#gina#import('Vim.Guard')
-let s:Queue = vital#gina#import('Data.Queue')
+let s:Console = vital#gina#import('Vim.Console')
+let s:Emitter = vital#gina#import('Emitter')
+let s:Exception = vital#gina#import('Vim.Exception')
 
 let s:t_number = type(0)
-let s:custom = {}
 
-function! gina#command#call(git, args) abort
-  if get(get(a:args, 'params', {}), 'async')
-    call s:async_call(a:git, a:args)
-  else
-    call s:sync_call(a:git, a:args)
+
+function! gina#command#call(bang, range, args, mods) abort
+  if a:bang ==# '!'
+    let git = gina#core#get()
+    let args = gina#command#parse_args(a:args)
+    let args.params = {}
+    let args.params.async = args.pop('--async')
+    let args.params.emit = !args.pop('--no-emit')
+    if args.params.async
+      let options = copy(s:async_process)
+      let options.params = args.params
+      call gina#process#open(git, args, options)
+    else
+      call gina#process#inform(gina#process#call(git, args))
+      if args.params.emit
+        call s:Emitter.emit('gina:modified')
+      endif
+    endif
+    return
   endif
+  let scheme = substitute(matchstr(a:args, '^\S\+'), '\W', '_', 'g')
+  try
+    call s:Exception.call(
+          \ printf('gina#command#%s#call', scheme),
+          \ [a:range, a:args, a:mods],
+          \)
+    return
+  catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#command#[^#]\+#call/
+    call s:Console.debug(v:exception)
+    call s:Console.debug(v:throwpoint)
+  endtry
+  call gina#command#call('!', a:range, a:args, a:mods)
 endfunction
 
-function! gina#command#parse(qargs) abort
-  let args = s:Argument.new(a:qargs)
-  let scheme = substitute(args.get(0), '\W', '_', 'g')
-  let custom = s:get_custom(scheme)
+function! gina#command#complete(arglead, cmdline, cursorpos) abort
+  if a:cmdline =~# '^Gina!'
+    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:cmdline =~# printf('^Gina\s\+%s$', a:arglead)
+    return gina#complete#common#command(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  let cmdline = matchstr(a:cmdline, '^Gina\s\+\zs.*')
+  let scheme = substitute(matchstr(cmdline, '^\S\+'), '\W', '_', 'g')
+  try
+    return s:Exception.call(
+          \ printf('gina#command#%s#complete', scheme),
+          \ [a:arglead, cmdline, a:cursorpos],
+          \)
+  catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#command#[^#]\+#complete/
+    call s:Console.debug(v:exception)
+    call s:Console.debug(v:throwpoint)
+  endtry
+  return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
+function! gina#command#parse_args(args) abort
+  let args = s:Argument.new(a:args)
+  let custom = s:get_custom(args.get(0))
   for [query, value, remover] in custom
-    if remover isnot# v:null && args.has(remover)
+    if !empty(remover) && args.has(remover)
       call args.pop(remover)
       call args.pop(query)
     elseif !args.has(query)
@@ -31,156 +75,55 @@ function! gina#command#parse(qargs) abort
 endfunction
 
 function! gina#command#custom(scheme, query, ...) abort
-  let value = get(a:000, 0, 1)
-  let remover = get(a:000, 1, v:null)
   if a:query !~# '^--\?\S\+\%(|--\?\S\+\)*$'
-    throw 'gina: Invalid query has specified.'
+    throw 'gina: Invalid query has specified. See :h gina#command#custom'
   endif
-  if type(value) == s:t_number && remover is v:null
-    let remover = join(map(
-          \ split(a:query, '|'),
-          \ 's:build_remover_term(v:val)'
-          \), '|')
-  endif
-  let scheme = substitute(a:scheme, '\W', '_', 'g')
-  let custom = s:get_custom(scheme)
+  let value = get(a:000, 0, 1)
+  let remover = type(value) == s:t_number ? s:build_remover(a:query) : ''
+  let custom = s:get_custom(a:scheme)
   call add(custom, [a:query, value, remover])
 endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:build_remover_term(term) abort
-  if a:term =~# '^--'
-    return '--no-' . matchstr(a:term, '^--\zs\S\+')
-  else
-    return '-!' . matchstr(a:term, '^-\zs\S\+')
-  endif
-endfunction
-
-function! s:sync_call(git, args) abort
-  let result = gina#process#call(a:git, a:args)
-  if result.status
-    throw gina#process#error(result)
-  endif
-  let options = s:Buffer.parse_cmdarg()
-  let options.lockmarks = 1
-  call s:Buffer.edit_content(result.content, options)
-endfunction
-
-function! s:async_call(git, args) abort
-  " Remove buffer content
-  let guard = s:Guard.store(['&l:modifiable'])
-  try
-    setlocal modifiable
-    silent lockmarks keepjumps %delete _
-  finally
-    call guard.restore()
-  endtry
-  " Start a new process
-  let stream = gina#process#open(a:git, a:args, copy(s:stream))
-  let stream._bufnr = bufnr('%')
-  let stream._queue = s:Queue.new()
-  let stream._start = reltime()
-  let stream._args = a:args.raw
-  let stream._timer = timer_start(
-        \ g:gina#command#async_update_time,
-        \ 's:stream_callback',
-        \ { 'repeat': -1 }
-        \)
-  let s:streams[stream._timer] = stream
-  return stream
-endfunction
-
 function! s:get_custom(scheme) abort
-  if !exists('s:custom_' . a:scheme)
-    let s:custom_{a:scheme} = []
+  let scheme = substitute(a:scheme, '\W', '_', 'g')
+  if !exists('s:custom_' . scheme)
+    let s:custom_{scheme} = []
   endif
-  return s:custom_{a:scheme}
+  return s:custom_{scheme}
+endfunction
+
+function! s:build_remover(query) abort
+  let terms = split(a:query, '|')
+  let names = map(copy(terms), 'matchstr(v:val, ''^--\?\zs\S\+'')')
+  let remover = map(
+        \ range(len(terms)),
+        \ '(terms[v:val] =~# ''^--'' ? ''--no-'' : ''-!'') . names[v:val]'
+        \)
+  return join(remover, '|')
 endfunction
 
 
-" Stream ---------------------------------------------------------------------
-let s:stream = {}
-let s:streams = {}
+" Async process --------------------------------------------------------------
+let s:async_process = {}
 
-function! s:stream.on_stdout(job, msg, event) abort
-  call self._queue.put(a:msg)
+function! s:async_process.on_stdout(job, msg, event) abort
+  for line in a:msg
+    echomsg line
+  endfor
 endfunction
 
-function! s:stream.on_stderr(job, msg, event) abort
-  call self.on_stdout(a:job, a:msg, a:event)
+function! s:async_process.on_stderr(job, msg, event) abort
+  echohl ErrorMsg
+  for line in a:msg
+    echomsg line
+  endfor
+  echohl None
 endfunction
 
-function! s:stream.on_timer() abort
-  let msg = self._queue.get()
-  if msg is# v:null
-    if self.status() ==# 'dead'
-      call self.close()
-    endif
-  else
-    call self.flush(msg)
+function! s:async_process.on_exit(job, msg, event) abort
+  if self.params.emit
+    call s:Emitter.emit('gina:modified')
   endif
 endfunction
-
-function! s:stream.flush(msg) abort
-  let focus = gina#util#buffer#focus(self._bufnr)
-  if empty(focus) || bufnr('%') != self._bufnr
-    return self.close()
-  endif
-  let guard = s:Guard.store(['&l:modifiable'])
-  let view = winsaveview()
-  try
-    setlocal modifiable
-    let leading = getline('$')
-    let content = [leading . get(a:msg, 0, '')] + a:msg[1:]
-    silent lockmarks keepjumps $delete _
-    silent call s:Buffer.read_content(content, {
-          \ 'edit': 1,
-          \ 'line': '$',
-          \ 'lockmarks': 1,
-          \})
-    if empty(getline(1))
-      silent lockmarks keepjumps 1delete _
-    endif
-  finally
-    call winrestview(view)
-    call guard.restore()
-    call focus.restore()
-  endtry
-endfunction
-
-function! s:stream.close() abort
-  silent! unlet s:streams[self._timer]
-  silent! call timer_stop(self._timer)
-  silent! call self.stop()
-  let focus = gina#util#buffer#focus(self._bufnr)
-  if empty(focus) || bufnr('%') != self._bufnr
-    return
-  endif
-  let guard = s:Guard.store(['&l:modifiable'])
-  let view = winsaveview()
-  try
-    setlocal modifiable
-    if empty(getline('$'))
-      silent lockmarks keepjumps $delete _
-    endif
-    setlocal nomodified
-  finally
-    call winrestview(view)
-    call guard.restore()
-    call focus.restore()
-  endtry
-endfunction
-
-function! s:stream_callback(timer) abort
-  let stream = get(s:streams, a:timer, v:null)
-  if stream is# v:null
-    return
-  endif
-  call stream.on_timer()
-endfunction
-
-
-call s:Config.define('g:gina#command', {
-      \ 'async_update_time': 10
-      \})

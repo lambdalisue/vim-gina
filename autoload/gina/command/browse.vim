@@ -5,17 +5,9 @@ let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
 
 
-function! gina#command#browse#define() abort
-  return s:command
-endfunction
-
-
-" Instance -------------------------------------------------------------------
-let s:command = {}
-
-function! s:command.command(range, qargs, qmods) abort
+function! gina#command#browse#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:qargs, a:range)
+  let args = s:build_args(git, a:args, a:range)
   let url = s:build_url(git, args)
   if args.params.yank
     call gina#util#yank(url)
@@ -27,7 +19,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs, range) abort
-  let args = gina#command#parse(a:qargs)
+  let args = gina#command#parse_args(a:qargs)
   let args.params = {}
   let args.params.yank = args.pop('--yank')
   let args.params.exact = args.pop('--exact')

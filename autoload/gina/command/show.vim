@@ -3,15 +3,7 @@ let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
 
 
-function! gina#command#show#define() abort
-  return s:command
-endfunction
-
-
-" Instance -------------------------------------------------------------------
-let s:command = {}
-
-function! s:command.command(range, qargs, qmods) abort
+function! gina#command#show#call(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
   let bufname = printf(
@@ -29,19 +21,10 @@ function! s:command.command(range, qargs, qmods) abort
         \})
 endfunction
 
-function! s:command.BufReadCmd() abort
-  let git = gina#core#get_or_fail()
-  let args = s:build_args_from_params(
-        \ gina#util#params(expand('<afile>'))
-        \)
-  call s:init(args)
-  call s:BufReadCmd()
-endfunction
-
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
-  let args = gina#command#parse(a:qargs)
+  let args = gina#command#parse_args(a:qargs)
   let args.params = {}
   let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', '')
@@ -72,17 +55,6 @@ function! s:build_args(git, qargs) abort
   return args.lock()
 endfunction
 
-function! s:build_args_from_params(params) abort
-  let args = gina#command#parse('show')
-  if empty(a:params.path)
-    let object = a:params.commit
-  else
-    let object = printf('%s:%s', a:params.commit, a:params.path)
-  endif
-  call args.set(1, object)
-  return args.lock()
-endfunction
-
 function! s:init(args) abort
   call gina#util#meta#set('args', a:args)
 
@@ -93,11 +65,17 @@ function! s:init(args) abort
 
   setlocal buftype=nowrite
   setlocal bufhidden=unload
+  setlocal noswapfile
   setlocal nomodifiable
+
+  augroup gina_internal_command
+    autocmd! * <buffer>
+    autocmd BufReadCmd <buffer> call s:BufReadCmd()
+  augroup END
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#command#call(
+  call gina#process#exec(
         \ gina#core#get_or_fail(),
         \ gina#util#meta#get_or_fail('args'),
         \)

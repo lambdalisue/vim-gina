@@ -4,15 +4,7 @@ let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:WORKTREE = '@@'
 
 
-function! gina#command#compare#define() abort
-  return s:command
-endfunction
-
-
-" Instance -------------------------------------------------------------------
-let s:command = {'name': 'compare'}
-
-function! s:command.command(range, qargs, qmods) abort
+function! gina#command#compare#call(range, qargs, qmods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:qargs)
 
@@ -51,7 +43,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
-  let args = gina#command#parse(a:qargs)
+  let args = gina#command#parse_args(a:qargs)
   let args.params = {}
   let args.params.async = args.pop('--async')
   let args.params.groups = [
