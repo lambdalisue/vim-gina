@@ -7,13 +7,13 @@ function! gina#action#attach(...) abort
   return call(s:Action.attach, ['gina'] + a:000, s:Action)
 endfunction
 
-function! gina#action#include(scheme) abort
+function! gina#action#include(scheme, ...) abort
   let binder = s:get()
   let scheme = substitute(a:scheme, '-', '_', 'g')
   try
     return call(
           \ printf('gina#action#%s#define', scheme),
-          \ [binder]
+          \ [binder] + a:000
           \)
   catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#action#[^#]\+#define/
     call s:Console.debug(v:exception)
