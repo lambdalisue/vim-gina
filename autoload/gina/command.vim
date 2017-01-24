@@ -17,7 +17,7 @@ function! gina#command#args(qargs) abort
   let args = s:Argument.new(a:qargs)
   let scheme = substitute(args.get(0), '\W', '_', 'g')
   let custom = s:get_custom(scheme)
-  for [query, value] in custom
+  for [query, value, deniable] in custom
     if !args.has(query)
       call args.set(query, value)
     endif
@@ -25,10 +25,14 @@ function! gina#command#args(qargs) abort
   return args
 endfunction
 
-function! gina#command#custom(scheme, query, value) abort
+function! gina#command#custom(scheme, query, value, ...) abort
+  let deniable = get(a:000, 0, 0)
+  if a:query !~# '^--\?\S\+\%(|--\?\S\+\)*$'
+    throw 'gina: Invalid query has specified.'
+  endif
   let scheme = substitute(a:scheme, '\W', '_', 'g')
   let custom = s:get_custom(scheme)
-  call add(custom, [a:query, a:value])
+  call add(custom, [a:query, a:value, deniable])
 endfunction
 
 
