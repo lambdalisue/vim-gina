@@ -18,6 +18,10 @@ function! gina#command#show#call(range, qargs, qmods) abort
         \ 'cmdarg': args.params.cmdarg,
         \ 'line': args.params.line,
         \ 'col': args.params.col,
+        \ 'callback': {
+        \   'fn': function('s:init'),
+        \   'args': [args],
+        \ }
         \})
 endfunction
 
@@ -49,6 +53,9 @@ function! s:build_args(git, qargs) abort
           \)
     let args.params.object = args.params.commit . ':' . args.params.path
   endif
+  " NOTE:
+  " 'git show {commit}:' shows tree but I assumed that nobody want to see that
+  let args.params.object = substitute(args.params.object, ':$', '', '')
 
   call args.set(1, args.params.object)
   call args.residual([])
