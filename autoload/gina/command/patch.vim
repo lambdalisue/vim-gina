@@ -130,7 +130,7 @@ function! s:open(n, qmods, opener, commit, params) abort
           \)
   else
     execute printf(
-          \ '%s Gina %s show %s %s %s %s %s %s %s -- %s',
+          \ '%s Gina %s show %s %s %s %s %s %s -- %s',
           \ a:qmods,
           \ a:params.async ? '--async' : '',
           \ a:params.cmdarg,
