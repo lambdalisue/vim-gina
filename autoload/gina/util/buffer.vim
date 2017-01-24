@@ -80,7 +80,6 @@ endfunction
 
 function! gina#util#buffer#extend_content(content) abort
   let leading = getline('$')
-  let is_init = line('$') == 1 && empty(leading)
   let content = [leading . get(a:content, 0, '')] + a:content[1:]
   let options = s:Buffer.parse_cmdarg()
   let options.edit = 1
@@ -88,7 +87,7 @@ function! gina#util#buffer#extend_content(content) abort
   let options.lockmarks = 1
   silent lockmarks keepjumps $delete _
   silent call s:Buffer.read_content(content, options)
-  if is_init && empty(getline(1))
+  if empty(getline(1))
     silent lockmarks keepjumps 1delete _
   endif
 endfunction
