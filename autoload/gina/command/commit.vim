@@ -148,7 +148,7 @@ function! s:get_commitmsg(git, args) abort
       call args.pop('-m|--message')
     endif
 
-    let result = gina#process#call(a:git, args.raw)
+    let result = gina#process#call(a:git, args)
     if !result.status
       " NOTE: Operation should be fail while GIT_EDITOR=false
       throw gina#process#error(result)
@@ -186,7 +186,7 @@ function! s:commit_commitmsg(git, args) abort
     call args.pop('-C|--reuse-message')
     call args.pop('-m|--message')
     call args.pop('-e|--edit')
-    let result = gina#process#call(a:git, args.raw)
+    let result = gina#process#call(a:git, args)
     if result.status
       throw gina#process#error(result)
     endif

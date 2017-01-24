@@ -58,7 +58,7 @@ function! s:build_remover_term(term) abort
 endfunction
 
 function! s:sync_call(git, args) abort
-  let result = gina#process#call(a:git, a:args.raw)
+  let result = gina#process#call(a:git, a:args)
   if result.status
     throw gina#process#error(result)
   endif
@@ -77,7 +77,7 @@ function! s:async_call(git, args) abort
     call guard.restore()
   endtry
   " Start a new process
-  let stream = gina#process#open(a:git, a:args.raw, copy(s:stream))
+  let stream = gina#process#open(a:git, a:args, copy(s:stream))
   let stream._bufnr = bufnr('%')
   let stream._queue = s:Queue.new()
   let stream._start = reltime()

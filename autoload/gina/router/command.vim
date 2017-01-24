@@ -30,7 +30,7 @@ function! gina#router#command#call(bang, range, args, mods) abort
             \ 'on_exit': function('s:on_exit'),
             \})
     else
-      let result = gina#process#call(git, args.raw)
+      let result = gina#process#call(git, args)
       call gina#process#inform(result)
       call s:Emitter.emit('gina:modified')
     endif

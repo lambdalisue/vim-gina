@@ -4,6 +4,8 @@ let s:Console = vital#gina#import('Vim.Console')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Job = vital#gina#import('System.Job')
 
+let s:t_dict = type({})
+
 
 function! gina#process#open(git, args, ...) abort
   let options = get(a:000, 0, {})
@@ -63,7 +65,7 @@ function! s:build_args(git, extra) abort
     " git does not recognize -C{worktree} so "args.set()" could not be used
     let args.raw += ['-C', a:git.worktree]
   endif
-  call extend(args.raw, a:extra)
+  call extend(args.raw, type(a:extra) == s:t_dict ? a:extra.raw : a:extra)
   call map(args.raw, 's:expand(v:val)')
   call filter(args.raw, '!empty(v:val)')
   return args
