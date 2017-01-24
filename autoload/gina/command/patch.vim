@@ -27,17 +27,17 @@ function! s:command.command(range, qargs, qmods) abort
         \ ? 'split'
         \ : 'vsplit'
 
-  call s:open(0, a:qargs, opener1, 'HEAD', args.params)
+  call s:open(0, a:qmods, opener1, 'HEAD', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr1 = bufnr('%')
 
-  call s:open(1, a:qargs, opener2, '', args.params)
+  call s:open(1, a:qmods, opener2, '', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr2 = bufnr('%')
 
-  call s:open(2, a:qargs, opener2, s:WORKTREE, args.params)
+  call s:open(2, a:qmods, opener2, s:WORKTREE, args.params)
   call gina#util#diffthis()
   call group.add({'keep': 1})
   let bufnr3 = bufnr('%')
