@@ -33,7 +33,7 @@ function! s:load_modules(category) abort
   for runtimepath in split(&runtimepath, ',')
     let module_names = map(
           \ glob(s:Path.join(runtimepath, suffix), 0, 1),
-          \ 'matchstr(v:val, ''[^/]\+\ze\.vim$'')',
+          \ 'matchstr(fnamemodify(v:val, '':t''), ''^.\+\ze\.vim$'')',
           \)
     for module_name in module_names
       let modules[module_name] = s:load_module(a:category, module_name)
