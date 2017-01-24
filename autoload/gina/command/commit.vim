@@ -39,7 +39,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(qargs) abort
-  let args = gina#command#args(a:qargs)
+  let args = gina#command#parse(a:qargs)
   let args.params = {}
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')

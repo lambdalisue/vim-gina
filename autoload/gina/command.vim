@@ -15,7 +15,7 @@ function! gina#command#call(git, args) abort
   endif
 endfunction
 
-function! gina#command#args(qargs) abort
+function! gina#command#parse(qargs) abort
   let args = s:Argument.new(a:qargs)
   let scheme = substitute(args.get(0), '\W', '_', 'g')
   let custom = s:get_custom(scheme)

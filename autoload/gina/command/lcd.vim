@@ -15,7 +15,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, qargs) abort
-  let args = gina#command#args(a:qargs)
+  let args = gina#command#parse(a:qargs)
   let args.params = {}
   let args.params.path = args.pop(1, '.')
 
