@@ -60,6 +60,7 @@ function! s:init(args) abort
   setlocal bufhidden=unload
   setlocal noswapfile
   setlocal nomodifiable
+  setlocal autoread
 
   " Attach modules
   call s:Anchor.attach()
