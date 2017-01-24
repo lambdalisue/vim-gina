@@ -58,6 +58,8 @@ function! s:_update() abort
   let info = get(s:registry, bufnum, {})
   if empty(info)
     return
+  elseif !&autoread
+    return
   endif
   if type(info.callback) == s:t_string
     execute info.callback
