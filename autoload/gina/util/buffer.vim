@@ -72,12 +72,6 @@ function! gina#util#buffer#focus(expr) abort
   return guard
 endfunction
 
-function! gina#util#buffer#content(content) abort
-  let options = s:Buffer.parse_cmdarg()
-  let options.lockmarks = 1
-  call s:Buffer.edit_content(a:content, options)
-endfunction
-
 function! gina#util#buffer#assign_content(content) abort
   let options = s:Buffer.parse_cmdarg()
   let options.lockmarks = 1
