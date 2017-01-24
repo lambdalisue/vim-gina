@@ -1,8 +1,10 @@
 let s:Argument = vital#gina#import('Argument')
+let s:Config = vital#gina#import('Config')
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Queue = vital#gina#import('Data.Queue')
 
+let s:t_number = type(0)
 let s:custom = {}
 
 function! gina#command#call(git, args) abort
@@ -17,26 +19,44 @@ function! gina#command#args(qargs) abort
   let args = s:Argument.new(a:qargs)
   let scheme = substitute(args.get(0), '\W', '_', 'g')
   let custom = s:get_custom(scheme)
-  for [query, value, deniable] in custom
-    if !args.has(query)
+  for [query, value, remover] in custom
+    if remover isnot# v:null && args.has(remover)
+      call args.pop(remover)
+      call args.pop(query)
+    elseif !args.has(query)
       call args.set(query, value)
     endif
   endfor
   return args
 endfunction
 
-function! gina#command#custom(scheme, query, value, ...) abort
-  let deniable = get(a:000, 0, 0)
+function! gina#command#custom(scheme, query, ...) abort
+  let value = get(a:000, 0, 1)
+  let remover = get(a:000, 1, v:null)
   if a:query !~# '^--\?\S\+\%(|--\?\S\+\)*$'
     throw 'gina: Invalid query has specified.'
   endif
+  if type(value) == s:t_number && remover is v:null
+    let remover = join(map(
+          \ split(a:query, '|'),
+          \ 's:build_remover_term(v:val)'
+          \), '|')
+  endif
   let scheme = substitute(a:scheme, '\W', '_', 'g')
   let custom = s:get_custom(scheme)
-  call add(custom, [a:query, a:value, deniable])
+  call add(custom, [a:query, value, remover])
 endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:build_remover_term(term) abort
+  if a:term =~# '^--'
+    return '--no-' . matchstr(a:term, '^--\zs\S\+')
+  else
+    return '-!' . matchstr(a:term, '^-\zs\S\+')
+  endif
+endfunction
+
 function! s:sync_call(git, args) abort
   let result = gina#process#call(a:git, a:args.raw)
   if result.status
@@ -63,7 +83,9 @@ function! s:async_call(git, args) abort
   let stream._start = reltime()
   let stream._args = a:args.raw
   let stream._timer = timer_start(
-        \ 100, 's:stream_callback', { 'repeat': -1 }
+        \ g:gina#command#async_update_time,
+        \ 's:stream_callback',
+        \ { 'repeat': -1 }
         \)
   let s:streams[stream._timer] = stream
   return stream
@@ -157,3 +179,8 @@ function! s:stream_callback(timer) abort
   endif
   call stream.on_timer()
 endfunction
+
+
+call s:Config.define('g:gina#command', {
+      \ 'async_update_time': 10
+      \})
