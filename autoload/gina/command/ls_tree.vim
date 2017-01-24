@@ -37,8 +37,8 @@ function! s:build_args(git, qargs) abort
   let args = gina#command#args(a:qargs)
   let args.params = {}
   let args.params.async = args.pop('--async')
-  let args.params.group = args.pop('--group', 'long')
-  let args.params.opener = args.pop('--opener', '50vsplit')
+  let args.params.group = args.pop('--group', 'short')
+  let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.cmdarg = join([
         \ args.pop('^++enc'),
         \ args.pop('^++ff'),
