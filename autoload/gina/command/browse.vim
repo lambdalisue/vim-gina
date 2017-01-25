@@ -1,5 +1,4 @@
 let s:Config = vital#gina#import('Config')
-let s:Exception = vital#gina#import('Vim.Exception')
 let s:Formatter = vital#gina#import('Data.String.Formatter')
 let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
@@ -109,7 +108,7 @@ function! s:build_url(git, args) abort
   if !empty(url)
     return url
   endif
-  throw s:Exception.warn(printf(
+  throw gina#exception#warn(printf(
         \ 'No url translation pattern for "%s:%s" (%s) is found.',
         \ params.remote,
         \ params.commit,

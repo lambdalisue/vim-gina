@@ -1,6 +1,5 @@
 let s:Cache = vital#gina#import('System.Cache.Memory')
 let s:Console = vital#gina#import('Vim.Console')
-let s:Exception = vital#gina#import('Vim.Exception')
 let s:Git = vital#gina#import('Git')
 
 let s:registry = s:Cache.new()
@@ -21,7 +20,7 @@ function! gina#core#get_or_fail(...) abort
   if !empty(git)
     return git
   endif
-  throw s:Exception.warn(printf(
+  throw gina#exception#warn(printf(
         \ 'No git repository for a buffer "%s" is found.',
         \ expand(options.expr)
         \))
@@ -164,7 +163,3 @@ function! s:get_from_cwd(bufnr) abort
         \ : simplify(getcwd(winnr))
   return s:get_from_path(cwdpath)
 endfunction
-
-
-" Init -----------------------------------------------------------------------
-runtime! autoload/gina/init.vim

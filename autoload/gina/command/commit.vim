@@ -1,6 +1,5 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Console = vital#gina#import('Vim.Console')
-let s:Exception = vital#gina#import('Vim.Exception')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:Git = vital#gina#import('Git')
 
@@ -75,7 +74,7 @@ endfunction
 function! s:BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = gina#util#meta#get_or_fail('args')
-  let content = s:Exception.call(
+  let content = gina#exception#call(
         \ function('s:get_commitmsg'),
         \ [git, args]
         \)
@@ -86,7 +85,7 @@ endfunction
 function! s:BufWriteCmd() abort
   let git = gina#core#get_or_fail()
   let args = gina#util#meta#get_or_fail('args')
-  call s:Exception.call(
+  call gina#exception#call(
         \ function('s:set_commitmsg'),
         \ [git, args, getline(1, '$')]
         \)
@@ -104,7 +103,7 @@ endfunction
 function! s:WinEnter() abort
   if exists('s:params_on_winleave')
     if winnr('$') < s:params_on_winleave.nwin
-      call s:Exception.call(
+      call gina#exception#call(
             \ function('s:commit_commitmsg_confirm'),
             \ [s:params_on_winleave.git, s:params_on_winleave.args]
             \)

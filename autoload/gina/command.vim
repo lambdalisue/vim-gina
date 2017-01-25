@@ -1,7 +1,6 @@
 let s:Argument = vital#gina#import('Argument')
 let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
-let s:Exception = vital#gina#import('Vim.Exception')
 
 let s:t_number = type(0)
 
@@ -25,7 +24,7 @@ function! gina#command#call(bang, range, args, mods) abort
   endif
   let scheme = substitute(matchstr(a:args, '^\S\+'), '\W', '_', 'g')
   try
-    call s:Exception.call(
+    call gina#exception#call(
           \ printf('gina#command#%s#call', scheme),
           \ [a:range, a:args, a:mods],
           \)
@@ -46,7 +45,7 @@ function! gina#command#complete(arglead, cmdline, cursorpos) abort
   let cmdline = matchstr(a:cmdline, '^Gina\s\+\zs.*')
   let scheme = substitute(matchstr(cmdline, '^\S\+'), '\W', '_', 'g')
   try
-    return s:Exception.call(
+    return gina#exception#call(
           \ printf('gina#command#%s#complete', scheme),
           \ [a:arglead, cmdline, a:cursorpos],
           \)

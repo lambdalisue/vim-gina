@@ -1,5 +1,4 @@
 let s:Cache = vital#gina#import('System.Cache.Memory')
-let s:Exception = vital#gina#import('Vim.Exception')
 
 
 function! gina#util#meta#get(...) abort
@@ -30,7 +29,7 @@ endfunction
 function! gina#util#meta#get_or_fail(name) abort
   let meta = s:meta('%')
   if !meta.has(a:name)
-    throw s:Exception.error(printf(
+    throw gina#exception#critical(printf(
           \ 'A required meta value "%s" does not exist on "%s"',
           \ a:name,
           \ bufname('%'),

@@ -1,7 +1,6 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
-let s:Exception = vital#gina#import('Vim.Exception')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:String = vital#gina#import('Data.String')
 
@@ -45,7 +44,7 @@ function! s:build_args(git, args) abort
   if empty(args.params.pattern) && !(args.has('-e') || args.has('-f'))
     let pattern = s:Console.ask('Pattern: ')
     if empty(pattern)
-      throw s:Exception.info('Cancel')
+      throw gina#exception#info('Cancel')
     endif
     let args.params.pattern = pattern
   endif

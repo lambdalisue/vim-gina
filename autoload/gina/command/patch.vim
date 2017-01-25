@@ -1,4 +1,3 @@
-let s:Exception = vital#gina#import('Vim.Exception')
 let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:String = vital#gina#import('Data.String')
 
@@ -172,7 +171,7 @@ function! s:diff(git, path, buffer) abort
           \ tempfile2,
           \])
     if !result.status
-      throw s:Exception.info(
+      throw gina#exception#info(
             \ 'No difference between index and buffer'
             \)
     endif
@@ -246,7 +245,7 @@ endfunction
 
 function! s:BufWriteCmd() abort
   let git = gina#core#get_or_fail()
-  let result = s:Exception.call(function('s:patch'), [git])
+  let result = gina#exception#call(function('s:patch'), [git])
   if !empty(result)
     call gina#process#inform(result)
     call timer_start(100, function('s:emit'))

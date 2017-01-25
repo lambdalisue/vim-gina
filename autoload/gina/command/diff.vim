@@ -1,6 +1,3 @@
-let s:Exception = vital#gina#import('Vim.Exception')
-
-
 function! gina#command#diff#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)

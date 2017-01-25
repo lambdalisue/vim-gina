@@ -1,6 +1,5 @@
 let s:Action = vital#gina#import('Action')
 let s:Console = vital#gina#import('Vim.Console')
-let s:Exception = vital#gina#import('Vim.Exception')
 
 
 function! gina#action#attach(...) abort
@@ -19,7 +18,7 @@ function! gina#action#include(scheme, ...) abort
     call s:Console.debug(v:exception)
     call s:Console.debug(v:throwpoint)
   endtry
-  throw s:Exception.error(printf(
+  throw gina#exception#error(printf(
         \ 'No action script "gina/action/%s.vim" is found',
         \ a:scheme,
         \))
@@ -33,7 +32,7 @@ endfunction
 function! gina#action#call(name_or_alias, ...) abort
   let binder = s:get()
   let candidates = a:0 > 0 ? a:1 : binder.get_candidates(1, line('$'))
-  return s:Exception.call(
+  return gina#exception#call(
         \ binder.call,
         \ [a:name_or_alias, candidates],
         \ binder

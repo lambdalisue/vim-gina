@@ -2,7 +2,6 @@ let s:Argument = vital#gina#import('Argument')
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
-let s:Exception = vital#gina#import('Vim.Exception')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Job = vital#gina#import('System.Job')
 let s:Queue = vital#gina#import('Data.Queue')
@@ -60,7 +59,7 @@ function! gina#process#inform(result) abort
 endfunction
 
 function! gina#process#error(result) abort
-  return s:Exception.error(printf(
+  return gina#exception#error(printf(
         \ "Fail: %s\n%s",
         \ join(a:result.args),
         \ join(a:result.content, "\n")

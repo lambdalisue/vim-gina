@@ -1,5 +1,4 @@
 let s:Buffer = vital#gina#import('Vim.Buffer')
-let s:Exception = vital#gina#import('Vim.Exception')
 
 
 function! gina#command#show#call(range, args, mods) abort

@@ -1,4 +1,3 @@
-let s:Exception = vital#gina#import('Vim.Exception')
 let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:WORKTREE = '@@'
@@ -68,7 +67,7 @@ endfunction
 
 function! s:open(n, mods, opener, commit, params) abort
   if s:Opener.is_preview_opener(a:opener)
-    throw s:Exception.error(printf(
+    throw gina#exception#error(printf(
           \ 'An opener "%s" is not allowed.',
           \ a:opener,
           \))
