@@ -136,7 +136,7 @@ endfunction
 
 function! s:patch(git) abort
   let path = gina#util#expand('%')
-  call gina#process#call(a:git, [
+  call gina#core#process#call(a:git, [
         \ 'add',
         \ '--intent-to-add',
         \ '--',
@@ -162,7 +162,7 @@ function! s:diff(git, path, buffer) abort
     " --no-index force --exit-code option.
     " --exit-code mean that the program exits with 1 if there were differences
     " and 0 means no differences
-    let result = gina#process#call(a:git, [
+    let result = gina#core#process#call(a:git, [
           \ 'diff',
           \ '--no-index',
           \ '--unified=1',
@@ -171,7 +171,7 @@ function! s:diff(git, path, buffer) abort
           \ tempfile2,
           \])
     if !result.status
-      throw gina#exception#info(
+      throw gina#core#exception#info(
             \ 'No difference between index and buffer'
             \)
     endif
@@ -188,7 +188,7 @@ function! s:diff(git, path, buffer) abort
 endfunction
 
 function! s:index(git, path) abort
-  let result = gina#process#call(a:git, ['show', ':' . a:path])
+  let result = gina#core#process#call(a:git, ['show', ':' . a:path])
   if result.status
     return []
   endif
@@ -230,7 +230,7 @@ function! s:apply(git, content) abort
     if writefile(a:content, tempfile) == -1
       return
     endif
-    let result = gina#process#call(a:git, [
+    let result = gina#core#process#call(a:git, [
           \ 'apply',
           \ '--verbose',
           \ '--cached',
@@ -245,14 +245,14 @@ endfunction
 
 function! s:BufWriteCmd() abort
   let git = gina#core#get_or_fail()
-  let result = gina#exception#call(function('s:patch'), [git])
+  let result = gina#core#exception#call(function('s:patch'), [git])
   if !empty(result)
-    call gina#process#inform(result)
+    call gina#core#process#inform(result)
     call timer_start(100, function('s:emit'))
     setlocal nomodified
   endif
 endfunction
 
 function! s:emit(...) abort
-  call gina#emitter#emit('command:called:raw', ['apply'])
+  call gina#core#emitter#emit('command:called:raw', ['apply'])
 endfunction

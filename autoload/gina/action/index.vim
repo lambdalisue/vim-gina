@@ -326,6 +326,6 @@ function! s:on_discard(candidates, options) abort dict
   endfor
   call self.call('index:checkout:HEAD:force', checkout_candidates)
   if !empty(delete_candidates) && empty(checkout_candidates)
-    call gina#emitter#emit('modified')
+    call gina#core#emitter#emit('modified')
   endif
 endfunction

@@ -45,18 +45,18 @@ endfunction
 function! s:assign_commit(git, config, params) abort
   let commit = a:params.commit
   if commit =~# '^.\{-}\.\.\..*$'
-    let [commit1, commit2] = gina#util#commit#split(a:git, commit)
+    let [commit1, commit2] = gina#core#commit#split(a:git, commit)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
   elseif commit =~# '^.\{-}\.\..*$'
-    let [commit1, commit2] = gina#util#commit#split(a:git, commit)
+    let [commit1, commit2] = gina#core#commit#split(a:git, commit)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
   else
     let commit1 = empty(commit) ? 'HEAD' : commit
     let commit2 = 'HEAD'
   endif
-  let commit = gina#util#commit#resolve(a:git, commit)
+  let commit = gina#core#commit#resolve(a:git, commit)
   let commit = empty(commit) ? 'HEAD' : commit
   return extend(a:params, {
         \ 'commit': commit,
@@ -108,7 +108,7 @@ function! s:build_url(git, args) abort
   if !empty(url)
     return url
   endif
-  throw gina#exception#warn(printf(
+  throw gina#core#exception#warn(printf(
         \ 'No url translation pattern for "%s:%s" (%s) is found.',
         \ params.remote,
         \ params.commit,

@@ -94,7 +94,7 @@ endfunction
 
 function! s:get_available_filenames(git, args) abort
   let args = ['ls-files', '--full-name'] + a:args
-  let result = gina#process#call(a:git, args)
+  let result = gina#core#process#call(a:git, args)
   if result.status
     return []
   endif

@@ -15,16 +15,16 @@ function! gina#command#call(bang, range, args, mods) abort
     if args.params.async
       let options = copy(s:async_process)
       let options.params = args.params
-      call gina#process#open(git, args, options)
+      call gina#core#process#open(git, args, options)
     else
-      call gina#process#inform(gina#process#call(git, args))
-      call gina#emitter#emit('command:called:raw', args.params.scheme)
+      call gina#core#process#inform(gina#core#process#call(git, args))
+      call gina#core#emitter#emit('command:called:raw', args.params.scheme)
     endif
     return
   endif
   let scheme = substitute(matchstr(a:args, '^\S\+'), '\W', '_', 'g')
   try
-    call gina#exception#call(
+    call gina#core#exception#call(
           \ printf('gina#command#%s#call', scheme),
           \ [a:range, a:args, a:mods],
           \)
@@ -45,7 +45,7 @@ function! gina#command#complete(arglead, cmdline, cursorpos) abort
   let cmdline = matchstr(a:cmdline, '^Gina\s\+\zs.*')
   let scheme = substitute(matchstr(cmdline, '^\S\+'), '\W', '_', 'g')
   try
-    return gina#exception#call(
+    return gina#core#exception#call(
           \ printf('gina#command#%s#complete', scheme),
           \ [a:arglead, cmdline, a:cursorpos],
           \)
@@ -119,5 +119,5 @@ function! s:async_process.on_stderr(job, msg, event) abort
 endfunction
 
 function! s:async_process.on_exit(job, msg, event) abort
-  call gina#emitter#emit('command:called:raw', self.params.scheme)
+  call gina#core#emitter#emit('command:called:raw', self.params.scheme)
 endfunction

@@ -13,7 +13,7 @@ function! gina#command#grep#call(range, args, mods) abort
         \ git.refname,
         \ args.params.commit,
         \)
-  call gina#util#buffer#open(bufname, {
+  call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
@@ -44,7 +44,7 @@ function! s:build_args(git, args) abort
   if empty(args.params.pattern) && !(args.has('-e') || args.has('-f'))
     let pattern = s:Console.ask('Pattern: ')
     if empty(pattern)
-      throw gina#exception#info('Cancel')
+      throw gina#core#exception#info('Cancel')
     endif
     let args.params.pattern = pattern
   endif
@@ -57,7 +57,7 @@ function! s:build_args(git, args) abort
 endfunction
 
 function! s:init(args) abort
-  call gina#util#meta#set('args', a:args)
+  call gina#core#meta#set('args', a:args)
 
   if exists('b:gina_initialized')
     return
@@ -90,9 +90,9 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#process#exec(
+  call gina#core#process#exec(
         \ gina#core#get_or_fail(),
-        \ gina#util#meta#get_or_fail('args'),
+        \ gina#core#meta#get_or_fail('args'),
         \)
   setlocal filetype=gina-grep
 endfunction

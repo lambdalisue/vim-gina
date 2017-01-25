@@ -2,7 +2,7 @@ function! gina#command#edit#call(range, args, mods) abort
   let git = gina#core#get()
   let args = s:build_args(git, a:args)
   let bufname = args.params.path
-  call gina#util#buffer#open(bufname, {
+  call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,

@@ -67,7 +67,7 @@ endfunction
 
 function! s:get_available_commits(git, args) abort
   let args = ['log', '--pretty=%h'] + a:args
-  let result = gina#process#call(a:git, args)
+  let result = gina#core#process#call(a:git, args)
   if result.status
     return []
   endif
@@ -76,7 +76,7 @@ endfunction
 
 function! s:get_available_branches(git, args) abort
   let args = ['branch', '--no-color', '--list'] + a:args
-  let result = gina#process#call(a:git, args)
+  let result = gina#core#process#call(a:git, args)
   if result.status
     return []
   endif

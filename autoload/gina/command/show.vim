@@ -9,7 +9,7 @@ function! gina#command#show#call(range, args, mods) abort
         \ git.refname,
         \ args.params.object,
         \)
-  call gina#util#buffer#open(bufname, {
+  call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
@@ -38,7 +38,7 @@ function! s:build_args(git, args) abort
   let args.params.repository = args.pop('--repository')
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
-  let args.params.commit = gina#util#commit#resolve(
+  let args.params.commit = gina#core#commit#resolve(
         \ a:git, args.pop(1, '')
         \)
 
@@ -61,7 +61,7 @@ function! s:build_args(git, args) abort
 endfunction
 
 function! s:init(args) abort
-  call gina#util#meta#set('args', a:args)
+  call gina#core#meta#set('args', a:args)
 
   if exists('b:gina_initialized')
     return
@@ -80,9 +80,9 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#process#exec(
+  call gina#core#process#exec(
         \ gina#core#get_or_fail(),
-        \ gina#util#meta#get_or_fail('args'),
+        \ gina#core#meta#get_or_fail('args'),
         \)
   let params = gina#util#params('%')
   if empty(params.path)

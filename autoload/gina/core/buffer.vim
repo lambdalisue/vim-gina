@@ -5,7 +5,7 @@ let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:Path = vital#gina#import('System.Filepath')
 
 
-function! gina#util#buffer#open(bufname, ...) abort
+function! gina#core#buffer#open(bufname, ...) abort
   let options = extend({
         \ 'mods': '',
         \ 'group': '',
@@ -58,7 +58,7 @@ function! gina#util#buffer#open(bufname, ...) abort
   return context
 endfunction
 
-function! gina#util#buffer#focus(expr) abort
+function! gina#core#buffer#focus(expr) abort
   let guard = copy(s:focus_guard)
   let bufnr = bufnr(a:expr)
   let winnr = bufwinnr(bufnr)
@@ -72,13 +72,13 @@ function! gina#util#buffer#focus(expr) abort
   return guard
 endfunction
 
-function! gina#util#buffer#assign_content(content) abort
+function! gina#core#buffer#assign_content(content) abort
   let options = s:Buffer.parse_cmdarg()
   let options.lockmarks = 1
   silent call s:Buffer.edit_content(a:content, options)
 endfunction
 
-function! gina#util#buffer#extend_content(content) abort
+function! gina#core#buffer#extend_content(content) abort
   let leading = getline('$')
   let content = [leading . get(a:content, 0, '')] + a:content[1:]
   let options = s:Buffer.parse_cmdarg()

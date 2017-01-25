@@ -32,5 +32,5 @@ if g:gina#command#grep#send_to_quickfix
       call gina#action#call('export:quickfix')
     endif
   endfunction
-  call gina#emitter#subscribe('command:called', function('s:on_command_called'))
+  call gina#core#emitter#subscribe('command:called', function('s:on_command_called'))
 endif

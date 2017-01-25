@@ -14,7 +14,7 @@ function! gina#command#commit#call(range, args, mods) abort
         \ 'gina:%s:commit',
         \ git.refname,
         \)
-  call gina#util#buffer#open(bufname, {
+  call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
@@ -42,7 +42,7 @@ function! s:build_args(args) abort
 endfunction
 
 function! s:init(args) abort
-  call gina#util#meta#set('args', a:args)
+  call gina#core#meta#set('args', a:args)
 
   if exists('b:gina_initialized')
     return
@@ -73,19 +73,19 @@ endfunction
 
 function! s:BufReadCmd() abort
   let git = gina#core#get_or_fail()
-  let args = gina#util#meta#get_or_fail('args')
-  let content = gina#exception#call(
+  let args = gina#core#meta#get_or_fail('args')
+  let content = gina#core#exception#call(
         \ function('s:get_commitmsg'),
         \ [git, args]
         \)
-  call gina#util#buffer#assign_content(content)
+  call gina#core#buffer#assign_content(content)
   setlocal filetype=gina-commit
 endfunction
 
 function! s:BufWriteCmd() abort
   let git = gina#core#get_or_fail()
-  let args = gina#util#meta#get_or_fail('args')
-  call gina#exception#call(
+  let args = gina#core#meta#get_or_fail('args')
+  call gina#core#exception#call(
         \ function('s:set_commitmsg'),
         \ [git, args, getline(1, '$')]
         \)
@@ -95,7 +95,7 @@ endfunction
 function! s:WinLeave() abort
   let s:params_on_winleave = {
         \ 'git': gina#core#get_or_fail(),
-        \ 'args': gina#util#meta#get_or_fail('args'),
+        \ 'args': gina#core#meta#get_or_fail('args'),
         \ 'nwin': winnr('$'),
         \}
 endfunction
@@ -103,7 +103,7 @@ endfunction
 function! s:WinEnter() abort
   if exists('s:params_on_winleave')
     if winnr('$') < s:params_on_winleave.nwin
-      call gina#exception#call(
+      call gina#core#exception#call(
             \ function('s:commit_commitmsg_confirm'),
             \ [s:params_on_winleave.git, s:params_on_winleave.args]
             \)
@@ -113,14 +113,14 @@ function! s:WinEnter() abort
 endfunction
 
 function! s:toggle_amend() abort
-  let args = gina#util#meta#get_or_fail('args')
+  let args = gina#core#meta#get_or_fail('args')
   let args = args.clone()
   if args.get('--amend')
     call args.pop('--amend')
   else
     call args.set('--amend', 1)
   endif
-  call gina#util#meta#set('args', args)
+  call gina#core#meta#set('args', args)
   edit
 endfunction
 
@@ -138,10 +138,10 @@ function! s:get_commitmsg(git, args) abort
       call args.pop('-m|--message')
     endif
 
-    let result = gina#process#call(a:git, args)
+    let result = gina#core#process#call(a:git, args)
     if !result.status
       " NOTE: Operation should be fail while GIT_EDITOR=false
-      throw gina#process#error(result)
+      throw gina#core#process#error(result)
     endif
     return s:get_config_commitmsg(a:git)
   finally
@@ -176,12 +176,12 @@ function! s:commit_commitmsg(git, args) abort
     call args.pop('-C|--reuse-message')
     call args.pop('-m|--message')
     call args.pop('-e|--edit')
-    let result = gina#process#call(a:git, args)
+    let result = gina#core#process#call(a:git, args)
     if result.status
-      throw gina#process#error(result)
+      throw gina#core#process#error(result)
     endif
     call s:remove_cached_commitmsg(a:git)
-    call gina#emitter#emit('command:called:raw', 'commit')
+    call gina#core#emitter#emit('command:called:raw', 'commit')
   finally
     call delete(tempfile)
   endtry

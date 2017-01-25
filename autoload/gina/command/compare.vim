@@ -7,7 +7,7 @@ function! gina#command#compare#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
-  let [commit1, commit2] = gina#util#commit#split(
+  let [commit1, commit2] = gina#core#commit#split(
         \ git, args.params.commit
         \)
   if args.params.cached
@@ -67,7 +67,7 @@ endfunction
 
 function! s:open(n, mods, opener, commit, params) abort
   if s:Opener.is_preview_opener(a:opener)
-    throw gina#exception#error(printf(
+    throw gina#core#exception#error(printf(
           \ 'An opener "%s" is not allowed.',
           \ a:opener,
           \))

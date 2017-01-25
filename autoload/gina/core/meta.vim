@@ -1,35 +1,35 @@
 let s:Cache = vital#gina#import('System.Cache.Memory')
 
 
-function! gina#util#meta#get(...) abort
+function! gina#core#meta#get(...) abort
   let meta = s:meta('%')
   return call(meta.get, a:000, meta)
 endfunction
 
-function! gina#util#meta#set(...) abort
+function! gina#core#meta#set(...) abort
   let meta = s:meta('%')
   return call(meta.set, a:000, meta)
 endfunction
 
-function! gina#util#meta#has(...) abort
+function! gina#core#meta#has(...) abort
   let meta = s:meta('%')
   return call(meta.has, a:000, meta)
 endfunction
 
-function! gina#util#meta#remove(...) abort
+function! gina#core#meta#remove(...) abort
   let meta = s:meta('%')
   return call(meta.remove, a:000, meta)
 endfunction
 
-function! gina#util#meta#clear(...) abort
+function! gina#core#meta#clear(...) abort
   let meta = s:meta('%')
   return call(meta.clear, a:000, meta)
 endfunction
 
-function! gina#util#meta#get_or_fail(name) abort
+function! gina#core#meta#get_or_fail(name) abort
   let meta = s:meta('%')
   if !meta.has(a:name)
-    throw gina#exception#critical(printf(
+    throw gina#core#exception#critical(printf(
           \ 'A required meta value "%s" does not exist on "%s"',
           \ a:name,
           \ bufname('%'),

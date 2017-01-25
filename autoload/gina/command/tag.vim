@@ -11,7 +11,7 @@ function! gina#command#tag#call(range, args, mods) abort
   endif
 
   let bufname = printf('gina:%s:tag', git.refname)
-  call gina#util#buffer#open(bufname, {
+  call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
@@ -53,7 +53,7 @@ function! s:is_raw_command(args) abort
 endfunction
 
 function! s:init(args) abort
-  call gina#util#meta#set('args', a:args)
+  call gina#core#meta#set('args', a:args)
 
   if exists('b:gina_initialized')
     return
@@ -84,9 +84,9 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#process#exec(
+  call gina#core#process#exec(
         \ gina#core#get_or_fail(),
-        \ gina#util#meta#get_or_fail('args'),
+        \ gina#core#meta#get_or_fail('args'),
         \)
   setlocal filetype=gina-tag
 endfunction

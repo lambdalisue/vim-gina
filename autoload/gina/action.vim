@@ -18,7 +18,7 @@ function! gina#action#include(scheme, ...) abort
     call s:Console.debug(v:exception)
     call s:Console.debug(v:throwpoint)
   endtry
-  throw gina#exception#error(printf(
+  throw gina#core#exception#error(printf(
         \ 'No action script "gina/action/%s.vim" is found',
         \ a:scheme,
         \))
@@ -32,7 +32,7 @@ endfunction
 function! gina#action#call(name_or_alias, ...) abort
   let binder = s:get()
   let candidates = a:0 > 0 ? a:1 : binder.get_candidates(1, line('$'))
-  return gina#exception#call(
+  return gina#core#exception#call(
         \ binder.call,
         \ [a:name_or_alias, candidates],
         \ binder
