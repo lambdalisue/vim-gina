@@ -1,6 +1,8 @@
+let s:Config = vital#gina#import('Config')
 let s:Emitter = vital#gina#import('Emitter')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 
+let s:modified_timer = v:null
 
 function! gina#core#emitter#emit(name, ...) abort
   call call(s:Emitter.emit, [a:name] + a:000, s:Emitter)
@@ -16,17 +18,33 @@ endfunction
 
 
 " Subscribe ------------------------------------------------------------------
-function! s:on_modified() abort
+function! s:on_modified(...) abort
   call s:Observer.update()
 endfunction
 
+function! s:on_modified_delay() abort
+  if s:modified_timer isnot# v:null
+    " Do not emit 'modified' for previous 'modified:delay'
+    silent! call timer_stop(s:modified_timer)
+  endif
+  let s:modified_timer = timer_start(
+        \ g:gina#core#emitter#modified_delay,
+        \ function('s:on_modified')
+        \)
+endfunction
+
 function! s:on_command_called_raw(scheme) abort
-  call gina#core#emitter#emit('modified')
+  call gina#core#emitter#emit('modified:delay')
 endfunction
 
 call gina#core#emitter#subscribe(
       \ 'modified',
       \ function('s:on_modified')
+      \)
+
+call gina#core#emitter#subscribe(
+      \ 'modified:delay',
+      \ function('s:on_modified_delay')
       \)
 
 call gina#core#emitter#subscribe(
@@ -45,7 +63,7 @@ endfunction
 function! s:on_BufWritePost() abort
   if exists('b:gina_internal_emitter_modified')
     if b:gina_internal_emitter_modified && !&modified
-      call gina#core#emitter#emit('modified')
+      call gina#core#emitter#emit('modified:delay')
     endif
     unlet b:gina_internal_emitter_modified
   endif
@@ -56,3 +74,8 @@ augroup gina_internal_util_emitter
   autocmd BufWritePre  * call s:on_BufWritePre()
   autocmd BufWritePost * nested call s:on_BufWritePost()
 augroup END
+
+
+call s:Config.define('g:gina#core#emitter', {
+      \ 'modified_delay': 10,
+      \})
