@@ -1,5 +1,4 @@
 let s:Buffer = vital#gina#import('Vim.Buffer')
-let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
 
 

@@ -1,4 +1,3 @@
-let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:String = vital#gina#import('Data.String')
@@ -256,5 +255,5 @@ function! s:BufWriteCmd() abort
 endfunction
 
 function! s:emit(...) abort
-  call s:Emitter.emit('gina:modified')
+  call gina#emitter#emit('command:called:raw', ['apply'])
 endfunction

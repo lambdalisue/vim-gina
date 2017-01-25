@@ -1,7 +1,6 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
-let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:String = vital#gina#import('Data.String')

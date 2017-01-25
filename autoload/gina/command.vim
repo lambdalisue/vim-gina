@@ -1,7 +1,6 @@
 let s:Argument = vital#gina#import('Argument')
 let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
-let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
 
 let s:t_number = type(0)
@@ -12,12 +11,15 @@ function! gina#command#call(bang, range, args, mods) abort
     let git = gina#core#get()
     let args = gina#command#parse_args(a:args)
     let args.params = {}
+    let args.params.scheme = args.get(0, '')
     let args.params.async = args.pop('--async')
     if args.params.async
-      call gina#process#open(git, args, copy(s:async_process))
+      let options = copy(s:async_process)
+      let options.params = args.params
+      call gina#process#open(git, args, options)
     else
       call gina#process#inform(gina#process#call(git, args))
-      call s:Emitter.emit('gina:modified')
+      call gina#emitter#emit('command:called:raw', args.params.scheme)
     endif
     return
   endif
@@ -118,5 +120,5 @@ function! s:async_process.on_stderr(job, msg, event) abort
 endfunction
 
 function! s:async_process.on_exit(job, msg, event) abort
-  call s:Emitter.emit('gina:modified')
+  call gina#emitter#emit('command:called:raw', self.params.scheme)
 endfunction

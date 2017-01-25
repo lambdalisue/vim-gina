@@ -1,5 +1,4 @@
 let s:Console = vital#gina#import('Vim.Console')
-let s:Emitter = vital#gina#import('Emitter')
 let s:File = vital#gina#import('System.File')
 let s:Path = vital#gina#import('System.Filepath')
 
@@ -255,19 +254,13 @@ function! s:on_stage(candidates, options) abort dict
       call add(add_candidates, candidate)
     endif
   endfor
-  try
-    call s:Emitter.block_start()
-    if get(a:options, 'force')
-      call self.call('index:add:force', add_candidates)
-      call self.call('index:rm:force', rm_candidates)
-    else
-      call self.call('index:add', add_candidates)
-      call self.call('index:rm', rm_candidates)
-    endif
-  finally
-    call s:Emitter.block_end()
-    call s:Emitter.emit('gina:modified')
-  endtry
+  if get(a:options, 'force')
+    call self.call('index:add:force', add_candidates)
+    call self.call('index:rm:force', rm_candidates)
+  else
+    call self.call('index:add', add_candidates)
+    call self.call('index:rm', rm_candidates)
+  endif
 endfunction
 
 function! s:on_unstage(candidates, options) abort dict
@@ -287,14 +280,8 @@ function! s:on_toggle(candidates, options) abort dict
       call add(unstage_candidates, candidate)
     endif
   endfor
-  try
-    call s:Emitter.block_start()
-    call self.call('index:stage', stage_candidates)
-    call self.call('index:unstage', unstage_candidates)
-  finally
-    call s:Emitter.block_end()
-    call s:Emitter.emit('gina:modified')
-  endtry
+  call self.call('index:stage', stage_candidates)
+  call self.call('index:unstage', unstage_candidates)
 endfunction
 
 function! s:on_discard(candidates, options) abort dict
@@ -337,11 +324,8 @@ function! s:on_discard(candidates, options) abort dict
       call delete(candidate.path)
     endif
   endfor
-  try
-    call s:Emitter.block_start()
-    call self.call('index:checkout:HEAD:force', checkout_candidates)
-  finally
-    call s:Emitter.block_end()
-    call s:Emitter.emit('gina:modified')
-  endtry
+  call self.call('index:checkout:HEAD:force', checkout_candidates)
+  if !empty(delete_candidates) && empty(checkout_candidates)
+    call gina#emitter#emit('modified')
+  endif
 endfunction

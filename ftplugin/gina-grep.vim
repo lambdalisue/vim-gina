@@ -27,13 +27,10 @@ endif
 
 " Quickfix
 if g:gina#command#grep#send_to_quickfix
-  function! s:on_done() abort
-    let params = gina#util#params('%')
-    if empty(params) || params.scheme !=# 'grep'
-      return
+  function! s:on_command_called(scheme) abort
+    if a:scheme ==# 'grep'
+      call gina#action#call('export:quickfix')
     endif
-    call gina#action#call('export:quickfix')
   endfunction
-  let s:Emitter = vital#gina#import('Emitter')
-  call s:Emitter.subscribe('gina:grep:async:done', function('s:on_done'))
+  call gina#emitter#subscribe('command:called', function('s:on_command_called'))
 endif

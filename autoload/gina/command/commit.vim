@@ -1,6 +1,5 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Console = vital#gina#import('Vim.Console')
-let s:Emitter = vital#gina#import('Emitter')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:Git = vital#gina#import('Git')
@@ -183,7 +182,7 @@ function! s:commit_commitmsg(git, args) abort
       throw gina#process#error(result)
     endif
     call s:remove_cached_commitmsg(a:git)
-    call s:Emitter.emit('gina:modified')
+    call gina#emitter#emit('command:called:raw', 'commit')
   finally
     call delete(tempfile)
   endtry

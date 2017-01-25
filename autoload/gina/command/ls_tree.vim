@@ -1,5 +1,4 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
-let s:Emitter = vital#gina#import('Emitter')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 
 
