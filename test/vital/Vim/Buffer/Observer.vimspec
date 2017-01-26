@@ -1,16 +1,9 @@
 Describe Vim.Buffer.Observer
   Before all
-    let Guard = vital#gina#import('Vim.Guard')
-    let guard = Guard.store(['&autoread'])
-
     function! VitalVimBufferObserverBufReadCmd() abort
       call setline(1, ['BufReadCmd has called'])
     endfunction
 
-  End
-
-  After all
-    call guard.restore()
   End
 
   Before
@@ -19,6 +12,15 @@ Describe Vim.Buffer.Observer
   End
 
   Describe behavior
+    Before
+      let Guard = vital#gina#import('Vim.Guard')
+      let guard = Guard.store(['&autoread'])
+    End
+
+    After
+      call guard.restore()
+    End
+
     Context autoread
       Before
         set autoread
