@@ -1,4 +1,5 @@
 let s:Buffer = vital#gina#import('Vim.Buffer')
+let s:Path = vital#gina#import('System.Filepath')
 
 
 function! gina#command#show#call(range, args, mods) abort
@@ -46,9 +47,9 @@ function! s:build_args(git, args) abort
     let args.params.path = ''
     let args.params.object = args.params.commit
   else
-    let args.params.path = gina#util#relpath(
+    let args.params.path = s:Path.unixpath(gina#util#relpath(
           \ gina#util#expand(get(args.residual(), 0, '%'))
-          \)
+          \))
     let args.params.object = args.params.commit . ':' . args.params.path
   endif
   " NOTE:
