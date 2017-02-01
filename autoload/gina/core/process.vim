@@ -112,7 +112,7 @@ function! s:exec_async(git, args) abort
   let async_process._bufnr = bufnr('%')
   let async_process._timer = timer_start(
         \ g:gina#core#process#updatetime,
-        \ 's:async_process_callback',
+        \ function('s:async_process_callback'),
         \ { 'repeat': -1 }
         \)
   let s:async_processes[async_process._timer] = async_process
