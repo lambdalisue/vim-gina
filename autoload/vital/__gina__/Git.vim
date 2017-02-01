@@ -95,77 +95,64 @@ function! s:resolve(git, path) abort
         \   : path1
 endfunction
 
-function! s:get_config(git, ...) abort
-  if empty(a:git)
-    return {}
-  endif
-  let path = s:resolve(a:git, 'config')
-  return call(s:INI.parse_file, [path] + a:000, s:INI)
-endfunction
-
-function! s:get_remote_of(git, remote, ...) abort
-  let config = a:0 > 0 ? a:1 : s:get_config(a:git)
-  return get(config, printf('remote "%s"', a:remote), {})
-endfunction
-
-function! s:get_branch_of(git, branch, ...) abort
-  let config = a:0 > 0 ? a:1 : s:get_config(a:git)
-  let branch = s:_resolve_branch(a:git, a:branch)
-  return get(config, printf('branch "%s"', branch), {})
-endfunction
-
-function! s:get_hashref_of(git, ref) abort
-  let ref = s:_normalize_ref(a:git, a:ref)
-  let path = s:resolve(a:git, ref)
+" The search paths are documented at
+" https://git-scm.com/docs/git-rev-parse
+function! s:ref(git, refname) abort
+  let refname = a:refname ==# '@' ? 'HEAD' : a:refname
+  let candidates = [
+        \ refname,
+        \ printf('refs/%s', refname),
+        \ printf('refs/tags/%s', refname),
+        \ printf('refs/heads/%s', refname),
+        \ printf('refs/remotes/%s', refname),
+        \ printf('refs/remotes/%s/HEAD', refname),
+        \]
+  let path = s:resolve(a:git, 'packed-refs')
   if !filereadable(path)
-    return a:ref
+    let packed_refs = []
+  else
+    let packed_refs = filter(readfile(path), 'v:val[:0] !=# ''#''')
   endif
-  let content = get(readfile(path), 0, '')
-  if empty(content)
-    " ref is missing in traditional directory, the ref should be written in
-    " packed-ref then
-    let filter_code = printf(
-          \ 'v:val[0] !=# "#" && v:val[-%d:] ==# ref',
-          \ len(ref)
-          \)
-    let packed_refs = filter(
-          \ readfile(s:resolve(a:git, 'packed-refs')),
-          \ filter_code
-          \)
-    let content = get(split(get(packed_refs, 0, '')), 0, '')
-  endif
-  return content
+  for candidate in candidates
+    let ref = s:_get_reference_trad(a:git, candidate)
+    if !empty(ref)
+      return ref
+    endif
+    let ref = s:_get_reference_packed(a:git, candidate, packed_refs)
+    if !empty(ref)
+      return ref
+    endif
+  endfor
+  return {}
 endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:_normalize_ref(git, ref) abort
-  if a:ref =~# '^refs/'
-    return a:ref
-  endif
-  let path = s:resolve(a:git, a:ref)
+function! s:_get_reference_trad(git, refname) abort
+  let path = s:resolve(a:git, a:refname)
   if !filereadable(path)
-    return a:ref
-  endif
-  let content = get(readfile(s:resolve(a:git, a:ref)), 0, '')
-  return matchstr(content, '^ref: \zs.\+')
-endfunction
-
-function! s:_resolve_ref(git, ref) abort
-  let path = s:resolve(a:git, a:ref)
-  if !filereadable(path)
-    return a:ref
+    return {}
   endif
   let content = get(readfile(path), 0, '')
-  let ref = matchstr(content, '^ref: \zs.\+')
-  return empty(ref) ? a:ref : s:_resolve_ref(a:git, ref)
+  if content =~# '^ref:'
+    return s:_get_reference_trad(a:git, matchstr(content, '^ref:\s\+\zs.\+'))
+  endif
+  return {
+        \ 'name': matchstr(a:refname, '^refs/\%(heads\|remotes\|tags\)/\zs.*'),
+        \ 'path': a:refname,
+        \ 'hash': content,
+        \}
 endfunction
 
-function! s:_resolve_branch(git, branch) abort
-  if a:branch ==# 'HEAD'
-    let ref = s:_resolve_ref(a:git, 'HEAD')
-  else
-    let ref = s:_resolve_ref(a:git, 'refs/heads/' . a:branch)
+function! s:_get_reference_packed(git, refname, packed_refs) abort
+  let expr = printf('v:val[-%d:] ==# a:refname', len(a:refname))
+  let record = get(filter(copy(a:packed_refs), expr), 0, '')
+  if empty(record)
+    return {}
   endif
-  return matchstr(ref, '^refs/heads/\zs.*')
+  let m = split(record)
+  return {
+        \ 'name': m[0],
+        \ 'hash': m[1],
+        \}
 endfunction

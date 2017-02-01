@@ -177,119 +177,46 @@ Describe Git
     End
   End
 
-  Describe .get_config({git}, [, {fail_silently}])
-    It returns a config dictionary of a normal git working tree
-        let git = Git.new(profile.valid1)
-        let config = Git.get_config(git)
-        Assert KeyExists(config, '_')
-        Assert KeyExists(config, 'core')
-        Assert KeyExists(config, 'branch "develop"')
-        Assert KeyExists(config, 'branch "ext/master"')
-        Assert KeyExists(config, 'remote "ext"')
-        Assert KeyExists(config['core'], 'bare')
-        Assert KeyExists(config['core'], 'filemode')
-        Assert KeyExists(config['branch "develop"'], 'merge')
-        Assert KeyExists(config['branch "develop"'], 'remote')
-        Assert KeyExists(config['branch "ext/master"'], 'merge')
-        Assert KeyExists(config['branch "ext/master"'], 'remote')
-        Assert KeyExists(config['remote "ext"'], 'fetch')
-        Assert KeyExists(config['remote "ext"'], 'url')
-    End
+  Describe .ref({git}, {refname})
+    It returns a ref (e.g. refs/heads/master) of {refname} (e.g. master)
+      let git = Git.new(profile.valid1)
+      let cmd = printf('git -C %s rev-parse %%s', shellescape(git.worktree))
+      let hash = matchstr(system(printf(cmd, 'master')), '^\w\+')
+      let ref = Git.ref(git, 'master')
+      Assert Equals(ref, {
+            \ 'path': 'refs/heads/master',
+            \ 'name': 'master',
+            \ 'hash': hash,
+            \})
+      let ref = Git.ref(git, 'refs/heads/master')
+      Assert Equals(ref, {
+            \ 'path': 'refs/heads/master',
+            \ 'name': 'master',
+            \ 'hash': hash,
+            \})
+      let ref = Git.ref(git, 'HEAD')
+      Assert Equals(ref, {
+            \ 'path': 'refs/heads/master',
+            \ 'name': 'master',
+            \ 'hash': hash,
+            \})
 
-    It returns a config dictionary of a git working tree by 'git worktree'
-        if !profile.git_support_worktree
-          Skip This git does not support 'git worktree' feature
-        endif
+      let hash = matchstr(system(printf(cmd, 'develop')), '^\w\+')
+      let ref = Git.ref(git, 'develop')
+      Assert Equals(ref, {
+            \ 'path': 'refs/heads/develop',
+            \ 'name': 'develop',
+            \ 'hash': hash,
+            \})
+      let ref = Git.ref(git, 'refs/heads/develop')
+      Assert Equals(ref, {
+            \ 'path': 'refs/heads/develop',
+            \ 'name': 'develop',
+            \ 'hash': hash,
+            \})
 
-        let git = Git.new(profile.valid2)
-        let config = Git.get_config(git)
-        Assert KeyExists(config, '_')
-        Assert KeyExists(config, 'core')
-        Assert KeyExists(config, 'branch "develop"')
-        Assert KeyExists(config, 'branch "ext/master"')
-        Assert KeyExists(config, 'remote "ext"')
-        Assert KeyExists(config['core'], 'bare')
-        Assert KeyExists(config['core'], 'filemode')
-        Assert KeyExists(config['branch "develop"'], 'merge')
-        Assert KeyExists(config['branch "develop"'], 'remote')
-        Assert KeyExists(config['branch "ext/master"'], 'merge')
-        Assert KeyExists(config['branch "ext/master"'], 'remote')
-        Assert KeyExists(config['remote "ext"'], 'fetch')
-        Assert KeyExists(config['remote "ext"'], 'url')
-    End
-
-    It returns an empty dictionary for a non git repository
-        let git = Git.new(profile.invalid)
-        let config = Git.get_config(git)
-        Assert Equals(config, {})
-    End
-  End
-
-  Describe .get_remote_of({git}, {remote} [, {config}])
-    It returns a config dictionary of {remote} for {git}
-        let git = Git.new(profile.valid1)
-        let remote = Git.get_remote_of(git, 'ext')
-        Assert KeyExists(remote, 'fetch')
-        Assert KeyExists(remote, 'url')
-    End
-
-    It uses {config} dictionary when specified
-        let git = Git.new(profile.valid1)
-        let config = {
-              \ 'remote "ext"': {
-              \   'fetch': 'fetch',
-              \   'url': 'url',
-              \ }
-              \}
-        let remote = Git.get_remote_of(git, 'ext', config)
-        Assert KeyExists(remote, 'fetch')
-        Assert KeyExists(remote, 'url')
-        Assert Equals(remote['fetch'], 'fetch')
-        Assert Equals(remote['url'], 'url')
-    End
-  End
-
-  Describe .get_branch_of({git}, {branch} [, {config}])
-    It returns a config dictionary of {branch} for {git}
-        let git = Git.new(profile.valid1)
-        let branch = Git.get_branch_of(git, 'develop')
-        Assert KeyExists(branch, 'merge')
-        Assert KeyExists(branch, 'remote')
-    End
-
-    It uses {config} dictionary when specified
-        let git = Git.new(profile.valid1)
-        let config = {
-              \ 'branch "develop"': {
-              \   'merge': 'merge',
-              \   'remote': 'remote',
-              \ }
-              \}
-        let branch = Git.get_branch_of(git, 'develop', config)
-        Assert KeyExists(branch, 'merge')
-        Assert KeyExists(branch, 'remote')
-        Assert Equals(branch['merge'], 'merge')
-        Assert Equals(branch['remote'], 'remote')
-    End
-  End
-
-  Describe .get_hashref_of({git}, {ref})
-    It returns a hashref of {ref} in {git}
-        let git = Git.new(profile.valid1)
-        let hashref = Git.get_hashref_of(git, 'HEAD')
-        let expect = system(printf(
-              \ 'git -C %s rev-parse HEAD',
-              \ shellescape(profile.valid1)
-              \))
-        Assert Equals(hashref, matchstr(expect, '\w\+'))
-
-        let git = Git.new(profile.valid1)
-        let hashref = Git.get_hashref_of(git, 'refs/heads/develop')
-        let expect = system(printf(
-              \ 'git -C %s rev-parse develop',
-              \ shellescape(profile.valid1)
-              \))
-        Assert Equals(hashref, matchstr(expect, '\w\+'))
+      let ref = Git.ref(git, 'unknown')
+      Assert Equals(ref, {})
     End
   End
 End

@@ -68,6 +68,18 @@ function! gina#core#get(...) abort
   return git
 endfunction
 
+function! gina#core#config(git) abort
+  let result = gina#core#process#call(a:git, ['config', '--list'])
+  if result.status
+    throw gina#core#process#error(result)
+  endif
+  let config = {}
+  for record in filter(result.content, '!empty(v:val)')
+    call s:extend_config(config, record)
+  endfor
+  return config
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:is_file_buffer(expr) abort
@@ -162,4 +174,16 @@ function! s:get_from_cwd(bufnr) abort
         \ ? simplify(getcwd())
         \ : simplify(getcwd(winnr))
   return s:get_from_path(cwdpath)
+endfunction
+
+function! s:extend_config(config, record) abort
+  let m = matchlist(a:record, '^\(.*\)=\(.*\)$')
+  let keys = split(m[1], '\.')
+  let value = m[2]
+  let cursor = a:config
+  for key in keys[:-2]
+    let cursor[key] = get(cursor, key, {})
+    let cursor = cursor[key]
+  endfor
+  let cursor[keys[-1]] = value
 endfunction

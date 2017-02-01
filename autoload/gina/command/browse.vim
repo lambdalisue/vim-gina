@@ -3,11 +3,54 @@ let s:Formatter = vital#gina#import('Data.String.Formatter')
 let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
 
+let s:FORMAT_MAP = {
+      \ 'pt': 'path',
+      \ 'ls': 'line_start',
+      \ 'le': 'line_end',
+      \ 'c0': 'commit0',
+      \ 'c1': 'commit1',
+      \ 'c2': 'commit2',
+      \ 'h0': 'hash0',
+      \ 'h1': 'hash1',
+      \ 'h2': 'hash2',
+      \ 'r0': 'revision0',
+      \ 'r1': 'revision1',
+      \ 'r2': 'revision2',
+      \}
+
 
 function! gina#command#browse#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args, a:range)
-  let url = s:build_url(git, args)
+
+  let revinfo = s:parse_revision(git, args.params.rev)
+  let base_url = s:build_base_url(
+        \ s:get_remote_url(git, revinfo.commit1, revinfo.commit2),
+        \ args.params.scheme is# v:null
+        \   ? empty(args.params.path) ? 'root' : '_'
+        \   : args.params.scheme,
+        \)
+  let url = s:Formatter.format(base_url, s:FORMAT_MAP, {
+        \ 'path': s:Path.unixpath(gina#util#relpath(args.params.path)),
+        \ 'line_start': get(args.params.range, 0, ''),
+        \ 'line_end': get(args.params.range, 1, ''),
+        \ 'commit0': revinfo.commit0,
+        \ 'commit1': revinfo.commit1,
+        \ 'commit2': revinfo.commit2,
+        \ 'hash0': revinfo.hash0,
+        \ 'hash1': revinfo.hash1,
+        \ 'hash2': revinfo.hash2,
+        \ 'revision0': args.params.exact ? revinfo.hash0 : revinfo.commit0,
+        \ 'revision1': args.params.exact ? revinfo.hash1 : revinfo.commit1,
+        \ 'revision2': args.params.exact ? revinfo.hash2 : revinfo.commit2,
+        \})
+  if empty(url)
+    throw gina#core#exception#warn(printf(
+          \ 'No url translation pattern for "%s" is found.',
+          \ args.params.rev,
+          \))
+  endif
+
   if args.params.yank
     call gina#util#yank(url)
   else
@@ -22,130 +65,65 @@ function! s:build_args(git, args, range) abort
   let args.params = {}
   let args.params.yank = args.pop('--yank')
   let args.params.exact = args.pop('--exact')
-  let args.params.remote = args.pop('--remote', '')
-  let args.params.selection = a:range == [1, line('$')] ? [] : a:range
-  let args.params.commit = args.pop(
-        \ 1,
-        \ get(gina#util#params('%'), 'commit', '')
-        \)
-  let args.params.path = s:Path.unixpath(gina#util#relpath(
-        \ gina#util#expand(get(args.residual(), 0, '%'))
-        \))
-  let args.params.scheme = args.pop(
-        \ '--scheme',
-        \ empty(args.params.path) ? 'root' : '_'
-        \)
-
-  let config = s:Git.get_config(a:git)
-  let args.params = s:assign_commit(a:git, config, args.params)
-  let args.params = s:assign_remote(a:git, config, args.params)
+  let args.params.range = a:range == [1, line('$')] ? [] : a:range
+  let args.params.scheme = args.pop('--scheme', v:null)
+  let args.params.rev = args.pop(1, get(gina#util#params('%'), 'commit', ''))
+  let args.params.path = gina#util#expand(get(args.residual(), 0, '%'))
   return args.lock()
 endfunction
 
-function! s:assign_commit(git, config, params) abort
-  let commit = a:params.commit
-  if commit =~# '^.\{-}\.\.\..*$'
-    let [commit1, commit2] = gina#core#commit#split(a:git, commit)
+function! s:parse_revision(git, revision) abort
+  if a:revision =~# '^.\{-}\.\.\..*$'
+    let [commit1, commit2] = gina#core#commit#split(a:git, a:revision)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
-  elseif commit =~# '^.\{-}\.\..*$'
-    let [commit1, commit2] = gina#core#commit#split(a:git, commit)
+  elseif a:revision =~# '^.\{-}\.\..*$'
+    let [commit1, commit2] = gina#core#commit#split(a:git, a:revision)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
   else
-    let commit1 = empty(commit) ? 'HEAD' : commit
+    let commit1 = empty(a:revision) ? 'HEAD' : a:revision
     let commit2 = 'HEAD'
   endif
-  let commit = gina#core#commit#resolve(a:git, commit)
-  let commit = empty(commit) ? 'HEAD' : commit
-  return extend(a:params, {
-        \ 'commit': commit,
-        \ 'commit1': commit1,
-        \ 'commit2': commit2,
-        \ 'hashref': s:Git.get_hashref_of(a:git, commit),
-        \ 'hashref1': s:Git.get_hashref_of(a:git, commit1),
-        \ 'hashref2': s:Git.get_hashref_of(a:git, commit2),
-        \})
-endfunction
+  let commit0 = gina#core#commit#resolve(a:git, a:revision)
+  let commit0 = empty(commit0) ? 'HEAD' : commit0
 
-function! s:assign_remote(git, config, params) abort
-  if empty(a:params.remote)
-    let branch = s:Git.get_branch_of(a:git, a:params.commit1, a:config)
-    let branch = empty(branch) ? s:Git.get_branch_of(a:git, a:params.commit2, a:config) : branch
-    let branch = empty(branch) ? s:Git.get_branch_of(a:git, 'HEAD', a:config) : branch
-    let remote = get(branch, 'remote', 'origin')
-  else
-    let remote = a:params.remote
-  endif
-  return extend(a:params, {
-        \ 'remote': remote,
-        \ 'url': get(s:Git.get_remote_of(a:git, remote, a:config), 'url', ''),
-        \})
-endfunction
-
-function! s:build_url(git, args) abort
-  let params = a:args.params
-  let line_start = get(params.selection, 0, '')
-  let line_end = get(params.selection, 1, '')
-  let revision = params.exact ? params.hashref : params.commit
-  let revision1 = params.exact ? params.hashref1 : params.commit1
-  let revision2 = params.exact ? params.hashref2 : params.commit2
-  let url = s:format(params.scheme, params.url, {
-        \ 'path': params.path,
-        \ 'remote': params.remote,
-        \ 'revision': revision,
-        \ 'revision1': revision1,
-        \ 'revision2': revision2,
-        \ 'commit': params.commit,
-        \ 'commit1': params.commit1,
-        \ 'commit2': params.commit2,
-        \ 'hashref': params.hashref,
-        \ 'hashref1': params.hashref1,
-        \ 'hashref2': params.hashref2,
-        \ 'line_start': line_start,
-        \ 'line_end': line_end,
-        \})
-  if !empty(url)
-    return url
-  endif
-  throw gina#core#exception#warn(printf(
-        \ 'No url translation pattern for "%s:%s" (%s) is found.',
-        \ params.remote,
-        \ params.commit,
-        \ params.url,
-        \))
-endfunction
-
-function! s:format(scheme, remote_url, params) abort
-  let format_map = {
-        \ 'pt': 'path',
-        \ 'rm': 'remote',
-        \ 'r0': 'revision',
-        \ 'r1': 'revision1',
-        \ 'r2': 'revision2',
-        \ 'c0': 'commit',
-        \ 'c1': 'commit1',
-        \ 'c2': 'commit2',
-        \ 'h0': 'hashref',
-        \ 'h1': 'hashref1',
-        \ 'h2': 'hashref2',
-        \ 'ls': 'line_start',
-        \ 'le': 'line_end',
+  let ref0 = s:Git.ref(a:git, commit0)
+  let ref1 = s:Git.ref(a:git, commit1)
+  let ref2 = s:Git.ref(a:git, commit2)
+  return {
+        \ 'commit0': empty(ref0) ? commit0 : ref0.name,
+        \ 'commit1': empty(ref1) ? commit1 : ref1.name,
+        \ 'commit2': empty(ref2) ? commit2 : ref2.name,
+        \ 'hash0': empty(ref0) ? commit0 : ref0.hash,
+        \ 'hash1': empty(ref1) ? commit1 : ref1.hash,
+        \ 'hash2': empty(ref2) ? commit2 : ref2.hash,
         \}
-  let patterns = g:gina#command#browse#translation_patterns
-  let patterns = extend(
-        \ deepcopy(patterns),
-        \ g:gina#command#browse#extra_translation_patterns
-        \)
-  let baseurl = s:build_baseurl(a:scheme, a:remote_url, patterns)
-  if empty(baseurl)
-    return ''
-  endif
-  return s:Formatter.format(baseurl, format_map, a:params)
 endfunction
 
-function! s:build_baseurl(scheme, remote_url, translation_patterns) abort
-  for [domain, info] in items(a:translation_patterns)
+function! s:get_remote_url(git, commit1, commit2) abort
+  let config = gina#core#config(a:git)
+  " Find a corresponding 'remote'
+  let candidates = [a:commit1, a:commit2, 'HEAD']
+  for candidate in candidates
+    let remote = get(
+          \ get(config, 'remote', {}),
+          \ get(get(get(config, 'branch', {}), candidate, {}), 'remote', ''),
+          \ {}
+          \)
+    if !empty(remote)
+      break
+    endif
+  endfor
+  " Use a 'remote' of 'origin' if no 'remote' is found
+  let remote = empty(remote)
+        \ ? get(get(config, 'remote', {}), 'origin', {})
+        \ : remote
+  return get(remote, 'url', '')
+endfunction
+
+function! s:build_base_url(remote_url, scheme) abort
+  for [domain, info] in items(g:gina#command#browse#translation_patterns)
     for pattern in info[0]
       let pattern = substitute(pattern, '\C' . '%domain', domain, 'g')
       if a:remote_url =~# pattern
@@ -167,10 +145,10 @@ call s:Config.define('gina#command#browse', {
       \       '\vgit\@(%domain):(.{-})/(.{-})%(\.git)?$',
       \       '\vssh://git\@(%domain)/(.{-})/(.{-})%(\.git)?$',
       \     ], {
-      \       '_':     'https://\1/\2/\3/blob/%r0/%pt%{#L|}ls%{-L|}le',
-      \       'root':  'https://\1/\2/\3/tree/%r0/',
+      \       '_': 'https://\1/\2/\3/blob/%r0/%pt%{#L|}ls%{-L|}le',
+      \       'root': 'https://\1/\2/\3/tree/%r0/',
       \       'blame': 'https://\1/\2/\3/blame/%r0/%pt%{#L|}ls%{-L|}le',
-      \       'compare': 'https://\1/\2/\3/compare/%r1...%r2',
+      \       'compare': 'https://\1/\2/\3/compare/%h1...%h2',
       \     },
       \   ],
       \   'bitbucket.org': [
@@ -180,12 +158,11 @@ call s:Config.define('gina#command#browse', {
       \       '\vgit\@(%domain):(.{-})/(.{-})%(\.git)?$',
       \       '\vssh://git\@(%domain)/(.{-})/(.{-})%(\.git)?$',
       \     ], {
-      \       '_':     'https://\1/\2/\3/src/%r0/%pt%{#cl-|}ls',
-      \       'root':  'https://\1/\2/\3/branch/%r0/',
+      \       '_': 'https://\1/\2/\3/src/%r0/%pt%{#cl-|}ls',
+      \       'root': 'https://\1/\2/\3/branch/%r0/',
       \       'blame': 'https://\1/\2/\3/annotate/%r0/%pt',
-      \       'compare':  'https://\1/\2/\3/diff/%pt?diff1=%h1&diff2=%h2',
+      \       'compare': 'https://\1/\2/\3/diff/%pt?diff1=%h1&diff2=%h2',
       \     },
       \   ],
       \ },
-      \ 'extra_translation_patterns': {},
       \})
