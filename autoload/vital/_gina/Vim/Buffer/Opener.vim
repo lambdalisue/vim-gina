@@ -50,15 +50,19 @@ function! s:open(buffer, ...) abort
   let bufloaded = bufloaded(a:buffer)
   let bufexists = bufexists(a:buffer)
 
-  if empty(config.group) || preview
-    call s:Buffer.open(a:buffer, opener)
-  else
-    let manager = s:_get_buffer_manager(config.group)
-    call manager.open(a:buffer, {
-          \ 'opener': opener,
-          \ 'range': config.range,
-          \})
-  endif
+  try
+    if empty(config.group) || preview
+      call s:Buffer.open(a:buffer, opener)
+    else
+      let manager = s:_get_buffer_manager(config.group)
+      call manager.open(a:buffer, {
+            \ 'opener': opener,
+            \ 'range': config.range,
+            \})
+    endif
+  catch /^Vim\%((\a\+)\)\=:E325/
+    " Silence 'E325: ATTENTION'
+  endtry
 
   let context = {
         \ 'preview': preview,

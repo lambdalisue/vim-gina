@@ -23,28 +23,12 @@ function! gina#core#buffer#open(bufname, ...) abort
   if !s:Anchor.is_suitable(winnr())
     call s:Anchor.focus_if_available(options.opener)
   endif
-  " Open a buffer without BufReadCmd
-  let guard = s:Guard.store(['&eventignore'])
-  try
-    set eventignore+=BufReadCmd
-    silent let context = s:Opener.open(bufname, {
-          \ 'mods': options.mods,
-          \ 'group':  options.group,
-          \ 'opener': options.opener,
-          \})
-  finally
-    call guard.restore()
-  endtry
-  " Call callback if necessary
-  if options.callback isnot v:null
-    call call(
-          \ options.callback.fn,
-          \ options.callback.args,
-          \ options.callback
-          \)
+  " Open a buffer
+  if options.callback is# v:null
+    let context = s:open_without_callback(bufname, options)
+  else
+    let context = s:open_with_callback(bufname, options)
   endif
-  " Update content
-  execute 'edit' options.cmdarg
   " Move cursor if necessary
   call setpos('.', [
         \ 0,
@@ -96,6 +80,38 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:focus(winnr) abort
   silent keepjumps keepalt execute printf('%dwincmd w', a:winnr)
+endfunction
+
+function! s:open_without_callback(bufname, options) abort
+  let context = s:Opener.open(a:bufname, {
+        \ 'mods': a:options.mods,
+        \ 'group':  a:options.group,
+        \ 'opener': a:options.opener,
+        \})
+  return context
+endfunction
+
+function! s:open_with_callback(bufname, options) abort
+  " Open a buffer without BufReadCmd
+  let guard = s:Guard.store(['&eventignore'])
+  try
+    set eventignore+=BufReadCmd
+    let context = s:Opener.open(a:bufname, {
+          \ 'mods': a:options.mods,
+          \ 'group':  a:options.group,
+          \ 'opener': a:options.opener,
+          \})
+  finally
+    call guard.restore()
+  endtry
+  call call(
+        \ a:options.callback.fn,
+        \ a:options.callback.args,
+        \ a:options.callback
+        \)
+  " Update content
+  execute 'edit' a:options.cmdarg
+  return context
 endfunction
 
 
