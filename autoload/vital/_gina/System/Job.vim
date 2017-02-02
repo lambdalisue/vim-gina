@@ -107,18 +107,20 @@ else
           \)
   endfunction
 
-  function! s:_ch_read_and_call_callbacks(job) abort
-    let status = ch_status(a:job.__channel)
-    if status ==# 'open' || status ==# 'buffered'
-      let stdout = ch_read(a:job.__channel)
-      let stderr = ch_read(a:job.__channel, {'part': 'err'})
-      if has_key(a:job, 'on_stdout') && !empty(stdout)
-        call s:_job_callback('stdout', a:job, a:job.__job, stdout)
+  function! s:_ch_read_and_call_callbacks(job, name, ...) abort
+    let options = get(a:000, 0, {})
+    let status = ch_status(a:job.__channel, options)
+    let loop_manager = copy(s:loop_manager)
+    while status ==# 'open' || status ==# 'buffered'
+      if status ==# 'buffered'
+        call s:_job_callback(
+              \ a:name, a:job, a:job.__job,
+              \ ch_read(a:job.__channel, options)
+              \)
       endif
-      if has_key(a:job, 'on_stderr') && !empty(stderr)
-        call s:_job_callback('stderr', a:job, a:job.__job, stderr)
-      endif
-    endif
+      call loop_manager.may_sleep()
+      let status = ch_status(a:job.__channel, options)
+    endwhile
   endfunction
 
   " Instance -------------------------------------------------------------------
@@ -147,22 +149,44 @@ else
     let timeout = get(a:000, 0, v:null)
     let timeout = timeout is# v:null ? v:null : timeout / 1000.0
     let start_time = reltime()
+    let loop_manager = copy(s:loop_manager)
     try
       while timeout is# v:null || timeout > reltimefloat(reltime(start_time))
         let status = self.status()
         if status ==# 'fail'
           return -3
         elseif status ==# 'dead'
-          call s:_ch_read_and_call_callbacks(self)
+          if has_key(self, 'on_stdout')
+            call s:_ch_read_and_call_callbacks(self, 'stdout')
+          endif
+          if has_key(self, 'on_stderr')
+            call s:_ch_read_and_call_callbacks(self, 'stderr', {'part': 'err'})
+          endif
           let info = job_info(self.__job)
           return info.exitval
         endif
+        call loop_manager.may_sleep()
       endwhile
     catch /^Vim:Interrupt$/
       call self.stop()
       return 1
     endtry
     return -1
+  endfunction
+
+  " Loop manager -------------------------------------------------------------
+  " Let OS to interrupt the Vim's thread by calling 'sleep'.
+  " Without this 'sleep', 'ch_status' or 'job_status' may not return a
+  " correct status.
+  let s:loop_manager = {'__threshold': 0.01, '__start': v:null}
+
+  function! s:loop_manager.may_sleep() abort
+    if self.__start is# v:null
+      let self.__start = reltime()
+    elseif reltimefloat(reltime(self.__start)) > self.__threshold
+      sleep 1m
+      let self.__start = reltime()
+    endif
   endfunction
 endif
 
