@@ -16,9 +16,7 @@ function! gina#core#buffer#open(bufname, ...) abort
         \ 'callback': v:null,
         \}, get(a:000, 0, {}),
         \)
-  " The {bufname} could not be opened randomly in Vim 8 when the {bufname}
-  " ends with a slash so remove the trailing one.
-  let bufname = s:Path.remove_last_separator(a:bufname)
+  let bufname = s:normalize_bufname(a:bufname)
   " Move focus to an anchor buffer if necessary
   if !s:Anchor.is_suitable(winnr())
     call s:Anchor.focus_if_available(options.opener)
@@ -80,6 +78,22 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:focus(winnr) abort
   silent keepjumps keepalt execute printf('%dwincmd w', a:winnr)
+endfunction
+
+function! s:normalize_bufname(bufname) abort
+  " The {bufname}
+  " 1. Could not be started/ended with whitespaces
+  " 2. Could not ends with ':' in Windows
+  " 3. Should not ends with '/' in Vim 8 (opening a buffer fail randomly)
+  let oldname = ''
+  let newname = a:bufname
+  while oldname !=# newname
+    let oldname = newname
+    let newname = substitute(newname, '\%(^\s\+\|\s\+$\)', '', 'g')
+    let newname = substitute(newname, '\:\+$', '', '')
+    let newname = s:Path.remove_last_separator(newname)
+  endwhile
+  return newname
 endfunction
 
 function! s:open_without_callback(bufname, options) abort
