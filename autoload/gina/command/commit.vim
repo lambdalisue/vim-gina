@@ -1,6 +1,7 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Console = vital#gina#import('Vim.Console')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
+let s:String = vital#gina#import('Data.String')
 let s:Git = vital#gina#import('Git')
 
 let s:SCISSOR = '------------------------ >8 ------------------------'
@@ -155,18 +156,19 @@ function! s:set_commitmsg(git, args, content) abort
   let commitmsg = s:cleanup_commitmsg(
         \ a:git,
         \ a:content,
-        \ args.get('--cleanup', args.get('--verbose') ? 'scissors' : 'strip'),
+        \ s:get_cleanup_mode(a:git, args),
         \)
   call s:set_config_commitmsg(a:git, a:content)
   call s:set_cached_commitmsg(a:git, cname, a:content)
 endfunction
 
 function! s:commit_commitmsg(git, args) abort
+  let config = gina#core#config(a:git)
   let args = a:args.clone()
   let content = s:cleanup_commitmsg(
         \ a:git,
         \ s:get_config_commitmsg(a:git),
-        \ args.get('--cleanup', args.get('--verbose') ? 'scissors' : 'strip'),
+        \ s:get_cleanup_mode(a:git, args),
         \)
   let tempfile = tempname()
   try
@@ -195,9 +197,22 @@ function! s:commit_commitmsg_confirm(git, args) abort
   endif
 endfunction
 
-function! s:cleanup_commitmsg(git, content, mode, ...) abort
-  " XXX: Read comment char from config
-  let comment = get(a:000, 0, '#')
+function! s:get_cleanup_mode(git, args) abort
+  if a:args.get('--cleanup')
+    return a:args.get('--cleanup')
+  elseif a:args.get('--verbose')
+    return 'scissors'
+  endif
+  let config = gina#core#config(a:git)
+  if get(get(config, 'commit', {}), 'verbose', '') ==# 'true'
+    return 'scissors'
+  endif
+  return get(get(config, 'commit', {}), 'cleanup', 'strip')
+endfunction
+
+function! s:cleanup_commitmsg(git, content, mode) abort
+  let config = gina#core#config(a:git)
+  let comment = get(get(config, 'core', {}), 'commentchar', '#')
   let content = copy(a:content)
   if a:mode =~# '^\%(default\|strip\|whitespace\|scissors\)$'
     " Strip leading and trailing empty lines
@@ -214,7 +229,10 @@ function! s:cleanup_commitmsg(git, content, mode, ...) abort
     endif
     " Strip commentary
     if a:mode =~# '^\%(default\|strip\|scissors\)$'
-      call map(content, printf('v:val =~# ''^%s'' ? '''' : v:val', comment))
+      call map(content, printf(
+            \ 'v:val =~# ''^%s'' ? '''' : v:val',
+            \ s:String.escape_pattern(comment)
+            \))
     endif
     " Collapse consecutive empty lines
     let indices = range(len(content))
