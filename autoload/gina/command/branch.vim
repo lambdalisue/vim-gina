@@ -112,7 +112,7 @@ function! s:parse_record(record) abort
   let record = s:String.remove_ansi_sequences(a:record)
   let m = matchlist(record, '\(\*\|\s\) \([^ ]\+\)\%( -> \([^ ]\+\)\)\?')
   let remote = matchstr(m[2], '^remotes/\zs[^ /]\+')
-  let branch = matchstr(m[2], '^\%(remotes/[^ /]\+/\)\?\zs[^ ]\+')
+  let branch = matchstr(m[2], '^\%(remotes/\)\?\zs[^ ]\+')
   return {
         \ 'word': record,
         \ 'abbr': a:record,
