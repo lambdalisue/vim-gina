@@ -109,27 +109,27 @@ function! gina#action#index#define(binder, ...) abort
         \ 'description': 'Checkout a contents from HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'commit': 'HEAD' },
+        \ 'options': { 'revision': 'HEAD' },
         \})
   call a:binder.define('index:checkout:HEAD:force', function('s:on_checkout'), {
         \ 'hidden': 1,
         \ 'description': 'Checkout a contents from HEAD (force)',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'commit': 'HEAD', 'force': 1 },
+        \ 'options': { 'revision': 'HEAD', 'force': 1 },
         \})
   call a:binder.define('index:checkout:origin', function('s:on_checkout'), {
         \ 'description': 'Checkout a contents from origin/HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'commit': 'origin/HEAD' },
+        \ 'options': { 'revision': 'origin/HEAD' },
         \})
   call a:binder.define('index:checkout:origin:force', function('s:on_checkout'), {
         \ 'hidden': 1,
         \ 'description': 'Checkout a contents from origin/HEAD (force)',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'commit': 'origin/HEAD', 'force': 1 },
+        \ 'options': { 'revision': 'origin/HEAD', 'force': 1 },
         \})
   call a:binder.define('index:discard', function('s:on_discard'), {
         \ 'description': 'Discard changes on the working tree',
@@ -226,7 +226,7 @@ function! s:on_checkout(candidates, options) abort
         \ 'theirs': 0,
         \}, a:options)
   let params = gina#util#params('%')
-  let commit = get(options, 'commit', get(params, 'commit', ''))
+  let revision = get(options, 'revision', get(params, 'revision', ''))
   let pathlist = map(
         \ copy(a:candidates),
         \ 'gina#util#fnameescape(gina#util#relpath(v:val.path))',
@@ -236,7 +236,7 @@ function! s:on_checkout(candidates, options) abort
         \ options.force ? '--force' : '',
         \ options.ours ? '--ours' : '',
         \ options.theirs ? '--theirs' : '',
-        \ gina#util#shellescape(commit),
+        \ gina#util#shellescape(revision),
         \ join(pathlist),
         \)
 endfunction
@@ -326,6 +326,6 @@ function! s:on_discard(candidates, options) abort dict
   endfor
   call self.call('index:checkout:HEAD:force', checkout_candidates)
   if !empty(delete_candidates) && empty(checkout_candidates)
-    call gina#core#emitter#emit('modified')
+    call gina#core#emitter#emit('modified:delay')
   endif
 endfunction

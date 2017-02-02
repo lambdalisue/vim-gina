@@ -118,7 +118,7 @@ function! s:parse_record(record) abort
         \ 'abbr': a:record,
         \ 'sign': m[1],
         \ 'branch': branch,
-        \ 'commit': branch,
+        \ 'revision': branch,
         \ 'remote': remote,
         \ 'alias': m[3],
         \}

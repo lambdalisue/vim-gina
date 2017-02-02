@@ -86,11 +86,11 @@ endfunction
 
 function! s:parse_record(record) abort
   let record = s:String.remove_ansi_sequences(a:record)
-  let commit = matchstr(record, '[a-z0-9]\+')
+  let revision = matchstr(record, '[a-z0-9]\+')
   let candidate = {
         \ 'word': record,
         \ 'abbr': a:record,
-        \ 'commit': commit,
+        \ 'revision': revision,
         \}
   return candidate
 endfunction

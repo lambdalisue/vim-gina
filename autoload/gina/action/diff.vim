@@ -55,14 +55,14 @@ function! s:on_diff(candidates, options) abort
         \}, a:options)
   let params = gina#util#params('%')
   let path = get(params, 'path', '')
-  let commit = get(params, 'commit', '')
+  let revision = get(params, 'revision', '')
   for candidate in a:candidates
     let cached = get(candidate, 'sign', '!!') !~# '^\%(??\|!!\|.\w\)$'
     execute printf(
           \ 'Gina diff %s %s %s -- %s',
           \ cached ? '--cached' : '',
           \ gina#util#shellescape(options.opener, '--opener='),
-          \ gina#util#shellescape(get(candidate, 'commit', commit)),
+          \ gina#util#shellescape(get(candidate, 'revision', revision)),
           \ gina#util#fnameescape(get(candidate, 'path', path)),
           \)
   endfor

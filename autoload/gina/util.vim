@@ -52,7 +52,7 @@ function! gina#util#params(expr) abort
         \ 'repo': m[1],
         \ 'scheme': m[2],
         \ 'params': split(m[3], ':'),
-        \ 'commit': m[4],
+        \ 'revision': m[4],
         \ 'path': m[5],
         \}
 endfunction

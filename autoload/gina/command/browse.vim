@@ -23,7 +23,7 @@ function! gina#command#browse#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args, a:range)
 
-  let revinfo = s:parse_revision(git, args.params.rev)
+  let revinfo = s:parse_revision(git, args.params.revision)
   let base_url = s:build_base_url(
         \ s:get_remote_url(git, revinfo.commit1, revinfo.commit2),
         \ args.params.scheme is# v:null
@@ -67,7 +67,7 @@ function! s:build_args(git, args, range) abort
   let args.params.exact = args.pop('--exact')
   let args.params.range = a:range == [1, line('$')] ? [] : a:range
   let args.params.scheme = args.pop('--scheme', v:null)
-  let args.params.rev = args.pop(1, get(gina#util#params('%'), 'commit', ''))
+  let args.params.revision = args.pop(1, get(gina#util#params('%'), 'revision', ''))
   let args.params.path = gina#util#expand(get(args.residual(), 0, '%'))
   return args.lock()
 endfunction

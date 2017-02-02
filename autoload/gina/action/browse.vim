@@ -42,13 +42,13 @@ function! s:on_browse(candidates, options) abort
         \}, a:options)
   let params = gina#util#params('%')
   let path = get(params, 'path', '')
-  let commit = get(params, 'commit', '')
+  let revision = get(params, 'revision', '')
   for candidate in a:candidates
     execute printf(
           \ 'Gina browse %s %s %s -- %s',
           \ options.exact ? '--exact' : '',
           \ options.yank ? '--yank' : '',
-          \ gina#util#shellescape(get(candidate, 'commit', commit)),
+          \ gina#util#shellescape(get(candidate, 'revision', revision)),
           \ gina#util#fnameescape(get(candidate, 'path', path)),
           \)
   endfor

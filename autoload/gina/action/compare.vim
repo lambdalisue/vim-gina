@@ -49,7 +49,7 @@ function! s:on_compare(candidates, options) abort
         \}, a:options)
   let params = gina#util#params('%')
   let path = get(params, 'path', '')
-  let commit = get(params, 'commit', '')
+  let revision = get(params, 'revision', '')
   for candidate in a:candidates
     let line = get(candidate, 'line', '')
     let col = get(candidate, 'col', '')
@@ -60,7 +60,7 @@ function! s:on_compare(candidates, options) abort
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),
-          \ gina#util#shellescape(get(candidate, 'commit', commit)),
+          \ gina#util#shellescape(get(candidate, 'revision', revision)),
           \ gina#util#fnameescape(get(candidate, 'path', path)),
           \)
   endfor

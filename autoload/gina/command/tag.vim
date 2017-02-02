@@ -105,6 +105,6 @@ function! s:parse_record(record) abort
   return {
         \ 'word': a:record,
         \ 'branch': a:record,
-        \ 'commit': a:record,
+        \ 'revision': a:record,
         \}
 endfunction

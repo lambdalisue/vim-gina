@@ -19,7 +19,7 @@ setlocal foldcolumn=0 colorcolumn=0
 
 " Mappings
 let params = gina#util#params('%')
-if empty(get(params, 'commit'))
+if empty(get(params, 'revision'))
   call gina#util#nmap('<Return>', '<Plug>(gina-edit)zv')
 else
   call gina#util#nmap('<Return>', '<Plug>(gina-show)zv')
