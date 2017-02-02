@@ -9,22 +9,14 @@ setlocal nowrap nofoldenable
 setlocal nonumber norelativenumber
 setlocal foldcolumn=0 colorcolumn=0
 
-if g:gina#command#changes#use_default_aliases
+if g:gina#command#reflog#use_default_aliases
   call gina#action#shorten('browse')
-  call gina#action#shorten('edit')
+  call gina#action#shorten('commit')
+  call gina#action#shorten('show')
 endif
 
-if g:gina#command#changes#use_default_mappings
-  nmap <buffer> <Return> <Plug>(gina-edit)zv
-
-  nmap <buffer> oo <Plug>(gina-edit)zv
-  nmap <buffer> OO <Plug>(gina-edit-right)zv
-  nmap <buffer> oa <Plug>(gina-edit-above)zv
-  nmap <buffer> ob <Plug>(gina-edit-below)zv
-  nmap <buffer> or <Plug>(gina-edit-right)zv
-  nmap <buffer> ol <Plug>(gina-edit-left)zv
-  nmap <buffer> op <Plug>(gina-edit-preview)zv
-  nmap <buffer> ot <Plug>(gina-edit-tab)zv
+if g:gina#command#reflog#use_default_mappings
+  nmap <buffer> <Return> <Plug>(gina-show)zv
 
   nmap <buffer> ss <Plug>(gina-show)zv
   nmap <buffer> SS <Plug>(gina-show-right)zv

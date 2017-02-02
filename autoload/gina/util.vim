@@ -144,26 +144,6 @@ function! gina#util#diffupdate() abort
   call timer_start(100, function('s:diffupdate'))
 endfunction
 
-function! gina#util#map(mode, lhs, rhs) abort
-  for mode in split(a:mode, '\zs')
-    if !hasmapto(a:rhs, mode)
-      execute printf('%smap <buffer> %s %s', mode, a:lhs, a:rhs)
-    endif
-  endfor
-endfunction
-
-function! gina#util#nmap(lhs, rhs) abort
-  call gina#util#map('n', a:lhs, a:rhs)
-endfunction
-
-function! gina#util#imap(lhs, rhs) abort
-  call gina#util#map('i', a:lhs, a:rhs)
-endfunction
-
-function! gina#util#vmap(lhs, rhs) abort
-  call gina#util#map('v', a:lhs, a:rhs)
-endfunction
-
 function! s:syncbind(...) abort
   syncbind
 endfunction

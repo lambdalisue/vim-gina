@@ -58,12 +58,12 @@ function! s:init(args) abort
   call s:Anchor.attach()
   call s:Observer.attach()
   call gina#action#attach(function('s:get_candidates'))
-  call gina#action#include('browse', 1)
+  call gina#action#include('browse')
   call gina#action#include('compare')
   call gina#action#include('diff')
-  call gina#action#include('edit', 1)
-  call gina#action#include('export', 1)
-  call gina#action#include('index', 1)
+  call gina#action#include('edit')
+  call gina#action#include('export')
+  call gina#action#include('index')
   call gina#action#include('patch')
   call gina#action#include('show')
 
@@ -130,3 +130,9 @@ endfunction
 function! s:strip_quotes(str) abort
   return a:str =~# '^\%(".*"\|''.*''\)$' ? a:str[1:-2] : a:str
 endfunction
+
+
+call s:Config.define('g:gina#command#status', {
+      \ 'use_default_aliases': 1,
+      \ 'use_default_mappings': 1,
+      \})

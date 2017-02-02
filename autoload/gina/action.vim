@@ -6,13 +6,13 @@ function! gina#action#attach(...) abort
   return call(s:Action.attach, ['gina'] + a:000, s:Action)
 endfunction
 
-function! gina#action#include(scheme, ...) abort
+function! gina#action#include(scheme) abort
   let binder = s:get()
   let scheme = substitute(a:scheme, '-', '_', 'g')
   try
     return call(
           \ printf('gina#action#%s#define', scheme),
-          \ [binder] + a:000
+          \ [binder]
           \)
   catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#action#[^#]\+#define/
     call s:Console.debug(v:exception)
@@ -27,6 +27,19 @@ endfunction
 function! gina#action#alias(...) abort
   let binder = s:get()
   return call(binder.alias, a:000, binder)
+endfunction
+
+function! gina#action#shorten(scheme, ...) abort
+  let excludes = get(a:000, 0, [])
+  let binder = s:get()
+  let scheme = substitute(a:scheme, '-', '_', 'g')
+  let names = filter(
+        \ keys(binder.actions),
+        \ 'v:val =~# ''^'' . scheme . '':'''
+        \)
+  for name in filter(names, 'index(excludes, v:val) == -1')
+    call binder.alias(matchstr(name, '^' . scheme . ':\zs.*'), name)
+  endfor
 endfunction
 
 function! gina#action#call(name_or_alias, ...) abort

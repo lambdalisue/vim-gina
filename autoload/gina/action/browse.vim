@@ -1,4 +1,4 @@
-function! gina#action#browse#define(binder, ...) abort
+function! gina#action#browse#define(binder) abort
   call a:binder.define('browse', function('s:on_browse'), {
         \ 'description': 'Open a system browser and show a content in remote',
         \ 'mapping_mode': 'n',
@@ -23,11 +23,6 @@ function! gina#action#browse#define(binder, ...) abort
         \ 'requirements': [],
         \ 'options': { 'yank': 1, 'exact': 1 },
         \})
-
-  if get(a:000, 0, 0)
-    call gina#action#alias('yank', 'browse:yank')
-    call gina#action#alias('yank:exact', 'browse:yank:exact')
-  endif
 endfunction
 
 

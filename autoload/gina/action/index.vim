@@ -3,7 +3,7 @@ let s:File = vital#gina#import('System.File')
 let s:Path = vital#gina#import('System.Filepath')
 
 
-function! gina#action#index#define(binder, ...) abort
+function! gina#action#index#define(binder) abort
   call a:binder.define('index:add', function('s:on_add'), {
         \ 'hidden': 1,
         \ 'description': 'Add a change to the status',
@@ -144,16 +144,6 @@ function! gina#action#index#define(binder, ...) abort
         \ 'requirements': ['path', 'sign'],
         \ 'options': { 'force': 1 },
         \})
-
-  if get(a:000, 0, 0)
-    call gina#action#alias('stage', 'index:stage')
-    call gina#action#alias('unstage', 'index:unstage')
-    call gina#action#alias('toggle', 'index:toggle')
-    call gina#action#alias('checkout:ours', 'index:checkout:ours')
-    call gina#action#alias('checkout:theirs', 'index:checkout:theirs')
-    call gina#action#alias('checkout:origin', 'index:checkout:origin')
-    call gina#action#alias('discard', 'index:discard')
-  endif
 endfunction
 
 

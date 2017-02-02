@@ -1,4 +1,5 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
+let s:Config = vital#gina#import('Config')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 
 
@@ -62,12 +63,12 @@ function! s:init(args) abort
   call s:Anchor.attach()
   call s:Observer.attach()
   call gina#action#attach(function('s:get_candidates'))
-  call gina#action#include('browse', 1)
+  call gina#action#include('browse')
   call gina#action#include('changes')
   call gina#action#include('compare')
   call gina#action#include('diff')
   call gina#action#include('edit')
-  call gina#action#include('show', 1)
+  call gina#action#include('show')
 
   augroup gina_internal_command
     autocmd! * <buffer>
@@ -98,3 +99,9 @@ function! s:parse_record(record) abort
         \}
   return candidate
 endfunction
+
+
+call s:Config.define('g:gina#command#ls_tree', {
+      \ 'use_default_aliases': 1,
+      \ 'use_default_mappings': 1,
+      \})

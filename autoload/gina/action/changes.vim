@@ -1,4 +1,4 @@
-function! gina#action#changes#define(binder, ...) abort
+function! gina#action#changes#define(binder) abort
   call a:binder.define('changes:of', function('s:on_changes'), {
         \ 'description': 'Show changes of the commit',
         \ 'mapping_mode': 'n',

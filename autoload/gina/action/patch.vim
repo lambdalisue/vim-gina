@@ -1,4 +1,4 @@
-function! gina#action#patch#define(binder, ...) abort
+function! gina#action#patch#define(binder) abort
   call a:binder.define('patch', function('s:on_patch'), {
         \ 'description': 'Patch a content',
         \ 'mapping_mode': 'n',

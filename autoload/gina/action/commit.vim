@@ -1,4 +1,4 @@
-function! gina#action#commit#define(binder, ...) abort
+function! gina#action#commit#define(binder) abort
   call a:binder.define('commit:merge', function('s:on_merge'), {
         \ 'description': 'Merge the commit into HEAD',
         \ 'mapping_mode': 'n',
@@ -71,21 +71,6 @@ function! gina#action#commit#define(binder, ...) abort
         \ 'requirements': ['revision'],
         \ 'options': { 'mainline': '2' },
         \})
-
-  if get(a:000, 0, 0)
-    call gina#action#alias('cherry-pick', 'commit:cherry-pick')
-    call gina#action#alias('cherry-pick:1', 'commit:cherry-pick:1')
-    call gina#action#alias('cherry-pick:2', 'commit:cherry-pick:2')
-    call gina#action#alias('merge', 'commit:merge')
-    call gina#action#alias('merge:ff-only', 'commit:merge:ff-only')
-    call gina#action#alias('merge:no-ff', 'commit:merge:no-ff')
-    call gina#action#alias('merge:squash', 'commit:merge:squash')
-    call gina#action#alias('rebase', 'commit:rebase')
-    call gina#action#alias('rebase:merge', 'commit:rebase:merge')
-    call gina#action#alias('rebase:revert', 'commit:revert')
-    call gina#action#alias('rebase:revert:1', 'commit:revert:1')
-    call gina#action#alias('rebase:revert:2', 'commit:revert:2')
-  endif
 endfunction
 
 

@@ -1,4 +1,5 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
+let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:String = vital#gina#import('Data.String')
@@ -64,11 +65,9 @@ function! s:init(args) abort
     autocmd WinEnter * call s:WinEnter()
   augroup END
 
-  nnoremap <silent><buffer>
-        \ <Plug>(gina-commit-status)
+  nnoremap <silent><buffer> <Plug>(gina-alternative)
         \ :<C-u>Gina status<CR>
-  nnoremap <silent><buffer>
-        \ <Plug>(gina-commit-toggle-amend)
+  nnoremap <silent><buffer> <Plug>(gina-commit-amend)
         \ :<C-u>call <SID>toggle_amend()<CR>
 endfunction
 
@@ -274,3 +273,8 @@ function! s:remove_cached_commitmsg(git) abort
   let cname = a:git.worktree
   let s:messages[cname] = {}
 endfunction
+
+
+call s:Config.define('g:gina#command#commit', {
+      \ 'use_default_mappings': 1,
+      \})

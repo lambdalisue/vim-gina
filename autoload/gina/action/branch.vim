@@ -1,7 +1,7 @@
 let s:Console = vital#gina#import('Vim.Console')
 
 
-function! gina#action#branch#define(binder, ...) abort
+function! gina#action#branch#define(binder) abort
   call a:binder.define('branch:refresh', function('s:on_refresh'), {
         \ 'description': 'Refresh remote branches',
         \ 'mapping_mode': 'nv',
@@ -56,18 +56,6 @@ function! gina#action#branch#define(binder, ...) abort
         \ 'requirements': ['branch'],
         \ 'options': {},
         \})
-
-  if get(a:000, 0, 0)
-    call gina#action#alias('checkout', 'branch:checkout')
-    call gina#action#alias('delete', 'branch:delete')
-    call gina#action#alias('delete:force', 'branch:delete:force')
-    call gina#action#alias('move', 'branch:move')
-    call gina#action#alias('move:force', 'branch:move:force')
-    call gina#action#alias('new', 'branch:new')
-    call gina#action#alias('refresh', 'branch:refresh')
-    call gina#action#alias('set-upstream-to', 'branch:set-upstream-to')
-    call gina#action#alias('unset-upstream', 'branch:unset-upstream')
-  endif
 endfunction
 
 
@@ -147,7 +135,7 @@ function! s:on_delete(candidates, options) abort
     execute printf(
           \ 'Gina branch --delete %s %s %s',
           \ options.force ? '--force' : '',
-          \ empty(candidate.remote) ? '' : '--remotes',
+          \ empty(get(candidate, 'remote')) ? '' : '--remotes',
           \ gina#util#shellescape(candidate.branch),
           \)
   endfor

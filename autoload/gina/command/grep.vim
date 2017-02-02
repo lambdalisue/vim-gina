@@ -75,11 +75,11 @@ function! s:init(args) abort
   call s:Anchor.attach()
   call s:Observer.attach()
   call gina#action#attach(function('s:get_candidates'))
-  call gina#action#include('browse', 1)
+  call gina#action#include('browse')
   call gina#action#include('compare')
   call gina#action#include('diff')
-  call gina#action#include('edit', 1)
-  call gina#action#include('export', 1)
+  call gina#action#include('edit')
+  call gina#action#include('export')
   call gina#action#include('patch')
   call gina#action#include('show')
 
@@ -126,6 +126,8 @@ function! s:parse_record(git, record) abort
 endfunction
 
 
-cal s:Config.define('gina#command#grep', {
+cal s:Config.define('g:gina#command#grep', {
       \ 'send_to_quickfix': 1,
+      \ 'use_default_aliases': 1,
+      \ 'use_default_mappings': 1,
       \})
