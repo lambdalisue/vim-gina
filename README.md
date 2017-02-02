@@ -35,13 +35,16 @@ Features
   - [x] Actions for status manipulation
   - [x] Actions for patching
   - [x] Actions for showing a content in a particular commit
+  - [ ] Actions for solving conflicts
+  - [ ] Actions for tag manipulation
+  - [ ] Actions for reflog
 - [ ] Gina commands
   - [x] List branches by `Gina branch`
   - [x] Open a system browser to see the remote content by `Gina browse`
   - [ ] Blame a content by `Gina blame` (might goes to an external plugin)
   - [x] Change current working directory by `Gina cd` or `Gina lcd`
   - [x] List changes (files) between two particular commits by `Gina changes`
-  - [ ] Solve conflict by three-side diff by `Gina chaperon` (might goes to an external plugin)
+  - [x] Solve conflict by three-side diff by `Gina chaperon` (might goes to an external plugin)
   - [x] Open a commit buffer by `Gina commit`
   - [x] Compare changes by two-side diff by `Gina compare`
   - [x] Compare changes by one-side diff by `Gina diff`
@@ -55,6 +58,7 @@ Features
   - [x] Show a content in a particular commit by `Gina show`
   - [x] Show a current working tree status by `Gina status`
   - [x] List tags by `Gina tag`
+  - [ ] Create a new tag by `Gina tag -a` without `-m` or `-F` (Open a buffer like `Gina commit`)
 - [ ] Command completions
 - [ ] Statusline/Tabline components
 - [x] `++enc` and `++ff` for command which open a window
@@ -70,6 +74,12 @@ Features
 
   " Open up in different window
   call gina#command#custom('grep', '--group', 'grep-window')
+  ```
+- [x] Customization by `gina#action#alias({alias}, {action_name})`
+  For example:
+  ```vim
+  " Use 'right' for 'edit:right'
+  call gina#action#alias('right', 'edit:right')
   ```
 
 
