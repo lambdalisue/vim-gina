@@ -7,6 +7,7 @@ Describe Emitter
       let self.called_with = a:000
     endfunction
   End
+
   It calls {listener} which subscribe {name}
     let foo = deepcopy(listener)
     let bar = deepcopy(listener)
