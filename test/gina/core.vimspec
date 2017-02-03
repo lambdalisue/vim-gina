@@ -1,7 +1,6 @@
 Describe gina#core
   Before all
     let Path = vital#gina#import('System.Filepath')
-    let scope = themis#helper('scope')
   End
 
   Before

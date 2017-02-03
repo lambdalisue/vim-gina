@@ -1,0 +1,62 @@
+Describe gina#core#buffer
+  Describe #params({expr})
+    It returns an empty dictionary when {bufname} does not start from 'gina:'
+      let params = gina#core#buffer#params('autoload/gina.vim')
+      Assert Equals(params, {})
+    End
+
+    It returns a params dictionary for 'gina:gina.vim:status'
+      let params = gina#core#buffer#params('gina:gina.vim:status')
+      Assert Equals(params.repo, 'gina.vim')
+      Assert Equals(params.scheme, 'status')
+      Assert Equals(params.params, [])
+      Assert Equals(params.revision, '')
+      Assert Equals(params.path, '')
+    End
+
+    It returns a params dictionary for 'gina:gina.vim:commit:amend'
+      let params = gina#core#buffer#params('gina:gina.vim:commit:amend')
+      Assert Equals(params.repo, 'gina.vim')
+      Assert Equals(params.scheme, 'commit')
+      Assert Equals(params.params, ['amend'])
+      Assert Equals(params.revision, '')
+      Assert Equals(params.path, '')
+    End
+
+    It returns a params dictionary for 'gina:gina.vim:commit:ignore-submodule'
+      let params = gina#core#buffer#params('gina:gina.vim:commit:amend:ignore-submodule')
+      Assert Equals(params.repo, 'gina.vim')
+      Assert Equals(params.scheme, 'commit')
+      Assert Equals(params.params, ['amend', 'ignore-submodule'])
+      Assert Equals(params.revision, '')
+      Assert Equals(params.path, '')
+    End
+
+    It returns a params dictionary for 'gina:gina.vim:show/HEAD:README.md'
+      let params = gina#core#buffer#params('gina:gina.vim:show/HEAD:README.md')
+      Assert Equals(params.repo, 'gina.vim')
+      Assert Equals(params.scheme, 'show')
+      Assert Equals(params.params, [])
+      Assert Equals(params.revision, 'HEAD')
+      Assert Equals(params.path, 'README.md')
+    End
+
+    It returns a params dictionary for 'gina:gina.vim:show/:README.md'
+      let params = gina#core#buffer#params('gina:gina.vim:show/:README.md')
+      Assert Equals(params.repo, 'gina.vim')
+      Assert Equals(params.scheme, 'show')
+      Assert Equals(params.params, [])
+      Assert Equals(params.revision, '')
+      Assert Equals(params.path, 'README.md')
+    End
+
+    It returns a params dictionary for 'gina:gina.vim:show/HEAD'
+      let params = gina#core#buffer#params('gina:gina.vim:show/HEAD')
+      Assert Equals(params.repo, 'gina.vim')
+      Assert Equals(params.scheme, 'show')
+      Assert Equals(params.params, [])
+      Assert Equals(params.revision, 'HEAD')
+      Assert Equals(params.path, '')
+    End
+  End
+End
