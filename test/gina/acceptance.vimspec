@@ -1,12 +1,14 @@
 Describe Acceptance test
   Describe log
     It opens a new split and shows the log of repository
+      Assert Equals(winnr('$'), 1)
       Gina log
       Assert Equals(winnr('$'), 2)
       Assert Match(bufname('%'), '^gina:.*:log$')
     End
 
     It opens a new split and shows the log of file
+      Assert Equals(winnr('$'), 1)
       Gina log -- README.md
       Assert Equals(winnr('$'), 2)
       Assert Match(bufname('%'), '^gina:.*:log/:README.md$')
