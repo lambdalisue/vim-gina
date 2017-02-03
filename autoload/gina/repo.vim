@@ -9,7 +9,7 @@ function! gina#repo#expand(expr) abort
   let m = matchlist(a:expr, '^\([%#]\|<\w\+>\)\(.*\)')
   let expr = m[1]
   let modifiers = m[2]
-  let params = gina#util#params(expr)
+  let params = gina#core#buffer#params(expr)
   return empty(params)
         \ ? expand(a:expr)
         \ : fnamemodify(expand(params.path), modifiers)

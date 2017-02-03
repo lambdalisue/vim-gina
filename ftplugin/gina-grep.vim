@@ -10,7 +10,7 @@ setlocal nonumber norelativenumber
 setlocal foldcolumn=0 colorcolumn=0
 
 " Does this buffer points files on working-tree or index/commit?
-let s:is_worktree = empty(get(gina#util#params('%'), 'revision'))
+let s:is_worktree = empty(get(gina#core#buffer#params('%'), 'revision'))
 
 if g:gina#command#grep#use_default_aliases
   call gina#action#shorten('browse')

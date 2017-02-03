@@ -215,7 +215,7 @@ function! s:on_checkout(candidates, options) abort
         \ 'ours': 0,
         \ 'theirs': 0,
         \}, a:options)
-  let params = gina#util#params('%')
+  let params = gina#core#buffer#params('%')
   let revision = get(options, 'revision', get(params, 'revision', ''))
   let pathlist = map(
         \ copy(a:candidates),

@@ -67,7 +67,7 @@ function! s:build_args(git, args, range) abort
   let args.params.exact = args.pop('--exact')
   let args.params.range = a:range == [1, line('$')] ? [] : a:range
   let args.params.scheme = args.pop('--scheme', v:null)
-  let args.params.revision = args.pop(1, get(gina#util#params('%'), 'revision', ''))
+  let args.params.revision = args.pop(1, get(gina#core#buffer#params('%'), 'revision', ''))
   let args.params.path = gina#repo#expand(get(args.residual(), 0, '%'))
   return args.lock()
 endfunction

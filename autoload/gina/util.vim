@@ -37,24 +37,6 @@ function! gina#util#fnameescape(value, ...) abort
   return prefix . fnameescape(a:value)
 endfunction
 
-function! gina#util#params(expr) abort
-  let path = expand(a:expr)
-  if path !~# '^gina:'
-    return {}
-  endif
-  let m = matchlist(
-        \ path,
-        \ '\v^gina:%(//)?([^:]+):([^:\/]+)([^\/]*)[\/]?([^:]*):?(.*)$',
-        \)
-  return {
-        \ 'repo': m[1],
-        \ 'scheme': m[2],
-        \ 'params': split(m[3], ':'),
-        \ 'revision': m[4],
-        \ 'path': m[5],
-        \}
-endfunction
-
 function! gina#util#doautocmd(name, ...) abort
   let pattern = get(a:000, 0, '')
   let expr = empty(pattern)

@@ -85,7 +85,7 @@ function! s:BufReadCmd() abort
         \ gina#core#get_or_fail(),
         \ gina#core#meta#get_or_fail('args'),
         \)
-  let params = gina#util#params('%')
+  let params = gina#core#buffer#params('%')
   if empty(params.path)
     setlocal filetype=git
   else

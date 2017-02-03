@@ -4,6 +4,23 @@ let s:Guard = vital#gina#import('Vim.Guard')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:Path = vital#gina#import('System.Filepath')
 
+function! gina#core#buffer#params(expr) abort
+  let path = expand(a:expr)
+  if path !~# '^gina:'
+    return {}
+  endif
+  let m = matchlist(
+        \ path,
+        \ '\v^gina:%(//)?([^:]+):([^:\/]+)([^\/]*)[\/]?([^:]*):?(.*)$',
+        \)
+  return {
+        \ 'repo': m[1],
+        \ 'scheme': m[2],
+        \ 'params': split(m[3], ':'),
+        \ 'revision': m[4],
+        \ 'path': m[5],
+        \}
+endfunction
 
 function! gina#core#buffer#open(bufname, ...) abort
   let options = extend({

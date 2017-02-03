@@ -35,7 +35,7 @@ function! s:on_browse(candidates, options) abort
         \ 'exact': 0,
         \ 'yank': 0,
         \}, a:options)
-  let params = gina#util#params('%')
+  let params = gina#core#buffer#params('%')
   let path = get(params, 'path', '')
   let revision = get(params, 'revision', '')
   for candidate in a:candidates
