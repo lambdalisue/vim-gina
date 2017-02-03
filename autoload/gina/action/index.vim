@@ -158,13 +158,13 @@ function! s:on_add(candidates, options) abort
         \}, a:options)
   let pathlist = map(
         \ copy(a:candidates),
-        \ 'gina#util#fnameescape(gina#core#repo#abspath(v:val.path))',
+        \ 'gina#core#repo#abspath(git, v:val.path)',
         \)
   execute printf(
         \ 'Gina add --ignore-errors %s %s -- %s',
         \ options.force ? '--force' : '',
         \ options['intent-to-add'] ? '--intent-to-add' : '',
-        \ join(pathlist),
+        \ gina#util#fnameescape(pathlist),
         \)
 endfunction
 
@@ -179,13 +179,13 @@ function! s:on_rm(candidates, options) abort
         \}, a:options)
   let pathlist = map(
         \ copy(a:candidates),
-        \ 'gina#util#fnameescape(gina#core#repo#abspath(v:val.path))',
+        \ 'gina#core#repo#abspath(git, v:val.path)',
         \)
   execute printf(
         \ 'Gina rm --quiet --ignore-unmatch %s %s -- %s',
         \ options.force ? '--force' : '',
         \ options.cached ? '--cached' : '',
-        \ join(pathlist),
+        \ gina#util#fnameescape(pathlist),
         \)
 endfunction
 
@@ -197,11 +197,11 @@ function! s:on_reset(candidates, options) abort
   let options = extend({}, a:options)
   let pathlist = map(
         \ copy(a:candidates),
-        \ 'gina#util#fnameescape(gina#core#repo#relpath(v:val.path))',
+        \ 'gina#core#repo#relpath(git, v:val.path)',
         \)
   execute printf(
         \ 'Gina reset --quiet -- %s',
-        \ join(pathlist),
+        \ gina#util#fnameescape(pathlist),
         \)
 endfunction
 
@@ -219,7 +219,7 @@ function! s:on_checkout(candidates, options) abort
   let revision = get(options, 'revision', get(params, 'revision', ''))
   let pathlist = map(
         \ copy(a:candidates),
-        \ 'gina#util#fnameescape(gina#core#repo#relpath(v:val.path))',
+        \ 'gina#core#repo#relpath(git, v:val.path)',
         \)
   execute printf(
         \ 'Gina! checkout --quiet %s %s %s %s -- %s',
@@ -227,7 +227,7 @@ function! s:on_checkout(candidates, options) abort
         \ options.ours ? '--ours' : '',
         \ options.theirs ? '--theirs' : '',
         \ gina#util#shellescape(revision),
-        \ join(pathlist),
+        \ gina#util#fnameescape(pathlist),
         \)
 endfunction
 

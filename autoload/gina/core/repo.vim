@@ -15,18 +15,16 @@ function! gina#core#repo#expand(expr) abort
         \ : fnamemodify(expand(params.path), modifiers)
 endfunction
 
-function! gina#core#repo#abspath(path) abort
-  let git = gina#core#get()
-  return empty(git)
+function! gina#core#repo#abspath(git, path) abort
+  return empty(a:git)
         \ ? s:Path.abspath(a:path)
-        \ : s:Git.abspath(git, a:path)
+        \ : s:Git.abspath(a:git, a:path)
 endfunction
 
-function! gina#core#repo#relpath(path) abort
-  let git = gina#core#get()
-  return empty(git)
+function! gina#core#repo#relpath(git, path) abort
+  return empty(a:git)
         \ ? s:Path.relpath(a:path)
-        \ : s:Git.relpath(git, a:path)
+        \ : s:Git.relpath(a:git, a:path)
 endfunction
 
 function! gina#core#repo#config(git) abort
@@ -40,6 +38,7 @@ function! gina#core#repo#config(git) abort
   endfor
   return config
 endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:extend_config(config, record) abort

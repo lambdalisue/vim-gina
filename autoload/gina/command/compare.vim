@@ -60,6 +60,7 @@ function! s:build_args(git, args) abort
   let args.params.R = args.get('-R')
   let args.params.commit = args.pop(1, '')
   let args.params.path = gina#core#repo#relpath(
+        \ a:git,
         \ gina#core#repo#expand(get(args.residual(), 0, '%'))
         \)
   return args.lock()

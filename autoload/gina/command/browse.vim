@@ -31,7 +31,7 @@ function! gina#command#browse#call(range, args, mods) abort
         \   : args.params.scheme,
         \)
   let url = s:Formatter.format(base_url, s:FORMAT_MAP, {
-        \ 'path': s:Path.unixpath(gina#core#repo#relpath(args.params.path)),
+        \ 'path': s:Path.unixpath(gina#core#repo#relpath(git, args.params.path)),
         \ 'line_start': get(args.params.range, 0, ''),
         \ 'line_end': get(args.params.range, 1, ''),
         \ 'commit0': revinfo.commit0,

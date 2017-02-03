@@ -26,7 +26,7 @@ function! gina#core#commit#resolve(git, commit) abort
   endif
 endfunction
 
-function! gina#core#commit#count_commits_ahead_of_remote(git) abort
+function! gina#core#commit#count_ahead(git) abort
   let result = gina#core#process#call(a:git, [
         \ 'log', '--oneline', '@{upstream}..'
         \])
@@ -36,7 +36,7 @@ function! gina#core#commit#count_commits_ahead_of_remote(git) abort
   return len(filter(result.stdout, '!empty(v:val)'))
 endfunction
 
-function! gina#core#commit#count_commits_behind_remote(git) abort
+function! gina#core#commit#count_behind(git) abort
   let result = gina#core#process#call(a:git, [
         \ 'log', '--oneline', '..@{upstream}'
         \])
@@ -47,6 +47,7 @@ function! gina#core#commit#count_commits_behind_remote(git) abort
 endfunction
 
 
+" Private --------------------------------------------------------------------
 function! s:find_common_ancestor(git, commit1, commit2) abort
   let lhs = empty(a:commit1) ? 'HEAD' : a:commit1
   let rhs = empty(a:commit2) ? 'HEAD' : a:commit2

@@ -13,6 +13,7 @@ function! s:build_args(git, args) abort
 
   if !empty(args.params.path)
     let args.params.path = gina#core#repo#abspath(
+          \ a:git,
           \ gina#core#repo#expand(args.params.path)
           \)
   endif

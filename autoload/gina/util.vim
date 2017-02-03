@@ -1,5 +1,6 @@
 let s:File = vital#gina#import('System.File')
 let s:String = vital#gina#import('Data.String')
+let s:t_list = type([])
 
 
 function! gina#util#yank(value) abort
@@ -25,16 +26,22 @@ function! gina#util#shellescape(value, ...) abort
   if empty(a:value)
     return ''
   endif
+  let value = type(a:value) == s:t_list
+        \ ? join(map(copy(a:value), 'shellescape(v:val)'))
+        \ : shellescape(a:value)
   let prefix = get(a:000, 0, '')
-  return prefix . shellescape(a:value)
+  return prefix . value
 endfunction
 
 function! gina#util#fnameescape(value, ...) abort
   if empty(a:value)
     return ''
   endif
+  let value = type(a:value) == s:t_list
+        \ ? join(map(copy(a:value), 'fnameescape(v:val)'))
+        \ : fnameescape(a:value)
   let prefix = get(a:000, 0, '')
-  return prefix . fnameescape(a:value)
+  return prefix . value
 endfunction
 
 function! gina#util#doautocmd(name, ...) abort

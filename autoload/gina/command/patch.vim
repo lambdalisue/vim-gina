@@ -100,6 +100,7 @@ function! s:build_args(git, args) abort
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
   let args.params.path = gina#core#repo#relpath(
+        \ a:git,
         \ gina#core#repo#expand(get(args.residual(), 0, '%'))
         \)
   return args.lock()
@@ -140,7 +141,7 @@ function! s:patch(git) abort
         \ 'add',
         \ '--intent-to-add',
         \ '--',
-        \ gina#core#repo#abspath(path),
+        \ gina#core#repo#abspath(a:git, path),
         \])
   let diff = s:diff(a:git, path, getline(1, '$'))
   let result = s:apply(a:git, diff)
