@@ -59,8 +59,8 @@ function! s:build_args(git, args) abort
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
   let args.params.commit = args.pop(1, '')
-  let args.params.path = gina#util#relpath(
-        \ gina#util#expand(get(args.residual(), 0, '%'))
+  let args.params.path = gina#repo#relpath(
+        \ gina#repo#expand(get(args.residual(), 0, '%'))
         \)
   return args.lock()
 endfunction

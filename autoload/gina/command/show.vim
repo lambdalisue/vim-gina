@@ -47,8 +47,8 @@ function! s:build_args(git, args) abort
     let args.params.path = ''
     let args.params.object = args.params.commit
   else
-    let args.params.path = s:Path.unixpath(gina#util#relpath(
-          \ gina#util#expand(get(args.residual(), 0, '%'))
+    let args.params.path = s:Path.unixpath(gina#repo#relpath(
+          \ gina#repo#expand(get(args.residual(), 0, '%'))
           \))
     let args.params.object = args.params.commit . ':' . args.params.path
   endif

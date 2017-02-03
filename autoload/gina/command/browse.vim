@@ -31,7 +31,7 @@ function! gina#command#browse#call(range, args, mods) abort
         \   : args.params.scheme,
         \)
   let url = s:Formatter.format(base_url, s:FORMAT_MAP, {
-        \ 'path': s:Path.unixpath(gina#util#relpath(args.params.path)),
+        \ 'path': s:Path.unixpath(gina#repo#relpath(args.params.path)),
         \ 'line_start': get(args.params.range, 0, ''),
         \ 'line_end': get(args.params.range, 1, ''),
         \ 'commit0': revinfo.commit0,
@@ -68,7 +68,7 @@ function! s:build_args(git, args, range) abort
   let args.params.range = a:range == [1, line('$')] ? [] : a:range
   let args.params.scheme = args.pop('--scheme', v:null)
   let args.params.revision = args.pop(1, get(gina#util#params('%'), 'revision', ''))
-  let args.params.path = gina#util#expand(get(args.residual(), 0, '%'))
+  let args.params.path = gina#repo#expand(get(args.residual(), 0, '%'))
   return args.lock()
 endfunction
 
@@ -102,7 +102,7 @@ function! s:parse_revision(git, revision) abort
 endfunction
 
 function! s:get_remote_url(git, commit1, commit2) abort
-  let config = gina#core#config(a:git)
+  let config = gina#repo#config(a:git)
   " Find a corresponding 'remote'
   let candidates = [a:commit1, a:commit2, 'HEAD']
   for candidate in candidates

@@ -162,7 +162,7 @@ function! s:set_commitmsg(git, args, content) abort
 endfunction
 
 function! s:commit_commitmsg(git, args) abort
-  let config = gina#core#config(a:git)
+  let config = gina#repo#config(a:git)
   let args = a:args.clone()
   let content = s:cleanup_commitmsg(
         \ a:git,
@@ -202,7 +202,7 @@ function! s:get_cleanup_mode(git, args) abort
   elseif a:args.get('--verbose')
     return 'scissors'
   endif
-  let config = gina#core#config(a:git)
+  let config = gina#repo#config(a:git)
   if get(get(config, 'commit', {}), 'verbose', '') ==# 'true'
     return 'scissors'
   endif
@@ -210,7 +210,7 @@ function! s:get_cleanup_mode(git, args) abort
 endfunction
 
 function! s:cleanup_commitmsg(git, content, mode) abort
-  let config = gina#core#config(a:git)
+  let config = gina#repo#config(a:git)
   let comment = get(get(config, 'core', {}), 'commentchar', '#')
   let content = copy(a:content)
   if a:mode =~# '^\%(default\|strip\|whitespace\|scissors\)$'

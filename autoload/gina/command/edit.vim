@@ -25,8 +25,8 @@ function! s:build_args(git, args) abort
         \])
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
-  let args.params.path = gina#util#abspath(
-        \ gina#util#expand(get(args.residual(), 0, '%'))
+  let args.params.path = gina#repo#abspath(
+        \ gina#repo#expand(get(args.residual(), 0, '%'))
         \)
   return args.lock()
 endfunction

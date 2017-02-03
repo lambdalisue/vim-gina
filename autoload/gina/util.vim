@@ -1,6 +1,4 @@
 let s:File = vital#gina#import('System.File')
-let s:Git = vital#gina#import('Git')
-let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
 
 
@@ -55,33 +53,6 @@ function! gina#util#params(expr) abort
         \ 'revision': m[4],
         \ 'path': m[5],
         \}
-endfunction
-
-function! gina#util#expand(expr) abort
-  if a:expr !~# '^[%#<]'
-    return expand(a:expr)
-  endif
-  let m = matchlist(a:expr, '^\([%#]\|<\w\+>\)\(.*\)')
-  let expr = m[1]
-  let modifiers = m[2]
-  let params = gina#util#params(expr)
-  return empty(params)
-        \ ? expand(a:expr)
-        \ : fnamemodify(expand(params.path), modifiers)
-endfunction
-
-function! gina#util#abspath(path) abort
-  let git = gina#core#get()
-  return empty(git)
-        \ ? s:Path.abspath(a:path)
-        \ : s:Git.abspath(git, a:path)
-endfunction
-
-function! gina#util#relpath(path) abort
-  let git = gina#core#get()
-  return empty(git)
-        \ ? s:Path.relpath(a:path)
-        \ : s:Git.relpath(git, a:path)
 endfunction
 
 function! gina#util#doautocmd(name, ...) abort

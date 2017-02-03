@@ -12,8 +12,8 @@ function! s:build_args(git, args) abort
   let args.params.path = args.pop(1, '.')
 
   if !empty(args.params.path)
-    let args.params.path = gina#util#abspath(
-          \ gina#util#expand(args.params.path)
+    let args.params.path = gina#repo#abspath(
+          \ gina#repo#expand(args.params.path)
           \)
   endif
 
