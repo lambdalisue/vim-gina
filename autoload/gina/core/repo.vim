@@ -2,7 +2,7 @@ let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
 
 
-function! gina#repo#expand(expr) abort
+function! gina#core#repo#expand(expr) abort
   if a:expr !~# '^[%#<]'
     return expand(a:expr)
   endif
@@ -15,21 +15,21 @@ function! gina#repo#expand(expr) abort
         \ : fnamemodify(expand(params.path), modifiers)
 endfunction
 
-function! gina#repo#abspath(path) abort
+function! gina#core#repo#abspath(path) abort
   let git = gina#core#get()
   return empty(git)
         \ ? s:Path.abspath(a:path)
         \ : s:Git.abspath(git, a:path)
 endfunction
 
-function! gina#repo#relpath(path) abort
+function! gina#core#repo#relpath(path) abort
   let git = gina#core#get()
   return empty(git)
         \ ? s:Path.relpath(a:path)
         \ : s:Git.relpath(git, a:path)
 endfunction
 
-function! gina#repo#config(git) abort
+function! gina#core#repo#config(git) abort
   let result = gina#core#process#call(a:git, ['config', '--list'])
   if result.status
     throw gina#core#process#error(result)

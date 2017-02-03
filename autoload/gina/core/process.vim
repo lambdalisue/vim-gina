@@ -83,7 +83,7 @@ endfunction
 
 function! s:expand(value) abort
   if a:value =~# '^\%([%#]\|<\w\+>\)\%(:[p8~.htreS]\|:g\?s?\S\+?\S\+?\)*$'
-    return gina#repo#expand(a:value)
+    return gina#core#repo#expand(a:value)
   endif
   return a:value
 endfunction

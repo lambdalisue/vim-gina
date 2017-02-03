@@ -180,35 +180,35 @@ Describe gina#util
 
   Describe #expand({expr})
     It returns an empty string for an empty {expr}
-      let actual = gina#repo#expand('')
+      let actual = gina#core#repo#expand('')
       let expect = ''
       Assert Equals(actual, expect)
     End
 
     It returns a path when {expr} is a path
-      let actual = gina#repo#expand('autoload/gina.vim')
+      let actual = gina#core#repo#expand('autoload/gina.vim')
       let expect = Path.realpath('autoload/gina.vim')
       Assert Equals(actual, expect)
     End
 
     It returns an expanded path of current buffer when {expr} is '%'
       execute 'edit foobar'
-      let actual = gina#repo#expand('%')
+      let actual = gina#core#repo#expand('%')
       let expect = 'foobar'
       Assert Equals(actual, expect)
 
-      let actual = gina#repo#expand('%:p')
+      let actual = gina#core#repo#expand('%:p')
       let expect = fnamemodify('foobar', ':p')
       Assert Equals(actual, expect)
     End
 
     It returns a path of current buffer when {expr} is 'gina:...'
       execute 'edit gina:gina.vim:show/HEAD:README.md'
-      let actual = gina#repo#expand('%')
+      let actual = gina#core#repo#expand('%')
       let expect = 'README.md'
       Assert Equals(actual, expect)
 
-      let actual = gina#repo#expand('%:p')
+      let actual = gina#core#repo#expand('%:p')
       let expect = fnamemodify('README.md', ':p')
       Assert Equals(actual, expect)
     End
@@ -224,7 +224,7 @@ Describe gina#util
 
       let git = gina#core#get()
       Assert Equals(
-            \ gina#repo#abspath(Path.realpath('A/foo/bar.txt')),
+            \ gina#core#repo#abspath(Path.realpath('A/foo/bar.txt')),
             \ Path.join(git.worktree, 'A', 'foo', 'bar.txt')
             \)
     End
@@ -234,7 +234,7 @@ Describe gina#util
       let cwd = getcwd()
 
       Assert Equals(
-            \ gina#repo#abspath(Path.realpath('A/foo/bar.txt')),
+            \ gina#core#repo#abspath(Path.realpath('A/foo/bar.txt')),
             \ Path.join(cwd, 'A', 'foo', 'bar.txt')
             \)
     End
@@ -251,7 +251,7 @@ Describe gina#util
       let git = gina#core#get()
       let path = Path.join(git.worktree, 'A', 'foo', 'bar.txt')
       Assert Equals(
-            \ gina#repo#relpath(path),
+            \ gina#core#repo#relpath(path),
             \ Path.realpath('A/foo/bar.txt')
             \)
     End
@@ -263,7 +263,7 @@ Describe gina#util
       let path = Path.join(cwd, 'A', 'foo', 'bar.txt')
 
       Assert Equals(
-            \ gina#repo#relpath(path),
+            \ gina#core#repo#relpath(path),
             \ Path.realpath('A/foo/bar.txt')
             \)
     End

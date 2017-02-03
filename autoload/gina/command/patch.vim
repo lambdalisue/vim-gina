@@ -99,8 +99,8 @@ function! s:build_args(git, args) abort
         \])
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
-  let args.params.path = gina#repo#relpath(
-        \ gina#repo#expand(get(args.residual(), 0, '%'))
+  let args.params.path = gina#core#repo#relpath(
+        \ gina#core#repo#expand(get(args.residual(), 0, '%'))
         \)
   return args.lock()
 endfunction
@@ -135,12 +135,12 @@ function! s:open(n, mods, opener, commit, params) abort
 endfunction
 
 function! s:patch(git) abort
-  let path = gina#repo#expand('%')
+  let path = gina#core#repo#expand('%')
   call gina#core#process#call(a:git, [
         \ 'add',
         \ '--intent-to-add',
         \ '--',
-        \ gina#repo#abspath(path),
+        \ gina#core#repo#abspath(path),
         \])
   let diff = s:diff(a:git, path, getline(1, '$'))
   let result = s:apply(a:git, diff)
