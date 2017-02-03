@@ -1,19 +1,19 @@
 Describe Acceptance test
   Before
-    " Let only one window open before tests.
-    only!
+    " Let only one window open before tests - `bwipeout` closes the windows
+    " and deletes the buffer and every buffer-related variables.
+    windo bwipeout!
+    edit! README.md
   End
 
   Describe log
     It opens a new split and shows the log of repository
-      Assert Equals(winnr('$'), 1)
       Gina log
       Assert Equals(winnr('$'), 2)
       Assert Match(bufname('%'), '^gina:.*:log$')
     End
 
     It opens a new split and shows the log of file
-      Assert Equals(winnr('$'), 1)
       Gina log -- README.md
       Assert Equals(winnr('$'), 2)
       Assert Match(bufname('%'), '^gina:.*:log/:README.md$')
