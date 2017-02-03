@@ -1,4 +1,9 @@
 Describe Acceptance test
+  Before
+    " Let only one window open before tests.
+    only!
+  End
+
   Describe log
     It opens a new split and shows the log of repository
       Assert Equals(winnr('$'), 1)
