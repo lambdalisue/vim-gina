@@ -1,0 +1,126 @@
+Describe gina#command#log
+  Before all
+    let Path = vital#gina#import('System.Filepath')
+  End
+
+  Before
+    silent! windo bwipeout!
+    silent! bufdo bwipeout!
+  End
+
+  Context In a valid git working tree
+    Before
+      let root = g:git_profile.valid1
+      let file = Path.join(root, 'A', 'foo')
+      execute 'edit' fnameescape(file)
+    End
+
+    Describe Gina log
+      It opens a new split window and show the log of the repository
+        Assert Equals(bufname('%'), file)
+        Gina log
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname('%'), 'gina:valid1:log')
+        Assert Equals(line('$'), 2, 'There should be two commits')
+      End
+
+      It opens a commit under the cursor with 'show' action
+        Gina log
+        call gina#action#call('show')
+        Assert Equals(winnr('$'), 2)
+        Assert Match(bufname('%'), '^gina://valid1:show/\w\+$')
+      End
+    End
+
+    Describe Gina log -- %
+      It opens a new split window and show the log of the repository
+        Assert Equals(bufname('%'), file)
+        Gina log -- %
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname('%'), 'gina:valid1:log/:A/foo')
+        Assert Equals(line('$'), 1, 'There should be one commits')
+      End
+
+      It opens a content of the file on the commit under the cursor with 'show' action
+        Gina log -- %
+        call gina#action#call('show')
+        Assert Equals(winnr('$'), 2)
+        Assert Match(bufname('%'), '^gina://valid1:show/\w\+:A/foo$')
+      End
+    End
+  End
+
+  Context In a valid git working tree (with 'worktree' feature)
+    Before
+      let root = g:git_profile.valid2
+      let file = Path.join(root, 'A', 'foo')
+      execute 'edit' fnameescape(file)
+    End
+
+    Describe Gina log
+      It opens a new split window and show the log of the repository
+        if !g:git_profile.git_support_worktree
+          Skip This git does not support 'worktree' feature.
+        endif
+        Assert Equals(bufname('%'), file)
+        Gina log
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname('%'), 'gina:valid2:log')
+        Assert Equals(line('$'), 2, 'There should be two commits')
+      End
+
+      It opens a commit under the cursor with 'show' action
+        Gina log
+        call gina#action#call('show')
+        Assert Equals(winnr('$'), 2)
+        Assert Match(bufname('%'), '^gina://valid2:show/\w\+$')
+      End
+    End
+
+    Describe Gina log -- %
+      It opens a new split window and show the log of the repository
+        if !g:git_profile.git_support_worktree
+          Skip This git does not support 'worktree' feature.
+        endif
+        Assert Equals(bufname('%'), file)
+        Gina log -- %
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname('%'), 'gina:valid2:log/:A/foo')
+        Assert Equals(line('$'), 1, 'There should be one commits')
+      End
+
+      It opens a content of the file on the commit under the cursor with 'show' action
+        Gina log -- %
+        call gina#action#call('show')
+        Assert Equals(winnr('$'), 2)
+        Assert Match(bufname('%'), '^gina://valid2:show/\w\+:A/foo$')
+      End
+    End
+  End
+
+  Context In a non git working tree
+    Before
+      let root = g:git_profile.invalid
+      let file = Path.join(root, 'A', 'foo')
+      execute 'edit' fnameescape(file)
+    End
+
+    Describe Gina log
+      It will not open a window
+        Assert Equals(bufname('%'), file)
+        Gina log
+        Assert Equals(winnr('$'), 1)
+        Assert Equals(bufname('%'), file)
+      End
+    End
+
+    Describe Gina log -- %
+      It will not open a window
+        Assert Equals(bufname('%'), file)
+        Gina log -- %
+        Assert Equals(winnr('$'), 1)
+        Assert Equals(bufname('%'), file)
+      End
+    End
+  End
+End
