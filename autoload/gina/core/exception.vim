@@ -21,29 +21,3 @@ endfunction
 function! gina#core#exception#call(funcref, args, ...) abort
   return call(s:Exception.call, [a:funcref, a:args] + a:000, s:Exception)
 endfunction
-
-function! gina#core#exception#register(handler) abort
-  return call(s:Exception.register, [a:handler], s:Exception)
-endfunction
-
-function! gina#core#exception#unregister(handler) abort
-  return call(s:Exception.unregister, [a:handler], s:Exception)
-endfunction
-
-
-" Exception handler ----------------------------------------------------------
-function! s:exception_handler(exception) abort
-  let m = matchlist(
-        \ a:exception,
-        \ '^vital: Git\.Term: ValidationError: \(.*\)',
-        \)
-  if !empty(m)
-    call s:Console.warn(m[1])
-    return 1
-  endif
-  return 0
-endfunction
-
-call gina#core#exception#register(
-      \ function('s:exception_handler')
-      \)
