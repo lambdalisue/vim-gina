@@ -41,10 +41,7 @@ function! s:build_args(git, args) abort
   let args.params.path = get(args.residual(), 0, '')
 
   if !empty(args.params.path)
-    let args.params.path = gina#core#repo#relpath(
-          \ a:git,
-          \ gina#core#repo#expand(args.params.path)
-          \)
+    let args.params.path = gina#core#repo#expand(args.params.path)
   endif
 
   call args.set('--color', 'always')

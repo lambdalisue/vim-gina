@@ -108,7 +108,7 @@ function! s:normalize_bufname(bufname) abort
     let oldname = newname
     let newname = substitute(newname, '\%(^\s\+\|\s\+$\)', '', 'g')
     let newname = substitute(newname, '\:\+$', '', '')
-    let newname = s:Path.remove_last_separator(newname)
+    let newname = substitute(newname, '[\\/]$', '', '')
   endwhile
   return newname
 endfunction
