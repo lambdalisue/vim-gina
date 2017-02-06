@@ -8,7 +8,7 @@ function! gina#command#changes#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
 
   let bufname = printf(
-        \ 'gina:%s:changes%s/%s',
+        \ 'gina://%s:changes%s/%s',
         \ git.refname,
         \ args.params.cached ? ':cached' : '',
         \ args.params.commit,

@@ -8,7 +8,7 @@ function! gina#command#log#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = printf(
-        \ 'gina:%s:log/%s',
+        \ 'gina://%s:log/%s',
         \ git.refname,
         \ empty(args.params.path)
         \   ? ''

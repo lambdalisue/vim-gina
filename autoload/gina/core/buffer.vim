@@ -6,12 +6,12 @@ let s:Path = vital#gina#import('System.Filepath')
 
 function! gina#core#buffer#params(expr) abort
   let path = expand(a:expr)
-  if path !~# '^gina:'
+  if path !~# '^gina://'
     return {}
   endif
   let m = matchlist(
         \ path,
-        \ '\v^gina:%(//)?([^:]+):([^:\/]+)([^\/]*)[\/]?([^:]*):?(.*)$',
+        \ '\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?([^:]*):?(.*)$',
         \)
   return {
         \ 'repo': m[1],

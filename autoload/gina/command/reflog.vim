@@ -8,7 +8,7 @@ function! gina#command#reflog#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = printf(
-        \ 'gina:%s:reflog',
+        \ 'gina://%s:reflog',
         \ git.refname,
         \)
   call gina#core#buffer#open(bufname, {

@@ -13,7 +13,7 @@ function! gina#command#commit#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(a:args)
   let bufname = printf(
-        \ 'gina:%s:commit',
+        \ 'gina://%s:commit',
         \ git.refname,
         \)
   call gina#core#buffer#open(bufname, {

@@ -9,7 +9,7 @@ function! gina#command#grep#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = printf(
-        \ 'gina:%s:grep/%s',
+        \ 'gina://%s:grep/%s',
         \ git.refname,
         \ args.params.commit,
         \)

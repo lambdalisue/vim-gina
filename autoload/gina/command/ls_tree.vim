@@ -7,7 +7,7 @@ function! gina#command#ls_tree#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = printf(
-        \ 'gina:%s:ls-tree/%s',
+        \ 'gina://%s:ls-tree/%s',
         \ git.refname,
         \ args.params.commit,
         \)

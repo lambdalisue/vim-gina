@@ -5,8 +5,8 @@ Describe gina#core#buffer
       Assert Equals(params, {})
     End
 
-    It returns a params dictionary for 'gina:gina.vim:status'
-      let params = gina#core#buffer#params('gina:gina.vim:status')
+    It returns a params dictionary for 'gina://gina.vim:status'
+      let params = gina#core#buffer#params('gina://gina.vim:status')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'status')
       Assert Equals(params.params, [])
@@ -14,8 +14,8 @@ Describe gina#core#buffer
       Assert Equals(params.path, '')
     End
 
-    It returns a params dictionary for 'gina:gina.vim:commit:amend'
-      let params = gina#core#buffer#params('gina:gina.vim:commit:amend')
+    It returns a params dictionary for 'gina://gina.vim:commit:amend'
+      let params = gina#core#buffer#params('gina://gina.vim:commit:amend')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'commit')
       Assert Equals(params.params, ['amend'])
@@ -23,8 +23,8 @@ Describe gina#core#buffer
       Assert Equals(params.path, '')
     End
 
-    It returns a params dictionary for 'gina:gina.vim:commit:ignore-submodule'
-      let params = gina#core#buffer#params('gina:gina.vim:commit:amend:ignore-submodule')
+    It returns a params dictionary for 'gina://gina.vim:commit:ignore-submodule'
+      let params = gina#core#buffer#params('gina://gina.vim:commit:amend:ignore-submodule')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'commit')
       Assert Equals(params.params, ['amend', 'ignore-submodule'])
@@ -32,8 +32,8 @@ Describe gina#core#buffer
       Assert Equals(params.path, '')
     End
 
-    It returns a params dictionary for 'gina:gina.vim:show/HEAD:README.md'
-      let params = gina#core#buffer#params('gina:gina.vim:show/HEAD:README.md')
+    It returns a params dictionary for 'gina://gina.vim:show/HEAD:README.md'
+      let params = gina#core#buffer#params('gina://gina.vim:show/HEAD:README.md')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'show')
       Assert Equals(params.params, [])
@@ -41,8 +41,8 @@ Describe gina#core#buffer
       Assert Equals(params.path, 'README.md')
     End
 
-    It returns a params dictionary for 'gina:gina.vim:show/:README.md'
-      let params = gina#core#buffer#params('gina:gina.vim:show/:README.md')
+    It returns a params dictionary for 'gina://gina.vim:show/:README.md'
+      let params = gina#core#buffer#params('gina://gina.vim:show/:README.md')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'show')
       Assert Equals(params.params, [])
@@ -50,8 +50,8 @@ Describe gina#core#buffer
       Assert Equals(params.path, 'README.md')
     End
 
-    It returns a params dictionary for 'gina:gina.vim:show/HEAD'
-      let params = gina#core#buffer#params('gina:gina.vim:show/HEAD')
+    It returns a params dictionary for 'gina://gina.vim:show/HEAD'
+      let params = gina#core#buffer#params('gina://gina.vim:show/HEAD')
       Assert Equals(params.repo, 'gina.vim')
       Assert Equals(params.scheme, 'show')
       Assert Equals(params.params, [])

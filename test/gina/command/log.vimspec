@@ -20,7 +20,7 @@ Describe gina#command#log
         Assert Equals(bufname('%'), file)
         Gina log
         Assert Equals(winnr('$'), 2)
-        Assert Equals(bufname('%'), 'gina:valid1:log')
+        Assert Equals(bufname('%'), 'gina://valid1:log')
         Assert Equals(line('$'), 2, 'There should be two commits')
       End
 
@@ -37,7 +37,7 @@ Describe gina#command#log
         Assert Equals(bufname('%'), file)
         Gina log -- %
         Assert Equals(winnr('$'), 2)
-        Assert Equals(bufname('%'), 'gina:valid1:log/:A/foo')
+        Assert Equals(bufname('%'), 'gina://valid1:log/:A/foo')
         Assert Equals(line('$'), 1, 'There should be one commits')
       End
 
@@ -65,7 +65,7 @@ Describe gina#command#log
         Assert Equals(bufname('%'), file)
         Gina log
         Assert Equals(winnr('$'), 2)
-        Assert Equals(bufname('%'), 'gina:valid2:log')
+        Assert Equals(bufname('%'), 'gina://valid2:log')
         Assert Equals(line('$'), 2, 'There should be two commits')
       End
 
@@ -88,7 +88,7 @@ Describe gina#command#log
         Assert Equals(bufname('%'), file)
         Gina log -- %
         Assert Equals(winnr('$'), 2)
-        Assert Equals(bufname('%'), 'gina:valid2:log/:A/foo')
+        Assert Equals(bufname('%'), 'gina://valid2:log/:A/foo')
         Assert Equals(line('$'), 1, 'There should be one commits')
       End
 

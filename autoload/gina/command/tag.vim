@@ -11,7 +11,7 @@ function! gina#command#tag#call(range, args, mods) abort
     return gina#command#call('!', a:range, a:args, a:mods)
   endif
 
-  let bufname = printf('gina:%s:tag', git.refname)
+  let bufname = printf('gina://%s:tag', git.refname)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,

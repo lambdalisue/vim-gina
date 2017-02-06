@@ -28,7 +28,7 @@ Describe gina#core#repo
     End
 
     It returns a path of current buffer when {expr} is 'gina:...'
-      execute 'edit gina:gina.vim:show/HEAD:README.md'
+      execute 'edit gina://gina.vim:show/HEAD:README.md'
       let actual = gina#core#repo#expand('%')
       let expect = 'README.md'
       Assert Equals(actual, expect)
