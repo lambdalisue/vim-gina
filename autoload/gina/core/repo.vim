@@ -1,7 +1,6 @@
 let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
 
-
 function! gina#core#repo#expand(expr) abort
   if a:expr !~# '^[%#<]'
     return expand(a:expr)
@@ -25,6 +24,10 @@ function! gina#core#repo#relpath(git, path) abort
   return empty(a:git)
         \ ? s:Path.relpath(a:path)
         \ : s:Git.relpath(a:git, a:path)
+endfunction
+
+function! gina#core#repo#objpath(git, path) abort
+  return s:Path.unixpath(gina#core#repo#relpath(a:git, a:path))
 endfunction
 
 function! gina#core#repo#config(git) abort

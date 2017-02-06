@@ -10,7 +10,9 @@ function! gina#command#log#call(range, args, mods) abort
   let bufname = printf(
         \ 'gina:%s:log/%s',
         \ git.refname,
-        \ empty(args.params.path) ? '' : ':' . args.params.path,
+        \ empty(args.params.path)
+        \   ? ''
+        \   : ':' . gina#core#repo#objpath(git, args.params.path),
         \)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
