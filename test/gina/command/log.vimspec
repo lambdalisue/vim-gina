@@ -70,6 +70,9 @@ Describe gina#command#log
       End
 
       It opens a commit under the cursor with 'show' action
+        if !g:git_profile.git_support_worktree
+          Skip This git does not support 'worktree' feature.
+        endif
         Gina log
         call gina#action#call('show')
         Assert Equals(winnr('$'), 2)
@@ -90,6 +93,9 @@ Describe gina#command#log
       End
 
       It opens a content of the file on the commit under the cursor with 'show' action
+        if !g:git_profile.git_support_worktree
+          Skip This git does not support 'worktree' feature.
+        endif
         Gina log -- %
         call gina#action#call('show')
         Assert Equals(winnr('$'), 2)
