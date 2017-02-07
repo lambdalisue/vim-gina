@@ -13,7 +13,7 @@ if g:gina#command#tag#use_default_aliases
   call gina#action#shorten('branch')
   call gina#action#shorten('browse')
   call gina#action#shorten('commit')
-  call gina#action#shorten('show')
+  call gina#action#shorten('info')
 endif
 
 if g:gina#command#tag#use_default_mappings
@@ -21,5 +21,4 @@ if g:gina#command#tag#use_default_mappings
   nmap <buffer> N <Plug>(gina-branch-new)
   nmap <buffer> M <Plug>(gina-branch-move)
   nmap <buffer> D <Plug>(gina-branch-delete)
-  nmap <buffer> <C-^> <Plug>(gina-alternative)
 endif

@@ -76,6 +76,7 @@ function! s:init(args) abort
   call gina#action#include('compare')
   call gina#action#include('diff')
   call gina#action#include('edit')
+  call gina#action#include('info')
   call gina#action#include('show')
 
   augroup gina_internal_command

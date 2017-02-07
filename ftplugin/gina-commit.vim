@@ -10,5 +10,4 @@ setlocal foldcolumn=0 colorcolumn=0
 
 if g:gina#command#commit#use_default_mappings
   nmap <buffer> ! <Plug>(gina-commit-amend)
-  nmap <buffer> <C-^> <Plug>(gina-alternative)
 endif

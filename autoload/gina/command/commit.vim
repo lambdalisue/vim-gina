@@ -65,8 +65,6 @@ function! s:init(args) abort
     autocmd WinEnter * call s:WinEnter()
   augroup END
 
-  nnoremap <silent><buffer> <Plug>(gina-alternative)
-        \ :<C-u>Gina status<CR>
   nnoremap <silent><buffer> <Plug>(gina-commit-amend)
         \ :<C-u>call <SID>toggle_amend()<CR>
 endfunction

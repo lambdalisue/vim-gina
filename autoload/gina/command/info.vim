@@ -2,21 +2,19 @@ let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Path = vital#gina#import('System.Filepath')
 
 
-function! gina#command#show#call(range, args, mods) abort
+function! gina#command#info#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = printf(
-        \ 'gina://%s:show/%s',
+        \ 'gina://%s:info/%s',
         \ git.refname,
-        \ args.params.object,
+        \ args.params.commit,
         \)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
-        \ 'line': args.params.line,
-        \ 'col': args.params.col,
         \ 'callback': {
         \   'fn': function('s:init'),
         \   'args': [args],
@@ -36,14 +34,9 @@ function! s:build_args(git, args) abort
         \ args.pop('^++enc'),
         \ args.pop('^++ff'),
         \])
-  let args.params.line = args.pop('--line', v:null)
-  let args.params.col = args.pop('--col', v:null)
   let args.params.commit = gina#core#commit#resolve(a:git, args.pop(1, ''))
-  let args.params.path = gina#core#repo#objpath(
-        \ a:git, gina#core#repo#expand(get(args.residual(), 0, '%'))
-        \)
-  let args.params.object = args.params.commit . ':' . args.params.path
-  call args.set(1, args.params.object)
+  call args.set(0, 'show')
+  call args.set(1, args.params.commit)
   return args.lock()
 endfunction
 
@@ -71,5 +64,5 @@ function! s:BufReadCmd() abort
         \ gina#core#get_or_fail(),
         \ gina#core#meta#get_or_fail('args'),
         \)
-  call gina#util#doautocmd('BufRead')
+  setlocal filetype=git
 endfunction

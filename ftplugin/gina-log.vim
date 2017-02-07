@@ -12,20 +12,20 @@ setlocal foldcolumn=0 colorcolumn=0
 if g:gina#command#log#use_default_aliases
   call gina#action#shorten('browse')
   call gina#action#shorten('commit')
-  call gina#action#shorten('show')
+  call gina#action#shorten('info')
 endif
 
 if g:gina#command#log#use_default_mappings
-  nmap <buffer> <Return> <Plug>(gina-show)zv
+  nmap <buffer> <Return> <Plug>(gina-info)zv
 
-  nmap <buffer> ss <Plug>(gina-show)zv
-  nmap <buffer> SS <Plug>(gina-show-right)zv
-  nmap <buffer> sa <Plug>(gina-show-above)zv
-  nmap <buffer> sb <Plug>(gina-show-below)zv
-  nmap <buffer> sr <Plug>(gina-show-right)zv
-  nmap <buffer> sl <Plug>(gina-show-left)zv
-  nmap <buffer> sp <Plug>(gina-show-preview)zv
-  nmap <buffer> st <Plug>(gina-show-tab)zv
+  nmap <buffer> ii <Plug>(gina-info)zv
+  nmap <buffer> II <Plug>(gina-info-right)zv
+  nmap <buffer> ia <Plug>(gina-info-above)zv
+  nmap <buffer> ib <Plug>(gina-info-below)zv
+  nmap <buffer> ir <Plug>(gina-info-right)zv
+  nmap <buffer> il <Plug>(gina-info-left)zv
+  nmap <buffer> ip <Plug>(gina-info-preview)zv
+  nmap <buffer> it <Plug>(gina-info-tab)zv
 
   nmap <buffer> dd <Plug>(gina-diff)
   nmap <buffer> DD <Plug>(gina-diff-right)

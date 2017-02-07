@@ -201,6 +201,19 @@ COMMANDS					*gina-commands*
 
 	See "man git-grep" for other available {options}.
 
+						*:Gina-info*
+:Gina info [{options}] [{commit}] [-- {path}]
+	Show an index or {commit} info.
+	If no {commit} has specified, the index is used.
+	The followings are allowed in {options}
+
+	--opener={opener}
+		An opener command for the new buffer (|gina-options-opener|)
+
+	See "man git-show" for other available {options}.
+	See |:Gina-show| if you would like to see a content of a file in a
+	particular commit.
+
 						*:Gina-lcd*
 :Gina lcd [-- {path}]
 	Change a current directory to the {path} or the repository root.
@@ -299,7 +312,7 @@ COMMANDS					*gina-commands*
 
 						*:Gina-show*
 :Gina show [{options}] [{commit}] [-- {path}]
-	Show a content of {path} or the repository.
+	Open a {path} in index or {commit}.
 	If no {path} has specified, the path of the current buffer is used.
 	If no {commit} has specified, the index is used.
 	The followings are allowed in {options}
@@ -310,10 +323,9 @@ COMMANDS					*gina-commands*
 		An initial line number
 	--col={col}
 		An initial column number
-	--repository
-		Show a repository instead of the content of a specific file
 
 	See "man git-show" for other available {options}.
+	See |:Gina-info| if you would like to see a commit itself.
 
 						*:Gina-status*
 :Gina status [{options}]
