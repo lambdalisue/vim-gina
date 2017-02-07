@@ -4,6 +4,14 @@ let s:Guard = vital#gina#import('Vim.Guard')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:Path = vital#gina#import('System.Filepath')
 
+let s:DEFAULT_PARAMS_ATTRIBUTES = {
+      \ 'repo': '',
+      \ 'scheme': '',
+      \ 'params': [],
+      \ 'revision': '',
+      \ 'path': '',
+      \}
+
 function! gina#core#buffer#params(expr) abort
   let path = expand(a:expr)
   if path !~# '^gina://'
@@ -20,6 +28,19 @@ function! gina#core#buffer#params(expr) abort
         \ 'revision': m[4],
         \ 'path': m[5],
         \}
+endfunction
+
+function! gina#core#buffer#param(expr, attr, ...) abort
+  if !has_key(s:DEFAULT_PARAMS_ATTRIBUTES, a:attr)
+    throw gina#core#exception#critical(printf(
+          \ 'Unknown attribute "%s" has specified',
+          \ a:attr,
+          \))
+  endif
+  let default = get(a:000, 0, s:DEFAULT_PARAMS_ATTRIBUTES[a:attr])
+  let params = gina#core#buffer#params(a:expr)
+  let value = get(params, a:attr, '')
+  return empty(value) ? default : value
 endfunction
 
 function! gina#core#buffer#open(bufname, ...) abort
