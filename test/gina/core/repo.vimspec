@@ -1,6 +1,7 @@
 Describe gina#core#repo
   Before
     let Path = vital#gina#import('System.Filepath')
+    silent! windo bwipeout!
   End
 
   Describe #expand({expr})
@@ -40,10 +41,6 @@ Describe gina#core#repo
   End
 
   Describe #abspath({git}, {path})
-    Before
-      silent! windo bwipeout!
-    End
-
     It returns an absolute {path} of {git} working-tree
       execute 'edit' fnameescape(g:git_profile.valid1)
 
@@ -67,10 +64,6 @@ Describe gina#core#repo
   End
 
   Describe #relpath({git}, {path})
-    Before
-      silent! windo bwipeout!
-    End
-
     It returns a relative {path} from {git} working-tree
       execute 'edit' fnameescape(g:git_profile.valid1)
 
@@ -97,10 +90,6 @@ Describe gina#core#repo
   End
 
   Describe #path({git}, {path})
-    Before
-      silent! windo bwipeout!
-    End
-
     It returns an expanded unix-style relative {path} from {git} working-tree
       let path = Path.join(g:git_profile.valid1, 'A', 'foo', 'bar.txt')
       execute 'edit' fnameescape(path)
@@ -110,6 +99,18 @@ Describe gina#core#repo
             \ gina#core#repo#relpath(git, '%'),
             \ Path.unixpath('A/foo/bar.txt')
             \)
+    End
+  End
+
+  Describe #config({git})
+    It returns a config dictionary of {git} repository
+      execute 'edit' fnameescape(g:git_profile.valid1)
+
+      let git = gina#core#get()
+      let config = gina#core#repo#config(git)
+      Assert KeyExists(config, 'branch')
+      Assert KeyExists(config.branch, 'develop')
+      Assert KeyExists(config.branch, 'ext/master')
     End
   End
 End
