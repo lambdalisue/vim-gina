@@ -8,7 +8,7 @@ function! gina#command#info#call(range, args, mods) abort
   let bufname = printf(
         \ 'gina://%s:info/%s',
         \ git.refname,
-        \ args.params.commit,
+        \ args.params.object,
         \)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -35,6 +35,16 @@ function! s:build_args(git, args) abort
         \ args.pop('^++ff'),
         \])
   let args.params.commit = gina#core#commit#resolve(a:git, args.pop(1, ''))
+  let residual = args.residual()
+  if len(residual) == 1
+    let args.params.path = gina#core#repo#objpath(
+          \ a:git, gina#core#repo#expand(residual[0])
+          \)
+    let args.params.object = args.params.commit . ':' . args.params.path
+  else
+    let args.params.path = ''
+    let args.params.object = args.params.commit
+  endif
   call args.set(0, 'show')
   call args.set(1, args.params.commit)
   return args.lock()

@@ -24,11 +24,11 @@ Describe gina#command#log
         Assert Equals(line('$'), 2, 'There should be two commits')
       End
 
-      It opens a commit under the cursor with 'show' action
+      It opens a commit info under the cursor with 'info' action
         Gina log
-        call gina#action#call('show')
+        call gina#action#call('info')
         Assert Equals(winnr('$'), 2)
-        Assert Match(bufname('%'), '^gina://valid1:show/\w\+$')
+        Assert Match(bufname('%'), '^gina://valid1:info/\w\+$')
       End
     End
 
@@ -41,11 +41,11 @@ Describe gina#command#log
         Assert Equals(line('$'), 1, 'There should be one commits')
       End
 
-      It opens a content of the file on the commit under the cursor with 'show' action
+      It opens a content of the file on the commit under the cursor with 'info' action
         Gina log -- %
-        call gina#action#call('show')
+        call gina#action#call('info')
         Assert Equals(winnr('$'), 2)
-        Assert Match(bufname('%'), '^gina://valid1:show/\w\+:A/foo$')
+        Assert Match(bufname('%'), '^gina://valid1:info/\w\+:A/foo$')
       End
     End
   End
@@ -74,9 +74,9 @@ Describe gina#command#log
           Skip This git does not support 'worktree' feature.
         endif
         Gina log
-        call gina#action#call('show')
+        call gina#action#call('info')
         Assert Equals(winnr('$'), 2)
-        Assert Match(bufname('%'), '^gina://valid2:show/\w\+$')
+        Assert Match(bufname('%'), '^gina://valid2:info/\w\+$')
       End
     End
 
@@ -97,9 +97,9 @@ Describe gina#command#log
           Skip This git does not support 'worktree' feature.
         endif
         Gina log -- %
-        call gina#action#call('show')
+        call gina#action#call('info')
         Assert Equals(winnr('$'), 2)
-        Assert Match(bufname('%'), '^gina://valid2:show/\w\+:A/foo$')
+        Assert Match(bufname('%'), '^gina://valid2:info/\w\+:A/foo$')
       End
     End
   End
