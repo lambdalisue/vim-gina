@@ -26,8 +26,10 @@ function! gina#core#repo#relpath(git, path) abort
         \ : s:Git.relpath(a:git, a:path)
 endfunction
 
-function! gina#core#repo#objpath(git, path) abort
-  return s:Path.unixpath(gina#core#repo#relpath(a:git, a:path))
+function! gina#core#repo#path(git, path) abort
+  let path = gina#core#repo#expand(a:path)
+  let path = gina#core#repo#relpath(a:git, path)
+  return s:Path.unixpath(path)
 endfunction
 
 function! gina#core#repo#config(git) abort

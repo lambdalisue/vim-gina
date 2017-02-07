@@ -39,12 +39,12 @@ Describe gina#core#repo
     End
   End
 
-  Describe #abspath({path})
+  Describe #abspath({git}, {path})
     Before
       silent! windo bwipeout!
     End
 
-    It returns an absolute {path} of the current path
+    It returns an absolute {path} of {git} working-tree
       execute 'edit' fnameescape(g:git_profile.valid1)
 
       let git = gina#core#get()
@@ -54,7 +54,7 @@ Describe gina#core#repo
             \)
     End
 
-    It returns an absolute {path} from cwd when the buffer is not in a git working tree
+    It returns an absolute {path} of cwd when {git} is empty
       execute 'edit' fnameescape(g:git_profile.invalid)
       let cwd = getcwd()
       let git = {}
@@ -66,12 +66,12 @@ Describe gina#core#repo
     End
   End
 
-  Describe #relpath({path})
+  Describe #relpath({git}, {path})
     Before
       silent! windo bwipeout!
     End
 
-    It returns a relative {path} of the current path
+    It returns a relative {path} from {git} working-tree
       execute 'edit' fnameescape(g:git_profile.valid1)
 
       let git = gina#core#get()
@@ -82,7 +82,7 @@ Describe gina#core#repo
             \)
     End
 
-    It returns a relative {path} from cwd when the buffer is not in a git working tree
+    It returns a relative {path} from cwd when {git} is empty
       execute 'edit' fnameescape(g:git_profile.invalid)
 
       let cwd = getcwd()
@@ -92,6 +92,23 @@ Describe gina#core#repo
       Assert Equals(
             \ gina#core#repo#relpath(git, path),
             \ Path.realpath('A/foo/bar.txt')
+            \)
+    End
+  End
+
+  Describe #path({git}, {path})
+    Before
+      silent! windo bwipeout!
+    End
+
+    It returns an expanded unix-style relative {path} from {git} working-tree
+      let path = Path.join(g:git_profile.valid1, 'A', 'foo', 'bar.txt')
+      execute 'edit' fnameescape(path)
+
+      let git = gina#core#get()
+      Assert Equals(
+            \ gina#core#repo#relpath(git, '%'),
+            \ Path.unixpath('A/foo/bar.txt')
             \)
     End
   End

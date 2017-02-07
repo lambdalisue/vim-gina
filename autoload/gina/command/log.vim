@@ -12,7 +12,7 @@ function! gina#command#log#call(range, args, mods) abort
         \ git.refname,
         \ empty(args.params.path)
         \   ? ''
-        \   : ':' . gina#core#repo#objpath(git, args.params.path),
+        \   : ':' . args.params.path,
         \)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -38,11 +38,7 @@ function! s:build_args(git, args) abort
         \ args.pop('^++enc'),
         \ args.pop('^++ff'),
         \])
-  let args.params.path = get(args.residual(), 0, '')
-
-  if !empty(args.params.path)
-    let args.params.path = gina#core#repo#expand(args.params.path)
-  endif
+  let args.params.path = gina#core#repo#path(a:git, get(args.residual(), 0, ''))
 
   call args.set('--color', 'always')
   call args.set('--graph', 1)

@@ -39,9 +39,7 @@ function! s:build_args(git, args) abort
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
   let args.params.commit = gina#core#commit#resolve(a:git, args.pop(1, ''))
-  let args.params.path = gina#core#repo#objpath(
-        \ a:git, gina#core#repo#expand(get(args.residual(), 0, '%'))
-        \)
+  let args.params.path = gina#core#repo#path(a:git, get(args.residual(), 0, '%'))
   let args.params.object = args.params.commit . ':' . args.params.path
   call args.set(1, args.params.object)
   return args.lock()

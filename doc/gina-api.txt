@@ -331,12 +331,19 @@ gina#core#repo#relpath({git}, {path})
 	If {git} is an empty dictionary, it returns a relative path from a
 	current working directory.
 
-				*gina#core#repo#objpath()*
-gina#core#repo#objpath({git}, {path})
-	It returns an unix-like style relative path of {path} from a git
-	working-tree of {git} which is used for "object" in "git show" or
-	other related command.
+				*gina#core#repo#path()*
+gina#core#repo#path({git}, {path})
+	It returns an expanded unix-style relative path of {path} from a git
+	working-tree of {git} which is mainly used for "object" params in
+	"git show" or other related command.
 
+	This function is equivalent to
+>
+	let s:Path = vital#gina#import('System.Filepath')
+	let path = gina#core#repo#expand(path)
+	let path = gina#core#repo#relpath(git, path)
+	let path = s:Path.unixpath(path)
+<
 				*gina#core#repo#config()*
 gina#core#repo#config({git})
 	It returns a dictionary which represent a result of "git config" on a
