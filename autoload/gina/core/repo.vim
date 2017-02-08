@@ -47,8 +47,11 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:extend_config(config, record) abort
-  let m = matchlist(a:record, '^\(.*\)=\(.*\)$')
-  let keys = split(m[1], '\.')
+  let m = matchlist(a:record, '^\(.+\)=\(.*\)$')
+  if empty(m)
+    return
+  endif
+  let keys = filter(split(m[1], '\.'), '!empty(v:val)')
   let value = m[2]
   let cursor = a:config
   for key in keys[:-2]
