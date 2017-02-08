@@ -47,7 +47,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:extend_config(config, record) abort
-  let m = matchlist(a:record, '^\(.+\)=\(.*\)$')
+  let m = matchlist(a:record, '^\(.\+\)=\(.*\)$')
   if empty(m)
     return
   endif
