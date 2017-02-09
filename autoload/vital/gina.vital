@@ -10,3 +10,4 @@ Config
 System.Cache.Memory
 Data.String.Formatter
 System.Job
+Vim.Window
