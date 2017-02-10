@@ -136,6 +136,9 @@ function! s:get_commitmsg(git, args) abort
       call args.pop('-m|--message')
     endif
 
+    " Force edit mode
+    call args.pop('--no-edit')
+    call args.set('-e|--edit', 1)
     let result = gina#core#process#call(a:git, args)
     if !result.status
       " NOTE: Operation should be fail while GIT_EDITOR=false
