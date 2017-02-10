@@ -3,6 +3,7 @@ let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:Path = vital#gina#import('System.Filepath')
+let s:Window = vital#gina#import('Vim.Window')
 
 let s:DEFAULT_PARAMS_ATTRIBUTES = {
       \ 'repo': '',
@@ -79,17 +80,7 @@ function! gina#core#buffer#open(bufname, ...) abort
 endfunction
 
 function! gina#core#buffer#focus(expr) abort
-  let guard = copy(s:focus_guard)
-  let bufnr = bufnr(a:expr)
-  let winnr = bufwinnr(bufnr)
-  if bufnr == 0 || winnr == 0
-    return v:null
-  endif
-  if winnr() != winnr
-    let guard.bufnum = bufnr('%')
-    call s:focus(winnr)
-  endif
-  return guard
+  return s:Window.focus_buffer(a:expr)
 endfunction
 
 function! gina#core#buffer#assign_content(content) abort
@@ -164,15 +155,4 @@ function! s:open_with_callback(bufname, options) abort
   " Update content
   execute 'edit' a:options.cmdarg
   return context
-endfunction
-
-
-" Focus guard ----------------------------------------------------------------
-let s:focus_guard = {}
-
-function! s:focus_guard.restore() abort
-  let bufnr = get(self, 'bufnum', 0)
-  if bufnr && bufexists(bufnr)
-    call s:focus(bufwinnr(bufnr))
-  endif
 endfunction
