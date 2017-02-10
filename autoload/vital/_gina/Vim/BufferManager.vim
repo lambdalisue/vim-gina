@@ -13,8 +13,6 @@ else
   delfunction s:_SID
 endif
 " ___vital___
-" buffer manager.
-
 let s:save_cpo = &cpo
 set cpo&vim
 
@@ -31,6 +29,8 @@ endfunction
 let s:default_config = {
 \   'range': 'tabpage',
 \   'opener': 'split',
+\   'mods': '',
+\   'cmdarg': '',
 \ }
 let s:Manager = {
 \   '_config': s:default_config,
@@ -59,13 +59,17 @@ function! s:Manager.open(bufname, ...) abort
     let Opener = eval(Opener[1 :])
   endwhile
 
-  let loaded = s:B.open(a:bufname, Opener)
+  let loaded = s:B.open(a:bufname, {
+        \ 'opener': Opener,
+        \ 'mods': config.mods,
+        \ 'cmdarg': config.cmdarg,
+        \})
   let new_bufnr = bufnr('%')
   let self._bufnrs[new_bufnr] = a:bufname
 
   let info = {
   \   'loaded': loaded,
-  \   'newwin': moved,
+  \   'newwin': !moved,
   \   'newbuf': lastbuf < bufnr('%'),
   \   'bufnr': new_bufnr,
   \   'bufname': a:bufname,
@@ -124,7 +128,7 @@ function! s:Manager.list() abort
 endfunction
 
 function! s:Manager.nearest(...) abort
-  let range = s:_make_config(self, map(copy(a:000), '{"range": v:val}')).range
+  let range = s:_make_config(self, map(copy(a:000), '{''range'': v:val}')).range
 
   if range ==# 'tabpage'
     let tabpages = [tabpagenr()]
@@ -146,9 +150,9 @@ function! s:Manager.nearest(...) abort
 endfunction
 
 function! s:Manager.move(...) abort
-  let range = s:_make_config(self, map(copy(a:000), '{"range": v:val}')).range
+  let range = s:_make_config(self, map(copy(a:000), '{''range'': v:val}')).range
   if range !=# 'all' && range !=# 'tabpage'
-    return 0
+    return self.is_managed(bufnr('%'))
   endif
   let near = self.nearest(range)
   if empty(near)

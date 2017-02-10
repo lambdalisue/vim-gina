@@ -29,6 +29,7 @@ endfunction
 function! s:open(buffer, ...) abort
   let config = extend({
         \ 'mods': '',
+        \ 'cmdarg': '',
         \ 'opener': 'edit',
         \ 'group': '',
         \ 'range': 'tabpage',
@@ -43,8 +44,6 @@ function! s:open(buffer, ...) abort
   while opener[0] ==# '='
     let opener = eval(opener[1:])
   endwhile
-  let opener = config.mods . ' ' . opener
-  let opener = substitute(opener, '^\%(\s\+\|\s\+\)$', '', 'g')
 
   let preview = s:is_preview_opener(opener)
   let bufloaded = bufloaded(a:buffer)
@@ -52,10 +51,15 @@ function! s:open(buffer, ...) abort
 
   try
     if empty(config.group) || preview
-      call s:Buffer.open(a:buffer, opener)
+      call s:Buffer.open(a:buffer, {
+            \ 'mods': config.mods,
+            \ 'cmdarg': config.cmdarg,
+            \})
     else
       let manager = s:_get_buffer_manager(config.group)
       call manager.open(a:buffer, {
+            \ 'mods': config.mods,
+            \ 'cmdarg': config.cmdarg,
             \ 'opener': opener,
             \ 'range': config.range,
             \})

@@ -38,6 +38,10 @@ if has('nvim')
   " Instance -------------------------------------------------------------------
   let s:job = {}
 
+  function! s:job.id() abort
+    return self.__job
+  endfunction
+
   function! s:job.status() abort
     return self.__status
   endfunction
@@ -124,6 +128,10 @@ else
 
   " Instance -------------------------------------------------------------------
   let s:job = {}
+
+  function! s:job.id() abort
+    return str2nr(matchstr(string(self.__job), '^process \zs\d\+\ze'))
+  endfunction
 
   " NOTE:
   " On Unix a non-existing command results in "dead" instead

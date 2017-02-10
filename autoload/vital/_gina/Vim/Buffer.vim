@@ -16,14 +16,17 @@ endif
 let s:save_cpo = &cpo
 set cpo&vim
 
+let s:t_funcref = type(function('tr'))
+let s:t_string = type('')
+let s:t_number = type(0)
+
 function! s:_vital_loaded(V) abort
   let s:V = a:V
-  let s:P = s:V.import('Prelude')
-  let s:G = s:V.import('Vim.Guard')
+  let s:Guard = s:V.import('Vim.Guard')
 endfunction
 
 function! s:_vital_depends() abort
-  return ['Prelude', 'Vim.Guard']
+  return ['Vim.Guard']
 endfunction
 
 if exists('*getcmdwintype')
@@ -36,37 +39,50 @@ else
   endfunction
 endif
 
-function! s:open(buffer, opener) abort
-  let save_wildignore = &wildignore
-  let &wildignore = ''
+function! s:open(buffer, ...) abort
+  if a:0 == 1 && (type(a:1) == s:t_string || type(a:1) == s:t_funcref)
+    " For backward compatibility
+    let options = {'opener': a:1}
+  else
+    let options = get(a:000, 0, {})
+  endif
+  let options = extend({
+        \ 'mods': '',
+        \ 'cmdarg': '',
+        \ 'opener': empty(a:buffer) ? 'enew' : 'edit',
+        \}, options
+        \)
+
+  let guard = s:Guard.store(['&wildignore'])
   try
-    if s:P.is_funcref(a:opener)
+    let &wildignore = ''
+    if type(options.opener) == s:t_funcref
       let loaded = !bufloaded(a:buffer)
-      call a:opener(a:buffer)
+      call options.opener(a:buffer)
     elseif a:buffer is 0 || a:buffer is# ''
       let loaded = 1
-      silent execute a:opener
+      silent execute options.mods options.opener
       enew
     else
       let loaded = !bufloaded(a:buffer)
-      if s:P.is_string(a:buffer)
-        execute a:opener '`=a:buffer`'
-      elseif s:P.is_number(a:buffer)
-        silent execute a:opener
+      if type(a:buffer) == s:t_string
+        execute options.mods options.opener options.cmdarg '`=a:buffer`'
+      elseif type(a:buffer) == s:t_number
+        silent execute options.mods options.opener
         execute a:buffer 'buffer'
       else
-        throw 'vital: Vim.Buffer: Unknown opener type.'
+        throw 'vital: Vim.Buffer: Unknown {buffer} type.'
       endif
     endif
   finally
-    let &wildignore = save_wildignore
+    call guard.restore()
   endtry
   return loaded
 endfunction
 
 function! s:get_selected_text(...) abort
   echohl WarningMsg
-  echom "[WARN] s:get_selected_text() is deprecated. Use 's:get_last_selected()'."
+  echom "vital: Vim.Buffer: Warning: s:get_selected_text() is deprecated. Use 's:get_last_selected()'."
   echohl None
   return call('s:get_last_selected', a:000)
 endfunction
@@ -147,7 +163,7 @@ function! s:edit_content(content, ...) abort
         \ 'edit': 1,
         \ 'lockmarks': 0,
         \}, get(a:000, 0, {}))
-  let guard = s:G.store(['&l:modifiable'])
+  let guard = s:Guard.store(['&l:modifiable'])
   let saved_view = winsaveview()
   try
     let &l:modifiable=1
