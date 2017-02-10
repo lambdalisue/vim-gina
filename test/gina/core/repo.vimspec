@@ -96,7 +96,7 @@ Describe gina#core#repo
 
       let git = gina#core#get()
       Assert Equals(
-            \ gina#core#repo#relpath(git, '%'),
+            \ gina#core#repo#path(git, '%'),
             \ Path.unixpath('A/foo/bar.txt')
             \)
     End
