@@ -200,6 +200,7 @@ COMMANDS					*gina-commands*
 	|gina-action-show|
 
 	See "man git-grep" for other available {options}.
+	See |:Gina-qrep| if you prefer to use |quickfix| window instead.
 
 						*:Gina-info*
 :Gina info [{options}] [{commit}] [-- {path}]
@@ -293,6 +294,26 @@ COMMANDS					*gina-commands*
 
 	It respects 'diffopt' when opening the 2nd, 3rd buffer. Add "vertical"
 	to the option if you prefer to open the 2nd, 3rd buffer vertically.
+
+						*:Gina-qrep*
+:Gina qrep[!] [{options}]
+	NOTE: Experimental feature
+
+	Like |:Gina-grep| but it uses |quickfix| window to show the result.
+	
+	It tries to mimic a Vim's builtin |:grep| command. So
+	1. Use |:silent| if you would like to suppress the message
+	2. Use a bang (!) if you don't want to focus the first candidate
+	3. Use |QuickFixCmdPre| if you need some prior operation
+	4. Use |QuickFixCmdPost| if you need some posterior operation (such as
+	   an opening |quickfix| window)
+
+	The followings are allowed in {options}
+
+	--action={action}
+		An action which is specified to |setqflist()|.
+
+	See "man git-grep" for other available {options}.
 
 						*:Gina-reflog*
 :Gina reflog [{options}]

@@ -22,7 +22,9 @@ function! gina#command#call(bang, range, args, mods) abort
     endif
     return
   endif
-  let scheme = substitute(matchstr(a:args, '^\S\+'), '\W', '_', 'g')
+  let scheme = matchstr(a:args, '^\S\+')
+  let scheme = substitute(scheme, '!$', '', '')
+  let scheme = substitute(scheme, '\W', '_', 'g')
   try
     call gina#core#exception#call(
           \ printf('gina#command#%s#call', scheme),
@@ -43,7 +45,9 @@ function! gina#command#complete(arglead, cmdline, cursorpos) abort
     return gina#complete#common#command(a:arglead, a:cmdline, a:cursorpos)
   endif
   let cmdline = matchstr(a:cmdline, '^Gina\s\+\zs.*')
-  let scheme = substitute(matchstr(cmdline, '^\S\+'), '\W', '_', 'g')
+  let scheme = matchstr(cmdline, '^\S\+')
+  let scheme = substitute(scheme, '!$', '', '')
+  let scheme = substitute(scheme, '\W', '_', 'g')
   try
     return gina#core#exception#call(
           \ printf('gina#command#%s#complete', scheme),

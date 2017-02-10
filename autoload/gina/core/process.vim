@@ -5,6 +5,7 @@ let s:Console = vital#gina#import('Vim.Console')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Job = vital#gina#import('System.Job')
 let s:Queue = vital#gina#import('Data.Queue')
+let s:String = vital#gina#import('Data.String')
 
 let s:t_dict = type({})
 
@@ -55,7 +56,9 @@ function! gina#core#process#inform(result) abort
   if a:result.status
     call s:Console.warn('Fail: ' . join(a:result.args))
   endif
-  call s:Console.echo(join(a:result.content, "\n"))
+  call s:Console.echo(s:String.remove_ansi_sequences(
+        \ join(a:result.content, "\n"))
+        \)
 endfunction
 
 function! gina#core#process#error(result) abort

@@ -25,6 +25,10 @@ function! gina#command#grep#call(range, args, mods) abort
         \})
 endfunction
 
+function! gina#command#grep#parse_record(git, record) abort
+  return s:parse_record(a:git, a:record)
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
