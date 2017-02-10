@@ -4,21 +4,10 @@ let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Job = vital#gina#import('System.Job')
-let s:Path = vital#gina#import('System.Filepath')
 let s:Queue = vital#gina#import('Data.Queue')
 let s:String = vital#gina#import('Data.String')
 
 let s:t_dict = type({})
-let s:repository_root = expand('<sfile>:p:h:h:h:h')
-let s:askpass_program = s:Path.join(s:repository_root, 'scripts', 'askpass')
-if has('win32') || has('win64')
-  let s:askpass_program .= '.windows'
-elseif has('mac') || has('macunix')
-  let s:askpass_program .= '.mac'
-else
-  " zenity is available on most of linux
-  let s:askpass_program .= '.zenity'
-endif
 
 
 function! gina#core#process#open(git, args, ...) abort
@@ -90,17 +79,8 @@ function! s:build_args(git, extra) abort
     let args.raw += ['-C', a:git.worktree]
   endif
   call extend(args.raw, type(a:extra) == s:t_dict ? a:extra.raw : a:extra)
-  call filter(map(args.raw, 's:expand(v:val)'), '!empty(v:val)')
-  " To use a custom askpass, at least an environment variable named
-  " GIT_TERMINAL_PROMPT is required to be 0 to disable terminal prompt.
-  " So it is a bit tricky but use &shell/&shellcmdflag to execute the
-  " process inside a shell so that the environment variable is only
-  " modified in the shell.
-  let args.raw = [
-        \ 'GIT_TERMINAL_PROMPT=0',
-        \ 'GIT_ASKPASS=' . s:askpass_program,
-        \] + args.raw
-  let args.raw = split(&shell) + split(&shellcmdflag) + [join(args.raw)]
+  call map(args.raw, 's:expand(v:val)')
+  call filter(args.raw, '!empty(v:val)')
   return args
 endfunction
 
