@@ -14,6 +14,12 @@ function! gina#action#branch#define(binder) abort
         \ 'requirements': ['branch'],
         \ 'options': {},
         \})
+  call a:binder.define('branch:checkout:track', function('s:on_checkout'), {
+        \ 'description': 'Checkout a branch and create a local branch',
+        \ 'mapping_mode': 'n',
+        \ 'requirements': ['branch'],
+        \ 'options': {'track': 1},
+        \})
   call a:binder.define('branch:delete', function('s:on_delete'), {
         \ 'description': 'Delete a branch',
         \ 'mapping_mode': 'nv',
@@ -70,12 +76,26 @@ function! s:on_checkout(candidates, options) abort
     return
   endif
   let git = gina#core#get_or_fail()
-  let options = extend({}, a:options)
+  let options = extend({
+        \ 'track': 0,
+        \}, a:options)
   for candidate in a:candidates
-    execute printf(
-          \ 'Gina checkout %s',
-          \ gina#util#shellescape(candidate.branch),
-          \)
+    let is_remote = !empty(get(candidate, 'remote'))
+    let branch = is_remote
+          \ ? substitute(candidate.branch, '^origin/', '', '')
+          \ : candidate.branch
+    if is_remote && options.track
+      execute printf(
+            \ 'Gina checkout -b %s %s',
+            \ gina#util#shellescape(branch),
+            \ gina#util#shellescape(candidate.branch),
+            \)
+    else
+      execute printf(
+            \ 'Gina checkout %s',
+            \ gina#util#shellescape(candidate.branch),
+            \)
+    endif
   endfor
 endfunction
 
