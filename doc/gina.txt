@@ -18,6 +18,7 @@ Interface			|gina-interface|
   Functions			|gina-functions|
   Options			|gina-options|
   Actions			|gina-actions|
+ASKPASS				|gina-askpass|
 
 
 =============================================================================
@@ -612,6 +613,107 @@ show:right
 show:tab
 show:preview
 	Show a content in the index or the commit.
+
+=============================================================================
+ASKPASS						*gina-askpass*
+
+When git requires username or password (e.g. git pull on a repository linked
+with https://), it use a program called "askpass".
+While gina.vim execute a git command through a job feature, a terminal based
+askpass program which git provides cannot be used.
+To solve this issue, gina.vim try to use a GUI based askpass program instead.
+
+-----------------------------------------------------------------------------
+LINUX						*gina-askpass-linux*
+
+There is a well known GUI based askpass program called "ssh-askpass-gnome".
+Users should install the program and set the executable path to one of these
+
+1. "$GIT_ASKPASS" environment variable
+2. "core.askpass" with "git config --global core.askpass=..."
+3. "$SSH_ASKPASS" environment variable
+
+When no available askpass program could be detected from above, gina.vim use
+an internal askpass script based on "zenity" when "zenity" is executable.
+Otherwise a git command which requires username and/or password always fail.
+
+In short, Linux users should do one of
+
+- Install "ssh-askpass-gnome" and configure it properly
+- Install "zenity"
+
+To enable username and/or password interactive input.
+
+See "scripts/askpass.zenity" if you would like to check what the script does.
+
+-----------------------------------------------------------------------------
+MAC						*gina-askpass-mac*
+
+gina.vim provides an internal askpass script based on an AppleScript.
+The script should be available on any Unix based Mac.
+
+In short, Mac uses should do nothing to enable username and/or password
+interactive input.
+
+See "scripts/askpass.mac" if you would like to check what the script does.
+
+-----------------------------------------------------------------------------
+WINDOWS						*gina-askpass-windows*
+
+There is a GUI based askpass program called "win-ssh-askpass".
+Users should install the program and set executable path to one of these
+
+1. "$GIT_ASKPASS" environment variable
+2. "core.askpass" with "git config --global core.askpass=..."
+3. "$SSH_ASKPASS" environment variable
+
+When no available askpass program could be detected from above, gina.vim use
+an internal askpass script (Not implemented yet).
+Otherwise a git command which requires username and/or password always fail.
+
+Additionally, while Windows does not provide Unix's "env" like command, users
+should set "$GIT_TERMINAL_PROMPT" environment variable to "0" by themselves.
+See |gina-askpass-GIT_TERMINAL_PROMPT| for more detail.
+
+In short, Windows users should
+
+1. Install "win-ssh-askpass" and configure it properly
+2. Add "let $GIT_TERMINAL_PROMPT = '0'" to somewhere in your vimrc
+
+To enable username and/or password interactive input.
+
+-----------------------------------------------------------------------------
+GIT_TERMINAL_PROMPT			 *gina-askpass-GIT_TERMINAL_PROMPT*
+
+A git fallback to use a builtin terminal based askpass program when git
+failed to use a specified askpass OR when a specified askpass program returns
+an empty value.
+So the terminal based askpass program will called when user cancel GUI based
+askpass program and gina.vim cannot treat the terminal based askpass program
+correctly.
+So users should set "$GIT_TERMINAL_PROMPT = 0" to tell git to disable the
+terminal based askpass program.
+
+In Unix-like platform (Linux/Mac), it is configured by gina.vim automatically
+while an "env" command is available on this platform to temporary set the
+environment variable. So users do not need to consider about this.
+
+In Windows, it is not configured automatically due to the lack of "env" like
+program on this platform. So users SHOULD configure this environment variable
+by themselves.
+
+However $GIT_TERMINAL_PROMPT disable a terminal based askpass program,
+indicating that configure it without assinging a proper askpass program to
+$GIT_ASKPASS, core.askpass, or $SSH_ASKPASS would make it impossible to input
+username and/or password when git requires.
+That's why the $GIT_TERMINAL_PROMPT should be configured only in the Vim's
+live session. To do that, use |let-$| syntax to configure it in Vim like
+>
+	let $GIT_TERMINAL_PROMPT = "0"
+<
+Note that :terminal command in Neovim or :VimShell command provided by
+Shougo/vimshell.vim would be effected by the setting above as well.
+
 
 =============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

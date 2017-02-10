@@ -4,10 +4,14 @@ let s:Config = vital#gina#import('Config')
 let s:Console = vital#gina#import('Vim.Console')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Job = vital#gina#import('System.Job')
+let s:Path = vital#gina#import('System.Filepath')
 let s:Queue = vital#gina#import('Data.Queue')
 let s:String = vital#gina#import('Data.String')
 
 let s:t_dict = type({})
+let s:no_askpass_commands = [
+      \ 'config',
+      \]
 
 
 function! gina#core#process#open(git, args, ...) abort
@@ -73,14 +77,17 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, extra) abort
   let args = s:Argument.new(g:gina#core#process#command)
+  let extra = type(a:extra) == s:t_dict ? a:extra : s:Argument.new(a:extra)
   if !empty(a:git) && isdirectory(a:git.worktree)
     " NOTE
     " git does not recognize -C{worktree} so "args.set()" could not be used
     let args.raw += ['-C', a:git.worktree]
   endif
-  call extend(args.raw, type(a:extra) == s:t_dict ? a:extra.raw : a:extra)
-  call map(args.raw, 's:expand(v:val)')
-  call filter(args.raw, '!empty(v:val)')
+  call extend(args.raw, extra.raw)
+  call filter(map(args.raw, 's:expand(v:val)'), '!empty(v:val)')
+  if index(s:no_askpass_commands, extra.get(0)) == -1
+    call gina#core#askpass#wrap(a:git, args)
+  endif
   return args
 endfunction
 
