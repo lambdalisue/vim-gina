@@ -1,5 +1,6 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Buffer = vital#gina#import('Vim.Buffer')
+let s:Exception = vital#gina#import('Vim.Exception')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:Path = vital#gina#import('System.Filepath')
@@ -128,6 +129,7 @@ endfunction
 function! s:open_without_callback(bufname, options) abort
   let context = s:Opener.open(a:bufname, {
         \ 'mods': a:options.mods,
+        \ 'cmdarg': a:options.cmdarg,
         \ 'group':  a:options.group,
         \ 'opener': a:options.opener,
         \})
@@ -147,11 +149,20 @@ function! s:open_with_callback(bufname, options) abort
   finally
     call guard.restore()
   endtry
+  " NOTE:
+  " The content of the buffer MUST NOT be modified by callback while 'edit'
+  " command will be called to override the content later.
+  let content = getline(1, '$')
   call call(
         \ a:options.callback.fn,
-        \ a:options.callback.args,
+        \ get(a:options.callback, 'args', []),
         \ a:options.callback
         \)
+  if content != getline(1, '$')
+    throw s:Exception.critical(
+          \ 'A buffer content could not be modified by callback'
+          \)
+  endif
   " Update content
   if !&modified
     execute 'edit' a:options.cmdarg

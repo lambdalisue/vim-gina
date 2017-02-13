@@ -1,4 +1,8 @@
 Describe gina#core#buffer
+  Before all
+    let is_windows = has('win32') || has('win64')
+  End
+
   Describe #params({expr})
     It returns an empty dictionary when {bufname} does not start from 'gina:'
       let params = gina#core#buffer#params('autoload/gina.vim')
@@ -101,6 +105,300 @@ Describe gina#core#buffer
       Assert Equals(gina#core#buffer#param(expr, 'params'), ['cached'])
       Assert Equals(gina#core#buffer#param(expr, 'revision'), 'HEAD')
       Assert Equals(gina#core#buffer#param(expr, 'path'), 'README.md')
+    End
+  End
+
+  Describe #open({bufname}, [, {options}])
+    Before
+      silent! bufdo! bwipeout!
+    End
+
+    It opens a new {bufname} buffer and return an informatio context
+      edit foo1
+      new foo2
+      let context = gina#core#buffer#open('foo3')
+      Assert Equals(winnr('$'), 2)
+      Assert Equals(bufname('%'), 'foo3')
+      Assert KeyExists(context, 'bufexists')
+      Assert KeyExists(context, 'bufloaded')
+      Assert KeyExists(context, 'bufname')
+      Assert KeyExists(context, 'bufnr')
+      Assert KeyExists(context, 'preview')
+      Assert Equals(context.bufexists, 0)
+      Assert Equals(context.bufloaded, 0)
+      Assert Equals(context.bufname, 'foo3')
+      Assert Equals(context.bufnr, bufnr('%'))
+      Assert Equals(context.preview, 0)
+    End
+
+    It focus a {bufname} buffer when exist and return an informatio context
+      edit foo1
+      new foo2
+      let context = gina#core#buffer#open('foo1')
+      Assert Equals(winnr('$'), 2)
+      Assert Equals(bufname('%'), 'foo1')
+      Assert KeyExists(context, 'bufexists')
+      Assert KeyExists(context, 'bufloaded')
+      Assert KeyExists(context, 'bufname')
+      Assert KeyExists(context, 'bufnr')
+      Assert KeyExists(context, 'preview')
+      Assert Equals(context.bufexists, 1)
+      Assert Equals(context.bufloaded, 1)
+      Assert Equals(context.bufname, 'foo1')
+      Assert Equals(context.bufnr, bufnr('%'))
+      Assert Equals(context.preview, 0)
+    End
+
+    Context Buffer name normalization
+      It remove leading/trailing whitespaces in {bufname}
+        let context = gina#core#buffer#open('  foo  ')
+        Assert Equals(bufname('%'), 'foo')
+      End
+
+      It remove trailing : in {bufname}
+        let context = gina#core#buffer#open('foo:::')
+        Assert Equals(bufname('%'), 'foo')
+      End
+
+      It remove trailing / in {bufname}
+        let context = gina#core#buffer#open('foo///')
+        Assert Equals(bufname('%'), 'foo')
+      End
+
+      It remove trailing \ in {bufname}
+        let context = gina#core#buffer#open('foo\\\')
+        Assert Equals(bufname('%'), 'foo')
+      End
+
+      It recursively remove aboves
+        let context = gina#core#buffer#open(' foo :/\ :/\ :/\')
+        Assert Equals(bufname('%'), 'foo')
+      End
+    End
+
+    Context Anchoring before open
+      It does not moves focus before opening a new {bufname} if a current window is suitable for opening a buffer
+        edit foo1
+        new foo2
+        let context = gina#core#buffer#open('foo3')
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname(winbufnr(1)), 'foo3')
+        Assert Equals(bufname(winbufnr(2)), 'foo1')
+      End
+
+      It moves focus before opening a new {bufname} if a current window is not suitable for opening a buffer
+        edit foo1
+        new foo2 | setlocal buftype=nofile
+        let context = gina#core#buffer#open('foo3')
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname(winbufnr(1)), 'foo2')
+        Assert Equals(bufname(winbufnr(2)), 'foo3')
+      End
+    End
+
+    Context {options.mod}
+      It opens a new {bufname} with respecting {options.mods}
+        edit foo1
+        let options = {'opener': 'split'}
+        call gina#core#buffer#open('foo2', options)
+        Assert Equals(bufname(winbufnr(1)), 'foo2')
+        Assert Equals(bufname(winbufnr(2)), 'foo1')
+
+        let options.mods = 'botright'
+        call gina#core#buffer#open('foo3', options)
+        Assert Equals(bufname(winbufnr(1)), 'foo2')
+        Assert Equals(bufname(winbufnr(2)), 'foo1')
+        Assert Equals(bufname(winbufnr(3)), 'foo3')
+      End
+    End
+
+    Context {options.opener}
+      It opens a new {bufname} buffer with {options.opener}
+        edit foo1
+        call gina#core#buffer#open('foo2')
+        Assert Equals(winnr('$'), 1)
+        Assert Equals(bufname(winbufnr(1)), 'foo2')
+
+        let options = {'opener': 'split'}
+        call gina#core#buffer#open('foo3', options)
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname(winbufnr(1)), 'foo3')
+        Assert Equals(bufname(winbufnr(2)), 'foo2')
+
+        let options = {'opener': 'botright split'}
+        call gina#core#buffer#open('foo4', options)
+        Assert Equals(winnr('$'), 3)
+        Assert Equals(bufname(winbufnr(1)), 'foo3')
+        Assert Equals(bufname(winbufnr(2)), 'foo2')
+        Assert Equals(bufname(winbufnr(3)), 'foo4')
+      End
+    End
+
+    Context {options.cmdarg}
+      It opens a new {bufname} with {cmdarg}
+        call gina#core#buffer#open('foo', {
+              \ 'cmdarg': '++enc=sjis ++ff=mac'
+              \})
+        Assert Equals(&fileencoding, 'sjis')
+        Assert Equals(&fileformat, 'mac')
+      End
+
+      It focus a new {bufname} with {cmdarg}
+        edit foo
+        Assert Equals(&fileencoding, '')
+        Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+
+        call gina#core#buffer#open('foo', {
+              \ 'cmdarg': '++enc=sjis ++ff=mac'
+              \})
+        Assert Equals(&fileencoding, 'sjis')
+        Assert Equals(&fileformat, 'mac')
+      End
+
+      It opens a new {bufname} with {cmdarg} with {group}
+        call gina#core#buffer#open('foo', {
+              \ 'group': 'short',
+              \ 'cmdarg': '++enc=sjis ++ff=mac'
+              \})
+        Assert Equals(&fileencoding, 'sjis')
+        Assert Equals(&fileformat, 'mac')
+      End
+
+      It focus a new {bufname} with {cmdarg} with {group}
+        call gina#core#buffer#open('foo', {
+              \ 'group': 'short',
+              \})
+        Assert Equals(&fileencoding, '')
+        Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+
+        call gina#core#buffer#open('foo', {
+              \ 'group': 'short',
+              \ 'cmdarg': '++enc=sjis ++ff=mac'
+              \})
+        Assert Equals(&fileencoding, 'sjis')
+        Assert Equals(&fileformat, 'mac')
+      End
+    End
+
+    Context {options.callback}
+      It throws an exception if a content of the buffer has modified by callback function
+        let callback = {}
+
+        function! callback.fn() abort
+          call append(0, ['This should not be allowed.'])
+        endfunction
+
+        Throws /A buffer content could not be modified by callback/
+              \ gina#core#buffer#open('foo', {'callback': callback})
+      End
+
+      It calls a callback funcion on a opened buffer in any case
+        let options = {}
+        let options.callback = {}
+        function! options.callback.fn() abort
+          let b:gina_core_buffer_called = 1
+        endfunction
+
+        let context = gina#core#buffer#open('foo1', options)
+        Assert Equals(bufnr('%'), context.bufnr)
+        Assert Equals(getbufvar(context.bufnr, 'gina_core_buffer_called'), 1)
+
+        let options.opener = 'pedit'
+        let context = gina#core#buffer#open('foo2', options)
+        Assert NotEquals(bufnr('%'), context.bufnr)
+        Assert Equals(getbufvar(context.bufnr, 'gina_core_buffer_called'), 1)
+      End
+
+      It calls a callback function on a focused buffer in any case
+        edit foo1
+        new foo2
+
+        let options = {}
+        let options.callback = {}
+        function! options.callback.fn() abort
+          let b:gina_core_buffer_called = 1
+        endfunction
+
+        let context = gina#core#buffer#open('foo1', options)
+        Assert Equals(bufnr('%'), context.bufnr)
+        Assert Equals(getbufvar(context.bufnr, 'gina_core_buffer_called'), 1)
+        bwipeout!
+      End
+
+      It calls a callback with {args}
+        let options = {}
+        let options.callback = {}
+        function! options.callback.fn(...) abort
+          let b:gina_core_buffer_called = a:000
+        endfunction
+
+        let options.callback.args = ['foo', 'bar']
+        let context = gina#core#buffer#open('foo1', options)
+        Assert Equals(b:gina_core_buffer_called, ['foo', 'bar'])
+      End
+    End
+
+    Context {options.group}
+      It reuses an opend window which opens a buffer with same {options.group}
+        edit foo1
+        call gina#core#buffer#open('foo2', {
+              \ 'opener': 'split',
+              \ 'group': 'short',
+              \})
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname(winbufnr(1)), 'foo2')
+        Assert Equals(bufname(winbufnr(2)), 'foo1')
+
+        call gina#core#buffer#open('foo3', {
+              \ 'opener': 'split',
+              \ 'group': 'short',
+              \})
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname(winbufnr(1)), 'foo3')
+        Assert Equals(bufname(winbufnr(2)), 'foo1')
+      End
+    End
+  End
+
+  Describe #focus({expr})
+    " NOTE:
+    " This feature is already tested in Vital.Vim.Window
+  End
+
+  Describe #assign_content({content})
+    It assign {content} to the current buffer without modifing marks
+      call setline(1, ['a', 'b', 'c', 'd', 'e'])
+      normal! gg
+      normal ma
+      normal jmb
+      normal jmc
+      normal jmd
+      normal jme
+      Assert Equals(len(split(execute('marks abcde'), '\r\?\n')), 5 + 1)
+
+      call gina#core#buffer#assign_content(['A', 'B', 'C', 'D', 'E'])
+      Assert Equals(len(split(execute('marks abcde'), '\r\?\n')), 5 + 1)
+    End
+  End
+
+  Describe #extend_content({content})
+    It extends a content of the current buffer with {content} without modifing marks
+      call setline(1, ['a', 'b', 'c', 'd', 'e'])
+      normal! gg
+      normal ma
+      normal jmb
+      normal jmc
+      normal jmd
+      normal jme
+      Assert Equals(len(split(execute('marks abcde'), '\r\?\n')), 5 + 1)
+
+      call gina#core#buffer#extend_content(['A', 'B', 'C', 'D', 'E'])
+      Assert Equals(getline(1, '$'), [
+            \ 'a', 'b', 'c', 'd',
+            \ 'eA',
+            \ 'B', 'C', 'D', 'E',
+            \])
+      Assert Equals(len(split(execute('marks abcde'), '\r\?\n')), 5 + 1)
     End
   End
 End
