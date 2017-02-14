@@ -74,18 +74,18 @@ endfunction
 
 function! s:parse_revision(git, revision) abort
   if a:revision =~# '^.\{-}\.\.\..*$'
-    let [commit1, commit2] = gina#core#commit#split(a:git, a:revision)
+    let [commit1, commit2] = gina#core#revision#split(a:git, a:revision)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
   elseif a:revision =~# '^.\{-}\.\..*$'
-    let [commit1, commit2] = gina#core#commit#split(a:git, a:revision)
+    let [commit1, commit2] = gina#core#revision#split(a:git, a:revision)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
   else
     let commit1 = empty(a:revision) ? 'HEAD' : a:revision
     let commit2 = 'HEAD'
   endif
-  let commit0 = gina#core#commit#resolve(a:git, a:revision)
+  let commit0 = gina#core#revision#resolve(a:git, a:revision)
   let commit0 = empty(commit0) ? 'HEAD' : commit0
 
   let ref0 = s:Git.ref(a:git, commit0)

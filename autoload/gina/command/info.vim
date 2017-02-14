@@ -34,7 +34,7 @@ function! s:build_args(git, args) abort
         \ args.pop('^++enc'),
         \ args.pop('^++ff'),
         \])
-  let args.params.commit = gina#core#commit#resolve(a:git, args.pop(1, ''))
+  let args.params.commit = gina#core#revision#resolve(a:git, args.pop(1, ''))
   let residual = args.residual()
   if len(residual) == 1
     let args.params.path = gina#core#repo#path(a:git, residual[0])

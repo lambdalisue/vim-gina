@@ -7,7 +7,7 @@ function! gina#command#compare#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
-  let [commit1, commit2] = gina#core#commit#split(
+  let [commit1, commit2] = gina#core#revision#split(
         \ git, args.params.commit
         \)
   if args.params.cached
