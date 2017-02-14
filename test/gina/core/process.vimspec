@@ -1,0 +1,147 @@
+Describe gina#core#process
+  Before all
+    let Argument = vital#gina#import('Argument')
+  End
+
+  Describe #open({git}, {args} [, {options}])
+    Before
+      let options = {'stdout': [], 'stderr': []}
+
+      function! options.on_stdout(job, msg, event) abort
+        call extend(self.stdout, a:msg)
+      endfunction
+
+      function! options.on_stderr(job, msg, event) abort
+        call extend(self.stderr, a:msg)
+      endfunction
+    End
+
+    It opens an {args} of {git} and returns a job instance
+      execute 'edit' fnameescape(g:git_profile.valid1)
+      let git = gina#core#get()
+      let job = gina#core#process#open(git, ['branch'], options)
+      call job.wait()
+      Assert Equals(job.stdout, ['  develop', '  ext/master', '* master', ''])
+      Assert Equals(job.stderr, [])
+    End
+  End
+
+  Describe #call({git}, {args} [, {options}])
+    It calls an {args} of {git} and returns a result instance
+      execute 'edit' fnameescape(g:git_profile.valid1)
+      let git = gina#core#get()
+      let result = gina#core#process#call(git, ['branch'])
+      Assert Equals(result.status, 0)
+      Assert Equals(result.stdout, ['  develop', '  ext/master', '* master'])
+      Assert Equals(result.stderr, [])
+      Assert Equals(result.content, ['  develop', '  ext/master', '* master'])
+    End
+  End
+
+  Describe #exec({git}, {args})
+    Before
+      let tracker = {
+            \ 'command_called_called_count': 0,
+            \ 'command_called_args': [],
+            \}
+
+      function! tracker.command_called(...) abort
+        let self.command_called_called_count += 1
+        let self.command_called_args = a:000
+      endfunction
+
+      call gina#core#emitter#subscribe(
+            \ 'command:called',
+            \ tracker.command_called, tracker,
+            \)
+    End
+
+    After
+      call gina#core#emitter#unsubscribe(
+            \ 'command:called',
+            \ tracker.command_called, tracker,
+            \)
+    End
+
+    Context No async
+      It calls an {args} of {git} and assign the result content into the current buffer
+        execute 'edit' fnameescape(g:git_profile.valid1)
+        let git = gina#core#get()
+        let args = Argument.new(['branch'])
+        call gina#core#process#exec(git, args)
+        Assert Equals(getline(1, '$'), ['  develop', '  ext/master', '* master'])
+      End
+
+      It emits 'command:called' event with a command scheme
+        execute 'edit' fnameescape(g:git_profile.valid1)
+        let git = gina#core#get()
+        let args = Argument.new(['branch'])
+        call gina#core#process#exec(git, args)
+        Assert Equals(tracker.command_called_called_count, 1)
+        Assert Equals(tracker.command_called_args, ['branch'])
+      End
+    End
+
+    Context Async
+      It calls an {args} of {git} and assign the result content into the current buffer
+        execute 'edit' fnameescape(g:git_profile.valid1)
+        let git = gina#core#get()
+        let args = Argument.new(['branch'])
+        let args.params = {'async': 1}
+        call gina#core#process#exec(git, args)
+        Assert Equals(getline(1, '$'), [''])
+        " git branch shonld terminate within 100ms usually
+        sleep 100m
+        Assert Equals(getline(1, '$'), ['  develop', '  ext/master', '* master'])
+      End
+
+      It emits 'command:called' event with a command scheme
+        execute 'edit' fnameescape(g:git_profile.valid1)
+        let git = gina#core#get()
+        let args = Argument.new(['branch'])
+        let args.params = {'async': 1}
+        call gina#core#process#exec(git, args)
+        Assert Equals(tracker.command_called_called_count, 0)
+        Assert Equals(tracker.command_called_args, [])
+        " git branch shonld terminate within 100ms usually
+        sleep 100m
+        Assert Equals(tracker.command_called_called_count, 1)
+        Assert Equals(tracker.command_called_args, ['branch'])
+      End
+    End
+  End
+
+  Describe #inform({result})
+    It shows a result content when success
+      execute 'edit' fnameescape(g:git_profile.valid1)
+      let git = gina#core#get()
+      let result = gina#core#process#call(git, ['branch'])
+      let output = split(execute('call gina#core#process#inform(result)'), '\r\?\n')
+      Assert Equals(output, [
+            \ '  develop',
+            \ '  ext/master',
+            \ '* master',
+            \])
+    End
+
+    It shows an args as well when fail
+      execute 'edit' fnameescape(g:git_profile.valid1)
+      let git = gina#core#get()
+      let result = gina#core#process#call(git, ['unknown-command'])
+      let output = split(execute('call gina#core#process#inform(result)'), '\r\?\n')
+      Assert Match(output[0], '^Fail: git .* unknown-command$')
+      Assert Equals(output[1], 'git: ''unknown-command'' is not a git command. See ''git --help''.')
+    End
+  End
+
+  Describe #error({result})
+    It returns an error message for the {result}
+      execute 'edit' fnameescape(g:git_profile.valid1)
+      let git = gina#core#get()
+      let result = gina#core#process#call(git, ['unknown-command'])
+      let output = split(gina#core#process#error(result), '\r\?\n')
+      Assert Match(output[0], '^vital: Vim.Exception: Error: Fail: git .* unknown-command$')
+      Assert Equals(output[1], 'git: ''unknown-command'' is not a git command. See ''git --help''.')
+    End
+  End
+End
