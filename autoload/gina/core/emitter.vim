@@ -29,7 +29,7 @@ function! s:on_modified_delay() abort
   endif
   let s:modified_timer = timer_start(
         \ g:gina#core#emitter#modified_delay,
-        \ function('s:on_modified')
+        \ function('s:emit_modified')
         \)
 endfunction
 
@@ -37,21 +37,27 @@ function! s:on_command_called_raw(scheme) abort
   call gina#core#emitter#emit('modified:delay')
 endfunction
 
-call gina#core#emitter#subscribe(
-      \ 'modified',
-      \ function('s:on_modified')
-      \)
+function! s:emit_modified(...) abort
+  call gina#core#emitter#emit('modified')
+endfunction
 
-call gina#core#emitter#subscribe(
-      \ 'modified:delay',
-      \ function('s:on_modified_delay')
-      \)
+if !exists('s:subscribed')
+  let s:subscribed = 1
+  call gina#core#emitter#subscribe(
+        \ 'modified',
+        \ function('s:on_modified')
+        \)
 
-call gina#core#emitter#subscribe(
-      \ 'command:called:raw',
-      \ function('s:on_command_called_raw')
-      \)
+  call gina#core#emitter#subscribe(
+        \ 'modified:delay',
+        \ function('s:on_modified_delay')
+        \)
 
+  call gina#core#emitter#subscribe(
+        \ 'command:called:raw',
+        \ function('s:on_command_called_raw')
+        \)
+endif
 
 " Emit 'modified' when a file content is modified ----------------------------
 function! s:on_BufWritePre() abort
