@@ -9,9 +9,7 @@ function! gina#command#call(bang, range, args, mods) abort
   if a:bang ==# '!'
     let git = gina#core#get()
     let args = gina#command#parse_args(a:args)
-    let args.params = {}
     let args.params.scheme = args.get(0, '')
-    let args.params.async = args.pop('--async')
     if args.params.async
       let options = copy(s:async_process)
       let options.params = args.params
@@ -71,6 +69,18 @@ function! gina#command#parse_args(args) abort
       call args.set(query, value)
     endif
   endfor
+  " Normalize user-input pathlist to absolute pathlist
+  let pathlist = args.residual()
+  if !empty(pathlist)
+    call args.residual(map(pathlist, 'gina#core#path#expand(v:val)'))
+  endif
+  " Assig global params
+  let args.params = {}
+  let args.params.async = args.pop('--async')
+  let args.params.cmdarg = join([
+        \ args.pop('^++enc'),
+        \ args.pop('^++ff'),
+        \])
   return args
 endfunction
 

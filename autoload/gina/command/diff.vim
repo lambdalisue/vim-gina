@@ -2,12 +2,13 @@ function! gina#command#diff#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
-  let bufname = printf(
-        \ 'gina://%s:diff%s/%s',
-        \ git.refname,
-        \ args.params.cached ? ':cached' : '',
-        \ args.params.object,
-        \)
+  let bufname = gina#core#buffer#bufname(git, 'diff', {
+        \ 'revision': args.params.revision,
+        \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
+        \ 'params': [
+        \   args.params.cached ? 'cached' : '',
+        \ ],
+        \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -24,35 +25,26 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
-  let args.params.async = args.get('--async')
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.cmdarg = join([
-        \ args.pop('^++enc'),
-        \ args.pop('^++ff'),
-        \])
-  let args.params.repository = args.pop('--repository')
   let args.params.cached = args.get('--cached')
-  let args.params.commit = args.get(1, '')
 
-  let args.params.path = ''
-  let args.params.object = args.params.commit
-  if args.params.repository
-    let pathlist = []
+  let pathlist = copy(args.residual())
+  if empty(pathlist)
+    let args.params.revision = args.get(1, gina#core#buffer#param('%', 'revision'))
+    let args.params.abspath = gina#core#path#abspath('%')
+    let pathlist = [args.params.abspath]
+  elseif len(pathlist) == 1
+    let args.params.revision = args.get(1, gina#core#buffer#param(pathlist[0], 'revision'))
+    let args.params.abspath = gina#core#path#abspath(pathlist[0])
+    let pathlist = [args.params.abspath]
   else
-    let pathlist = args.residual()
-    let pathlist = map(
-          \ empty(pathlist) ? ['%'] : pathlist,
-          \ 'gina#core#repo#relpath(a:git, gina#core#repo#expand(v:val))'
-          \)
-    if len(pathlist) == 1
-      let args.params.path = pathlist[0]
-      let args.params.object = args.params.commit . ':' . args.params.path
-    endif
+    let args.params.revision = args.get(1, '')
+    let args.params.abspath = ''
+    let pathlist = map(pathlist, 'gina#core#path#abspath(v:val)')
   endif
 
-  call args.set(1, args.params.commit)
+  call args.set(1, args.params.revision)
   call args.residual(pathlist)
   return args.lock()
 endfunction

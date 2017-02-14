@@ -6,10 +6,7 @@ let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 function! gina#command#ls_files#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = printf(
-        \ 'gina://%s:ls-files',
-        \ git.refname,
-        \)
+  let bufname = gina#core#buffer#bufname(git, 'ls-files')
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -26,14 +23,8 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
-  let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
-  let args.params.cmdarg = join([
-        \ args.pop('^++enc'),
-        \ args.pop('^++ff'),
-        \])
 
   call args.set('--full-name', 1)
   return args.lock()
@@ -78,17 +69,18 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
+  let git = gina#core#get_or_fail()
   let candidates = map(
         \ filter(getline(a:fline, a:lline), '!empty(v:val)'),
-        \ 's:parse_record(v:val)'
+        \ 's:parse_record(git, v:val)'
         \)
   return candidates
 endfunction
 
-function! s:parse_record(record) abort
+function! s:parse_record(git, record) abort
   let candidate = {
         \ 'word': a:record,
-        \ 'path': a:record,
+        \ 'path': gina#core#repo#abspath(a:git, a:record),
         \}
   return candidate
 endfunction

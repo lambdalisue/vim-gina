@@ -7,10 +7,7 @@ let s:Path = vital#gina#import('System.Filepath')
 function! gina#command#status#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = printf(
-        \ 'gina://%s:status',
-        \ git.refname,
-        \)
+  let bufname = gina#core#buffer#bufname(git, 'status')
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -27,14 +24,8 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
-  let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
-  let args.params.cmdarg = join([
-        \ args.pop('^++enc'),
-        \ args.pop('^++ff'),
-        \])
   call args.set('--porcelain', 1)
   return args.lock()
 endfunction
@@ -91,13 +82,13 @@ function! s:get_candidates(fline, lline) abort
   let git = gina#core#get_or_fail()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(v:val)'
+        \ 's:parse_record(git, v:val)'
         \)
   call filter(candidates, '!empty(v:val)')
   return candidates
 endfunction
 
-function! s:parse_record(record) abort
+function! s:parse_record(git, record) abort
   let m = matchlist(
         \ a:record,
         \ '^\(..\) \("[^"]\{-}"\|.\{-}\)\%( -> \("[^"]\{-}"\|[^ ]\+\)\)\?$'
@@ -106,16 +97,16 @@ function! s:parse_record(record) abort
     return {
           \ 'word': a:record,
           \ 'sign': m[1],
-          \ 'path': s:strip_quotes(m[3]),
-          \ 'path1': s:strip_quotes(m[2]),
-          \ 'path2': s:strip_quotes(m[3]),
+          \ 'path': gina#core#repo#abspath(a:git, s:strip_quotes(m[3])),
+          \ 'path1': gina#core#repo#abspath(a:git, s:strip_quotes(m[2])),
+          \ 'path2': gina#core#repo#abspath(a:git, s:strip_quotes(m[3])),
           \}
   elseif len(m) && !empty(m[2])
     return {
           \ 'word': a:record,
           \ 'sign': m[1],
-          \ 'path': s:strip_quotes(m[2]),
-          \ 'path1': s:strip_quotes(m[2]),
+          \ 'path': gina#core#repo#abspath(a:git, s:strip_quotes(m[2])),
+          \ 'path1': gina#core#repo#abspath(a:git, s:strip_quotes(m[2])),
           \ 'path2': '',
           \}
   else

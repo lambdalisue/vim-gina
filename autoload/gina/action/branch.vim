@@ -11,55 +11,55 @@ function! gina#action#branch#define(binder) abort
   call a:binder.define('branch:checkout', function('s:on_checkout'), {
         \ 'description': 'Checkout a branch',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['branch'],
+        \ 'requirements': ['branch', 'remote'],
         \ 'options': {},
         \})
   call a:binder.define('branch:checkout:track', function('s:on_checkout'), {
         \ 'description': 'Checkout a branch and create a local branch',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['branch'],
+        \ 'requirements': ['branch', 'remote'],
         \ 'options': {'track': 1},
         \})
   call a:binder.define('branch:delete', function('s:on_delete'), {
         \ 'description': 'Delete a branch',
         \ 'mapping_mode': 'nv',
-        \ 'requirements': ['branch'],
+        \ 'requirements': ['branch', 'remote'],
         \ 'options': {},
         \})
   call a:binder.define('branch:delete:force', function('s:on_delete'), {
         \ 'description': 'Delete a branch',
         \ 'mapping_mode': 'nv',
-        \ 'requirements': ['branch'],
+        \ 'requirements': ['branch', 'remote'],
         \ 'options': { 'force': 1 },
         \})
   call a:binder.define('branch:move', function('s:on_move'), {
         \ 'description': 'Rename a branch',
         \ 'mapping_mode': 'nv',
-        \ 'requirements': ['branch'],
+        \ 'requirements': ['branch', 'remote'],
         \ 'options': {},
         \})
   call a:binder.define('branch:move:force', function('s:on_move'), {
         \ 'description': 'Rename a branch',
         \ 'mapping_mode': 'nv',
-        \ 'requirements': ['branch'],
+        \ 'requirements': ['branch', 'remote'],
         \ 'options': { 'force': 1 },
         \})
   call a:binder.define('branch:new', function('s:on_new'), {
         \ 'description': 'Create a new branch',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['branch'],
+        \ 'requirements': ['branch', 'remote'],
         \ 'options': {},
         \})
   call a:binder.define('branch:set-upstream-to', function('s:on_set_upstream_to'), {
         \ 'description': 'Set upstream of a branch',
         \ 'mapping_mode': 'nv',
-        \ 'requirements': ['branch'],
+        \ 'requirements': ['branch', 'remote'],
         \ 'options': {},
         \})
   call a:binder.define('branch:unset-upstream', function('s:on_unset_upstream'), {
         \ 'description': 'Unset upstream of a branch',
         \ 'mapping_mode': 'nv',
-        \ 'requirements': ['branch'],
+        \ 'requirements': ['branch', 'remote'],
         \ 'options': {},
         \})
 endfunction
@@ -67,7 +67,6 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:on_refresh(candidates, options) abort
-  let git = gina#core#get_or_fail()
   execute 'Gina remote update --prune'
 endfunction
 
@@ -75,22 +74,21 @@ function! s:on_checkout(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'track': 0,
         \}, a:options)
   for candidate in a:candidates
-    let is_remote = !empty(get(candidate, 'remote'))
+    let is_remote = !empty(candidate.remote)
     if is_remote && options.track
       execute printf(
             \ 'Gina checkout -b %s %s',
-            \ gina#util#shellescape(candidate.branch),
-            \ gina#util#shellescape(candidate.revision),
+            \ gina#util#fnameescape(candidate.branch),
+            \ gina#util#fnameescape(candidate.revision),
             \)
     else
       execute printf(
             \ 'Gina checkout %s',
-            \ gina#util#shellescape(candidate.branch),
+            \ gina#util#fnameescape(candidate.branch),
             \)
     endif
   endfor
@@ -100,7 +98,6 @@ function! s:on_new(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({}, a:options)
   for candidate in a:candidates
     let name = s:Console.ask(
@@ -112,8 +109,8 @@ function! s:on_new(candidates, options) abort
           \)
     execute printf(
           \ 'Gina checkout -b %s %s',
-          \ gina#util#shellescape(name),
-          \ gina#util#shellescape(from),
+          \ gina#util#fnameescape(name),
+          \ gina#util#fnameescape(from),
           \)
   endfor
 endfunction
@@ -122,7 +119,6 @@ function! s:on_move(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'force': 0,
         \}, a:options)
@@ -134,8 +130,8 @@ function! s:on_move(candidates, options) abort
     execute printf(
           \ 'Gina branch --move %s %s %s',
           \ options.force ? '--force' : '',
-          \ gina#util#shellescape(candidate.branch),
-          \ gina#util#shellescape(name),
+          \ gina#util#fnameescape(candidate.branch),
+          \ gina#util#fnameescape(name),
           \)
   endfor
 endfunction
@@ -144,24 +140,23 @@ function! s:on_delete(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'force': 0,
         \}, a:options)
   for candidate in a:candidates
-    let is_remote = !empty(get(candidate, 'remote'))
+    let is_remote = !empty(candidate.remote)
     if is_remote
       execute printf(
             \ 'Gina push --delete %s %s %s',
             \ options.force ? '--force' : '',
-            \ gina#util#shellescape(candidate.remote),
-            \ gina#util#shellescape(candidate.branch),
+            \ gina#util#fnameescape(candidate.remote),
+            \ gina#util#fnameescape(candidate.branch),
             \)
     else
       execute printf(
             \ 'Gina branch --delete %s %s',
             \ options.force ? '--force' : '',
-            \ gina#util#shellescape(candidate.branch),
+            \ gina#util#fnameescape(candidate.branch),
             \)
     endif
   endfor
@@ -171,7 +166,6 @@ function! s:on_set_upstream_to(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({}, a:options)
   for candidate in a:candidates
     let upstream = s:Console.ask(
@@ -181,8 +175,8 @@ function! s:on_set_upstream_to(candidates, options) abort
           \)
     execute printf(
           \ 'Gina branch --set-upstream-to=%s %s',
-          \ gina#util#shellescape(upstream),
-          \ gina#util#shellescape(candidate.branch),
+          \ gina#util#fnameescape(upstream),
+          \ gina#util#fnameescape(candidate.branch),
           \)
   endfor
 endfunction
@@ -191,12 +185,11 @@ function! s:on_unset_upstream(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({}, a:options)
   for candidate in a:candidates
     execute printf(
           \ 'Gina branch --unset-upstream %s',
-          \ gina#util#shellescape(candidate.branch),
+          \ gina#util#fnameescape(candidate.branch),
           \)
   endfor
 endfunction

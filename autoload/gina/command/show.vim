@@ -5,11 +5,10 @@ let s:Path = vital#gina#import('System.Filepath')
 function! gina#command#show#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = printf(
-        \ 'gina://%s:show/%s',
-        \ git.refname,
-        \ args.params.object,
-        \)
+  let bufname = gina#core#buffer#bufname(git, 'show', {
+        \ 'revision': args.params.revision,
+        \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
+        \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -28,20 +27,23 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
-  let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.cmdarg = join([
-        \ args.pop('^++enc'),
-        \ args.pop('^++ff'),
-        \])
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
-  let args.params.commit = gina#core#revision#resolve(a:git, args.pop(1, ''))
-  let args.params.path = gina#core#repo#path(a:git, get(args.residual(), 0, '%'))
-  let args.params.object = args.params.commit . ':' . args.params.path
-  call args.set(1, args.params.object)
+
+  let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
+  let args.params.revision = args.pop(1, gina#core#buffer#param('%', 'revision'))
+
+  if empty(args.params.abspath)
+    call args.set(1, args.params.revision)
+  else
+    call args.set(1, printf('%s:%s',
+          \ args.params.revision,
+          \ gina#core#repo#relpath(a:git, args.params.abspath)
+          \))
+  endif
+  call args.residual([])
   return args.lock()
 endfunction
 

@@ -31,10 +31,7 @@ function! s:on_changes(candidates, options) abort
   for candidate in a:candidates
     execute printf(
           \ 'Gina changes %s',
-          \ gina#util#shellescape(printf(
-          \   options.format,
-          \   candidate.revision,
-          \ )),
+          \ gina#util#fnameescape(printf(options.format, candidate.revision))
           \)
   endfor
 endfunction

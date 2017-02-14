@@ -151,15 +151,11 @@ function! s:on_add(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'force': 0,
         \ 'intent-to-add': 0,
         \}, a:options)
-  let pathlist = map(
-        \ copy(a:candidates),
-        \ 'gina#core#repo#abspath(git, v:val.path)',
-        \)
+  let pathlist = map(copy(a:candidates), 'v:val.path')
   execute printf(
         \ 'Gina add --ignore-errors %s %s -- %s',
         \ options.force ? '--force' : '',
@@ -172,15 +168,11 @@ function! s:on_rm(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'cached': 0,
         \ 'force': 0,
         \}, a:options)
-  let pathlist = map(
-        \ copy(a:candidates),
-        \ 'gina#core#repo#abspath(git, v:val.path)',
-        \)
+  let pathlist = map(copy(a:candidates), 'v:val.path')
   execute printf(
         \ 'Gina rm --quiet --ignore-unmatch %s %s -- %s',
         \ options.force ? '--force' : '',
@@ -193,12 +185,8 @@ function! s:on_reset(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({}, a:options)
-  let pathlist = map(
-        \ copy(a:candidates),
-        \ 'gina#core#repo#relpath(git, v:val.path)',
-        \)
+  let pathlist = map(copy(a:candidates), 'v:val.path')
   execute printf(
         \ 'Gina reset --quiet -- %s',
         \ gina#util#fnameescape(pathlist),
@@ -209,24 +197,19 @@ function! s:on_checkout(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'force': 0,
         \ 'ours': 0,
         \ 'theirs': 0,
+        \ 'revision': '',
         \}, a:options)
-  let params = gina#core#buffer#params('%')
-  let revision = get(options, 'revision', get(params, 'revision', ''))
-  let pathlist = map(
-        \ copy(a:candidates),
-        \ 'gina#core#repo#relpath(git, v:val.path)',
-        \)
+  let pathlist = map(copy(a:candidates), 'v:val.path')
   execute printf(
         \ 'Gina! checkout --quiet %s %s %s %s -- %s',
         \ options.force ? '--force' : '',
         \ options.ours ? '--ours' : '',
         \ options.theirs ? '--theirs' : '',
-        \ gina#util#shellescape(revision),
+        \ gina#util#fnameescape(options.revision),
         \ gina#util#fnameescape(pathlist),
         \)
 endfunction
@@ -235,6 +218,9 @@ function! s:on_stage(candidates, options) abort dict
   if empty(a:candidates)
     return
   endif
+  let options = extend({
+        \ 'force': 0,
+        \}, a:options)
   let rm_candidates = []
   let add_candidates = []
   for candidate in a:candidates
@@ -244,7 +230,7 @@ function! s:on_stage(candidates, options) abort dict
       call add(add_candidates, candidate)
     endif
   endfor
-  if get(a:options, 'force')
+  if options.force
     call self.call('index:add:force', add_candidates)
     call self.call('index:rm:force', rm_candidates)
   else
@@ -300,7 +286,7 @@ function! s:on_discard(candidates, options) abort dict
           \ 'This operation will be performed to the following candidates:'
           \)
     for candidate in extend(copy(delete_candidates), checkout_candidates)
-      echo '- ' . s:Path.relpath(candidate.path)
+      echo '- ' . s:Path.realpath(candidate.path)
     endfor
     if !s:Console.confirm('Are you sure to discard the changes?')
       return
@@ -308,10 +294,11 @@ function! s:on_discard(candidates, options) abort dict
   endif
   " delete untracked files
   for candidate in delete_candidates
-    if isdirectory(candidate.path)
-      call s:File.rmdir(candidate.path, 'r')
-    elseif filewritable(candidate.path)
-      call delete(candidate.path)
+    let abspath = s:Path.realpath(candidate.path)
+    if isdirectory(abspath)
+      call s:File.rmdir(abspath, 'r')
+    elseif filewritable(abspath)
+      call delete(abspath)
     endif
   endfor
   call self.call('index:checkout:HEAD:force', checkout_candidates)

@@ -12,10 +12,7 @@ let s:messages = {}
 function! gina#command#commit#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(a:args)
-  let bufname = printf(
-        \ 'gina://%s:commit',
-        \ git.refname,
-        \)
+  let bufname = gina#core#buffer#bufname(git, 'commit')
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -68,13 +65,8 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(args) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
-  let args.params.cmdarg = join([
-        \ args.pop('^++enc'),
-        \ args.pop('^++ff'),
-        \])
   let args.params.amend = args.get('--amend')
   return args.lock()
 endfunction

@@ -55,9 +55,9 @@ function! s:on_edit(candidates, options) abort
   for candidate in a:candidates
     execute printf(
           \ 'Gina edit %s %s %s -- %s',
-          \ gina#util#shellescape(options.opener, '--opener='),
-          \ gina#util#shellescape(get(candidate, 'line'), '--line='),
-          \ gina#util#shellescape(get(candidate, 'col'), '--col='),
+          \ gina#util#fnameescape(options.opener, '--opener='),
+          \ gina#util#fnameescape(get(candidate, 'line'), '--line='),
+          \ gina#util#fnameescape(get(candidate, 'col'), '--col='),
           \ gina#util#fnameescape(candidate.path),
           \)
   endfor

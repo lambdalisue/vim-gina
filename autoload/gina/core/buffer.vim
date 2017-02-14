@@ -5,30 +5,47 @@ let s:Guard = vital#gina#import('Vim.Guard')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:Path = vital#gina#import('System.Filepath')
 let s:Window = vital#gina#import('Vim.Window')
-
 let s:DEFAULT_PARAMS_ATTRIBUTES = {
       \ 'repo': '',
       \ 'scheme': '',
       \ 'params': [],
       \ 'revision': '',
-      \ 'path': '',
+      \ 'relpath': '',
       \}
 
-function! gina#core#buffer#params(expr) abort
+
+function! gina#core#buffer#bufname(git, scheme, ...) abort
+  let options = extend({
+        \ 'params': [],
+        \ 'revision': '',
+        \ 'relpath': '',
+        \}, get(a:000, 0, {})
+        \)
+  let params = filter(copy(options.params), '!empty(v:val)')
+  return s:normalize_bufname(printf(
+        \ 'gina://%s:%s%s/%s:%s',
+        \ a:git.refname,
+        \ a:scheme,
+        \ empty(params) ? '' : ':' . join(params, ':'),
+        \ options.revision,
+        \ s:Path.unixpath(options.relpath),
+        \))
+endfunction
+
+function! gina#core#buffer#parse(expr) abort
   let path = expand(a:expr)
-  if path !~# '^gina://'
+  let m = matchlist(
+        \ path,'\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?([^:]*):?(.*)$',
+        \)
+  if empty(m)
     return {}
   endif
-  let m = matchlist(
-        \ path,
-        \ '\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?([^:]*):?(.*)$',
-        \)
   return {
         \ 'repo': m[1],
         \ 'scheme': m[2],
-        \ 'params': split(m[3], ':'),
+        \ 'params': filter(split(m[3], ':'), '!empty(v:val)'),
         \ 'revision': m[4],
-        \ 'path': m[5],
+        \ 'relpath': m[5],
         \}
 endfunction
 
@@ -40,9 +57,8 @@ function! gina#core#buffer#param(expr, attr, ...) abort
           \))
   endif
   let default = get(a:000, 0, s:DEFAULT_PARAMS_ATTRIBUTES[a:attr])
-  let params = gina#core#buffer#params(a:expr)
-  let value = get(params, a:attr, '')
-  return empty(value) ? default : value
+  let params = gina#core#buffer#parse(a:expr)
+  return get(params, a:attr, default)
 endfunction
 
 function! gina#core#buffer#open(bufname, ...) abort

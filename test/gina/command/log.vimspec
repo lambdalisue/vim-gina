@@ -45,7 +45,7 @@ Describe gina#command#log
         Gina log -- %
         call gina#action#call('info')
         Assert Equals(winnr('$'), 2)
-        Assert Match(bufname('%'), '^gina://valid1:info/\w\+:A/foo$')
+        Assert Match(bufname('%'), '^gina://valid1:info/\w\+$')
       End
     End
   End
@@ -99,7 +99,7 @@ Describe gina#command#log
         Gina log -- %
         call gina#action#call('info')
         Assert Equals(winnr('$'), 2)
-        Assert Match(bufname('%'), '^gina://valid2:info/\w\+:A/foo$')
+        Assert Match(bufname('%'), '^gina://valid2:info/\w\+$')
       End
     End
   End

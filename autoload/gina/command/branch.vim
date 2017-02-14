@@ -13,7 +13,7 @@ function! gina#command#branch#call(range, args, mods) abort
     return gina#command#call('!', a:range, a:args, a:mods)
   endif
 
-  let bufname = printf('gina://%s:branch', git.refname)
+  let bufname = gina#core#buffer#bufname(git, 'branch')
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -30,14 +30,8 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
-  let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
-  let args.params.cmdarg = join([
-        \ args.pop('^++enc'),
-        \ args.pop('^++ff'),
-        \])
 
   call args.set('--color', 'always')
   return args.lock()

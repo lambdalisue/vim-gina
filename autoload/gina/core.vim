@@ -50,7 +50,7 @@ function! gina#core#get(...) abort
     endif
   endif
 
-  let params = gina#core#buffer#params(options.expr)
+  let params = gina#core#buffer#parse(options.expr)
   if empty(params)
     let git = {}
     let params.path = expand(options.expr)
@@ -92,12 +92,14 @@ function! s:get_cached_instance(expr) abort
 endfunction
 
 function! s:set_cached_instance(expr, git) abort
-  call setbufvar(a:expr, 'gina', {
-        \ 'refname': get(a:git, 'refname', ''),
-        \ 'bufname': simplify(bufname(a:expr)),
-        \ 'buftype': getbufvar(a:expr, '&buftype', ''),
-        \ 'cwd': simplify(getcwd()),
-        \})
+  if bufexists(a:expr)
+    call setbufvar(a:expr, 'gina', {
+          \ 'refname': get(a:git, 'refname', ''),
+          \ 'bufname': simplify(bufname(a:expr)),
+          \ 'buftype': getbufvar(a:expr, '&buftype', ''),
+          \ 'cwd': simplify(getcwd()),
+          \})
+  endif
 endfunction
 
 function! s:get_available_refname(refname, git) abort

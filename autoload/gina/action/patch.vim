@@ -2,37 +2,37 @@ function! gina#action#patch#define(binder) abort
   call a:binder.define('patch', function('s:on_patch'), {
         \ 'description': 'Patch a content',
         \ 'mapping_mode': 'n',
-        \ 'requirements': [],
+        \ 'requirements': ['path'],
         \ 'options': {},
         \})
   call a:binder.define('patch:above', function('s:on_patch'), {
         \ 'description': 'Patch a content',
         \ 'mapping_mode': 'n',
-        \ 'requirements': [],
+        \ 'requirements': ['path'],
         \ 'options': { 'opener': 'leftabove new' },
         \})
   call a:binder.define('patch:below', function('s:on_patch'), {
         \ 'description': 'Patch a content',
         \ 'mapping_mode': 'n',
-        \ 'requirements': [],
+        \ 'requirements': ['path'],
         \ 'options': { 'opener': 'belowright new' },
         \})
   call a:binder.define('patch:left', function('s:on_patch'), {
         \ 'description': 'Patch a content',
         \ 'mapping_mode': 'n',
-        \ 'requirements': [],
+        \ 'requirements': ['path'],
         \ 'options': { 'opener': 'leftabove vnew' },
         \})
   call a:binder.define('patch:right', function('s:on_patch'), {
         \ 'description': 'Patch a content',
         \ 'mapping_mode': 'n',
-        \ 'requirements': [],
+        \ 'requirements': ['path'],
         \ 'options': { 'opener': 'belowright vnew' },
         \})
   call a:binder.define('patch:tab', function('s:on_patch'), {
         \ 'description': 'Patch a content',
         \ 'mapping_mode': 'n',
-        \ 'requirements': [],
+        \ 'requirements': ['path'],
         \ 'options': { 'opener': 'tabedit' },
         \})
 endfunction
@@ -43,19 +43,16 @@ function! s:on_patch(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'opener': '',
         \}, a:options)
-  let params = gina#core#buffer#params('%')
-  let path = get(params, 'path', '')
   for candidate in a:candidates
     execute printf(
           \ 'Gina patch %s %s %s -- %s',
-          \ gina#util#shellescape(options.opener, '--opener='),
-          \ gina#util#shellescape(get(candidate, 'line'), '--line='),
-          \ gina#util#shellescape(get(candidate, 'col'), '--col='),
-          \ gina#util#fnameescape(get(candidate, 'path', path)),
+          \ gina#util#fnameescape(options.opener, '--opener='),
+          \ gina#util#fnameescape(get(candidate, 'line'), '--line='),
+          \ gina#util#fnameescape(get(candidate, 'col'), '--col='),
+          \ gina#util#fnameescape(candidate.path),
           \)
   endfor
 endfunction

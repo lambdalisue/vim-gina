@@ -4,7 +4,7 @@ let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
 
 let s:FORMAT_MAP = {
-      \ 'pt': 'path',
+      \ 'pt': 'relpath',
       \ 'ls': 'line_start',
       \ 'le': 'line_end',
       \ 'c0': 'commit0',
@@ -27,11 +27,11 @@ function! gina#command#browse#call(range, args, mods) abort
   let base_url = s:build_base_url(
         \ s:get_remote_url(git, revinfo.commit1, revinfo.commit2),
         \ args.params.scheme is# v:null
-        \   ? empty(args.params.path) ? 'root' : '_'
+        \   ? empty(args.params.relpath) ? 'root' : '_'
         \   : args.params.scheme,
         \)
   let url = s:Formatter.format(base_url, s:FORMAT_MAP, {
-        \ 'path': s:Path.unixpath(gina#core#repo#relpath(git, args.params.path)),
+        \ 'relpath': args.params.retpath,
         \ 'line_start': get(args.params.range, 0, ''),
         \ 'line_end': get(args.params.range, 1, ''),
         \ 'commit0': revinfo.commit0,
@@ -47,7 +47,7 @@ function! gina#command#browse#call(range, args, mods) abort
   if empty(url)
     throw gina#core#exception#warn(printf(
           \ 'No url translation pattern for "%s" is found.',
-          \ args.params.rev,
+          \ args.params.revision,
           \))
   endif
 
@@ -62,13 +62,12 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args, range) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
   let args.params.yank = args.pop('--yank')
   let args.params.exact = args.pop('--exact')
   let args.params.range = a:range == [1, line('$')] ? [] : a:range
   let args.params.scheme = args.pop('--scheme', v:null)
-  let args.params.revision = args.pop(1, get(gina#core#buffer#params('%'), 'revision', ''))
-  let args.params.path = gina#core#repo#expand(get(args.residual(), 0, '%'))
+  let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
+  let args.params.revision = args.pop(1, gina#core#buffer#param('%', 'revision', ''))
   return args.lock()
 endfunction
 

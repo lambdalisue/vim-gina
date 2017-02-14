@@ -7,12 +7,12 @@ function! gina#command#changes#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
-  let bufname = printf(
-        \ 'gina://%s:changes%s/%s',
-        \ git.refname,
-        \ args.params.cached ? ':cached' : '',
-        \ args.params.commit,
-        \)
+  let bufname = gina#core#buffer#bufname(git, 'changes', {
+        \ 'revision': args.params.revision,
+        \ 'params': [
+        \   args.params.cached ? 'cached' : '',
+        \ ],
+        \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -29,20 +29,14 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
-  let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
-  let args.params.cmdarg = join([
-        \ args.pop('^++enc'),
-        \ args.pop('^++ff'),
-        \])
   let args.params.cached = args.get('--cached')
-  let args.params.commit = args.get(1, '')
+  let args.params.revision = args.get(1, gina#core#buffer#param('%', 'revision', ''))
 
   call args.set('--numstat', 1)
   call args.set(0, 'diff')
-  call args.set(1, args.params.commit)
+  call args.set(1, args.params.revision)
   return args.lock()
 endfunction
 
@@ -86,15 +80,16 @@ endfunction
 
 function! s:get_candidates(fline, lline) abort
   let git = gina#core#get_or_fail()
+  let revision = gina#core#buffer#param('%', 'revision')
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(v:val)'
+        \ 's:parse_record(git, revision, v:val)'
         \)
   call filter(candidates, '!empty(v:val)')
   return candidates
 endfunction
 
-function! s:parse_record(record) abort
+function! s:parse_record(git, revision, record) abort
   let m = matchlist(
         \ a:record,
         \ '^\(\d\+\)\s\+\(\d\+\)\s\+\(.\+\)$'
@@ -106,7 +101,8 @@ function! s:parse_record(record) abort
         \ 'word': a:record,
         \ 'added': m[1],
         \ 'removed': m[2],
-        \ 'path': m[3],
+        \ 'path': gina#core#repo#abspath(a:git, m[3]),
+        \ 'revision': a:revision,
         \}
 endfunction
 

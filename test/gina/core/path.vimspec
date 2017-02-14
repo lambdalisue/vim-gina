@@ -1,0 +1,45 @@
+Describe gina#core#path
+  Before all
+    let Path = vital#gina#import('System.Filepath')
+  End
+
+  Before
+    windo bwipeout!
+  End
+
+  Describe #expand({expr})
+    It returns a Unix-like path of {expr} when {expr} starts from ':'
+      let expr = Path.realpath(':/foo/bar.txt')
+      Assert Equals(gina#core#path#expand(expr), ':/foo/bar.txt')
+    End
+
+    It returns an Unix-like absolute path of {expr} when {expr} starts from 'gina://'
+      let git = gina#core#get_or_fail({'expr': g:git_profile.valid1})
+      let expr = Path.realpath('gina://valid1:show/:A/foo/bar.txt')
+      Assert Equals(gina#core#path#expand(expr), Path.unixpath(
+            \ Path.join(git.worktree, 'A', 'foo', 'bar.txt')
+            \))
+    End
+
+    It returns an expanded Unix-like path of {expr} when {expr} is '%'
+      execute 'edit' Path.realpath('foo/bar.txt')
+      let expr = '%'
+      Assert Equals(gina#core#path#expand(expr), 'foo/bar.txt')
+
+      execute 'edit' Path.realpath('gina://valid1:show/:A/foo/bar.txt')
+      let git = gina#core#get_or_fail({'expr': g:git_profile.valid1})
+      let expr = '%'
+      Assert Equals(gina#core#path#expand(expr), Path.unixpath(
+            \ Path.join(git.worktree, 'A', 'foo', 'bar.txt')
+            \))
+    End
+
+    It returns an expanded Unix-like path of {expr}
+      let expr = '$HOME'
+      Assert Equals(gina#core#path#expand(expr), Path.unixpath(expand('$HOME')))
+
+      let expr = 'master'
+      Assert Equals(gina#core#path#expand(expr), 'master')
+    End
+  End
+End
