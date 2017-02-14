@@ -1,3 +1,5 @@
+let s:is_windows = has('win32') || has('win64')
+
 Describe gina#core
   Before all
     let Path = vital#gina#import('System.Filepath')
@@ -55,6 +57,9 @@ Describe gina#core
 
     Context A symbolic link
       It returns a git instance which the symlink file belongs
+        if s:is_windows
+          Skip A symbolic link cannot be test while it requires administrator permission
+        endif
         " NOTE: The symlink1 points a file in invalid
         execute 'edit' fnameescape(g:git_profile.symlink1)
         let git = gina#core#get()
@@ -73,6 +78,9 @@ Describe gina#core
       End
 
       It returns a git instance which the original file belogns if the symlink file does not belong
+        if s:is_windows
+          Skip A symbolic link cannot be test while it requires administrator permission
+        endif
         " NOTE: The symlink3 points a file in valid1
         execute 'edit' fnameescape(g:git_profile.symlink3)
         let git = gina#core#get()
