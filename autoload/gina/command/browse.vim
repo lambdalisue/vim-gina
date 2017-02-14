@@ -88,16 +88,16 @@ function! s:parse_revision(git, revision) abort
   let commit0 = gina#core#revision#resolve(a:git, a:revision)
   let commit0 = empty(commit0) ? 'HEAD' : commit0
 
-  let ref0 = s:Git.ref(a:git, commit0)
-  let ref1 = s:Git.ref(a:git, commit1)
-  let ref2 = s:Git.ref(a:git, commit2)
+  let hash0 = gina#core#revision#sha1(a:git, commit0)
+  let hash1 = gina#core#revision#sha1(a:git, commit1)
+  let hash2 = gina#core#revision#sha1(a:git, commit2)
   return {
-        \ 'commit0': empty(ref0) ? commit0 : ref0.name,
-        \ 'commit1': empty(ref1) ? commit1 : ref1.name,
-        \ 'commit2': empty(ref2) ? commit2 : ref2.name,
-        \ 'hash0': empty(ref0) ? commit0 : ref0.hash,
-        \ 'hash1': empty(ref1) ? commit1 : ref1.hash,
-        \ 'hash2': empty(ref2) ? commit2 : ref2.hash,
+        \ 'commit0': commit0,
+        \ 'commit1': commit1,
+        \ 'commit2': commit2,
+        \ 'hash0': hash0,
+        \ 'hash1': hash1,
+        \ 'hash2': hash2,
         \}
 endfunction
 

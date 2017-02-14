@@ -42,26 +42,6 @@ function! gina#core#revision#resolve(git, revision) abort
   endif
 endfunction
 
-function! gina#core#revision#count_ahead(git) abort
-  let result = gina#core#process#call(a:git, [
-        \ 'log', '--oneline', '@{upstream}..'
-        \])
-  if result.status
-    throw gina#core#process#error(result)
-  endif
-  return len(filter(result.stdout, '!empty(v:val)'))
-endfunction
-
-function! gina#core#revision#count_behind(git) abort
-  let result = gina#core#process#call(a:git, [
-        \ 'log', '--oneline', '..@{upstream}'
-        \])
-  if result.status
-    throw gina#core#process#error(result)
-  endif
-  return len(filter(result.stdout, '!empty(v:val)'))
-endfunction
-
 
 " Private --------------------------------------------------------------------
 function! s:find_common_ancestor(git, revision1, revision2) abort
