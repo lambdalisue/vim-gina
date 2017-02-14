@@ -52,5 +52,35 @@ Describe gina#core
             \))
       Assert Equals(git.commondir, Path.join(g:git_profile.valid1, '.git'))
     End
+
+    Context A symbolic link
+      It returns a git instance which the symlink file belongs
+        " NOTE: The symlink1 points a file in invalid
+        execute 'edit' fnameescape(g:git_profile.symlink1)
+        let git = gina#core#get()
+        Assert Equals(git.refname, 'valid1')
+        Assert Equals(git.worktree, g:git_profile.valid1)
+        Assert Equals(git.repository, Path.join(g:git_profile.valid1, '.git'))
+        Assert Equals(git.commondir, '')
+
+        " NOTE: The symlink2 points a file in valid3
+        execute 'edit' fnameescape(g:git_profile.symlink2)
+        let git = gina#core#get()
+        Assert Equals(git.refname, 'valid1')
+        Assert Equals(git.worktree, g:git_profile.valid1)
+        Assert Equals(git.repository, Path.join(g:git_profile.valid1, '.git'))
+        Assert Equals(git.commondir, '')
+      End
+
+      It returns a git instance which the original file belogns if the symlink file does not belong
+        " NOTE: The symlink3 points a file in valid1
+        execute 'edit' fnameescape(g:git_profile.symlink3)
+        let git = gina#core#get()
+        Assert Equals(git.refname, 'valid1')
+        Assert Equals(git.worktree, g:git_profile.valid1)
+        Assert Equals(git.repository, Path.join(g:git_profile.valid1, '.git'))
+        Assert Equals(git.commondir, '')
+      End
+    End
   End
 End

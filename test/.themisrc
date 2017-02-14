@@ -31,6 +31,26 @@ endfor
 call themis#log('-----------------------------------------------------------')
 
 " Git ------------------------------------------------------------------------
+let s:is_windows = has('win32') || has('win64')
+
+if s:is_windows
+  function! s:link(src, dst) abort
+    call system(printf(
+          \ 'mklink %s %s',
+          \ shellescape(a:dst),
+          \ shellescape(a:src),
+          \))
+  endfunction
+else
+  function! s:link(src, dst) abort
+    call system(printf(
+          \ 'ln -s %s %s',
+          \ shellescape(a:src),
+          \ shellescape(a:dst),
+          \))
+  endfunction
+endif
+
 function! s:new_profile() abort
   let Path = vital#gina#import('System.Filepath')
   let root = resolve(tempname())
@@ -38,6 +58,9 @@ function! s:new_profile() abort
   let valid2 = Path.join(root, 'valid2')  " Worktree (git worktree)
   let valid3 = Path.join(root, 'valid3')  " For external remote
   let invalid = Path.join(root, 'invalid')
+  let symlink1 = Path.join(valid1, 'symlink_invalid')
+  let symlink2 = Path.join(valid1, 'symlink_valid3')
+  let symlink3 = Path.join(invalid, 'symlink_invalid')
 
   " Build files and directories
   for path in [valid1, valid3, invalid]
@@ -100,12 +123,19 @@ function! s:new_profile() abort
   call git.execute('checkout --track -b ext/master remotes/ext/master')
   call git.execute('checkout master')
 
+  call s:link(Path.join(invalid, 'A', 'foo', 'bar.txt'), symlink1)
+  call s:link(Path.join(valid3, 'A', 'foo', 'bar.txt'), symlink2)
+  call s:link(Path.join(valid1, 'A', 'foo', 'bar.txt'), symlink3)
+
   return {
         \ 'root': root,
         \ 'valid1': valid1,
         \ 'valid2': valid2,
         \ 'valid3': valid3,
         \ 'invalid': invalid,
+        \ 'symlink1': symlink1,
+        \ 'symlink2': symlink2,
+        \ 'symlink3': symlink3,
         \ 'git_version': git_version,
         \ 'git_support_worktree': git_support_worktree,
         \ 'git': git,
