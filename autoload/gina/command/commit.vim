@@ -122,6 +122,10 @@ function! s:get_commitmsg(git, args) abort
       call args.set('-F|--file', tempfile)
       call args.pop('-C|--reuse-message')
       call args.pop('-m|--message')
+      call s:Console.debug(printf(
+            \ 'Use a cached commit message: %s...',
+            \ cache[0]
+            \))
     endif
 
     " Force edit mode
