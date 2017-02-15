@@ -28,6 +28,42 @@ function! gina#command#commit#call(range, args, mods) abort
         \})
 endfunction
 
+function! gina#command#commit#cleanup_commitmsg(content, mode, comment) abort
+  let content = copy(a:content)
+  if a:mode =~# '^\%(default\|strip\|whitespace\|scissors\)$'
+    " Strip leading and trailing empty lines
+    let content = split(
+          \ substitute(join(content, "\n"), '^\n\+\|\n\+$', '', 'g'),
+          \ "\n"
+          \)
+    " Strip trailing whitespace
+    call map(content, 'substitute(v:val, ''\s\+$'', '''', '''')')
+    " Remove content after a scissor
+    if a:mode =~# '^\%(scissors\)$'
+      let scissor = index(content, printf('%s %s', a:comment, s:SCISSOR))
+      let content = scissor == -1 ? content : content[:scissor-1]
+    endif
+    " Strip commentary
+    if a:mode =~# '^\%(default\|strip\|scissors\)$'
+      call map(content, printf(
+            \ 'v:val =~# ''^%s'' ? '''' : v:val',
+            \ s:String.escape_pattern(a:comment)
+            \))
+    endif
+    " Collapse consecutive empty lines
+    let indices = range(len(content))
+    let status = ''
+    for index in reverse(indices)
+      if empty(content[index]) && status ==# 'consecutive'
+        call remove(content, index)
+      else
+        let status = empty(content[index]) ? 'consecutive' : ''
+      endif
+    endfor
+  endif
+  return content
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:build_args(args) abort
@@ -113,21 +149,18 @@ endfunction
 function! s:get_commitmsg(git, args) abort
   let args = a:args.clone()
   let cname = args.get('--amend') ? 'amend' : '_'
-  let cache = s:get_cached_commitmsg(a:git, cname)
+  let commitmsg = s:get_cached_commitmsg(a:git, cname)
 
   let tempfile = tempname()
   try
-    if !empty(cache)
-      call writefile(cache, tempfile)
+    if !empty(commitmsg)
+      call writefile(commitmsg, tempfile)
       call args.set('-F|--file', tempfile)
       call args.pop('-C|--reuse-message')
       call args.pop('-m|--message')
-      call s:Console.debug(printf(
-            \ 'Use a cached commit message: %s...',
-            \ cache[0]
-            \))
+      call s:Console.debug('Use a cached commit message:')
+      call s:Console.debug(join(map(copy(commitmsg), '''| '' . v:val'), "\n"))
     endif
-
     " Force edit mode
     call args.pop('--no-edit')
     call args.set('-e|--edit', 1)
@@ -136,31 +169,26 @@ function! s:get_commitmsg(git, args) abort
       " NOTE: Operation should be fail while GIT_EDITOR=false
       throw gina#core#process#error(result)
     endif
-    return s:get_config_commitmsg(a:git)
+    " Get entire content (with comment) of commitmsg
+    return s:get_commit_editmsg(a:git)
   finally
     call delete(tempfile)
   endtry
 endfunction
 
 function! s:set_commitmsg(git, args, content) abort
-  let args = a:args.clone()
-  let cname = args.get('--amend') ? 'amend' : '_'
-  let commitmsg = s:cleanup_commitmsg(
-        \ a:git,
-        \ a:content,
-        \ s:get_cleanup_mode(a:git, args),
-        \)
-  call s:set_config_commitmsg(a:git, a:content)
-  call s:set_cached_commitmsg(a:git, cname, a:content)
+  let cname = a:args.get('--amend') ? 'amend' : '_'
+  call s:set_commit_editmsg(a:git, a:content)
+  call s:set_cached_commitmsg(a:git, cname, s:cleanup_commitmsg(
+        \ a:git, a:args, a:content,
+        \))
 endfunction
 
 function! s:commit_commitmsg(git, args) abort
   let config = gina#core#repo#config(a:git)
   let args = a:args.clone()
   let content = s:cleanup_commitmsg(
-        \ a:git,
-        \ s:get_config_commitmsg(a:git),
-        \ s:get_cleanup_mode(a:git, args),
+        \ a:git, a:args, s:get_commit_editmsg(a:git),
         \)
   let tempfile = tempname()
   try
@@ -184,69 +212,44 @@ endfunction
 function! s:commit_commitmsg_confirm(git, args) abort
   if s:Console.confirm('Do you want to commit changes?', 'y')
     call s:commit_commitmsg(a:git, a:args)
-    setlocal bufhidden=wipe
   else
     redraw | echo ''
   endif
 endfunction
 
-function! s:get_cleanup_mode(git, args) abort
+function! s:get_cleanup_mode(git, args, config) abort
   if a:args.get('--cleanup')
     return a:args.get('--cleanup')
   elseif a:args.get('--verbose')
     return 'scissors'
   endif
-  let config = gina#core#repo#config(a:git)
-  if get(get(config, 'commit', {}), 'verbose', '') ==# 'true'
+  if get(get(a:config, 'commit', {}), 'verbose', '') ==# 'true'
     return 'scissors'
   endif
-  return get(get(config, 'commit', {}), 'cleanup', 'strip')
+  return get(get(a:config, 'commit', {}), 'cleanup', 'strip')
 endfunction
 
-function! s:cleanup_commitmsg(git, content, mode) abort
+function! s:cleanup_commitmsg(git, args, content) abort
   let config = gina#core#repo#config(a:git)
   let comment = get(get(config, 'core', {}), 'commentchar', '#')
-  let content = copy(a:content)
-  if a:mode =~# '^\%(default\|strip\|whitespace\|scissors\)$'
-    " Strip leading and trailing empty lines
-    let content = split(
-          \ substitute(join(content, "\n"), '^\n\+\|\n\+$', '', 'g'),
-          \ "\n"
-          \)
-    " Strip trailing whitespace
-    call map(content, 'substitute(v:val, ''\s\+$'', '''', '''')')
-    " Remove content after a scissor
-    if a:mode =~# '^\%(scissors\)$'
-      let scissor = index(content, printf('%s %s', comment, s:SCISSOR))
-      let content = scissor == -1 ? content : content[:scissor]
-    endif
-    " Strip commentary
-    if a:mode =~# '^\%(default\|strip\|scissors\)$'
-      call map(content, printf(
-            \ 'v:val =~# ''^%s'' ? '''' : v:val',
-            \ s:String.escape_pattern(comment)
-            \))
-    endif
-    " Collapse consecutive empty lines
-    let indices = range(len(content))
-    let status = ''
-    for index in reverse(indices)
-      if empty(content[index]) && status ==# 'consecutive'
-        call remove(content, index)
-      else
-        let status = empty(content[index]) ? 'consecutive' : ''
-      endif
-    endfor
+  if a:args.get('--cleanup')
+    let mode = a:args.get('--cleanup')
+  elseif a:args.get('--verbose')
+    let mode = 'scissors'
+  elseif get(get(config, 'commit', {}), 'verbose', '') ==# 'true'
+    let mode = 'scissors'
+  else
+    let mode = get(get(config, 'commit', {}), 'cleanup', 'strip')
   endif
-  return content
+  return gina#command#commit#cleanup_commitmsg(a:content, mode, comment)
 endfunction
 
-function! s:get_config_commitmsg(git) abort
+function! s:get_commit_editmsg(git) abort
   let path = s:Git.resolve(a:git, 'COMMIT_EDITMSG')
   return readfile(path)
 endfunction
 
-function! s:set_config_commitmsg(git, content) abort
+function! s:set_commit_editmsg(git, content) abort
   let path = s:Git.resolve(a:git, 'COMMIT_EDITMSG')
   return writefile(a:content, path)
 endfunction
@@ -257,10 +260,10 @@ function! s:get_cached_commitmsg(git, name) abort
   return get(s:messages[cname], a:name, [])
 endfunction
 
-function! s:set_cached_commitmsg(git, name, content) abort
+function! s:set_cached_commitmsg(git, name, commitmsg) abort
   let cname = a:git.worktree
   let s:messages[cname] = get(s:messages, cname, {})
-  let s:messages[cname][a:name] = a:content
+  let s:messages[cname][a:name] = a:commitmsg
 endfunction
 
 function! s:remove_cached_commitmsg(git) abort
