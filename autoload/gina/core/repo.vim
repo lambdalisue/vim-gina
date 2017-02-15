@@ -1,9 +1,20 @@
+let s:Path = vital#gina#import('System.Filepath')
+
+
 function! gina#core#repo#abspath(git, expr) abort
   return gina#core#path#abspath(a:expr, a:git.worktree)
 endfunction
 
 function! gina#core#repo#relpath(git, expr) abort
-  return gina#core#path#relpath(a:expr, a:git.worktree)
+  let path = gina#core#path#expand(a:expr)
+  if s:Path.is_relative(s:Path.realpath(path))
+    return path
+  endif
+  let relpath = gina#core#path#relpath(path, a:git.worktree)
+  if path ==# relpath && path !=# resolve(path)
+    return gina#core#path#relpath(resolve(path), a:git.worktree)
+  endif
+  return relpath
 endfunction
 
 function! gina#core#repo#config(git) abort
