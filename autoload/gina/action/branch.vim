@@ -81,14 +81,11 @@ function! s:on_checkout(candidates, options) abort
         \}, a:options)
   for candidate in a:candidates
     let is_remote = !empty(get(candidate, 'remote'))
-    let branch = is_remote
-          \ ? substitute(candidate.branch, '^origin/', '', '')
-          \ : candidate.branch
     if is_remote && options.track
       execute printf(
             \ 'Gina checkout -b %s %s',
-            \ gina#util#shellescape(branch),
             \ gina#util#shellescape(candidate.branch),
+            \ gina#util#shellescape(candidate.revision),
             \)
     else
       execute printf(
@@ -152,12 +149,21 @@ function! s:on_delete(candidates, options) abort
         \ 'force': 0,
         \}, a:options)
   for candidate in a:candidates
-    execute printf(
-          \ 'Gina branch --delete %s %s %s',
-          \ options.force ? '--force' : '',
-          \ empty(get(candidate, 'remote')) ? '' : '--remotes',
-          \ gina#util#shellescape(candidate.branch),
-          \)
+    let is_remote = !empty(get(candidate, 'remote'))
+    if is_remote
+      execute printf(
+            \ 'Gina push --delete %s %s %s',
+            \ options.force ? '--force' : '',
+            \ gina#util#shellescape(candidate.remote),
+            \ gina#util#shellescape(candidate.branch),
+            \)
+    else
+      execute printf(
+            \ 'Gina branch --delete %s %s',
+            \ options.force ? '--force' : '',
+            \ gina#util#shellescape(candidate.branch),
+            \)
+    endif
   endfor
 endfunction
 

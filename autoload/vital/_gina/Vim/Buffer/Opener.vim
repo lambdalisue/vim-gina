@@ -54,6 +54,7 @@ function! s:open(buffer, ...) abort
       call s:Buffer.open(a:buffer, {
             \ 'mods': config.mods,
             \ 'cmdarg': config.cmdarg,
+            \ 'opener': opener,
             \})
     else
       let manager = s:_get_buffer_manager(config.group)
