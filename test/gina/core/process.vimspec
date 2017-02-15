@@ -90,8 +90,10 @@ Describe gina#core#process
         let args.params = {'async': 1}
         call gina#core#process#exec(git, args)
         Assert Equals(getline(1, '$'), [''])
-        " git branch shonld terminate within 1s usually
-        sleep 1
+        " Wait until 'command:called' event has emitted
+        while tracker.command_called_called_count == 0
+          sleep 100m
+        endwhile
         Assert Equals(getline(1, '$'), ['  develop', '  ext/master', '* master'])
       End
 
@@ -103,8 +105,10 @@ Describe gina#core#process
         call gina#core#process#exec(git, args)
         Assert Equals(tracker.command_called_called_count, 0)
         Assert Equals(tracker.command_called_args, [])
-        " git branch shonld terminate within 1s usually
-        sleep 1
+        " Wait until 'command:called' event has emitted
+        while tracker.command_called_called_count == 0
+          sleep 100m
+        endwhile
         Assert Equals(tracker.command_called_called_count, 1)
         Assert Equals(tracker.command_called_args, ['branch'])
       End
