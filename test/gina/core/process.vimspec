@@ -133,7 +133,7 @@ Describe gina#core#process
       let git = gina#core#get()
       let result = gina#core#process#call(git, ['unknown-command'])
       let output = split(execute('call gina#core#process#inform(result)'), '\r\?\n')
-      Assert Match(output[0], '^Fail: git .* unknown-command$')
+      Assert Match(output[0], '^Fail:.* git .* unknown-command$')
       Assert Equals(output[1], 'git: ''unknown-command'' is not a git command. See ''git --help''.')
     End
   End
@@ -144,7 +144,7 @@ Describe gina#core#process
       let git = gina#core#get()
       let result = gina#core#process#call(git, ['unknown-command'])
       let output = split(gina#core#process#error(result), '\r\?\n')
-      Assert Match(output[0], '^vital: Vim.Exception: Error: Fail: git .* unknown-command$')
+      Assert Match(output[0], '^vital: Vim.Exception: Error: Fail:.* git .* unknown-command$')
       Assert Equals(output[1], 'git: ''unknown-command'' is not a git command. See ''git --help''.')
     End
   End
