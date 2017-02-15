@@ -97,7 +97,8 @@ function! s:init(args) abort
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
     autocmd BufWriteCmd <buffer> call s:BufWriteCmd()
-    autocmd QuitPre <buffer> call s:QuitPre()
+    autocmd WinLeave <buffer> call s:WinLeave()
+    autocmd WinEnter * call s:WinEnter()
   augroup END
 
   nnoremap <silent><buffer> <Plug>(gina-commit-amend)
@@ -125,13 +126,24 @@ function! s:BufWriteCmd() abort
   setlocal nomodified
 endfunction
 
-function! s:QuitPre() abort
-  let git = gina#core#get_or_fail()
-  let args = gina#core#meta#get_or_fail('args')
-  call gina#core#exception#call(
-        \ function('s:commit_commitmsg_confirm'),
-        \ [git, args]
-        \)
+function! s:WinLeave() abort
+  let s:params_on_winleave = {
+        \ 'git': gina#core#get_or_fail(),
+        \ 'args': gina#core#meta#get_or_fail('args'),
+        \ 'nwin': winnr('$'),
+        \}
+endfunction
+
+function! s:WinEnter() abort
+  if exists('s:params_on_winleave')
+    if winnr('$') < s:params_on_winleave.nwin
+      call gina#core#exception#call(
+            \ function('s:commit_commitmsg_confirm'),
+            \ [s:params_on_winleave.git, s:params_on_winleave.args]
+            \)
+    endif
+    unlet s:params_on_winleave
+  endif
 endfunction
 
 function! s:toggle_amend() abort
