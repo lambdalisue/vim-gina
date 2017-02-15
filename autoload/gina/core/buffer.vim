@@ -153,7 +153,7 @@ function! s:open_with_callback(bufname, options) abort
         \ a:options.callback
         \)
   " Update content
-  if !context.bufloaded || !&modified
+  if !&modified
     execute 'edit' a:options.cmdarg
   endif
   return context
