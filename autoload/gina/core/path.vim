@@ -6,17 +6,24 @@ let s:is_windows = has('win32') || has('win64')
 
 if s:is_windows
   function! gina#core#path#expand(expr) abort
-    return s:Path.unixpath(s:expand(s:Path.realpath(a:expr)))
+    return s:Path.unixpath(s:expand(s:realpath(a:expr)))
   endfunction
 
   function! gina#core#path#abspath(expr, ...) abort
-    let path = s:Path.realpath(s:expand(s:Path.realpath(a:expr)))
+    let path = s:realpath(s:expand(s:realpath(a:expr)))
     return s:Path.unixpath(call('s:abspath', [path] + a:000))
   endfunction
 
   function! gina#core#path#relpath(expr, ...) abort
-    let path = s:Path.realpath(s:expand(s:Path.realpath(a:expr)))
+    let path = s:realpath(s:expand(s:realpath(a:expr)))
     return s:Path.unixpath(call('s:relpath', [path] + a:000))
+  endfunction
+
+  function! s:realpath(path) abort
+    if a:path =~# '^\w\+://'
+      return s:Path.unixpath(a:path)
+    endif
+    return s:Path.realpath(a:path)
   endfunction
 else
   function! gina#core#path#expand(expr) abort
