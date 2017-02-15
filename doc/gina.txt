@@ -18,6 +18,7 @@ Interface			|gina-interface|
   Functions			|gina-functions|
   Options			|gina-options|
   Actions			|gina-actions|
+ASKPASS				|gina-askpass|
 
 
 =============================================================================
@@ -612,6 +613,60 @@ show:right
 show:tab
 show:preview
 	Show a content in the index or the commit.
+
+=============================================================================
+ASKPASS						*gina-askpass*
+
+When git requires username or password (e.g. git pull on a repository linked
+with https://), it use a program called "askpass".
+While gina.vim execute a git command through a job feature, a terminal based
+askpass program which git provides cannot be used.
+To solve this issue, gina.vim try to use a GUI based askpass program instead.
+
+-----------------------------------------------------------------------------
+LINUX						*gina-askpass-linux*
+
+There is a well known GUI based askpass program called "ssh-askpass-gnome".
+Users should install the program and set the executable path to one of these
+
+1. "$GIT_ASKPASS" environment variable
+2. "core.askpass" with "git config --global core.askpass=..."
+3. "$SSH_ASKPASS" environment variable
+
+When no available askpass program could be detected from above, gina.vim use
+an internal askpass script based on "zenity" when "zenity" is executable.
+Otherwise a git command which requires username and/or password always fail.
+
+In short, Linux users should do one of
+
+- Install "ssh-askpass-gnome" and configure it properly
+- Install "zenity"
+
+To enable username and/or password interactive input.
+
+See "scripts/askpass.zenity" if you would like to check what the script does.
+
+-----------------------------------------------------------------------------
+MAC						*gina-askpass-mac*
+
+gina.vim provides an internal askpass script based on an AppleScript.
+The script should be available on any Unix based Mac.
+
+In short, Mac uses should do nothing to enable username and/or password
+interactive input.
+
+See "scripts/askpass.mac" if you would like to check what the script does.
+
+-----------------------------------------------------------------------------
+WINDOWS						*gina-askpass-windows*
+
+Git has a built-in credential helper called "wincred" for Windows.
+This credential helper use a GUI-based prompt so Windows user do not need to
+worry about this unless they disabled that by configuration.
+
+In short, use "git config --global credential.helper wincred" to use
+"wincred" in your system.
+
 
 =============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

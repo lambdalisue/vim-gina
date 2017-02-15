@@ -21,7 +21,7 @@ Describe gina#command#log
         Gina log
         Assert Equals(winnr('$'), 2)
         Assert Equals(bufname('%'), 'gina://valid1:log')
-        Assert Equals(line('$'), 2, 'There should be two commits')
+        Assert Equals(line('$'), 2, 'There should be two commits but the content was ' . join(getline(1, '$'), "\n"))
       End
 
       It opens a commit info under the cursor with 'info' action
@@ -38,7 +38,7 @@ Describe gina#command#log
         Gina log -- %
         Assert Equals(winnr('$'), 2)
         Assert Equals(bufname('%'), 'gina://valid1:log/:A/foo')
-        Assert Equals(line('$'), 1, 'There should be one commits')
+        Assert Equals(line('$'), 1, 'There should be one commit but the content was ' . join(getline(1, '$'), "\n"))
       End
 
       It opens a content of the file on the commit under the cursor with 'info' action
@@ -66,7 +66,7 @@ Describe gina#command#log
         Gina log
         Assert Equals(winnr('$'), 2)
         Assert Equals(bufname('%'), 'gina://valid2:log')
-        Assert Equals(line('$'), 2, 'There should be two commits')
+        Assert Equals(line('$'), 2, 'There should be two commits but the content was ' . join(getline(1, '$'), "\n"))
       End
 
       It opens a commit under the cursor with 'show' action
@@ -89,7 +89,7 @@ Describe gina#command#log
         Gina log -- %
         Assert Equals(winnr('$'), 2)
         Assert Equals(bufname('%'), 'gina://valid2:log/:A/foo')
-        Assert Equals(line('$'), 1, 'There should be one commits')
+        Assert Equals(line('$'), 1, 'There should be one commit but the content was ' . join(getline(1, '$'), "\n"))
       End
 
       It opens a content of the file on the commit under the cursor with 'show' action
