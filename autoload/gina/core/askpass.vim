@@ -8,8 +8,8 @@ let s:repository_root = expand('<sfile>:p:h:h:h:h')
 let s:askpass_script = s:Path.join(s:repository_root, 'scripts', 'askpass')
 
 if s:is_windows
-  " win-ssh-askpass may help?
-  " https://sourceforge.net/projects/winsshaskpass/
+  " Using an official credential helper 'wincred' helps.
+  " See https://github.com/lambdalisue/gina.vim/pull/11#issuecomment-279541140
   let s:askpass_script = ''
 elseif s:is_darwin
   " AFAI, no usable GUI ssh-askpass exist
@@ -24,19 +24,9 @@ else
 endif
 
 if s:is_windows
+  " While Windows has an official credential which raise a GUI prompt, gina
+  " won't touch askpass for Windows
   function! gina#core#askpass#wrap(git, args) abort
-    if empty($GIT_TERMINAL_PROMPT) && !g:gina#core#askpass#suppress_warning
-      call s:Console.warn('$GIT_TERMINAL_PROMPT has not configured.')
-      call s:Console.warn('The environment variable should be configured.')
-      call s:Console.warn('See :h gina-askpass-windows')
-    endif
-    " NOTE:
-    " Windows does not have 'env' like application so use '-c core.askpass'
-    " instead of '$GIT_ASKPASS' environment variable
-    let askpass = s:askpass(a:git)
-    if !empty(askpass)
-      call insert(a:args.raw, ['-c', 'core.askpass=' . askpass], 1)
-    endif
     return a:args
   endfunction
 else
@@ -61,7 +51,7 @@ function! s:askpass(git) abort
   let askpass = get(get(config, 'core', {}), 'askpass')
   if !empty(g:gina#core#askpass#askpass_program)
     return g:gina#core#askpas#askpass_program
-  elseif g:gina#core#askpass#force_internal_script
+  elseif g:gina#core#askpass#force_internal
     return s:askpass_script
   elseif exists('$GIT_ASKPASS')
     return $GIT_ASKPASS
@@ -76,6 +66,5 @@ endfunction
 
 call s:Config.define('g:gina#core#askpass', {
       \ 'askpass_program': '',
-      \ 'force_internal_script': 0,
-      \ 'suppress_warning': 1,
+      \ 'force_internal': 0,
       \})
