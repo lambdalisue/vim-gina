@@ -52,6 +52,8 @@ if g:gina#command#status#use_default_mappings
   nmap <buffer> pp <Plug>(gina-patch)
   nmap <buffer> PP <Plug>(gina-patch-tab)
 
+  nmap <buffer> !! <Plug>(gina-chaperon)
+
   nmap <buffer> << <Plug>(gina-index-stage)
   nmap <buffer> >> <Plug>(gina-index-unstage)
   nmap <buffer> -- <Plug>(gina-index-toggle)

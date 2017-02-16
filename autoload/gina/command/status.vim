@@ -50,6 +50,7 @@ function! s:init(args) abort
   call s:Observer.attach()
   call gina#action#attach(function('s:get_candidates'))
   call gina#action#include('browse')
+  call gina#action#include('chaperon')
   call gina#action#include('compare')
   call gina#action#include('diff')
   call gina#action#include('edit')
