@@ -73,6 +73,7 @@ endfunction
 function! s:init(args) abort
   call gina#core#meta#set('args', a:args)
   silent! unlet b:gina_QuitPre
+  silent! unlet b:gina_BufWriteCmd
 
   if exists('b:gina_initialized')
     return
@@ -90,7 +91,7 @@ function! s:init(args) abort
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
     autocmd BufWriteCmd <buffer> call s:BufWriteCmd()
     autocmd QuitPre  <buffer> call s:QuitPre()
-    autocmd BufEnter <buffer> silent! unlet! b:gina_QuitPre
+    autocmd WinLeave <buffer> call s:WinLeave()
     autocmd WinEnter <buffer> silent! unlet! b:gina_QuitPre
   augroup END
 
@@ -110,6 +111,7 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:BufWriteCmd() abort
+  let b:gina_BufWriteCmd = 1
   let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
   call gina#core#exception#call(
@@ -117,16 +119,36 @@ function! s:BufWriteCmd() abort
         \ [git, args, getline(1, '$')]
         \)
   setlocal nomodified
-  if exists('b:gina_QuitPre')
-    call gina#core#exception#call(
-          \ function('s:commit_commitmsg_confirm'),
-          \ [git, args]
-          \)
-  endif
 endfunction
 
 function! s:QuitPre() abort
   let b:gina_QuitPre = 1
+  silent! unlet b:gina_BufWriteCmd
+endfunction
+
+" NOTE:
+" :w      -- BufWriteCmd
+" <C-w>p  -- WinLeave
+" :wq     -- QuitPre -> BufWriteCmd -> WinLeave
+" :q      -- QuitPre -> WinLeave
+function! s:WinLeave() abort
+  if exists('b:gina_QuitPre')
+    let git = gina#core#get_or_fail()
+    let args = gina#core#meta#get_or_fail('args')
+    if exists('b:gina_BufWriteCmd')
+      " User execute 'wq' so do not confirm
+      call gina#core#exception#call(
+            \ function('s:commit_commitmsg'),
+            \ [git, args]
+            \)
+    else
+      " User execute 'q' so confirm
+      call gina#core#exception#call(
+            \ function('s:commit_commitmsg_confirm'),
+            \ [git, args]
+            \)
+    endif
+  endif
 endfunction
 
 function! s:toggle_amend() abort
@@ -200,9 +222,7 @@ function! s:commit_commitmsg(git, args) abort
           \ args.raw,
           \ result.status,
           \)
-    if result.status
-      throw gina#core#process#error(result)
-    endif
+    call gina#core#process#inform(result)
     call s:remove_cached_commitmsg(a:git)
   finally
     call delete(tempfile)
