@@ -10,36 +10,34 @@ endfunction
 let s:store_pipe = {}
 
 function! s:store_pipe.on_stdout(job, msg, event) abort
-  let leading = get(self._content, -1, '')
-  silent! call remove(self._content, -1)
-  call extend(self._content, [leading . get(a:msg, 0, '')] + a:msg[1:])
-
-  let leading = get(self._stdout, -1, '')
-  silent! call remove(self._stdout, -1)
-  call extend(self._stdout, [leading . get(a:msg, 0, '')] + a:msg[1:])
+  call s:extend_content(self._stdout, a:msg)
+  call s:extend_content(self._content, a:msg)
 endfunction
 
 function! s:store_pipe.on_stderr(job, msg, event) abort
-  let leading = get(self._content, -1, '')
-  silent! call remove(self._content, -1)
-  call extend(self._content, [leading . get(a:msg, 0, '')] + a:msg[1:])
-
-  let leading = get(self._stderr, -1, '')
-  silent! call remove(self._stderr, -1)
-  call extend(self._stderr, [leading . get(a:msg, 0, '')] + a:msg[1:])
+  call s:extend_content(self._stderr, a:msg)
+  call s:extend_content(self._content, a:msg)
 endfunction
 
 function! s:store_pipe.on_exit(job, msg, event) abort
-  if empty(get(self._content, -1, ''))
-    silent! call remove(self._content, -1)
+  if empty(get(self._content, -1, 'a'))
+    call remove(self._content, -1)
   endif
-  if empty(get(self._stdout, -1, ''))
-    silent! call remove(self._stdout, -1)
+  if empty(get(self._stdout, -1, 'a'))
+    call remove(self._stdout, -1)
   endif
-  if empty(get(self._stderr, -1, ''))
-    silent! call remove(self._stderr, -1)
+  if empty(get(self._stderr, -1, 'a'))
+    call remove(self._stderr, -1)
   endif
   call gina#process#unregister(self)
+endfunction
+
+function! s:extend_content(content, msg) abort
+  let leading = get(a:content, -1, '')
+  if len(a:content) > 0
+    call remove(a:content, -1)
+  endif
+  call extend(a:content, [leading . get(a:msg, 0, '')] + a:msg[1:])
 endfunction
 
 
