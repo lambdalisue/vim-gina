@@ -16,6 +16,10 @@ Describe gina#process
     call slit1.execute('commit --quiet -m "Thrid"')
   End
 
+  Before
+    silent! bufdo bwipeout!
+  End
+
   Describe #open({git}, {args} [, {options}])
     Before
       let options = {'stdout': [], 'stderr': []}
