@@ -65,7 +65,7 @@ function! gina#command#parse_args(args) abort
       call args.set(query, value)
     endif
   endfor
-  " Normalize user-input pathlist to absolute pathlist
+  " Expand residuals to allow '%'
   let pathlist = args.residual()
   if !empty(pathlist)
     call args.residual(map(pathlist, 'gina#core#path#expand(v:val)'))
