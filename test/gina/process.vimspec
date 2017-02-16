@@ -34,7 +34,7 @@ Describe gina#process
     End
 
     It opens an {args} of {git} and returns a job instance
-      execute 'edit' fnameescape(slit1.worktree)
+      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
       let git = gina#core#get()
       let job = gina#process#open(git, ['branch'], options)
       call job.wait()
@@ -45,7 +45,7 @@ Describe gina#process
 
   Describe #call({git}, {args} [, {options}])
     It calls an {args} of {git} and returns a result instance
-      execute 'edit' fnameescape(slit1.worktree)
+      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
       let git = gina#core#get()
       let result = gina#process#call(git, ['branch'])
       Assert Equals(result.status, 0)
@@ -81,7 +81,7 @@ Describe gina#process
     End
 
     It calls an {args} of {git} and assign the result content into the current buffer
-      execute 'edit' fnameescape(slit1.worktree)
+      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
       let git = gina#core#get()
       let args = gina#command#parse_args(['branch'])
       call gina#process#exec(git, args)
@@ -91,7 +91,7 @@ Describe gina#process
     End
 
     It emits 'command:called' event with a command scheme
-      execute 'edit' fnameescape(slit1.worktree)
+      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
       let git = gina#core#get()
       let args = gina#command#parse_args(['branch'])
       call gina#process#exec(git, args)
@@ -105,7 +105,7 @@ Describe gina#process
 
   Describe #inform({result})
     It shows a result content when success
-      execute 'edit' fnameescape(slit1.worktree)
+      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
       let git = gina#core#get()
       let result = gina#process#call(git, ['branch'])
       let output = split(execute('call gina#process#inform(result)'), '\r\?\n')
@@ -116,7 +116,7 @@ Describe gina#process
     End
 
     It shows an args as well when fail
-      execute 'edit' fnameescape(slit1.worktree)
+      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
       let git = gina#core#get()
       let result = gina#process#call(git, ['unknown-command'])
       let output = split(execute('call gina#process#inform(result)'), '\r\?\n')
@@ -127,7 +127,7 @@ Describe gina#process
 
   Describe #error({result})
     It returns an error message for the {result}
-      execute 'edit' fnameescape(slit1.worktree)
+      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
       let git = gina#core#get()
       let result = gina#process#call(git, ['unknown-command'])
       let output = split(gina#process#error(result), '\r\?\n')
