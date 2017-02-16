@@ -1,4 +1,3 @@
-let s:Console = vital#gina#import('Vim.Console')
 
 
 function! gina#action#branch#define(binder) abort
@@ -100,10 +99,10 @@ function! s:on_new(candidates, options) abort
   endif
   let options = extend({}, a:options)
   for candidate in a:candidates
-    let name = s:Console.ask(
+    let name = gina#core#console#ask(
           \ 'Name: ', '',
           \)
-    let from = s:Console.ask(
+    let from = gina#core#console#ask(
           \ 'From: ', candidate.branch,
           \ 'customlist,gina#complete#commit#branch',
           \)
@@ -123,7 +122,7 @@ function! s:on_move(candidates, options) abort
         \ 'force': 0,
         \}, a:options)
   for candidate in a:candidates
-    let name = s:Console.ask(
+    let name = gina#core#console#ask(
           \ 'Rename: ',
           \ candidate.branch,
           \)
@@ -168,7 +167,7 @@ function! s:on_set_upstream_to(candidates, options) abort
   endif
   let options = extend({}, a:options)
   for candidate in a:candidates
-    let upstream = s:Console.ask(
+    let upstream = gina#core#console#ask(
           \ 'Upstream: ',
           \ candidate.branch,
           \ function('gina#complete#commit#remote_branch'),

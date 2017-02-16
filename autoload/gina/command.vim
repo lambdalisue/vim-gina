@@ -1,6 +1,5 @@
 let s:Argument = vital#gina#import('Argument')
 let s:Config = vital#gina#import('Config')
-let s:Console = vital#gina#import('Vim.Console')
 
 let s:t_number = type(0)
 
@@ -30,8 +29,8 @@ function! gina#command#call(bang, range, args, mods) abort
           \)
     return
   catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#command#[^#]\+#call/
-    call s:Console.debug(v:exception)
-    call s:Console.debug(v:throwpoint)
+    call gina#core#console#debug(v:exception)
+    call gina#core#console#debug(v:throwpoint)
   endtry
   call gina#command#call('!', a:range, a:args, a:mods)
 endfunction
@@ -52,8 +51,8 @@ function! gina#command#complete(arglead, cmdline, cursorpos) abort
           \ [a:arglead, cmdline, a:cursorpos],
           \)
   catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#command#[^#]\+#complete/
-    call s:Console.debug(v:exception)
-    call s:Console.debug(v:throwpoint)
+    call gina#core#console#debug(v:exception)
+    call gina#core#console#debug(v:throwpoint)
   endtry
   return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
 endfunction

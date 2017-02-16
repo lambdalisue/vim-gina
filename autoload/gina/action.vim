@@ -1,5 +1,4 @@
 let s:Action = vital#gina#import('Action')
-let s:Console = vital#gina#import('Vim.Console')
 
 
 function! gina#action#attach(...) abort
@@ -15,8 +14,8 @@ function! gina#action#include(scheme) abort
           \ [binder]
           \)
   catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#action#[^#]\+#define/
-    call s:Console.debug(v:exception)
-    call s:Console.debug(v:throwpoint)
+    call gina#core#console#debug(v:exception)
+    call gina#core#console#debug(v:throwpoint)
   endtry
   throw gina#core#exception#error(printf(
         \ 'No action script "gina/action/%s.vim" is found',

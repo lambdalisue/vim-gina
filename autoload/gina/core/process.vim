@@ -1,7 +1,6 @@
 let s:Argument = vital#gina#import('Argument')
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Config = vital#gina#import('Config')
-let s:Console = vital#gina#import('Vim.Console')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Job = vital#gina#import('System.Job')
 let s:Path = vital#gina#import('System.Filepath')
@@ -17,7 +16,7 @@ let s:no_askpass_commands = [
 function! gina#core#process#open(git, args, ...) abort
   let options = get(a:000, 0, {})
   let args = s:build_args(a:git, a:args)
-  call s:Console.debug(printf('process: %s', join(args.raw)))
+  call gina#core#console#debug(printf('process: %s', join(args.raw)))
   return s:Job.start(args.raw, options)
 endfunction
 
@@ -58,9 +57,9 @@ endfunction
 function! gina#core#process#inform(result) abort
   redraw | echo
   if a:result.status
-    call s:Console.warn('Fail: ' . join(a:result.args))
+    call gina#core#console#warn('Fail: ' . join(a:result.args))
   endif
-  call s:Console.echo(s:String.remove_ansi_sequences(
+  call gina#core#console#echo(s:String.remove_ansi_sequences(
         \ join(a:result.content, "\n"))
         \)
 endfunction

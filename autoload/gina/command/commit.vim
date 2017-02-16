@@ -1,6 +1,5 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Config = vital#gina#import('Config')
-let s:Console = vital#gina#import('Vim.Console')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:String = vital#gina#import('Data.String')
 let s:Git = vital#gina#import('Git')
@@ -162,8 +161,8 @@ function! s:get_commitmsg(git, args) abort
       call args.set('-F|--file', tempfile)
       call args.pop('-C|--reuse-message')
       call args.pop('-m|--message')
-      call s:Console.debug('Use a cached commit message:')
-      call s:Console.debug(join(map(copy(commitmsg), '''| '' . v:val'), "\n"))
+      call gina#core#console#debug('Use a cached commit message:')
+      call gina#core#console#debug(join(map(copy(commitmsg), '''| '' . v:val'), "\n"))
     endif
     " Force edit mode
     call args.pop('--no-edit')
@@ -214,7 +213,7 @@ function! s:commit_commitmsg(git, args) abort
 endfunction
 
 function! s:commit_commitmsg_confirm(git, args) abort
-  if s:Console.confirm('Do you want to commit changes?', 'y')
+  if gina#core#console#confirm('Do you want to commit changes?', 'y')
     call s:commit_commitmsg(a:git, a:args)
   else
     redraw | echo ''

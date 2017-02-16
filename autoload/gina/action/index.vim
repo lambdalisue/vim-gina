@@ -1,4 +1,3 @@
-let s:Console = vital#gina#import('Vim.Console')
 let s:File = vital#gina#import('System.File')
 let s:Path = vital#gina#import('System.Filepath')
 
@@ -277,18 +276,18 @@ function! s:on_discard(candidates, options) abort dict
     endif
   endfor
   if !options.force
-    call s:Console.warn(join([
+    call gina#core#console#warn(join([
           \ 'A discard action will discard all local changes on the working ',
           \ 'tree and the operation is irreversible, mean that you have no ',
           \ 'chance to revert the operation.',
           \], "\n"))
-    call s:Console.info(
+    call gina#core#console#info(
           \ 'This operation will be performed to the following candidates:'
           \)
     for candidate in extend(copy(delete_candidates), checkout_candidates)
       echo '- ' . s:Path.realpath(candidate.path)
     endfor
-    if !s:Console.confirm('Are you sure to discard the changes?')
+    if !gina#core#console#confirm('Are you sure to discard the changes?')
       return
     endif
   endif

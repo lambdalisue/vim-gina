@@ -1,5 +1,4 @@
 let s:Cache = vital#gina#import('System.Cache.Memory')
-let s:Console = vital#gina#import('Vim.Console')
 let s:Git = vital#gina#import('Git')
 
 let s:registry = s:Cache.new()
@@ -35,14 +34,14 @@ function! gina#core#get(...) abort
   if options.cache !=# s:CACHE_NEVER
     let cached = s:get_cached_instance(options.expr)
     if !empty(cached)
-      call s:Console.debug(printf(
+      call gina#core#console#debug(printf(
             \ 'A cached git instanse "%s" is used for "%s"',
             \ get(cached, 'refname', ''),
             \ expand(options.expr),
             \))
       return cached
     elseif options.cache ==# s:CACHE_TRUTH && cached isnot# v:null
-      call s:Console.debug(printf(
+      call gina#core#console#debug(printf(
             \ 'An empty cached git instanse is used for "%s"',
             \ expand(options.expr),
             \))

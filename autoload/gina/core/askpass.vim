@@ -1,5 +1,4 @@
 let s:Config = vital#gina#import('Config')
-let s:Console = vital#gina#import('Vim.Console')
 let s:Path = vital#gina#import('System.Filepath')
 
 let s:is_windows = has('win32') || has('win64')

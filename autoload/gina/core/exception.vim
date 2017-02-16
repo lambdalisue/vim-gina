@@ -1,4 +1,3 @@
-let s:Console = vital#gina#import('Vim.Console')
 let s:Exception = vital#gina#import('Vim.Exception')
 
 

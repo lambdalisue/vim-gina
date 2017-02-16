@@ -1,6 +1,5 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Config = vital#gina#import('Config')
-let s:Console = vital#gina#import('Vim.Console')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:String = vital#gina#import('Data.String')
 
@@ -38,7 +37,7 @@ function! s:build_args(git, args) abort
 
   " Check if available grep patterns has specified and ask if not
   if empty(args.params.pattern) && !(args.has('-e') || args.has('-f'))
-    let pattern = s:Console.ask('Pattern: ')
+    let pattern = gina#core#console#ask('Pattern: ')
     if empty(pattern)
       throw gina#core#exception#info('Cancel')
     endif
