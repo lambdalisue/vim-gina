@@ -71,7 +71,7 @@ function! s:slit.execute(...) abort
     let args += ['-C', shellescape(self.worktree)]
   endif
   let output = system(join(args + [command]))
-  return split(output, '\r\?\n$')
+  return split(output, '\r\?\n')
 endfunction
 
 function! s:slit.init() abort
