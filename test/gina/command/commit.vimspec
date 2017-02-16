@@ -1,18 +1,11 @@
 Describe gina#command#commit
   Before all
     let Path = vital#gina#import('System.Filepath')
-    let root = tempname()
-    let slit1 = Slit(Path.join(root, 'valid'), 1)
+    let slit1 = Slit(tempname(), 1)
     call slit1.write('A/foo.txt', [])
     call slit1.write('B/foo.txt', [])
     call slit1.write('C/foo.txt', [])
     call slit1.execute('add .')
-  End
-
-  After all
-    let File = vital#gina#import('System.File')
-    call File.rmdir(root, 'r')
-    call gina#core#clear()
   End
 
   Describe Use cases
@@ -23,7 +16,7 @@ Describe gina#command#commit
     It might be called without arguments
       GinaSync commit
       Assert Equals(winnr('$'), 2)
-      Assert Equals(bufname('%'), 'gina://valid:commit')
+      Assert Equals(bufname('%'), printf('gina://%s:commit', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ '',
             \ '# Please enter the commit message for your changes. Lines starting',
@@ -38,9 +31,11 @@ Describe gina#command#commit
             \ "#\tnew file:   C/foo.txt",
             \ '#',
             \])
-
-      call append(0, 'Test Message')
-      Assert Equals(slit1.execute('log -1 --one-line'), [''])
+      " Commit commitmsg
+      call append(0, 'Test Message') | wq
+      Assert Equals(slit1.execute('log --pretty=format:%s'), [
+            \ 'Test Message',
+            \])
     End
   End
 

@@ -1,8 +1,7 @@
 Describe gina#command#changes
   Before all
     let Path = vital#gina#import('System.Filepath')
-    let root = tempname()
-    let slit1 = Slit(Path.join(root, 'valid'), 1)
+    let slit1 = Slit(tempname(), 1)
     call slit1.write('A/foo.txt', [])
     call slit1.write('B/foo.txt', [])
     call slit1.write('C/foo.txt', [])
@@ -19,15 +18,8 @@ Describe gina#command#changes
     call slit1.execute('add %s', slit1.path('A/foo.txt'))
   End
 
-  After all
-    let File = vital#gina#import('System.File')
-    call File.rmdir(root, 'r')
-    call gina#core#clear()
-  End
-
   Before
     silent! windo bwipeout!
-    silent! bufdo bwipeout!
     execute 'edit' fnameescape(Path.join(slit1.worktree, 'A', 'foo.txt'))
   End
 
@@ -35,14 +27,14 @@ Describe gina#command#changes
     It might be called without arguments
       GinaSync changes
       Assert Equals(winnr('$'), 2)
-      Assert Equals(bufname('%'), 'gina://valid:changes')
+      Assert Equals(bufname('%'), printf('gina://%s:changes', slit1.refname))
       Assert Equals(getline(1, '$'), [''])
     End
 
     It might be called with --cached
       GinaSync changes --cached
       Assert Equals(winnr('$'), 2)
-      Assert Equals(bufname('%'), 'gina://valid:changes:cached')
+      Assert Equals(bufname('%'), printf('gina://%s:changes:cached', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ "1\t0\tA/foo.txt",
             \])
@@ -60,7 +52,7 @@ Describe gina#command#changes
     It might be called with develop...
       GinaSync changes develop...
       Assert Equals(winnr('$'), 2)
-      Assert Equals(bufname('%'), 'gina://valid:changes/develop...')
+      Assert Equals(bufname('%'), printf('gina://%s:changes/develop...', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ "0\t0\tC/foo.txt",
             \])
@@ -79,7 +71,7 @@ Describe gina#command#changes
       GinaSync show develop... -- A/foo.txt
       GinaSync changes
       Assert Equals(winnr('$'), 2)
-      Assert Equals(bufname('%'), 'gina://valid:changes/develop...')
+      Assert Equals(bufname('%'), printf('gina://%s:changes/develop...', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ "0\t0\tC/foo.txt",
             \])

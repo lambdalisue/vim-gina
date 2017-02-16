@@ -5,7 +5,7 @@ Describe gina#core#buffer
   End
 
   Before
-    windo bwipeout!
+    silent! windo bwipeout!
   End
 
   Describe #bufname({git}, {scheme} [, {options}])

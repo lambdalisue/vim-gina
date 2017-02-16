@@ -14,7 +14,6 @@ Describe gina#command#browse
     endfunction
 
     silent! windo bwipeout!
-    silent! bufdo bwipeout!
     execute 'edit' fnameescape('autoload/gina.vim')
   End
 

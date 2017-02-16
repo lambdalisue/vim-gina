@@ -1,15 +1,8 @@
 Describe gina#core#emitter
   Before all
     let Path = vital#gina#import('System.Filepath')
-    let root = tempname()
-    let slit1 = Slit(Path.join(root, 'valid'), 1)
-    let slit3 = Slit(Path.join(root, 'invalid'))
-  End
-
-  After all
-    let File = vital#gina#import('System.File')
-    call File.rmdir(root, 'r')
-    call gina#core#clear()
+    let slit1 = Slit(tempname(), 1)
+    let slit3 = Slit(tempname())
   End
 
   Before

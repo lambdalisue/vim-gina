@@ -88,6 +88,8 @@ endfunction
 function! Slit(worktree, ...) abort
   let slit = copy(s:slit)
   let slit.worktree = resolve(fnamemodify(a:worktree, ':p'))
+  let slit.repository = slit.worktree . s:separator . '.git'
+  let slit.refname = fnamemodify(slit.worktree, ':t')
   if !isdirectory(slit.worktree)
     call mkdir(slit.worktree, 'p')
   endif

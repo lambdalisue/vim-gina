@@ -1,8 +1,7 @@
 Describe gina#command#chaperon
   Before all
     let Path = vital#gina#import('System.Filepath')
-    let root = tempname()
-    let slit1 = Slit(Path.join(root, 'valid'), 1)
+    let slit1 = Slit(tempname(), 1)
     let filename1 = slit1.path('A/foo.txt')
     let filename2 = slit1.path('B/foo.txt')
     call slit1.write('A/foo.txt', [])
@@ -26,15 +25,8 @@ Describe gina#command#chaperon
     call slit1.execute('merge develop')
   End
 
-  After all
-    let File = vital#gina#import('System.File')
-    call File.rmdir(root, 'r')
-    call gina#core#clear()
-  End
-
   Before
     silent! windo bwipeout!
-    silent! bufdo bwipeout!
   End
 
   Describe Use cases
@@ -49,7 +41,7 @@ Describe gina#command#chaperon
             \])
       " topleft
       let bufnr = winbufnr(1)
-      Assert Equals(bufname(bufnr), 'gina://valid:show/:2:A/foo.txt')
+      Assert Equals(bufname(bufnr), printf('gina://%s:show/:2:A/foo.txt', slit1.refname))
       Assert Equals(getbufline(bufnr, 1, '$'), [
             \ '2',
             \])
@@ -61,48 +53,7 @@ Describe gina#command#chaperon
             \])
       " botright
       let bufnr = winbufnr(3)
-      Assert Equals(bufname(bufnr), 'gina://valid:show/:3:A/foo.txt')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ '3',
-            \])
-
-      " dor obtain changes from right
-      normal dor
-      Assert Equals(getline(1, '$'), [
-            \ '3',
-            \])
-
-      " dol obtain changes from left
-      normal dol
-      Assert Equals(getline(1, '$'), [
-            \ '2',
-            \])
-    End
-
-    It might be called with -- {filename}
-      execute 'edit' fnameescape(filename2)
-      execute 'GinaSync chaperon --' fnameescape(filename1)
-      Assert Equals(winnr('$'), 3)
-      " Focused buffer
-      Assert Equals(bufname('%'), filename1)
-      Assert Equals(getline(1, '$'), [
-            \ '',
-            \])
-      " topleft
-      let bufnr = winbufnr(1)
-      Assert Equals(bufname(bufnr), 'gina://valid:show/:2:A/foo.txt')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ '2',
-            \])
-      " center
-      let bufnr = winbufnr(2)
-      Assert Equals(bufname(bufnr), filename1)
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ '',
-            \])
-      " botright
-      let bufnr = winbufnr(3)
-      Assert Equals(bufname(bufnr), 'gina://valid:show/:3:A/foo.txt')
+      Assert Equals(bufname(bufnr), printf('gina://%s:show/:3:A/foo.txt', slit1.refname))
       Assert Equals(getbufline(bufnr, 1, '$'), [
             \ '3',
             \])
