@@ -2,7 +2,7 @@ let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:String = vital#gina#import('Data.String')
 
 let s:WORKTREE = '@@'
-let s:REGION_PATTERN = printf("%s.\{-}%s\n",
+let s:REGION_PATTERN = printf('%s.\{-}%s\r\?\n\?',
       \ printf('%s[^\n]\{-}\%%(\n\|$\)', repeat('<', 7)),
       \ printf('%s[^\n]\{-}\%%(\n\|$\)', repeat('>', 7))
       \)
@@ -35,14 +35,14 @@ function! gina#command#chaperon#call(range, args, mods) abort
   call group.add()
   let bufnr3 = bufnr('%')
 
-  " Theirs (REMOTE)
+  " :3 Theirs (REMOTE)
   execute printf(
         \ 'nnoremap <silent><buffer> <Plug>(gina-diffput) :diffput %d<CR>',
         \ bufnr2,
         \)
   nmap dp <Plug>(gina-diffput)
 
-  " Ours (Local)
+  " :2 Ours (Local)
   execute printf('%dwincmd w', bufwinnr(bufnr1))
   execute printf(
         \ 'nnoremap <silent><buffer> <Plug>(gina-diffput) :diffput %d<CR>',
@@ -64,7 +64,7 @@ function! gina#command#chaperon#call(range, args, mods) abort
   nmap dor <Plug>(gina-diffget-r)
   if !&l:modified
     let content = s:strip_conflict(getline(1, '$'))
-    silent lockmarks keepjumps $delete _
+    silent lockmarks keepjumps %delete _
     call setline(1, content)
     setlocal modified
   endif
@@ -124,7 +124,7 @@ endfunction
 
 function! s:strip_conflict(content) abort
   let newline = s:get_newline()
-  let text = s:String.join_posix_lines(a:content, newline)
+  let text = s:String.join_posix_lines(a:content, "\n")
   let text = substitute(text, s:REGION_PATTERN, '', 'g')
   return s:String.split_posix_text(text, newline)
 endfunction
