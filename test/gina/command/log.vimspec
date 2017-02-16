@@ -19,6 +19,7 @@ Describe gina#command#log
       It opens a new split window and show the log of the repository
         Assert Equals(bufname('%'), file)
         Gina log
+        call gina#core#process#wait()
         Assert Equals(winnr('$'), 2)
         Assert Equals(bufname('%'), 'gina://valid1:log')
         Assert Equals(line('$'), 2, 'There should be two commits but the content was ' . join(getline(1, '$'), "\n"))
@@ -26,6 +27,7 @@ Describe gina#command#log
 
       It opens a commit info under the cursor with 'info' action
         Gina log
+        call gina#core#process#wait()
         call gina#action#call('info')
         Assert Equals(winnr('$'), 2)
         Assert Match(bufname('%'), '^gina://valid1:info/\w\+$')
@@ -36,6 +38,7 @@ Describe gina#command#log
       It opens a new split window and show the log of the repository
         Assert Equals(bufname('%'), file)
         Gina log -- %
+        call gina#core#process#wait()
         Assert Equals(winnr('$'), 2)
         Assert Equals(bufname('%'), 'gina://valid1:log/:A/foo')
         Assert Equals(line('$'), 1, 'There should be one commit but the content was ' . join(getline(1, '$'), "\n"))
@@ -43,6 +46,7 @@ Describe gina#command#log
 
       It opens a content of the file on the commit under the cursor with 'info' action
         Gina log -- %
+        call gina#core#process#wait()
         call gina#action#call('info')
         Assert Equals(winnr('$'), 2)
         Assert Match(bufname('%'), '^gina://valid1:info/\w\+$')
@@ -64,6 +68,7 @@ Describe gina#command#log
         endif
         Assert Equals(bufname('%'), file)
         Gina log
+        call gina#core#process#wait()
         Assert Equals(winnr('$'), 2)
         Assert Equals(bufname('%'), 'gina://valid2:log')
         Assert Equals(line('$'), 2, 'There should be two commits but the content was ' . join(getline(1, '$'), "\n"))
@@ -74,6 +79,7 @@ Describe gina#command#log
           Skip This git does not support 'worktree' feature.
         endif
         Gina log
+        call gina#core#process#wait()
         call gina#action#call('info')
         Assert Equals(winnr('$'), 2)
         Assert Match(bufname('%'), '^gina://valid2:info/\w\+$')
@@ -87,6 +93,7 @@ Describe gina#command#log
         endif
         Assert Equals(bufname('%'), file)
         Gina log -- %
+        call gina#core#process#wait()
         Assert Equals(winnr('$'), 2)
         Assert Equals(bufname('%'), 'gina://valid2:log/:A/foo')
         Assert Equals(line('$'), 1, 'There should be one commit but the content was ' . join(getline(1, '$'), "\n"))
@@ -97,6 +104,7 @@ Describe gina#command#log
           Skip This git does not support 'worktree' feature.
         endif
         Gina log -- %
+        call gina#core#process#wait()
         call gina#action#call('info')
         Assert Equals(winnr('$'), 2)
         Assert Match(bufname('%'), '^gina://valid2:info/\w\+$')
@@ -115,6 +123,7 @@ Describe gina#command#log
       It will not open a window
         Assert Equals(bufname('%'), file)
         Gina log
+        call gina#core#process#wait()
         Assert Equals(winnr('$'), 1)
         Assert Equals(bufname('%'), file)
       End
@@ -124,6 +133,7 @@ Describe gina#command#log
       It will not open a window
         Assert Equals(bufname('%'), file)
         Gina log -- %
+        call gina#core#process#wait()
         Assert Equals(winnr('$'), 1)
         Assert Equals(bufname('%'), file)
       End

@@ -11,6 +11,7 @@ let s:t_dict = type({})
 let s:no_askpass_commands = [
       \ 'config',
       \]
+let s:jobs = {}
 
 
 function! gina#core#process#open(git, args, ...) abort
@@ -47,11 +48,33 @@ function! gina#core#process#call(git, args, ...) abort
 endfunction
 
 function! gina#core#process#exec(git, args) abort
-  if get(get(a:args, 'params', {}), 'async')
-    call s:exec_async(a:git, a:args)
-  else
-    call s:exec_sync(a:git, a:args)
-  endif
+  let guard = s:Guard.store(['&l:modifiable'])
+  try
+    setlocal modifiable
+    silent lockmarks keepjumps %delete _
+  finally
+    call guard.restore()
+  endtry
+  " Start a new process
+  let job = gina#core#process#open(a:git, a:args, copy(s:stream))
+  let job._args = a:args
+  let job._queue = s:Queue.new()
+  let job._bufnr = bufnr('%')
+  let job._winview = get(b:, 'gina_winview', winsaveview())
+  let job._timer = timer_start(
+        \ g:gina#core#process#updatetime,
+        \ function('s:exec_callback'),
+        \ { 'repeat': -1 }
+        \)
+  let s:jobs[job._timer] = job
+  return job
+endfunction
+
+function! gina#core#process#wait() abort
+  let updatetime = g:gina#core#process#updatetime . 'm'
+  while !empty(s:jobs)
+    execute 'sleep' updatetime
+  endwhile
 endfunction
 
 function! gina#core#process#inform(result) abort
@@ -97,45 +120,15 @@ function! s:expand(value) abort
   return a:value
 endfunction
 
-function! s:exec_sync(git, args) abort
-  let result = gina#core#process#call(a:git, a:args)
-  if result.status
-    throw gina#core#process#error(result)
-  endif
-  call gina#core#buffer#assign_content(result.content)
-  call gina#core#emitter#emit('command:called', a:args.get(0))
-endfunction
-
-function! s:exec_async(git, args) abort
-  let guard = s:Guard.store(['&l:modifiable'])
-  try
-    setlocal modifiable
-    silent lockmarks keepjumps %delete _
-  finally
-    call guard.restore()
-  endtry
-  " Start a new process
-  let async_process = gina#core#process#open(a:git, a:args, copy(s:async_process))
-  let async_process._args = a:args
-  let async_process._queue = s:Queue.new()
-  let async_process._bufnr = bufnr('%')
-  let async_process._timer = timer_start(
-        \ g:gina#core#process#updatetime,
-        \ function('s:async_process_callback'),
-        \ { 'repeat': -1 }
-        \)
-  let s:async_processes[async_process._timer] = async_process
-  return async_process
-endfunction
-
-function! s:async_process_callback(timer) abort
-  let async_process = get(s:async_processes, a:timer, v:null)
-  if async_process is# v:null
+function! s:exec_callback(timer) abort
+  let job = get(s:jobs, a:timer, v:null)
+  if job is# v:null
     call timer_stop(a:timer)
     return
   endif
-  call async_process.on_timer()
+  call job.on_timer()
 endfunction
+
 
 " Pipe -----------------------------------------------------------------------
 let s:pipe = {}
@@ -180,19 +173,18 @@ function! s:pipe.on_exit(job, msg, event) abort
 endfunction
 
 
-" Async process --------------------------------------------------------------
-let s:async_processes = {}
-let s:async_process = {}
+" Stream ---------------------------------------------------------------------
+let s:stream = {}
 
-function! s:async_process.on_stdout(job, msg, event) abort
+function! s:stream.on_stdout(job, msg, event) abort
   call self._queue.put(a:msg)
 endfunction
 
-function! s:async_process.on_stderr(job, msg, event) abort
+function! s:stream.on_stderr(job, msg, event) abort
   call self.on_stdout(a:job, a:msg, a:event)
 endfunction
 
-function! s:async_process.on_timer() abort
+function! s:stream.on_timer() abort
   let msg = self._queue.get()
   if msg is# v:null
     if self.status() ==# 'dead'
@@ -203,7 +195,7 @@ function! s:async_process.on_timer() abort
   endif
 endfunction
 
-function! s:async_process.flush(msg) abort
+function! s:stream.flush(msg) abort
   let focus = gina#core#buffer#focus(self._bufnr)
   if empty(focus) || bufnr('%') != self._bufnr
     return self.close()
@@ -220,29 +212,41 @@ function! s:async_process.flush(msg) abort
   endtry
 endfunction
 
-function! s:async_process.close() abort
-  silent! unlet s:async_processes[self._timer]
-  silent! call timer_stop(self._timer)
-  silent! call self.stop()
+function! s:stream.close() abort
   let focus = gina#core#buffer#focus(self._bufnr)
   if empty(focus) || bufnr('%') != self._bufnr
+    silent! unlet s:jobs[self._timer]
+    silent! call timer_stop(self._timer)
+    silent! call self.stop()
+    call gina#core#emitter#emit('command:called', self._args.params.scheme)
     return
   endif
   let guard = s:Guard.store(['&l:modifiable'])
-  let view = winsaveview()
   try
     setlocal modifiable
     if empty(getline('$'))
       silent lockmarks keepjumps $delete _
     endif
     setlocal nomodified
-    call gina#core#emitter#emit('command:called', self._args.get(0))
   finally
-    call winrestview(view)
+    call winrestview(self._winview)
     call guard.restore()
     call focus.restore()
+    silent! unlet s:jobs[self._timer]
+    silent! call timer_stop(self._timer)
+    silent! call self.stop()
+    call gina#core#emitter#emit('command:called', self._args.params.scheme)
   endtry
 endfunction
+
+
+" Automatically update b:gina_winview with cursor move while no buffer content
+" is available in BufReadCmd and winsaveview() always returns unwilling value
+augroup gina_core_process_internal
+  autocmd! *
+  autocmd CursorMoved  gina://* let b:gina_winview = winsaveview()
+  autocmd CursorMovedI gina://* let b:gina_winview = winsaveview()
+augroup END
 
 
 call s:Config.define('gina#core#process', {

@@ -73,7 +73,6 @@ function! gina#command#parse_args(args) abort
   " Assig global params
   let args.params = {}
   let args.params.scheme = args.get(0, '')
-  let args.params.async = args.pop('--async')
   let args.params.cmdarg = join([
         \ args.pop('^++enc'),
         \ args.pop('^++ff'),

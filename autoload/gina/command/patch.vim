@@ -101,9 +101,8 @@ endfunction
 function! s:open(n, mods, opener, revision, params) abort
   if a:revision ==# s:WORKTREE
     execute printf(
-          \ '%s Gina %s edit %s %s %s %s %s -- %s',
+          \ '%s Gina edit %s %s %s %s %s -- %s',
           \ a:mods,
-          \ a:params.async ? '--async' : '',
           \ a:params.cmdarg,
           \ gina#util#fnameescape(a:opener, '--opener='),
           \ gina#util#fnameescape(a:params.groups[a:n], '--group='),
@@ -113,9 +112,8 @@ function! s:open(n, mods, opener, revision, params) abort
           \)
   else
     execute printf(
-          \ '%s Gina %s show %s %s %s %s %s %s -- %s',
+          \ '%s Gina show %s %s %s %s %s %s -- %s',
           \ a:mods,
-          \ a:params.async ? '--async' : '',
           \ a:params.cmdarg,
           \ gina#util#fnameescape(a:opener, '--opener='),
           \ gina#util#fnameescape(a:params.groups[a:n], '--group='),

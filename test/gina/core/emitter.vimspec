@@ -81,7 +81,7 @@ Describe gina#core#emitter
     Assert Equals(tracker.modified_called_count, 0)
     Assert Equals(tracker.modified_delay_called_count, 0)
     Assert Equals(tracker.command_called_raw_called_count, 0)
-    call gina#core#emitter#emit('command:called:raw', 'scheme')
+    call gina#core#emitter#emit('command:called:raw', 'scheme', [], 0)
     Assert Equals(tracker.modified_called_count, 0)
     Assert Equals(tracker.modified_delay_called_count, 1)
     Assert Equals(tracker.command_called_raw_called_count, 1)
