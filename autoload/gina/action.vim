@@ -51,6 +51,18 @@ function! gina#action#call(name_or_alias, ...) abort
         \)
 endfunction
 
+function! gina#action#candidates(...) abort
+  let binder = s:get()
+  if a:0 == 0
+    let fline = 1
+    let lline = line('$')
+  else
+    let fline = get(a:000, 0, 1)
+    let lline = get(a:000, 1, fline)
+  endif
+  return binder.get_candidates(fline, lline)
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:get(...) abort

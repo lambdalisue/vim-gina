@@ -1,0 +1,95 @@
+Describe gina#command#browse
+  Before all
+    let Path = vital#gina#import('System.Filepath')
+    let Scope = themis#helper('scope')
+    let sfile = Path.realpath('autoload/gina/util.vim')
+    execute 'source' fnameescape(sfile)
+  End
+
+  Before
+    let vars = Scope.vars(sfile)
+    let vars.File._called_with = ''
+    function! vars.File.open(uri) abort
+      let self._called_with = a:uri
+    endfunction
+
+    silent! windo bwipeout!
+    silent! bufdo bwipeout!
+    execute 'edit' fnameescape('autoload/gina.vim')
+  End
+
+  Describe Use cases
+    It might be called without argument
+      GinaSync browse
+      Assert Equals(
+            \ vars.File._called_with,
+            \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/autoload/gina.vim'
+            \)
+    End
+
+    It might be called with 'HEAD@{2.days.ago}'
+      GinaSync browse HEAD@{2.days.ago}
+      Assert Equals(
+            \ vars.File._called_with,
+            \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD@{2.days.ago}/autoload/gina.vim'
+            \)
+    End
+
+    It might be calle with 'origin/HEAD...'
+      GinaSync browse origin/HEAD...
+      Assert Match(
+            \ vars.File._called_with,
+            \ 'https://github\.com/lambdalisue/gina.vim/blob/[0-9a-z]\{40}/autoload/gina\.vim'
+            \)
+    End
+
+    It might be calle with --exact
+      GinaSync browse --exact
+      Assert Match(
+            \ vars.File._called_with,
+            \ 'https://github\.com/lambdalisue/gina.vim/blob/[0-9a-z]\{40}/autoload/gina\.vim'
+            \)
+    End
+
+    It might be calle with --scheme=blame
+      GinaSync browse --scheme=blame
+      Assert Equals(
+            \ vars.File._called_with,
+            \ 'https://github.com/lambdalisue/gina.vim/blame/HEAD/autoload/gina.vim'
+            \)
+    End
+
+    It might be calle with 3,3 prefix
+      3,3GinaSync browse
+      Assert Equals(
+            \ vars.File._called_with,
+            \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/autoload/gina.vim#L3-L3'
+            \)
+    End
+
+    It might be calle with 3,5 prefix
+      3,5GinaSync browse
+      Assert Equals(
+            \ vars.File._called_with,
+            \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/autoload/gina.vim#L3-L5'
+            \)
+    End
+
+    It might be calle with -- README.md
+      GinaSync browse -- README.md
+      Assert Equals(
+            \ vars.File._called_with,
+            \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/README.md'
+            \)
+    End
+
+    It might be calle with --yank
+      GinaSync browse --yank
+      Assert Equals(vars.File._called_with, '')
+      Assert Equals(
+            \ getreg(),
+            \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/autoload/gina.vim'
+            \)
+    End
+  End
+End

@@ -67,6 +67,11 @@ function! gina#core#get(...) abort
   return git
 endfunction
 
+function! gina#core#clear() abort
+  call s:registry.clear()
+  call s:reference.clear()
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:is_file_buffer(expr) abort

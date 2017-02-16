@@ -1,6 +1,15 @@
 Describe gina#core#emitter
   Before all
     let Path = vital#gina#import('System.Filepath')
+    let root = tempname()
+    let slit1 = Slit(Path.join(root, 'valid'), 1)
+    let slit3 = Slit(Path.join(root, 'invalid'))
+  End
+
+  After all
+    let File = vital#gina#import('System.File')
+    call File.rmdir(root, 'r')
+    call gina#core#clear()
   End
 
   Before
@@ -92,7 +101,7 @@ Describe gina#core#emitter
   End
 
   It emits 'modified:delay' event by modifing a buffer in a git repository
-    execute 'edit' Path.join(g:git_profile.valid1, 'foo.txt')
+    execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
     Assert Equals(tracker.modified_called_count, 0)
     Assert Equals(tracker.modified_delay_called_count, 0)
     Assert Equals(tracker.command_called_raw_called_count, 0)
@@ -105,7 +114,7 @@ Describe gina#core#emitter
   End
 
   It DOES NOT emits 'modified:delay' event by modifing a buffer NOT in a git repository
-    execute 'edit' Path.join(g:git_profile.invalid, 'foo.txt')
+    execute 'edit' fnameescape(Path.join(slit3.worktree, 'foo.txt'))
     Assert Equals(tracker.modified_called_count, 0)
     Assert Equals(tracker.modified_delay_called_count, 0)
     Assert Equals(tracker.command_called_raw_called_count, 0)

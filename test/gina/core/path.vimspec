@@ -1,6 +1,14 @@
 Describe gina#core#path
   Before all
     let Path = vital#gina#import('System.Filepath')
+    let root = tempname()
+    let slit1 = Slit(Path.join(root, 'valid'), 1)
+  End
+
+  After all
+    let File = vital#gina#import('System.File')
+    call File.rmdir(root, 'r')
+    call gina#core#clear()
   End
 
   Before
@@ -14,8 +22,11 @@ Describe gina#core#path
     End
 
     It returns an Unix-like absolute path of {expr} when {expr} starts from 'gina://'
-      let git = gina#core#get_or_fail({'expr': g:git_profile.valid1})
-      let expr = 'gina://valid1:show/:A/foo/bar.txt'
+      let git = gina#core#get_or_fail({'expr': slit1.worktree})
+      let expr = printf(
+            \ 'gina://%s:show/:A/foo/bar.txt',
+            \ fnamemodify(slit1.worktree, ':t')
+            \)
       Assert Equals(gina#core#path#expand(expr), Path.unixpath(
             \ Path.join(git.worktree, 'A', 'foo', 'bar.txt')
             \))
@@ -26,8 +37,11 @@ Describe gina#core#path
       let expr = '%'
       Assert Equals(gina#core#path#expand(expr), 'foo/bar.txt')
 
-      execute 'edit' 'gina://valid1:show/:A/foo/bar.txt'
-      let git = gina#core#get_or_fail({'expr': g:git_profile.valid1})
+      let git = gina#core#get_or_fail({'expr': slit1.worktree})
+      execute 'edit' fnameescape(printf(
+            \ 'gina://%s:show/:A/foo/bar.txt',
+            \ fnamemodify(slit1.worktree, ':t')
+            \))
       let expr = '%'
       Assert Equals(gina#core#path#expand(expr), Path.unixpath(
             \ Path.join(git.worktree, 'A', 'foo', 'bar.txt')

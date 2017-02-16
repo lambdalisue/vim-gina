@@ -10,8 +10,7 @@ Describe gina#core#buffer
 
   Describe #bufname({git}, {scheme} [, {options}])
     Before
-      execute 'edit' fnameescape(Path.join(g:git_profile.valid1, 'foo.txt'))
-      let git = gina#core#get()
+      let git = {'refname': 'valid1'}
     End
 
     It returns a shortest path for the specified params
@@ -57,8 +56,7 @@ Describe gina#core#buffer
 
   Describe #parse({expr})
     Before
-      execute 'edit' fnameescape(Path.join(g:git_profile.valid1, 'foo.txt'))
-      let git = gina#core#get()
+      let git = {'refname': 'valid1'}
     End
 
     It returns an empty dictionary when {expr} is not built by gina#core#buffer#bufname()
