@@ -81,13 +81,13 @@ function! s:on_checkout(candidates, options) abort
     if is_remote && options.track
       execute printf(
             \ 'Gina checkout -b %s %s',
-            \ gina#util#fnameescape(candidate.branch),
-            \ gina#util#fnameescape(candidate.revision),
+            \ gina#util#shellescape(candidate.branch),
+            \ gina#util#shellescape(candidate.revision),
             \)
     else
       execute printf(
             \ 'Gina checkout %s',
-            \ gina#util#fnameescape(candidate.branch),
+            \ gina#util#shellescape(candidate.branch),
             \)
     endif
   endfor
@@ -108,8 +108,8 @@ function! s:on_new(candidates, options) abort
           \)
     execute printf(
           \ 'Gina checkout -b %s %s',
-          \ gina#util#fnameescape(name),
-          \ gina#util#fnameescape(from),
+          \ gina#util#shellescape(name),
+          \ gina#util#shellescape(from),
           \)
   endfor
 endfunction
@@ -129,8 +129,8 @@ function! s:on_move(candidates, options) abort
     execute printf(
           \ 'Gina branch --move %s %s %s',
           \ options.force ? '--force' : '',
-          \ gina#util#fnameescape(candidate.branch),
-          \ gina#util#fnameescape(name),
+          \ gina#util#shellescape(candidate.branch),
+          \ gina#util#shellescape(name),
           \)
   endfor
 endfunction
@@ -148,14 +148,14 @@ function! s:on_delete(candidates, options) abort
       execute printf(
             \ 'Gina push --delete %s %s %s',
             \ options.force ? '--force' : '',
-            \ gina#util#fnameescape(candidate.remote),
-            \ gina#util#fnameescape(candidate.branch),
+            \ gina#util#shellescape(candidate.remote),
+            \ gina#util#shellescape(candidate.branch),
             \)
     else
       execute printf(
             \ 'Gina branch --delete %s %s',
             \ options.force ? '--force' : '',
-            \ gina#util#fnameescape(candidate.branch),
+            \ gina#util#shellescape(candidate.branch),
             \)
     endif
   endfor
@@ -174,8 +174,8 @@ function! s:on_set_upstream_to(candidates, options) abort
           \)
     execute printf(
           \ 'Gina branch --set-upstream-to=%s %s',
-          \ gina#util#fnameescape(upstream),
-          \ gina#util#fnameescape(candidate.branch),
+          \ gina#util#shellescape(upstream),
+          \ gina#util#shellescape(candidate.branch),
           \)
   endfor
 endfunction
@@ -188,7 +188,7 @@ function! s:on_unset_upstream(candidates, options) abort
   for candidate in a:candidates
     execute printf(
           \ 'Gina branch --unset-upstream %s',
-          \ gina#util#fnameescape(candidate.branch),
+          \ gina#util#shellescape(candidate.branch),
           \)
   endfor
 endfunction

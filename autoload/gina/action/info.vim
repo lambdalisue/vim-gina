@@ -55,9 +55,9 @@ function! s:on_info(candidates, options) abort
   for candidate in a:candidates
     execute printf(
           \ 'Gina info %s %s -- %s',
-          \ gina#util#fnameescape(options.opener, '--opener='),
-          \ gina#util#fnameescape(candidate.revision),
-          \ gina#util#fnameescape(get(candidate, 'path', '')),
+          \ gina#util#shellescape(options.opener, '--opener='),
+          \ gina#util#shellescape(candidate.revision),
+          \ gina#util#shellescape(get(candidate, 'path', '')),
           \)
   endfor
 endfunction

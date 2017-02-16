@@ -40,8 +40,8 @@ function! s:on_browse(candidates, options) abort
           \ 'Gina browse %s %s %s -- %s',
           \ options.exact ? '--exact' : '',
           \ options.yank ? '--yank' : '',
-          \ gina#util#fnameescape(get(candidate, 'revision', '')),
-          \ gina#util#fnameescape(get(candidate, 'path', '')),
+          \ gina#util#shellescape(get(candidate, 'revision', '')),
+          \ gina#util#shellescape(get(candidate, 'path', '')),
           \)
   endfor
 endfunction

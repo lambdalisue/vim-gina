@@ -55,11 +55,11 @@ function! s:on_show(candidates, options) abort
   for candidate in a:candidates
     execute printf(
           \ 'Gina show %s %s %s %s -- %s',
-          \ gina#util#fnameescape(options.opener, '--opener='),
-          \ gina#util#fnameescape(get(candidate, 'line'), '--line='),
-          \ gina#util#fnameescape(get(candidate, 'col'), '--col='),
-          \ gina#util#fnameescape(get(candidate, 'revision', '')),
-          \ gina#util#fnameescape(candidate.path),
+          \ gina#util#shellescape(options.opener, '--opener='),
+          \ gina#util#shellescape(get(candidate, 'line'), '--line='),
+          \ gina#util#shellescape(get(candidate, 'col'), '--col='),
+          \ gina#util#shellescape(get(candidate, 'revision', '')),
+          \ gina#util#shellescape(candidate.path),
           \)
   endfor
 endfunction

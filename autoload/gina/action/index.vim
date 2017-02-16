@@ -159,7 +159,7 @@ function! s:on_add(candidates, options) abort
         \ 'Gina add --ignore-errors %s %s -- %s',
         \ options.force ? '--force' : '',
         \ options['intent-to-add'] ? '--intent-to-add' : '',
-        \ gina#util#fnameescape(pathlist),
+        \ gina#util#shellescape(pathlist),
         \)
 endfunction
 
@@ -176,7 +176,7 @@ function! s:on_rm(candidates, options) abort
         \ 'Gina rm --quiet --ignore-unmatch %s %s -- %s',
         \ options.force ? '--force' : '',
         \ options.cached ? '--cached' : '',
-        \ gina#util#fnameescape(pathlist),
+        \ gina#util#shellescape(pathlist),
         \)
 endfunction
 
@@ -188,7 +188,7 @@ function! s:on_reset(candidates, options) abort
   let pathlist = map(copy(a:candidates), 'v:val.path')
   execute printf(
         \ 'Gina reset --quiet -- %s',
-        \ gina#util#fnameescape(pathlist),
+        \ gina#util#shellescape(pathlist),
         \)
 endfunction
 
@@ -208,8 +208,8 @@ function! s:on_checkout(candidates, options) abort
         \ options.force ? '--force' : '',
         \ options.ours ? '--ours' : '',
         \ options.theirs ? '--theirs' : '',
-        \ gina#util#fnameescape(options.revision),
-        \ gina#util#fnameescape(pathlist),
+        \ gina#util#shellescape(options.revision),
+        \ gina#util#shellescape(pathlist),
         \)
 endfunction
 

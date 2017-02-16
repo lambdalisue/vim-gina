@@ -53,11 +53,11 @@ function! s:on_compare(candidates, options) abort
     execute printf(
           \ 'Gina compare %s %s %s %s %s -- %s',
           \ cached ? '--cached' : '',
-          \ gina#util#fnameescape(options.opener, '--opener='),
-          \ gina#util#fnameescape(get(candidate, 'line'), '--line='),
-          \ gina#util#fnameescape(get(candidate, 'col'), '--col='),
-          \ gina#util#fnameescape(get(candidate, 'revision', '')),
-          \ gina#util#fnameescape(candidate.path),
+          \ gina#util#shellescape(options.opener, '--opener='),
+          \ gina#util#shellescape(get(candidate, 'line'), '--line='),
+          \ gina#util#shellescape(get(candidate, 'col'), '--col='),
+          \ gina#util#shellescape(get(candidate, 'revision', '')),
+          \ gina#util#shellescape(candidate.path),
           \)
   endfor
 endfunction

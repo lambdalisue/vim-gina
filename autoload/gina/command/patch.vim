@@ -104,23 +104,23 @@ function! s:open(n, mods, opener, revision, params) abort
           \ '%s Gina edit %s %s %s %s %s -- %s',
           \ a:mods,
           \ a:params.cmdarg,
-          \ gina#util#fnameescape(a:opener, '--opener='),
-          \ gina#util#fnameescape(a:params.groups[a:n], '--group='),
-          \ gina#util#fnameescape(a:params.line, '--line='),
-          \ gina#util#fnameescape(a:params.col, '--col='),
-          \ gina#util#fnameescape(a:params.abspath),
+          \ gina#util#shellescape(a:opener, '--opener='),
+          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
+          \ gina#util#shellescape(a:params.line, '--line='),
+          \ gina#util#shellescape(a:params.col, '--col='),
+          \ gina#util#shellescape(a:params.abspath),
           \)
   else
     execute printf(
           \ '%s Gina show %s %s %s %s %s %s -- %s',
           \ a:mods,
           \ a:params.cmdarg,
-          \ gina#util#fnameescape(a:opener, '--opener='),
-          \ gina#util#fnameescape(a:params.groups[a:n], '--group='),
-          \ gina#util#fnameescape(a:params.line, '--line='),
-          \ gina#util#fnameescape(a:params.col, '--col='),
-          \ gina#util#fnameescape(a:revision),
-          \ gina#util#fnameescape(a:params.abspath),
+          \ gina#util#shellescape(a:opener, '--opener='),
+          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
+          \ gina#util#shellescape(a:params.line, '--line='),
+          \ gina#util#shellescape(a:params.col, '--col='),
+          \ gina#util#shellescape(a:revision),
+          \ gina#util#shellescape(a:params.abspath),
           \)
   endif
 endfunction

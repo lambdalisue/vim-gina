@@ -17,8 +17,8 @@ function! gina#command#chaperon#call(range, args, mods) abort
 
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
-        \ ? 'split'
-        \ : 'vsplit'
+        \ ? 'botright split'
+        \ : 'botright vsplit'
 
   call s:open(0, a:mods, opener1, ':2', args.params)
   call gina#util#diffthis()
@@ -62,9 +62,12 @@ function! gina#command#chaperon#call(range, args, mods) abort
         \)
   nmap dol <Plug>(gina-diffget-l)
   nmap dor <Plug>(gina-diffget-r)
-  let content = s:strip_conflict(getline(1, '$'))
-  silent lockmarks keepjumps $delete _
-  call setline(1, content)
+  if !&l:modified
+    let content = s:strip_conflict(getline(1, '$'))
+    silent lockmarks keepjumps $delete _
+    call setline(1, content)
+    setlocal modified
+  endif
 
   " Update diff
   call gina#util#diffupdate()
@@ -92,23 +95,23 @@ function! s:open(n, mods, opener, commit, params) abort
           \ '%s Gina edit %s %s %s %s %s -- %s',
           \ a:mods,
           \ a:params.cmdarg,
-          \ gina#util#fnameescape(a:opener, '--opener='),
-          \ gina#util#fnameescape(a:params.groups[a:n], '--group='),
-          \ gina#util#fnameescape(a:params.line, '--line='),
-          \ gina#util#fnameescape(a:params.col, '--col='),
-          \ gina#util#fnameescape(a:params.abspath),
+          \ gina#util#shellescape(a:opener, '--opener='),
+          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
+          \ gina#util#shellescape(a:params.line, '--line='),
+          \ gina#util#shellescape(a:params.col, '--col='),
+          \ gina#util#shellescape(a:params.abspath),
           \)
   else
     execute printf(
           \ '%s Gina show %s %s %s %s %s %s -- %s',
           \ a:mods,
           \ a:params.cmdarg,
-          \ gina#util#fnameescape(a:opener, '--opener='),
-          \ gina#util#fnameescape(a:params.groups[a:n], '--group='),
-          \ gina#util#fnameescape(a:params.line, '--line='),
-          \ gina#util#fnameescape(a:params.col, '--col='),
-          \ gina#util#fnameescape(a:commit),
-          \ gina#util#fnameescape(a:params.abspath),
+          \ gina#util#shellescape(a:opener, '--opener='),
+          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
+          \ gina#util#shellescape(a:params.line, '--line='),
+          \ gina#util#shellescape(a:params.col, '--col='),
+          \ gina#util#shellescape(a:commit),
+          \ gina#util#shellescape(a:params.abspath),
           \)
   endif
 endfunction
