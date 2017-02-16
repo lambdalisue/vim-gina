@@ -15,7 +15,7 @@ Describe gina#core#path
 
     It returns an Unix-like absolute path of {expr} when {expr} starts from 'gina://'
       let git = gina#core#get_or_fail({'expr': g:git_profile.valid1})
-      let expr = Path.realpath('gina://valid1:show/:A/foo/bar.txt')
+      let expr = 'gina://valid1:show/:A/foo/bar.txt'
       Assert Equals(gina#core#path#expand(expr), Path.unixpath(
             \ Path.join(git.worktree, 'A', 'foo', 'bar.txt')
             \))
@@ -26,7 +26,7 @@ Describe gina#core#path
       let expr = '%'
       Assert Equals(gina#core#path#expand(expr), 'foo/bar.txt')
 
-      execute 'edit' Path.realpath('gina://valid1:show/:A/foo/bar.txt')
+      execute 'edit' 'gina://valid1:show/:A/foo/bar.txt'
       let git = gina#core#get_or_fail({'expr': g:git_profile.valid1})
       let expr = '%'
       Assert Equals(gina#core#path#expand(expr), Path.unixpath(
