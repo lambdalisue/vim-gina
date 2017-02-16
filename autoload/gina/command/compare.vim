@@ -12,9 +12,9 @@ function! gina#command#compare#call(range, args, mods) abort
         \)
   if args.params.cached
     let revision1 = empty(revision1) ? 'HEAD' : revision1
-    let revision2 = empty(revision2) ? '' : revision2
+    let revision2 = empty(revision2) ? ':0' : revision2
   else
-    let revision1 = empty(revision1) ? '' : revision1
+    let revision1 = empty(revision1) ? ':0' : revision1
     let revision2 = empty(revision2) ? s:WORKTREE : revision2
   endif
   if args.params.R
@@ -26,8 +26,8 @@ function! gina#command#compare#call(range, args, mods) abort
   let group = s:Group.new()
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
-        \ ? 'split'
-        \ : 'vsplit'
+        \ ? 'botright split'
+        \ : 'botright vsplit'
   call s:open(0, a:mods, opener1, revision1, args.params)
   call gina#util#diffthis()
   call group.add()
@@ -52,7 +52,7 @@ function! s:build_args(git, args) abort
   let args.params.col = args.pop('--col')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
-  let args.params.abspath = gina#core#path#abspath(a:git, get(args.residual(), 0, '%'))
+  let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
   let args.params.revision = args.pop(1, gina#core#buffer#param('%', 'revision', ''))
   return args.lock()
 endfunction

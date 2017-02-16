@@ -7,7 +7,7 @@ function! gina#command#info#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, 'info', {
         \ 'revision': args.params.revision,
-        \ 'abspath': args.params.abspath,
+        \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,

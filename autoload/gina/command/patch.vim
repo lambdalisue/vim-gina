@@ -23,7 +23,7 @@ function! gina#command#patch#call(range, args, mods) abort
   call group.add()
   let bufnr1 = bufnr('%')
 
-  call s:open(1, a:mods, opener2, '', args.params)
+  call s:open(1, a:mods, opener2, ':0', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr2 = bufnr('%')

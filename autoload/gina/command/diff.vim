@@ -7,6 +7,7 @@ function! gina#command#diff#call(range, args, mods) abort
         \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
         \ 'params': [
         \   args.params.cached ? 'cached' : '',
+        \   args.params.R ? 'R' : '',
         \ ],
         \})
   call gina#core#buffer#open(bufname, {
@@ -28,6 +29,7 @@ function! s:build_args(git, args) abort
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.cached = args.get('--cached')
+  let args.params.R = args.get('-R')
 
   let pathlist = copy(args.residual())
   if empty(pathlist)
