@@ -59,7 +59,7 @@ function! s:expand(expr) abort
 endfunction
 
 function! s:abspath(path, ...) abort
-  if s:Path.is_absolute(a:path)
+  if s:Path.is_absolute(a:path) || a:path[0] ==# ':'
     return a:path
   endif
   let root = s:Path.remove_last_separator(a:0 == 0 ? getcwd() : a:1)
@@ -67,7 +67,7 @@ function! s:abspath(path, ...) abort
 endfunction
 
 function! s:relpath(path, ...) abort
-  if s:Path.is_relative(a:path)
+  if s:Path.is_relative(a:path) || a:path[0] ==# ':'
     return a:path
   endif
   let root = s:Path.remove_last_separator(a:0 == 0 ? getcwd() : a:1)

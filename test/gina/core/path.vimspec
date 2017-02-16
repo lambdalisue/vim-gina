@@ -49,4 +49,18 @@ Describe gina#core#path
       Assert Equals(gina#core#path#expand(expr), 'master')
     End
   End
+
+  Describe #abspath({expr} [, {root}])
+    It returns a Unix-like path of {expr} when {expr} starts from ':'
+      let expr = Path.realpath(':/foo/bar.txt')
+      Assert Equals(gina#core#path#abspath(expr), ':/foo/bar.txt')
+    End
+  End
+
+  Describe #relpath({expr} [, {root}])
+    It returns a Unix-like path of {expr} when {expr} starts from ':'
+      let expr = Path.realpath(':/foo/bar.txt')
+      Assert Equals(gina#core#path#relpath(expr), ':/foo/bar.txt')
+    End
+  End
 End
