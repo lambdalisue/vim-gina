@@ -11,6 +11,11 @@ let s:messages = {}
 function! gina#command#commit#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(a:args)
+
+  if s:is_raw_command(args)
+    return gina#command#call('!', a:range, a:args, a:mods)
+  endif
+
   let bufname = gina#core#buffer#bufname(git, 'commit')
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -68,6 +73,27 @@ function! s:build_args(args) abort
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.amend = args.get('--amend')
   return args.lock()
+endfunction
+
+function! s:is_raw_command(args) abort
+  if a:args.get('-e|--edit')
+    return 0
+  elseif a:args.get('--no-edit')
+    return 1
+  elseif a:args.get('--dry-run')
+    return 1
+  elseif !empty(a:args.get('-C|--reuse-message', ''))
+    return 1
+  elseif !empty(a:args.get('-c|--reedit-message', ''))
+    return 0
+  elseif a:args.get('-F|--file')
+    return 1
+  elseif !empty(a:args.get('-m|--message', ''))
+    return 1
+  elseif a:args.get('-t|--template')
+    return 0
+  endif
+  return 0
 endfunction
 
 function! s:init(args) abort
