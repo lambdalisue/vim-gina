@@ -30,6 +30,15 @@ for s:runtimepath in split(&runtimepath, ',')
 endfor
 call themis#log('-----------------------------------------------------------')
 
+
+" Synchronous Gina command for test
+command! -nargs=* -range=% -bang
+      \ -complete=customlist,gina#command#complete
+      \ GinaSync
+      \ call gina#command#call(<q-bang>, [<line1>, <line2>], <q-args>, <q-mods>) |
+      \ call gina#process#wait()
+
+
 " Git ------------------------------------------------------------------------
 let s:is_windows = has('win32') || has('win64')
 let s:scriptroot = expand('<sfile>:p:h')
