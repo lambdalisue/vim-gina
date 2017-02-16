@@ -67,9 +67,13 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#core#process#exec(
-        \ gina#core#get_or_fail(),
-        \ gina#core#meta#get_or_fail('args'),
-        \)
+  let git = gina#core#get_or_fail()
+  let args = gina#core#meta#get_or_fail('args')
+  let result = gina#core#process#call(git, args)
+  if result.status
+    throw gina#core#process#error(result)
+  endif
+  call gina#core#buffer#assign_content(result.content)
+  call gina#core#emitter#emit('command:called', args.get(0))
   call gina#util#doautocmd('BufRead')
 endfunction
