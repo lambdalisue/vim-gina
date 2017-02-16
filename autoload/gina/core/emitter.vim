@@ -33,7 +33,7 @@ function! s:on_modified_delay() abort
         \)
 endfunction
 
-function! s:on_command_called_raw(scheme) abort
+function! s:on_command_called_raw(scheme, args, exitval) abort
   call gina#core#emitter#emit('modified:delay')
 endfunction
 

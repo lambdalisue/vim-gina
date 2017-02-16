@@ -6,19 +6,7 @@ let s:t_number = type(0)
 
 function! gina#command#call(bang, range, args, mods) abort
   if a:bang ==# '!'
-    let git = gina#core#get()
-    let args = gina#command#parse_args(a:args)
-    let args.params.scheme = args.get(0, '')
-    if args.params.async
-      let options = copy(s:async_process)
-      let options.params = args.params
-      let options.content = []
-      call gina#core#process#open(git, args, options)
-    else
-      call gina#core#process#inform(gina#core#process#call(git, args))
-      call gina#core#emitter#emit('command:called:raw', args.params.scheme)
-    endif
-    return
+    return gina#command#call('', a:range, '_raw ' . a:args, a:mods)
   endif
   let scheme = matchstr(a:args, '^\S\+')
   let scheme = substitute(scheme, '!$', '', '')
@@ -33,12 +21,16 @@ function! gina#command#call(bang, range, args, mods) abort
     call gina#core#console#debug(v:exception)
     call gina#core#console#debug(v:throwpoint)
   endtry
-  call gina#command#call('!', a:range, a:args, a:mods)
+  return gina#command#call('', a:range, '_raw ' . a:args, a:mods)
 endfunction
 
 function! gina#command#complete(arglead, cmdline, cursorpos) abort
   if a:cmdline =~# '^Gina!'
-    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+    return gina#command#complete(
+          \ a:arglead,
+          \ substitute(a:cmdline, '^Gina!', 'Gina _raw', ''),
+          \ a:cursorpos,
+          \)
   elseif a:cmdline =~# printf('^Gina\s\+%s$', a:arglead)
     return gina#complete#common#command(a:arglead, a:cmdline, a:cursorpos)
   endif
@@ -55,7 +47,11 @@ function! gina#command#complete(arglead, cmdline, cursorpos) abort
     call gina#core#console#debug(v:exception)
     call gina#core#console#debug(v:throwpoint)
   endtry
-  return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  return gina#command#complete(
+        \ a:arglead,
+        \ substitute(a:cmdline, '^Gina', 'Gina _raw', ''),
+        \ a:cursorpos,
+        \)
 endfunction
 
 function! gina#command#parse_args(args) abort
@@ -76,6 +72,7 @@ function! gina#command#parse_args(args) abort
   endif
   " Assig global params
   let args.params = {}
+  let args.params.scheme = args.get(0, '')
   let args.params.async = args.pop('--async')
   let args.params.cmdarg = join([
         \ args.pop('^++enc'),
@@ -112,25 +109,4 @@ function! s:build_remover(query) abort
         \ '(terms[v:val] =~# ''^--'' ? ''--no-'' : ''-!'') . names[v:val]'
         \)
   return join(remover, '|')
-endfunction
-
-
-" Async process --------------------------------------------------------------
-let s:async_process = {}
-
-function! s:async_process.on_stdout(job, msg, event) abort
-  let leading = get(self.content, -1, '')
-  silent! call remove(self.content, -1)
-  call extend(self.content, [leading . get(a:msg, 0, '')] + a:msg[1:])
-endfunction
-
-function! s:async_process.on_stderr(job, msg, event) abort
-  let leading = get(self.content, -1, '')
-  silent! call remove(self.content, -1)
-  call extend(self.content, [leading . get(a:msg, 0, '')] + a:msg[1:])
-endfunction
-
-function! s:async_process.on_exit(job, msg, event) abort
-  call gina#core#console#echo(join(self.content, "\n"))
-  call gina#core#emitter#emit('command:called:raw', self.params.scheme)
 endfunction

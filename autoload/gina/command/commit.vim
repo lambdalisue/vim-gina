@@ -202,11 +202,16 @@ function! s:commit_commitmsg(git, args) abort
     call args.pop('-m|--message')
     call args.pop('-e|--edit')
     let result = gina#core#process#call(a:git, args)
+    call gina#core#emitter#emit(
+          \ 'command:called:raw',
+          \ 'commit',
+          \ args.raw,
+          \ result.status,
+          \)
     if result.status
       throw gina#core#process#error(result)
     endif
     call s:remove_cached_commitmsg(a:git)
-    call gina#core#emitter#emit('command:called:raw', 'commit')
   finally
     call delete(tempfile)
   endtry
