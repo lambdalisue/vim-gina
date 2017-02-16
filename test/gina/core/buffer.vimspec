@@ -10,31 +10,31 @@ Describe gina#core#buffer
 
   Describe #bufname({git}, {scheme} [, {options}])
     Before
-      let git = {'refname': 'valid1'}
+      let git = {'refname': 'valid'}
     End
 
     It returns a shortest path for the specified params
-      Assert Equals(gina#core#buffer#bufname(git, 'status'), 'gina://valid1:status')
+      Assert Equals(gina#core#buffer#bufname(git, 'status'), 'gina://valid:status')
       Assert Equals(gina#core#buffer#bufname(git, 'commit', {
             \ 'params': ['amend'],
             \}),
-            \'gina://valid1:commit:amend'
+            \'gina://valid:commit:amend'
             \)
       Assert Equals(gina#core#buffer#bufname(git, 'show', {
             \ 'relpath': 'README.md',
             \}),
-            \'gina://valid1:show/:README.md'
+            \'gina://valid:show/:README.md'
             \)
       Assert Equals(gina#core#buffer#bufname(git, 'diff', {
             \ 'revision': 'origin/HEAD',
             \ 'relpath': 'README.md',
             \}),
-            \'gina://valid1:diff/origin/HEAD:README.md'
+            \'gina://valid:diff/origin/HEAD:README.md'
             \)
       Assert Equals(gina#core#buffer#bufname(git, 'changes', {
             \ 'revision': 'origin/HEAD...',
             \}),
-            \'gina://valid1:changes/origin/HEAD...'
+            \'gina://valid:changes/origin/HEAD...'
             \)
 
     End
@@ -43,20 +43,20 @@ Describe gina#core#buffer
       Assert Equals(gina#core#buffer#bufname(git, 'show', {
             \ 'relpath': 'autoload\gina\core.vim',
             \}),
-            \'gina://valid1:show/:autoload/gina/core.vim'
+            \'gina://valid:show/:autoload/gina/core.vim'
             \)
       Assert Equals(gina#core#buffer#bufname(git, 'diff', {
             \ 'revision': 'origin/HEAD',
             \ 'relpath': 'autoload\gina\core.vim',
             \}),
-            \'gina://valid1:diff/origin/HEAD:autoload/gina/core.vim'
+            \'gina://valid:diff/origin/HEAD:autoload/gina/core.vim'
             \)
     End
   End
 
   Describe #parse({expr})
     Before
-      let git = {'refname': 'valid1'}
+      let git = {'refname': 'valid'}
     End
 
     It returns an empty dictionary when {expr} is not built by gina#core#buffer#bufname()
@@ -65,47 +65,54 @@ Describe gina#core#buffer
     End
 
     It returns params of {expr} which has built by gina#core#buffer#bufname()
-      Assert Equals(gina#core#buffer#parse('gina://valid1:status'), {
-            \ 'repo': 'valid1',
+      Assert Equals(gina#core#buffer#parse('gina://valid:status'), {
+            \ 'repo': 'valid',
             \ 'scheme': 'status',
             \ 'params': [],
             \ 'revision': '',
             \ 'relpath': '',
             \})
-      Assert Equals(gina#core#buffer#parse('gina://valid1:commit:amend'), {
-            \ 'repo': 'valid1',
+      Assert Equals(gina#core#buffer#parse('gina://valid:commit:amend'), {
+            \ 'repo': 'valid',
             \ 'scheme': 'commit',
             \ 'params': ['amend'],
             \ 'revision': '',
             \ 'relpath': '',
             \})
-      Assert Equals(gina#core#buffer#parse('gina://valid1:show/:README.md'), {
-            \ 'repo': 'valid1',
+      Assert Equals(gina#core#buffer#parse('gina://valid:show/:README.md'), {
+            \ 'repo': 'valid',
             \ 'scheme': 'show',
             \ 'params': [],
             \ 'revision': '',
             \ 'relpath': 'README.md',
             \})
-      Assert Equals(gina#core#buffer#parse('gina://valid1:diff/origin/HEAD:README.md'), {
-            \ 'repo': 'valid1',
+      Assert Equals(gina#core#buffer#parse('gina://valid:diff/origin/HEAD:README.md'), {
+            \ 'repo': 'valid',
             \ 'scheme': 'diff',
             \ 'params': [],
             \ 'revision': 'origin/HEAD',
             \ 'relpath': 'README.md',
             \})
-      Assert Equals(gina#core#buffer#parse('gina://valid1:changes/origin/HEAD...'), {
-            \ 'repo': 'valid1',
+      Assert Equals(gina#core#buffer#parse('gina://valid:changes/origin/HEAD...'), {
+            \ 'repo': 'valid',
             \ 'scheme': 'changes',
             \ 'params': [],
             \ 'revision': 'origin/HEAD...',
             \ 'relpath': '',
             \})
+      Assert Equals(gina#core#buffer#parse('gina://valid:show/:3:README.md'), {
+            \ 'repo': 'valid',
+            \ 'scheme': 'show',
+            \ 'params': [],
+            \ 'revision': ':3',
+            \ 'relpath': 'README.md',
+            \})
     End
 
     It returns params of {expr} which has built by gina#core#buffer#bufname()
-      execute 'edit' 'gina://valid1:status'
+      execute 'edit' 'gina://valid:status'
       Assert Equals(gina#core#buffer#parse('%'), {
-            \ 'repo': 'valid1',
+            \ 'repo': 'valid',
             \ 'scheme': 'status',
             \ 'params': [],
             \ 'revision': '',
@@ -116,16 +123,16 @@ Describe gina#core#buffer
 
   Describe #param({expr}, {attr} [, {default}])
     It throws an exception when unknown {attr} has specified
-      Throws /Unknown attribute/ gina#core#buffer#param('gina://valid1:status', 'path')
+      Throws /Unknown attribute/ gina#core#buffer#param('gina://valid:status', 'path')
     End
 
     It returns a value of an {attr} in params of {expr}
-      Assert Equals(gina#core#buffer#param('gina://valid1:status', 'repo'), 'valid1')
-      Assert Equals(gina#core#buffer#param('gina://valid1:status', 'scheme'), 'status')
-      Assert Equals(gina#core#buffer#param('gina://valid1:commit:amend', 'params'), ['amend'])
-      Assert Equals(gina#core#buffer#param('gina://valid1:show/:README.md', 'relpath'), 'README.md')
-      Assert Equals(gina#core#buffer#param('gina://valid1:diff/origin/HEAD:README.md', 'revision'), 'origin/HEAD')
-      Assert Equals(gina#core#buffer#param('gina://valid1:changes/origin/HEAD...', 'revision'), 'origin/HEAD...')
+      Assert Equals(gina#core#buffer#param('gina://valid:status', 'repo'), 'valid')
+      Assert Equals(gina#core#buffer#param('gina://valid:status', 'scheme'), 'status')
+      Assert Equals(gina#core#buffer#param('gina://valid:commit:amend', 'params'), ['amend'])
+      Assert Equals(gina#core#buffer#param('gina://valid:show/:README.md', 'relpath'), 'README.md')
+      Assert Equals(gina#core#buffer#param('gina://valid:diff/origin/HEAD:README.md', 'revision'), 'origin/HEAD')
+      Assert Equals(gina#core#buffer#param('gina://valid:changes/origin/HEAD...', 'revision'), 'origin/HEAD...')
     End
 
     It returns a correct default value of an {attr} when {expr} is invalid

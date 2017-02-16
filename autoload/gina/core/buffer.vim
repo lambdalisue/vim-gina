@@ -35,7 +35,7 @@ endfunction
 function! gina#core#buffer#parse(expr) abort
   let path = expand(a:expr)
   let m = matchlist(
-        \ path,'\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?([^:]*):?(.*)$',
+        \ path,'\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?(:[0-3]|[^:]*):?(.*)$',
         \)
   if empty(m)
     return {}
