@@ -39,8 +39,7 @@ else
       " is available.
       let prefix += ['GIT_ASKPASS=' . askpass]
     endif
-    let a:args.raw = prefix + a:args.raw
-    return a:args
+    return extend(a:args, prefix, 0)
   endfunction
 endif
 

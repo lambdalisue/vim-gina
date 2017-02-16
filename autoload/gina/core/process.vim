@@ -108,7 +108,7 @@ function! s:build_args(git, extra) abort
   call extend(args.raw, extra.raw)
   call filter(map(args.raw, 's:expand(v:val)'), '!empty(v:val)')
   if index(s:no_askpass_commands, extra.get(0)) == -1
-    call gina#core#askpass#wrap(a:git, args)
+    call gina#core#askpass#wrap(a:git, args.raw)
   endif
   return args
 endfunction
