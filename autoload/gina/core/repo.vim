@@ -18,9 +18,9 @@ function! gina#core#repo#relpath(git, expr) abort
 endfunction
 
 function! gina#core#repo#config(git) abort
-  let result = gina#core#process#call(a:git, ['config', '--list'])
+  let result = gina#process#call(a:git, ['config', '--list'])
   if result.status
-    throw gina#core#process#error(result)
+    throw gina#process#error(result)
   endif
   let config = {}
   for record in filter(result.content, '!empty(v:val)')

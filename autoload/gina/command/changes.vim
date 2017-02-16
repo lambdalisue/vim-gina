@@ -71,7 +71,7 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#core#process#exec(
+  call gina#process#exec(
         \ gina#core#get_or_fail(),
         \ gina#core#meta#get_or_fail('args'),
         \)

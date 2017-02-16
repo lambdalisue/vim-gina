@@ -207,10 +207,10 @@ function! s:get_commitmsg(git, args) abort
     " Force edit mode
     call args.pop('--no-edit')
     call args.set('-e|--edit', 1)
-    let result = gina#core#process#call(a:git, args)
+    let result = gina#process#call(a:git, args)
     if !result.status
       " NOTE: Operation should be fail while GIT_EDITOR=false
-      throw gina#core#process#error(result)
+      throw gina#process#error(result)
     endif
     " Get entire content (with comment) of commitmsg
     return s:get_commit_editmsg(a:git)
@@ -241,14 +241,14 @@ function! s:commit_commitmsg(git, args) abort
     call args.pop('-C|--reuse-message')
     call args.pop('-m|--message')
     call args.pop('-e|--edit')
-    let result = gina#core#process#call(a:git, args)
+    let result = gina#process#call(a:git, args)
     call gina#core#emitter#emit(
           \ 'command:called:raw',
           \ 'commit',
           \ args.raw,
           \ result.status,
           \)
-    call gina#core#process#inform(result)
+    call gina#process#inform(result)
     call s:remove_cached_commitmsg(a:git)
   finally
     call delete(tempfile)

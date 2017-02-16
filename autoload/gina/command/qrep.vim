@@ -7,11 +7,11 @@ function! gina#command#qrep#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
 
   call gina#util#doautocmd('QuickfixCmdPre')
-  let result = gina#core#process#call(git, args)
+  let result = gina#process#call(git, args)
   let guard = s:Guard.store(['&more'])
   try
     set nomore
-    call gina#core#process#inform(result)
+    call gina#process#inform(result)
 
     let items = map(
           \ result.content,

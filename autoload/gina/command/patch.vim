@@ -127,7 +127,7 @@ endfunction
 
 function! s:patch(git) abort
   let abspath = gina#core#path#abspath('%')
-  call gina#core#process#call(a:git, [
+  call gina#process#call(a:git, [
         \ 'add',
         \ '--intent-to-add',
         \ '--',
@@ -153,7 +153,7 @@ function! s:diff(git, abspath, buffer) abort
     " --no-index force --exit-code option.
     " --exit-code mean that the program exits with 1 if there were differences
     " and 0 means no differences
-    let result = gina#core#process#call(a:git, [
+    let result = gina#process#call(a:git, [
           \ 'diff',
           \ '--no-index',
           \ '--unified=1',
@@ -179,7 +179,7 @@ function! s:diff(git, abspath, buffer) abort
 endfunction
 
 function! s:index(git, abspath) abort
-  let result = gina#core#process#call(a:git, [
+  let result = gina#process#call(a:git, [
         \ 'show',
         \ ':' . gina#core#repo#relpath(a:git, a:abspath),
         \])
@@ -224,7 +224,7 @@ function! s:apply(git, content) abort
     if writefile(a:content, tempfile) == -1
       return
     endif
-    let result = gina#core#process#call(a:git, [
+    let result = gina#process#call(a:git, [
           \ 'apply',
           \ '--verbose',
           \ '--cached',
@@ -241,7 +241,7 @@ function! s:BufWriteCmd() abort
   let git = gina#core#get_or_fail()
   let result = gina#core#exception#call(function('s:patch'), [git])
   if !empty(result)
-    call gina#core#process#inform(result)
+    call gina#process#inform(result)
     call gina#core#emitter#emit('command:called:raw', ['apply'])
     setlocal nomodified
   endif

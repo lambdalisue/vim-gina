@@ -12,4 +12,4 @@ command! -nargs=* -range=% -bang -bar
       \ -complete=customlist,gina#command#complete
       \ GinaSync
       \ call gina#command#call(<q-bang>, [<line1>, <line2>], <q-args>, <q-mods>) |
-      \ call gina#core#process#wait()
+      \ call gina#process#wait()

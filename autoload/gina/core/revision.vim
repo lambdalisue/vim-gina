@@ -7,9 +7,9 @@ function! gina#core#revision#sha1(git, revision) abort
     return ref.hash
   endif
   " Fallback to rev-parse (e.g. HEAD@{2.days.ago})
-  let result = gina#core#process#call(a:git, ['rev-parse', a:revision])
+  let result = gina#process#call(a:git, ['rev-parse', a:revision])
   if result.status
-    throw gina#core#process#error(result)
+    throw gina#process#error(result)
   endif
   return get(result.stdout, 0, '')
 endfunction
@@ -47,11 +47,11 @@ endfunction
 function! s:find_common_ancestor(git, revision1, revision2) abort
   let lhs = empty(a:revision1) ? 'HEAD' : a:revision1
   let rhs = empty(a:revision2) ? 'HEAD' : a:revision2
-  let result = gina#core#process#call(a:git, [
+  let result = gina#process#call(a:git, [
         \ 'merge-base', lhs, rhs
         \])
   if result.status
-    throw gina#core#process#error(result)
+    throw gina#process#error(result)
   endif
   return get(result.stdout, 0, '')
 endfunction

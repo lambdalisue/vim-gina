@@ -1,9 +1,8 @@
 let s:Argument = vital#gina#import('Argument')
 let s:Config = vital#gina#import('Config')
-let s:Guard = vital#gina#import('Vim.Guard')
 let s:Job = vital#gina#import('System.Job')
-let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
+
 let s:t_dict = type({})
 let s:no_askpass_commands = [
       \ 'config',
@@ -23,9 +22,8 @@ function! gina#process#unregister(job) abort
   silent! unlet s:runnings[a:job.id()]
 endfunction
 
-function! gina#process#wait() abort
-  "let timeout = get(a:000, 0, v:null)
-  let timeout = get(a:000, 0, 1000)
+function! gina#process#wait(...) abort
+  let timeout = get(a:000, 0, v:null)
   let timeout = timeout is# v:null ? v:null : timeout / 1000.0
   let start_time = reltime()
   let updatetime = g:gina#process#updatetime . 'm'
@@ -55,7 +53,7 @@ function! gina#process#call(git, args, ...) abort
         \ 'timeout': v:null,
         \}, get(a:000, 0, {})
         \)
-  let pipe = gina#process#pipe#stack#new()
+  let pipe = gina#process#pipe#store()
   let job = gina#process#open(a:git, a:args, pipe)
   let status = job.wait(options.timeout)
   return {
@@ -68,7 +66,7 @@ function! gina#process#call(git, args, ...) abort
 endfunction
 
 function! gina#process#exec(git, args) abort
-  let pipe = gina#process#pipe#buffer#new()
+  let pipe = gina#process#pipe#stream()
   let job = gina#process#open(a:git, a:args, pipe)
   return job
 endfunction

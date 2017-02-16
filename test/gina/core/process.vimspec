@@ -1,4 +1,4 @@
-Describe gina#core#process
+Describe gina#process
   Before all
     let Path = vital#gina#import('System.Filepath')
     let root = tempname()
@@ -39,7 +39,7 @@ Describe gina#core#process
     It opens an {args} of {git} and returns a job instance
       execute 'edit' fnameescape(slit1.worktree)
       let git = gina#core#get()
-      let job = gina#core#process#open(git, ['branch'], options)
+      let job = gina#process#open(git, ['branch'], options)
       call job.wait()
       Assert Equals(job.stdout, ['  develop', '* master', ''])
       Assert Equals(job.stderr, [])
@@ -50,7 +50,7 @@ Describe gina#core#process
     It calls an {args} of {git} and returns a result instance
       execute 'edit' fnameescape(slit1.worktree)
       let git = gina#core#get()
-      let result = gina#core#process#call(git, ['branch'])
+      let result = gina#process#call(git, ['branch'])
       Assert Equals(result.status, 0)
       Assert Equals(result.stdout, ['  develop', '* master'])
       Assert Equals(result.stderr, [])
@@ -87,9 +87,9 @@ Describe gina#core#process
       execute 'edit' fnameescape(slit1.worktree)
       let git = gina#core#get()
       let args = gina#command#parse_args(['branch'])
-      call gina#core#process#exec(git, args)
+      call gina#process#exec(git, args)
       Assert Equals(getline(1, '$'), [''])
-      call gina#core#process#wait()
+      call gina#process#wait()
       Assert Equals(getline(1, '$'), ['  develop', '* master'])
     End
 
@@ -97,10 +97,10 @@ Describe gina#core#process
       execute 'edit' fnameescape(slit1.worktree)
       let git = gina#core#get()
       let args = gina#command#parse_args(['branch'])
-      call gina#core#process#exec(git, args)
+      call gina#process#exec(git, args)
       Assert Equals(tracker.command_called_called_count, 0)
       Assert Equals(tracker.command_called_args, [])
-      call gina#core#process#wait()
+      call gina#process#wait()
       Assert Equals(tracker.command_called_called_count, 1)
       Assert Equals(tracker.command_called_args, ['branch'])
     End
@@ -110,8 +110,8 @@ Describe gina#core#process
     It shows a result content when success
       execute 'edit' fnameescape(slit1.worktree)
       let git = gina#core#get()
-      let result = gina#core#process#call(git, ['branch'])
-      let output = split(execute('call gina#core#process#inform(result)'), '\r\?\n')
+      let result = gina#process#call(git, ['branch'])
+      let output = split(execute('call gina#process#inform(result)'), '\r\?\n')
       Assert Equals(output, [
             \ '[gina]   develop',
             \ '[gina] * master',
@@ -121,8 +121,8 @@ Describe gina#core#process
     It shows an args as well when fail
       execute 'edit' fnameescape(slit1.worktree)
       let git = gina#core#get()
-      let result = gina#core#process#call(git, ['unknown-command'])
-      let output = split(execute('call gina#core#process#inform(result)'), '\r\?\n')
+      let result = gina#process#call(git, ['unknown-command'])
+      let output = split(execute('call gina#process#inform(result)'), '\r\?\n')
       Assert Match(output[0], '^\[gina\] Fail:.* git .* unknown-command$')
       Assert Equals(output[1], '[gina] git: ''unknown-command'' is not a git command. See ''git --help''.')
     End
@@ -132,8 +132,8 @@ Describe gina#core#process
     It returns an error message for the {result}
       execute 'edit' fnameescape(slit1.worktree)
       let git = gina#core#get()
-      let result = gina#core#process#call(git, ['unknown-command'])
-      let output = split(gina#core#process#error(result), '\r\?\n')
+      let result = gina#process#call(git, ['unknown-command'])
+      let output = split(gina#process#error(result), '\r\?\n')
       Assert Match(output[0], '^vital: Vim.Exception: Error: Fail:.* git .* unknown-command$')
       Assert Equals(output[1], 'git: ''unknown-command'' is not a git command. See ''git --help''.')
     End

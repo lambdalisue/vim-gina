@@ -36,11 +36,11 @@ Describe gina#command#log
       Assert Equals(bufname('%'), 'gina://valid:log')
       Assert Match(
             \ getline(1),
-            \ '\* [32m\w\{7}[m - Thrid [33;1m\d\+ seconds ago[m [35;1m<.*>[m[36;1m (HEAD -> master)[m'
+            \ '\* [32m\w\{7}[m - Thrid [33;1m\d\+ seconds\? ago[m [35;1m<.*>[m[36;1m (HEAD -> master)[m'
             \)
       Assert Match(
             \ getline(2),
-            \ '\* [32m\w\{7}[m - First [33;1m\d\+ seconds ago[m [35;1m<.*>[m[36;1m[m'
+            \ '\* [32m\w\{7}[m - First [33;1m\d\+ seconds\? ago[m [35;1m<.*>[m[36;1m[m'
             \)
       Assert Equals(line('$'), 2)
     End
@@ -51,7 +51,7 @@ Describe gina#command#log
       Assert Equals(bufname('%'), 'gina://valid:log/:A/foo.txt')
       Assert Match(
             \ getline(1),
-            \ '\* [32m\w\{7}[m - First [33;1m\d\+ seconds ago[m [35;1m<.*>[m[36;1m[m'
+            \ '\* [32m\w\{7}[m - First [33;1m\d\+ seconds\? ago[m [35;1m<.*>[m[36;1m[m'
             \)
       Assert Equals(line('$'), 1)
     End
