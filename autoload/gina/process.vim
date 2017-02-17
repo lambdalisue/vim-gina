@@ -13,12 +13,20 @@ function! gina#process#runnings() abort
   return values(s:runnings)
 endfunction
 
-function! gina#process#register(job) abort
-  let s:runnings[a:job.id()] = a:job
+function! gina#process#register(job, ...) abort
+  if get(a:000, 0, 0)
+    let s:runnings['pseudo:' . a:job] = a:job
+  else
+    let s:runnings['job:' . a:job.id()] = a:job
+  endif
 endfunction
 
-function! gina#process#unregister(job) abort
-  silent! unlet s:runnings[a:job.id()]
+function! gina#process#unregister(job, ...) abort
+  if get(a:000, 0, 0)
+    silent! unlet s:runnings['pseudo:' . a:job]
+  else
+    silent! unlet s:runnings['job:' . a:job.id()]
+  endif
 endfunction
 
 function! gina#process#wait(...) abort
@@ -32,7 +40,6 @@ function! gina#process#wait(...) abort
     endif
     execute 'sleep' updatetime
   endwhile
-  cal themis#log(gina#process#runnings())
   return -1
 endfunction
 

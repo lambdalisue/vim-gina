@@ -8,6 +8,17 @@ let s:WORKTREE = '@@'
 
 
 function! gina#command#patch#call(range, args, mods) abort
+  call gina#process#register('patch', 1)
+  try
+    call s:call(a:range, a:args, a:mods)
+  finally
+    call gina#process#unregister('patch', 1)
+  endtry
+endfunction
+
+
+" Private --------------------------------------------------------------------
+function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let mods = a:mods =~# '\<\%(aboveleft\|belowright\|botright\|topleft\)\>'
@@ -86,8 +97,6 @@ function! gina#command#patch#call(range, args, mods) abort
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
-
-" Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
   let args.params.groups = [
