@@ -3,11 +3,14 @@ let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
-function! gina#command#ls_tree#call(range, args, mods) abort
+function! gina#command#ls#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = gina#core#buffer#bufname(git, 'ls-tree', {
+  let bufname = gina#core#buffer#bufname(git, 'ls', {
         \ 'revision': args.params.revision,
+        \ 'params': [
+        \   args.params.cached ? 'cached' : '',
+        \ ]
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -27,13 +30,23 @@ function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
-  let args.params.revision = args.get(1, gina#core#buffer#param('%', 'revision', 'HEAD'))
+  let args.params.cached = args.pop('--cached')
+  let args.params.revision = args.params.cached
+        \ ? ':0'
+        \ : args.get(1, gina#core#buffer#param('%', 'revision', ''))
 
-  call args.set('--full-name', 1)
-  call args.set('--full-tree', 1)
-  call args.set('--name-only', 1)
-  call args.set('-r', 1)
-  call args.set(1, args.params.revision)
+  if empty(args.params.revision)
+    call args.set(0, 'ls-files')
+    call args.set('--full-name', 1)
+  else
+    let args.params.revision = substitute(args.params.revision, '^:0$', '', '')
+    call args.set('--full-name', 1)
+    call args.set('--full-tree', 1)
+    call args.set('--name-only', 1)
+    call args.set('-r', 1)
+    call args.set(0, 'ls-tree')
+    call args.set(1, args.params.revision)
+  endif
   return args.lock()
 endfunction
 
@@ -73,7 +86,7 @@ function! s:BufReadCmd() abort
   let pipe = gina#process#pipe#stream()
   let pipe.writer = gina#core#writer#new(s:writer)
   call gina#process#open(git, args, pipe)
-  setlocal filetype=gina-ls-tree
+  setlocal filetype=gina-ls
 endfunction
 
 function! s:get_candidates(fline, lline) abort

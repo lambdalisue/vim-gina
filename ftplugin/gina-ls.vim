@@ -10,13 +10,25 @@ setlocal nowrap nofoldenable
 setlocal nonumber norelativenumber
 setlocal foldcolumn=0 colorcolumn=0
 
-if g:gina#command#ls_files#use_default_aliases
+let s:revision = gina#core#buffer#param('%', 'revision')
+let s:params = gina#core#buffer#param('%', 'params')
+let s:ls_files = empty(s:revision) && index(s:params, 'cached') == -1
+
+if g:gina#command#ls#use_default_aliases
   call gina#action#shorten('browse')
-  call gina#action#shorten('edit')
+  if s:ls_files
+    call gina#action#shorten('edit')
+  else
+    call gina#action#shorten('show')
+  endif
 endif
 
-if g:gina#command#ls_files#use_default_mappings
-  nmap <buffer> <Return> <Plug>(gina-edit)zv
+if g:gina#command#ls#use_default_mappings
+  if s:ls_files
+    nmap <buffer> <Return> <Plug>(gina-edit)zv
+  else
+    nmap <buffer> <Return> <Plug>(gina-show)zv
+  endif
 
   nmap <buffer> oo <Plug>(gina-edit)zv
   nmap <buffer> OO <Plug>(gina-edit-right)zv
