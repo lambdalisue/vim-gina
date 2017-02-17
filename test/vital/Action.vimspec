@@ -45,7 +45,7 @@ Describe Action
       call Action.attach('action')
       Assert Equals(mapcheck('?', 'n'), '<Plug>(action-builtin-help)')
       Assert Equals(mapcheck('<Tab>', 'n'), '<Plug>(action-builtin-choice)')
-      Assert Equals(mapcheck('<Tab>', 'v'), '<Plug>(action-builtin-choice)gv')
+      Assert Equals(mapcheck('<Tab>', 'v'), '<Plug>(action-builtin-choice)')
       Assert Equals(mapcheck('<Tab>', 'i'), '<Plug>(action-builtin-choice)')
       Assert Equals(mapcheck('.', 'n'), '<Plug>(action-builtin-repeat)')
       Assert Equals(mapcheck('.', 'v'), '<Plug>(action-builtin-repeat)gv')
