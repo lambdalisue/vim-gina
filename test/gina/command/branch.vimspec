@@ -29,7 +29,7 @@ Describe gina#command#branch
   End
 
   Before
-    silent! windo bwipeout!
+    silent! bufdo bwipeout!
     execute 'edit' fnameescape(slit1.worktree)
   End
 

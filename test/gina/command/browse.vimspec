@@ -13,7 +13,7 @@ Describe gina#command#browse
       let self._called_with = a:uri
     endfunction
 
-    silent! windo bwipeout!
+    silent! bufdo bwipeout!
     execute 'edit' fnameescape('autoload/gina.vim')
   End
 

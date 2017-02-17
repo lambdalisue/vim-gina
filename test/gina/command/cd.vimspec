@@ -7,7 +7,7 @@ Describe gina#command#cd
   End
 
   Before
-    silent! windo bwipeout!
+    silent! bufdo bwipeout!
     edit foo
     execute 'new' fnameescape(Path.join(slit1.worktree, 'A', 'foo.txt'))
   End

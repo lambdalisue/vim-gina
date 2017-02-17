@@ -16,7 +16,7 @@ Describe gina#core#repo
   End
 
   Before
-    silent! windo bwipeout!
+    silent! bufdo bwipeout!
   End
 
   Describe #config({git})

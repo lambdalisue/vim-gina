@@ -1,6 +1,6 @@
 Describe gina#core#meta
   Before
-    silent! windo bwipeout!
+    silent! bufdo bwipeout!
   End
 
   Describe #get()
