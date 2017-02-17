@@ -29,4 +29,4 @@ vint plugin
 vint ftplugin
 
 themis --version
-themis --reporter dot --runtimepath /tmp/vital
+themis --reporter spec --runtimepath /tmp/vital
