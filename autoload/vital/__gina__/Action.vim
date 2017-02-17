@@ -58,7 +58,7 @@ function! s:attach(name, ...) abort
 endfunction
 
 function! s:get(name) abort
-  return b:{s:PREFIX . a:name}
+  return get(b:, s:PREFIX . a:name, v:null)
 endfunction
 
 

@@ -7,6 +7,9 @@ endfunction
 
 function! gina#action#include(scheme) abort
   let binder = s:get()
+  if binder is# v:null
+    return
+  endif
   let scheme = substitute(a:scheme, '-', '_', 'g')
   try
     return call(
@@ -25,12 +28,18 @@ endfunction
 
 function! gina#action#alias(...) abort
   let binder = s:get()
+  if binder is# v:null
+    return
+  endif
   return call(binder.alias, a:000, binder)
 endfunction
 
 function! gina#action#shorten(scheme, ...) abort
   let excludes = get(a:000, 0, [])
   let binder = s:get()
+  if binder is# v:null
+    return
+  endif
   let scheme = substitute(a:scheme, '-', '_', 'g')
   let names = filter(
         \ keys(binder.actions),
@@ -43,6 +52,9 @@ endfunction
 
 function! gina#action#call(name_or_alias, ...) abort
   let binder = s:get()
+  if binder is# v:null
+    return
+  endif
   let candidates = a:0 > 0 ? a:1 : binder.get_candidates(1, line('$'))
   return gina#core#exception#call(
         \ binder.call,
@@ -53,6 +65,9 @@ endfunction
 
 function! gina#action#candidates(...) abort
   let binder = s:get()
+  if binder is# v:null
+    return
+  endif
   if a:0 == 0
     let fline = 1
     let lline = line('$')
