@@ -83,6 +83,7 @@ function! gina#command#patch#call(range, args, mods) abort
 
   call gina#util#diffupdate()
   normal! zm
+  call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 
@@ -234,6 +235,7 @@ function! s:apply(git, content) abort
           \ '--',
           \ tempfile,
           \])
+    call gina#core#emitter#emit('command:called:complete', s:SCHEME)
     return result
   finally
     silent! call delete(tempfile)
@@ -245,7 +247,6 @@ function! s:BufWriteCmd() abort
   let result = gina#core#exception#call(function('s:patch'), [git])
   if !empty(result)
     call gina#process#inform(result)
-    call gina#core#emitter#emit('command:called:raw', ['apply'])
     setlocal nomodified
   endif
 endfunction

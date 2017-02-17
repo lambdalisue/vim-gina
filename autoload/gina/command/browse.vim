@@ -56,6 +56,7 @@ function! gina#command#browse#call(range, args, mods) abort
   else
     call gina#util#open(url)
   endif
+  call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 

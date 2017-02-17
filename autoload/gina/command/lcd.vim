@@ -6,6 +6,7 @@ function! gina#command#lcd#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   execute s:SCHEME gina#util#fnameescape(s:Path.realpath(args.params.abspath))
+  call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 

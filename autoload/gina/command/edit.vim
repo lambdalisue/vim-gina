@@ -1,4 +1,5 @@
 let s:Path = vital#gina#import('System.Filepath')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#edit#call(range, args, mods) abort
@@ -13,6 +14,7 @@ function! gina#command#edit#call(range, args, mods) abort
         \ 'line': args.params.line,
         \ 'col': args.params.col,
         \})
+  call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 

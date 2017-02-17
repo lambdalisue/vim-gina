@@ -133,6 +133,7 @@ function! s:BufReadCmd() abort
         \ [git, args]
         \)
   call gina#core#buffer#assign_content(content)
+  call gina#core#emitter#emit('command:called', s:SCHEME)
   setlocal filetype=gina-commit
 endfunction
 
@@ -242,14 +243,9 @@ function! s:commit_commitmsg(git, args) abort
     call args.pop('-m|--message')
     call args.pop('-e|--edit')
     let result = gina#process#call(a:git, args)
-    call gina#core#emitter#emit(
-          \ 'command:called:raw',
-          \ 'commit',
-          \ args.raw,
-          \ result.status,
-          \)
     call gina#process#inform(result)
     call s:remove_cached_commitmsg(a:git)
+    call gina#core#emitter#emit('command:called:complete', s:SCHEME)
   finally
     call delete(tempfile)
   endtry

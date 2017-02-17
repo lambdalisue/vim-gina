@@ -32,10 +32,6 @@ function! s:on_modified_delay() abort
         \)
 endfunction
 
-function! s:on_command_called_raw(...) abort
-  call gina#core#emitter#emit('modified:delay')
-endfunction
-
 function! s:emit_modified(...) abort
   call gina#core#emitter#emit('modified')
 endfunction
@@ -51,12 +47,8 @@ if !exists('s:subscribed')
         \ 'modified:delay',
         \ function('s:on_modified_delay')
         \)
-
-  call gina#core#emitter#subscribe(
-        \ 'command:called:raw',
-        \ function('s:on_command_called_raw')
-        \)
 endif
+
 
 " Emit 'modified' when a file content is modified ----------------------------
 function! s:on_BufWritePre() abort

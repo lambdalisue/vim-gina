@@ -21,3 +21,18 @@ function! s:pipe.on_exit(job, msg, event) abort
         \ self.params.scheme,
         \)
 endfunction
+
+
+" Event ----------------------------------------------------------------------
+function! s:on_command_called_raw(...) abort
+  call gina#core#emitter#emit('modified:delay')
+endfunction
+
+
+if !exists('s:subscribed')
+  let s:subscribed = 1
+  call gina#core#emitter#subscribe(
+        \ 'command:called:raw',
+        \ function('s:on_command_called_raw')
+        \)
+endif

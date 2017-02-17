@@ -41,6 +41,7 @@ function! gina#command#compare#call(range, args, mods) abort
 
   call gina#util#diffupdate()
   normal! zm
+  call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 
