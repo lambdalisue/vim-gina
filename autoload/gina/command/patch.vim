@@ -140,23 +140,24 @@ endfunction
 
 function! s:patch(git) abort
   let abspath = gina#core#path#abspath('%')
+  let relpath = gina#core#repo#relpath(a:git, abspath)
   call gina#process#call(a:git, [
         \ 'add',
         \ '--intent-to-add',
         \ '--',
         \ s:Path.realpath(abspath),
         \])
-  let diff = s:diff(a:git, abspath, getline(1, '$'))
+  let diff = s:diff(a:git, relpath, getline(1, '$'))
   let result = s:apply(a:git, diff)
   return result
 endfunction
 
-function! s:diff(git, abspath, buffer) abort
+function! s:diff(git, relpath, buffer) abort
   let tempfile = tempname()
   let tempfile1 = tempfile . '.index'
   let tempfile2 = tempfile . '.buffer'
   try
-    if writefile(s:index(a:git, a:abspath), tempfile1) == -1
+    if writefile(s:index(a:git, a:relpath), tempfile1) == -1
       return
     endif
     if writefile(a:buffer, tempfile2) == -1
@@ -183,7 +184,7 @@ function! s:diff(git, abspath, buffer) abort
           \ result.content,
           \ tempfile1,
           \ tempfile2,
-          \ a:abspath,
+          \ a:relpath,
           \)
   finally
     silent! call delete(tempfile1)
@@ -191,11 +192,8 @@ function! s:diff(git, abspath, buffer) abort
   endtry
 endfunction
 
-function! s:index(git, abspath) abort
-  let result = gina#process#call(a:git, [
-        \ 'show',
-        \ ':' . gina#core#repo#relpath(a:git, a:abspath),
-        \])
+function! s:index(git, relpath) abort
+  let result = gina#process#call(a:git, ['show', ':' . a:relpath])
   if result.status
     return []
   endif
