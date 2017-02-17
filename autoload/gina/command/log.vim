@@ -1,5 +1,4 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
-let s:Config = vital#gina#import('Config')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:String = vital#gina#import('Data.String')
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
@@ -120,7 +119,7 @@ function! s:writer.on_stop() abort
 endfunction
 
 
-call s:Config.define('g:gina#command#log', {
+call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,
       \})

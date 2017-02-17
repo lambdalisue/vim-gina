@@ -2,7 +2,7 @@ let s:Config = vital#gina#import('Config')
 let s:Path = vital#gina#import('System.Filepath')
 
 
-function! gina#config(sfile, options) abort
+function! gina#core#config#define(sfile, options) abort
   return s:Config.define(s:translate(a:sfile), a:options)
 endfunction
 
@@ -16,12 +16,3 @@ function! s:translate(sfile) abort
   let name = substitute(name, '\%(^#\|#$\)', '', 'g')
   return 'g:' . name
 endfunction
-
-
-" Default variable -----------------------------------------------------------
-call gina#config(expand('<sfile>'), {
-      \ 'test': 0,
-      \ 'debug': -1,
-      \ 'develop': 1,
-      \ 'complete_threshold': 30,
-      \})

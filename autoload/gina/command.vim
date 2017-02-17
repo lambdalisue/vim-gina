@@ -1,6 +1,4 @@
 let s:Argument = vital#gina#import('Argument')
-let s:Config = vital#gina#import('Config')
-
 let s:t_number = type(0)
 
 

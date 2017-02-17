@@ -1,5 +1,4 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
-let s:Config = vital#gina#import('Config')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:String = vital#gina#import('Data.String')
 let s:Git = vital#gina#import('Git')
@@ -319,6 +318,6 @@ function! s:remove_cached_commitmsg(git) abort
 endfunction
 
 
-call s:Config.define('g:gina#command#commit', {
+call gina#config(expand('<sfile>'), {
       \ 'use_default_mappings': 1,
       \})

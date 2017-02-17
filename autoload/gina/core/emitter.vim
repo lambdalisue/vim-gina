@@ -1,4 +1,3 @@
-let s:Config = vital#gina#import('Config')
 let s:Emitter = vital#gina#import('Emitter')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 
@@ -82,6 +81,6 @@ augroup gina_internal_util_emitter
 augroup END
 
 
-call s:Config.define('g:gina#core#emitter', {
+call gina#config(expand('<sfile>'), {
       \ 'modified_delay': 10,
       \})

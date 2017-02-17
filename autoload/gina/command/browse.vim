@@ -1,4 +1,3 @@
-let s:Config = vital#gina#import('Config')
 let s:Formatter = vital#gina#import('Data.String.Formatter')
 let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
@@ -135,8 +134,7 @@ function! s:build_base_url(remote_url, scheme) abort
   return ''
 endfunction
 
-
-call s:Config.define('gina#command#browse', {
+call gina#config(expand('<sfile>'), {
       \ 'translation_patterns': {
       \   'github.com': [
       \     [

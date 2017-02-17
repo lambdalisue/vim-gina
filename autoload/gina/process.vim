@@ -1,5 +1,4 @@
 let s:Argument = vital#gina#import('Argument')
-let s:Config = vital#gina#import('Config')
 let s:Job = vital#gina#import('System.Job')
 let s:String = vital#gina#import('Data.String')
 
@@ -119,7 +118,7 @@ function! s:pipe.on_exit(job, msg, event) abort
 endfunction
 
 
-call s:Config.define('gina#process', {
+call gina#config(expand('<sfile>'), {
       \ 'command': 'git --no-pager -c core.editor=false',
       \ 'updatetime': 10,
       \})

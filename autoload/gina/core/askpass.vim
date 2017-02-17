@@ -1,4 +1,3 @@
-let s:Config = vital#gina#import('Config')
 let s:Path = vital#gina#import('System.Filepath')
 
 let s:is_windows = has('win32') || has('win64')
@@ -62,7 +61,7 @@ function! s:askpass(git) abort
 endfunction
 
 
-call s:Config.define('g:gina#core#askpass', {
+call gina#config(expand('<sfile>'), {
       \ 'askpass_program': '',
       \ 'force_internal': 0,
       \})
