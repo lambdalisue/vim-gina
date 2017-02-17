@@ -8,9 +8,6 @@ function! gina#command#ls#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, 'ls', {
         \ 'revision': args.params.revision,
-        \ 'params': [
-        \   args.params.cached ? 'cached' : '',
-        \ ]
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -30,16 +27,12 @@ function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
-  let args.params.cached = args.pop('--cached')
-  let args.params.revision = args.params.cached
-        \ ? ':0'
-        \ : args.get(1, gina#core#buffer#param('%', 'revision', ''))
+  let args.params.revision = args.get(1, gina#core#buffer#param('%', 'revision', ''))
 
   if empty(args.params.revision)
     call args.set(0, 'ls-files')
     call args.set('--full-name', 1)
   else
-    let args.params.revision = substitute(args.params.revision, '^:0$', '', '')
     call args.set('--full-name', 1)
     call args.set('--full-tree', 1)
     call args.set('--name-only', 1)
