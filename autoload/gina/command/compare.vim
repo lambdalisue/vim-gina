@@ -1,5 +1,6 @@
 let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 let s:WORKTREE = '@@'
 
 

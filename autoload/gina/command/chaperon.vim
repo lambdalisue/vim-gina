@@ -1,5 +1,6 @@
 let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:String = vital#gina#import('Data.String')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 let s:WORKTREE = '@@'
 let s:REGION_PATTERN = printf('%s.\{-}%s\r\?\n\?',

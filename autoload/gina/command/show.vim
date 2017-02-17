@@ -1,5 +1,6 @@
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Path = vital#gina#import('System.Filepath')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#show#call(range, args, mods) abort
@@ -74,6 +75,6 @@ function! s:BufReadCmd() abort
     throw gina#process#error(result)
   endif
   call gina#core#buffer#assign_content(result.content)
-  call gina#core#emitter#emit('command:called', args.get(0))
+  call gina#core#emitter#emit('command:called', s:SCHEME)
   call gina#util#doautocmd('BufRead')
 endfunction

@@ -2,6 +2,7 @@ let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Config = vital#gina#import('Config')
 let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:Path = vital#gina#import('System.Filepath')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#status#call(range, args, mods) abort
@@ -68,10 +69,11 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#process#exec(
-        \ gina#core#get_or_fail(),
-        \ gina#core#meta#get_or_fail('args'),
-        \)
+  let git = gina#core#get_or_fail()
+  let args = gina#core#meta#get_or_fail('args')
+  let pipe = gina#process#pipe#stream()
+  let pipe.writer = gina#core#writer#new(s:writer)
+  call gina#process#open(git, args, pipe)
   setlocal filetype=gina-status
 endfunction
 
@@ -119,6 +121,16 @@ endfunction
 
 function! s:strip_quotes(str) abort
   return a:str =~# '^\%(".*"\|''.*''\)$' ? a:str[1:-2] : a:str
+endfunction
+
+
+" Writer ---------------------------------------------------------------------
+let s:writer_super = gina#process#pipe#stream_writer()
+let s:writer = deepcopy(s:writer_super)
+
+function! s:writer.on_stop() abort
+  call call(s:writer_super.on_stop, [], self)
+  call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 

@@ -1,3 +1,6 @@
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
+
+
 function! gina#command#diff#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
@@ -71,9 +74,20 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#process#exec(
-        \ gina#core#get_or_fail(),
-        \ gina#core#meta#get_or_fail('args'),
-        \)
+  let git = gina#core#get_or_fail()
+  let args = gina#core#meta#get_or_fail('args')
+  let pipe = gina#process#pipe#stream()
+  let pipe.writer = gina#core#writer#new(s:writer)
+  call gina#process#open(git, args, pipe)
   setlocal filetype=diff
+endfunction
+
+
+" Writer ---------------------------------------------------------------------
+let s:writer_super = gina#process#pipe#stream_writer()
+let s:writer = deepcopy(s:writer_super)
+
+function! s:writer.on_stop() abort
+  call call(s:writer_super.on_stop, [], self)
+  call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction

@@ -51,12 +51,6 @@ let s:echo_pipe = {}
 
 function! s:echo_pipe.on_exit(job, msg, event) abort
   call gina#core#console#echo(join(self._content, "\n"))
-  call gina#core#emitter#emit(
-        \ 'command:called:raw',
-        \ self.params.scheme,
-        \ self.args,
-        \ a:msg,
-        \)
   call gina#process#unregister(self)
 endfunction
 
@@ -66,6 +60,10 @@ function! gina#process#pipe#stream() abort
   let pipe = copy(s:stream_pipe)
   let pipe.writer = gina#core#writer#new(s:stream_pipe_writer)
   return pipe
+endfunction
+
+function! gina#process#pipe#stream_writer() abort
+  return copy(s:stream_pipe_writer)
 endfunction
 
 let s:stream_pipe = {}
@@ -95,7 +93,6 @@ endfunction
 
 function! s:stream_pipe_writer.on_stop() abort
   call self._job.stop()
-  call gina#core#emitter#emit('command:called', self._job.params.scheme)
   call gina#process#unregister(self._job)
 endfunction
 

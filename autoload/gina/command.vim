@@ -90,6 +90,13 @@ function! gina#command#custom(scheme, query, ...) abort
   call add(custom, [a:query, value, remover])
 endfunction
 
+function! gina#command#scheme(sfile) abort
+  let name = fnamemodify(a:sfile, ':t')
+  let name = matchstr(name, '.*\ze\.vim')
+  let scheme = substitute(name, '_', '-', 'g')
+  return scheme
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:get_custom(scheme) abort

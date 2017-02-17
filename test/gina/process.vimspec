@@ -55,54 +55,6 @@ Describe gina#process
     End
   End
 
-  Describe #exec({git}, {args})
-    Before
-      let tracker = {
-            \ 'command_called_called_count': 0,
-            \ 'command_called_args': [],
-            \}
-
-      function! tracker.command_called(...) abort
-        let self.command_called_called_count += 1
-        let self.command_called_args = a:000
-      endfunction
-
-      call gina#core#emitter#subscribe(
-            \ 'command:called',
-            \ tracker.command_called, tracker,
-            \)
-    End
-
-    After
-      call gina#core#emitter#unsubscribe(
-            \ 'command:called',
-            \ tracker.command_called, tracker,
-            \)
-    End
-
-    It calls an {args} of {git} and assign the result content into the current buffer
-      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
-      let git = gina#core#get()
-      let args = gina#command#parse_args(['branch'])
-      call gina#process#exec(git, args)
-      Assert Equals(getline(1, '$'), [''])
-      call gina#process#wait()
-      Assert Equals(getline(1, '$'), ['  develop', '* master'])
-    End
-
-    It emits 'command:called' event with a command scheme
-      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
-      let git = gina#core#get()
-      let args = gina#command#parse_args(['branch'])
-      call gina#process#exec(git, args)
-      Assert Equals(tracker.command_called_called_count, 0)
-      Assert Equals(tracker.command_called_args, [])
-      call gina#process#wait()
-      Assert Equals(tracker.command_called_called_count, 1)
-      Assert Equals(tracker.command_called_args, ['branch'])
-    End
-  End
-
   Describe #inform({result})
     It shows a result content when success
       execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))

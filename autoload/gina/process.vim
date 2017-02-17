@@ -65,12 +65,6 @@ function! gina#process#call(git, args, ...) abort
         \}
 endfunction
 
-function! gina#process#exec(git, args) abort
-  let pipe = gina#process#pipe#stream()
-  let job = gina#process#open(a:git, a:args, pipe)
-  return job
-endfunction
-
 function! gina#process#inform(result) abort
   redraw | echo
   if a:result.status

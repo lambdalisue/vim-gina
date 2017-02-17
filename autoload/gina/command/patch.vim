@@ -1,6 +1,7 @@
 let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 let s:is_windows = has('win32') || has('win64')
 let s:WORKTREE = '@@'

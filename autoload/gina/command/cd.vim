@@ -1,10 +1,11 @@
 let s:Path = vital#gina#import('System.Filepath')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#cd#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  execute 'cd' gina#util#fnameescape(s:Path.realpath(args.params.abspath))
+  execute s:SCHEME gina#util#fnameescape(s:Path.realpath(args.params.abspath))
 endfunction
 
 

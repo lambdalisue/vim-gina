@@ -2,6 +2,7 @@ let s:Config = vital#gina#import('Config')
 let s:Formatter = vital#gina#import('Data.String.Formatter')
 let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 let s:FORMAT_MAP = {
       \ 'pt': 'relpath',

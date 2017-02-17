@@ -1,5 +1,6 @@
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Path = vital#gina#import('System.Filepath')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#qrep#call(range, args, mods) abort
@@ -28,6 +29,7 @@ function! gina#command#qrep#call(range, args, mods) abort
   if !args.params.bang
     cc
   endif
+  call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 
