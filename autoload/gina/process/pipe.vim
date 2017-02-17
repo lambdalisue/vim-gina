@@ -1,3 +1,6 @@
+let s:Guard = vital#gina#import('Vim.Guard')
+
+
 " Store pipe -----------------------------------------------------------------
 function! gina#process#pipe#store() abort
   let pipe = copy(s:store_pipe)
@@ -88,14 +91,43 @@ function! s:stream_pipe.on_exit(job, msg, event) abort
 endfunction
 
 function! s:stream_pipe_writer.on_start() abort
+  let self._winview = getbufvar(self.bufnr, 'gina_winview', [])
   call gina#process#register(self._job)
 endfunction
 
 function! s:stream_pipe_writer.on_stop() abort
   call self._job.stop()
   call gina#process#unregister(self._job)
+
+  let focus = gina#core#buffer#focus(self.bufnr)
+  if empty(focus) || bufnr('%') != self.bufnr
+    return
+  endif
+  let guard = s:Guard.store(['&l:modifiable'])
+  try
+    setlocal modifiable
+    if empty(getline('$'))
+      silent lockmarks keepjumps $delete _
+    endif
+    setlocal nomodified
+  finally
+    if !empty(self._winview)
+      silent! call winrestview(self._winview)
+    endif
+    call guard.restore()
+    call focus.restore()
+  endtry
 endfunction
 
 function! s:stream_pipe_writer.on_check() abort
   return self._job.status() ==# 'run'
 endfunction
+
+
+" Automatically update b:gina_winview with cursor move while no buffer content
+" is available in BufReadCmd and winsaveview() always returns unwilling value
+augroup gina_process_pipe_internal
+  autocmd! *
+  autocmd CursorMoved  gina://* let b:gina_winview = winsaveview()
+  autocmd CursorMovedI gina://* let b:gina_winview = winsaveview()
+augroup END

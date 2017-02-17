@@ -1,0 +1,379 @@
+Describe Vim.BufferWriter
+  Before all
+    let BufferWriter = vital#gina#import('Vim.BufferWriter')
+  End
+
+  Before
+    bufdo! bwipeout!
+  End
+
+  Describe .assign_content({bufnr}, {content})
+    Context python
+      Before
+        if !has('python')
+          Skip This Vim does not support python interface
+        endif
+        let BufferWriter.use_python = 1
+        let BufferWriter.use_python3 = 0
+      End
+
+      It returns 0 if a buffer with {bufnr} does not exist
+        let ret = BufferWriter.assign_content(bufnr('$') + 1, ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 0 if a buffer with {bufnr} is not shown in a window
+        edit foo1
+        edit foo2
+        let ret = BufferWriter.assign_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 1 if a buffer with {bufnr} is shown in a window
+        edit foo1
+        vnew foo2
+        let ret = BufferWriter.assign_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 1)
+      End
+
+      It assigns a content of a {bufnr} buffer to {content}
+        edit foo1
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        call BufferWriter.assign_content(bufnr, ['Hello'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+
+        call BufferWriter.assign_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['Hello', 'World'])
+
+        call BufferWriter.assign_content(bufnr, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [''])
+      End
+    End
+
+    Context python3
+      Before
+        if !has('python3')
+          Skip This Vim does not support python3 interface
+        endif
+        let BufferWriter.use_python = 0
+        let BufferWriter.use_python3 = 1
+      End
+
+      It returns 0 if a buffer with {bufnr} does not exist
+        let ret = BufferWriter.assign_content(bufnr('$') + 1, ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 0 if a buffer with {bufnr} is not shown in a window
+        edit foo1
+        edit foo2
+        let ret = BufferWriter.assign_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 1 if a buffer with {bufnr} is shown in a window
+        edit foo1
+        vnew foo2
+        let ret = BufferWriter.assign_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 1)
+      End
+
+      It assigns a content of a {bufnr} buffer to {content}
+        edit foo1
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        call BufferWriter.assign_content(bufnr, ['Hello'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+
+        call BufferWriter.assign_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['Hello', 'World'])
+
+        call BufferWriter.assign_content(bufnr, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [''])
+      End
+    End
+
+    Context vim
+      Before
+        let BufferWriter.use_python = 0
+        let BufferWriter.use_python3 = 0
+      End
+
+      It returns 0 if a buffer with {bufnr} does not exist
+        let ret = BufferWriter.assign_content(bufnr('$') + 1, ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 0 if a buffer with {bufnr} is not shown in a window
+        edit foo1
+        edit foo2
+        let ret = BufferWriter.assign_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 1 if a buffer with {bufnr} is shown in a window
+        edit foo1
+        vnew foo2
+        let ret = BufferWriter.assign_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 1)
+      End
+
+      It assigns a content of a {bufnr} buffer to {content}
+        edit foo1
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        call BufferWriter.assign_content(bufnr, ['Hello'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+
+        call BufferWriter.assign_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['Hello', 'World'])
+
+        call BufferWriter.assign_content(bufnr, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [''])
+      End
+    End
+  End
+
+  Describe .extend_content({bufnr}, {content})
+    Context python
+      Before
+        if !has('python')
+          Skip This Vim does not support python interface
+        endif
+        let BufferWriter.use_python = 1
+        let BufferWriter.use_python3 = 0
+      End
+
+      It returns 0 if a buffer with {bufnr} does not exist
+        let ret = BufferWriter.extend_content(bufnr('$') + 1, ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 0 if a buffer with {bufnr} is not shown in a window
+        edit foo1
+        edit foo2
+        let ret = BufferWriter.extend_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 1 if a buffer with {bufnr} is shown in a window
+        edit foo1
+        vnew foo2
+        let ret = BufferWriter.extend_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 1)
+      End
+
+      It extends a content of a {bufnr} buffer with {content}
+        edit foo1
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        call BufferWriter.extend_content(bufnr, ['Hello'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+
+        call BufferWriter.extend_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['HelloHello', 'World'])
+
+        call BufferWriter.extend_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'HelloHello',
+              \ 'WorldHello',
+              \ 'World',
+              \])
+
+        call BufferWriter.extend_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'HelloHello',
+              \ 'WorldHello',
+              \ 'WorldHello',
+              \ 'World',
+              \])
+
+        call BufferWriter.extend_content(bufnr, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'HelloHello',
+              \ 'WorldHello',
+              \ 'WorldHello',
+              \ 'World',
+              \])
+      End
+    End
+
+    Context python3
+      Before
+        if !has('python3')
+          Skip This Vim does not support python3 interface
+        endif
+        let BufferWriter.use_python = 0
+        let BufferWriter.use_python3 = 1
+      End
+
+      It returns 0 if a buffer with {bufnr} does not exist
+        let ret = BufferWriter.extend_content(bufnr('$') + 1, ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 0 if a buffer with {bufnr} is not shown in a window
+        edit foo1
+        edit foo2
+        let ret = BufferWriter.extend_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 1 if a buffer with {bufnr} is shown in a window
+        edit foo1
+        vnew foo2
+        let ret = BufferWriter.extend_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 1)
+      End
+
+      It extends a content of a {bufnr} buffer with {content}
+        edit foo1
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        call BufferWriter.extend_content(bufnr, ['Hello'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+
+        call BufferWriter.extend_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['HelloHello', 'World'])
+
+        call BufferWriter.extend_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'HelloHello',
+              \ 'WorldHello',
+              \ 'World',
+              \])
+
+        call BufferWriter.extend_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'HelloHello',
+              \ 'WorldHello',
+              \ 'WorldHello',
+              \ 'World',
+              \])
+
+        call BufferWriter.extend_content(bufnr, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'HelloHello',
+              \ 'WorldHello',
+              \ 'WorldHello',
+              \ 'World',
+              \])
+      End
+    End
+
+    Context vim
+      Before
+        let BufferWriter.use_python = 0
+        let BufferWriter.use_python3 = 0
+      End
+
+      It returns 0 if a buffer with {bufnr} does not exist
+        let ret = BufferWriter.extend_content(bufnr('$') + 1, ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 0 if a buffer with {bufnr} is not shown in a window
+        edit foo1
+        edit foo2
+        let ret = BufferWriter.extend_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 0)
+      End
+
+      It returns 1 if a buffer with {bufnr} is shown in a window
+        edit foo1
+        vnew foo2
+        let ret = BufferWriter.extend_content(bufnr('foo1'), ['Hello'])
+        Assert Equals(ret, 1)
+      End
+
+      It extends a content of a {bufnr} buffer with {content}
+        edit foo1
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        call BufferWriter.extend_content(bufnr, ['Hello'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+
+        call BufferWriter.extend_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), ['HelloHello', 'World'])
+
+        call BufferWriter.extend_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'HelloHello',
+              \ 'WorldHello',
+              \ 'World',
+              \])
+
+        call BufferWriter.extend_content(bufnr, ['Hello', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'HelloHello',
+              \ 'WorldHello',
+              \ 'WorldHello',
+              \ 'World',
+              \])
+
+        call BufferWriter.extend_content(bufnr, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'HelloHello',
+              \ 'WorldHello',
+              \ 'WorldHello',
+              \ 'World',
+              \])
+      End
+    End
+  End
+
+  Describe .new({options})
+    It returns a new writer instance
+      let writer = BufferWriter.new()
+      Assert KeyExists(writer, 'bufnr')
+      Assert KeyExists(writer, 'updatetime')
+      Assert KeyExists(writer, 'start')
+      Assert KeyExists(writer, 'stop')
+      Assert KeyExists(writer, 'clear')
+      Assert KeyExists(writer, 'write')
+      Assert KeyExists(writer, 'flush')
+    End
+
+    Describe A writer instance
+      Before
+        edit foo1
+        vnew foo2
+        let bufnr = bufnr('foo1')
+      End
+
+      It repeatedly flush a queued content into the assigned buffer
+        let waittime = (BufferWriter.updatetime * 3) . 'm'
+        let writer = BufferWriter.new({'bufnr': bufnr})
+        call writer.write(['Hello', ''])
+        call writer.write(['Hello', ''])
+        call writer.write(['Hello', ''])
+        execute 'sleep' waittime
+        Assert Equals(getbufline(bufnr, 1, '$'), [''])
+        call writer.start()
+        execute 'sleep' waittime
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Hello',
+              \ 'Hello',
+              \ '',
+              \])
+        call writer.write(['Hello', ''])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Hello',
+              \ 'Hello',
+              \ '',
+              \])
+        execute 'sleep' waittime
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Hello',
+              \ 'Hello',
+              \ 'Hello',
+              \ '',
+              \])
+      End
+    End
+  End
+End
