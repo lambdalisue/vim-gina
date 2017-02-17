@@ -1,4 +1,5 @@
 let s:Guard = vital#gina#import('Vim.Guard')
+let s:Queue = vital#gina#import('Data.Queue')
 
 
 " Store pipe -----------------------------------------------------------------
@@ -52,10 +53,37 @@ endfunction
 
 let s:echo_pipe = {}
 
-function! s:echo_pipe.on_exit(job, msg, event) abort
-  call gina#core#console#echo(join(self._content, "\n"))
-  call gina#process#unregister(self)
-endfunction
+if has('nvim')
+  function! s:echo_pipe.on_exit(job, msg, event) abort
+    call gina#core#console#echo(join(self._content, "\n"))
+    call gina#process#unregister(self)
+  endfunction
+else
+  " NOTE:
+  " Vim 8.0.0329 will not echo entire message which was invoked in timer/job.
+  " While echo pipe is used to inform the result of the process to a user, it
+  " is kind critical so use autocmd to forcedly invoke message.
+  let s:echo_pipe_queue = s:Queue.new()
+  function! s:echo_pipe.on_exit(job, msg, event) abort
+    call gina#process#unregister(self)
+    call s:echo_pipe_queue.put(join(self._content, "\n"))
+    augroup gina_process_pipe_echo_internal
+      autocmd! *
+      autocmd * * call s:echo_pipe_callback()
+    augroup END
+  endfunction
+
+  function! s:echo_pipe_callback() abort
+    let msg = s:echo_pipe_queue.get()
+    while msg isnot# v:null
+      call gina#core#console#echo(msg)
+      let msg = s:echo_pipe_queue.get()
+    endwhile
+    augroup gina_process_pipe_echo_internal
+      autocmd! *
+    augroup END
+  endfunction
+endif
 
 
 " Stream pipe ----------------------------------------------------------------
