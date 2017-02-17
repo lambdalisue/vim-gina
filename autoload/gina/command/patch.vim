@@ -21,9 +21,9 @@ endfunction
 function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let mods = a:mods =~# '\<\%(aboveleft\|belowright\|botright\|topleft\)\>'
+  let mods = gina#util#contain_direction(a:mods)
         \ ? a:mods
-        \ : join(['botright', a:mods])
+        \ : join(['rightbelow', a:mods])
   let group = s:Group.new()
 
   diffoff!

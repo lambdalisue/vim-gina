@@ -1,7 +1,20 @@
 let s:File = vital#gina#import('System.File')
 let s:String = vital#gina#import('Data.String')
+let s:DIRECTION_PATTERN = printf('\<\%%(%s\)\>', join([
+      \ 'lefta\%[bove]',
+      \ 'abo\%[veleft]',
+      \ 'rightb\%[elow]',
+      \ 'bel\%[owright]',
+      \ 'to\%[pleft]',
+      \ 'bo\%[tright]',
+      \], '\|')
+      \)
 let s:t_list = type([])
 
+
+function! gina#util#contain_direction(mods) abort
+  return a:mods =~# s:DIRECTION_PATTERN
+endfunction
 
 function! gina#util#yank(value) abort
   call setreg(v:register, a:value)
