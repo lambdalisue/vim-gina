@@ -176,7 +176,7 @@ function! s:open_with_callback(bufname, options) abort
         \ a:options.callback
         \)
   if content != getline(1, '$')
-    throw s:Exception.critical(
+    throw gina#core#exception#critical(
           \ 'A buffer content could not be modified by callback'
           \)
   endif
