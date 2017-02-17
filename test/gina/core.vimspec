@@ -72,56 +72,54 @@ Describe gina#core
       Assert Equals(git.commondir, slit1.repository)
     End
 
-    Context symbolic link
-      Before all
-        if s:is_windows
-          Skip Windows requires an administrator permission to create a symbolic link
-        endif
+    if !s:is_windows
+      Context symbolic link
+        Before all
+          function! Link(src, dst) abort
+            call system(printf(
+                  \ 'ln -s %s %s',
+                  \ shellescape(a:src),
+                  \ shellescape(a:dst),
+                  \))
+          endfunction
 
-        function! Link(src, dst) abort
-          call system(printf(
-                \ 'ln -s %s %s',
-                \ shellescape(a:src),
-                \ shellescape(a:dst),
-                \))
-        endfunction
+          let symlink1 = Path.join(slit1.worktree, 'symlink_to_invalid')
+          let symlink2 = Path.join(slit1.worktree, 'symlink_to_external')
+          let symlink3 = Path.join(slit3.worktree, 'symlink_to_valid')
+          call Link(Path.join(slit3.worktree, 'A', 'foo.txt'), symlink1)
+          call Link(Path.join(slit2.worktree, 'A', 'foo.txt'), symlink2)
+          call Link(Path.join(slit1.worktree, 'A', 'foo.txt'), symlink3)
+        End
 
-        let symlink1 = Path.join(slit1.worktree, 'symlink_to_invalid')
-        let symlink2 = Path.join(slit1.worktree, 'symlink_to_external')
-        let symlink3 = Path.join(slit3.worktree, 'symlink_to_valid')
-        call Link(Path.join(slit3.worktree, 'A', 'foo.txt'), symlink1)
-        call Link(Path.join(slit2.worktree, 'A', 'foo.txt'), symlink2)
-        call Link(Path.join(slit1.worktree, 'A', 'foo.txt'), symlink3)
+        It returns a git instance which the symlink file belongs
+          " NOTE: The symlink1 points a file in invalid
+          execute 'edit' fnameescape(symlink1)
+          let git = gina#core#get()
+          Assert Equals(git.refname, slit1.refname)
+          Assert Equals(git.worktree, slit1.worktree)
+          Assert Equals(git.repository, slit1.repository)
+          Assert Equals(git.commondir, '')
+
+          " NOTE: The symlink2 points a file in external
+          execute 'edit' fnameescape(symlink2)
+          let git = gina#core#get()
+          Assert Equals(git.refname, slit1.refname)
+          Assert Equals(git.worktree, slit1.worktree)
+          Assert Equals(git.repository, slit1.repository)
+          Assert Equals(git.commondir, '')
+        End
+
+        It returns a git instance which the original file belogns if the symlink file does not belong
+          " NOTE: The symlink3 points a file in valid1
+          execute 'edit' fnameescape(symlink3)
+          let git = gina#core#get()
+          Assert Equals(git.refname, slit1.refname)
+          Assert Equals(git.worktree, slit1.worktree)
+          Assert Equals(git.repository, slit1.repository)
+          Assert Equals(git.commondir, '')
+        End
       End
-
-      It returns a git instance which the symlink file belongs
-        " NOTE: The symlink1 points a file in invalid
-        execute 'edit' fnameescape(symlink1)
-        let git = gina#core#get()
-        Assert Equals(git.refname, slit1.refname)
-        Assert Equals(git.worktree, slit1.worktree)
-        Assert Equals(git.repository, slit1.repository)
-        Assert Equals(git.commondir, '')
-
-        " NOTE: The symlink2 points a file in external
-        execute 'edit' fnameescape(symlink2)
-        let git = gina#core#get()
-        Assert Equals(git.refname, slit1.refname)
-        Assert Equals(git.worktree, slit1.worktree)
-        Assert Equals(git.repository, slit1.repository)
-        Assert Equals(git.commondir, '')
-      End
-
-      It returns a git instance which the original file belogns if the symlink file does not belong
-        " NOTE: The symlink3 points a file in valid1
-        execute 'edit' fnameescape(symlink3)
-        let git = gina#core#get()
-        Assert Equals(git.refname, slit1.refname)
-        Assert Equals(git.worktree, slit1.worktree)
-        Assert Equals(git.repository, slit1.repository)
-        Assert Equals(git.commondir, '')
-      End
-    End
+    endif
   End
 
   Describe #get_or_fail()
