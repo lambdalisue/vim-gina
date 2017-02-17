@@ -343,7 +343,7 @@ Describe Vim.BufferWriter
       End
 
       It repeatedly flush a queued content into the assigned buffer
-        let waittime = (BufferWriter.updatetime * 3) . 'm'
+        let waittime = (BufferWriter.updatetime * 5) . 'm'
         let writer = BufferWriter.new({'bufnr': bufnr})
         call writer.write(['Hello', ''])
         call writer.write(['Hello', ''])
