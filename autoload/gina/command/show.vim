@@ -74,7 +74,7 @@ function! s:BufReadCmd() abort
   if result.status
     throw gina#process#error(result)
   endif
-  call gina#core#buffer#assign_content(result.content)
+  call gina#core#writer#assign_content(bufnr('%'), result.content)
   call gina#core#emitter#emit('command:called', s:SCHEME)
   call gina#util#doautocmd('BufRead')
 endfunction

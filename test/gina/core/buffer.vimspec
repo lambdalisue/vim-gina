@@ -408,41 +408,4 @@ Describe gina#core#buffer
     " NOTE:
     " This feature is already tested in Vital.Vim.Window
   End
-
-  Describe #assign_content({content})
-    It assign {content} to the current buffer without modifing marks
-      call setline(1, ['a', 'b', 'c', 'd', 'e'])
-      normal! gg
-      normal ma
-      normal jmb
-      normal jmc
-      normal jmd
-      normal jme
-      Assert Equals(len(split(execute('marks abcde'), '\r\?\n')), 5 + 1)
-
-      call gina#core#buffer#assign_content(['A', 'B', 'C', 'D', 'E'])
-      Assert Equals(len(split(execute('marks abcde'), '\r\?\n')), 5 + 1)
-    End
-  End
-
-  Describe #extend_content({content})
-    It extends a content of the current buffer with {content} without modifing marks
-      call setline(1, ['a', 'b', 'c', 'd', 'e'])
-      normal! gg
-      normal ma
-      normal jmb
-      normal jmc
-      normal jmd
-      normal jme
-      Assert Equals(len(split(execute('marks abcde'), '\r\?\n')), 5 + 1)
-
-      call gina#core#buffer#extend_content(['A', 'B', 'C', 'D', 'E'])
-      Assert Equals(getline(1, '$'), [
-            \ 'a', 'b', 'c', 'd',
-            \ 'eA',
-            \ 'B', 'C', 'D', 'E',
-            \])
-      Assert Equals(len(split(execute('marks abcde'), '\r\?\n')), 5 + 1)
-    End
-  End
 End

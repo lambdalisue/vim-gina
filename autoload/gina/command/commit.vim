@@ -132,7 +132,7 @@ function! s:BufReadCmd() abort
         \ function('s:get_commitmsg'),
         \ [git, args]
         \)
-  call gina#core#buffer#assign_content(content)
+  call gina#core#writer#assign_content(bufnr('%'), content)
   call gina#core#emitter#emit('command:called', s:SCHEME)
   setlocal filetype=gina-commit
 endfunction

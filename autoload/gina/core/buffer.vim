@@ -101,26 +101,6 @@ function! gina#core#buffer#focus(expr) abort
   return s:Window.focus_buffer(a:expr)
 endfunction
 
-function! gina#core#buffer#assign_content(content) abort
-  let options = s:Buffer.parse_cmdarg()
-  let options.lockmarks = 1
-  silent call s:Buffer.edit_content(a:content, options)
-endfunction
-
-function! gina#core#buffer#extend_content(content) abort
-  let leading = getline('$')
-  let content = [leading . get(a:content, 0, '')] + a:content[1:]
-  let options = s:Buffer.parse_cmdarg()
-  let options.edit = 1
-  let options.line = '$'
-  let options.lockmarks = 1
-  silent lockmarks keepjumps $delete _
-  silent call s:Buffer.read_content(content, options)
-  if empty(getline(1))
-    silent lockmarks keepjumps 1delete _
-  endif
-endfunction
-
 
 " Private --------------------------------------------------------------------
 function! s:focus(winnr) abort

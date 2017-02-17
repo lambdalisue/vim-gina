@@ -146,20 +146,6 @@ gina#core#buffer#focus({expr})
 	call guard.restore()
 	" Focus is backed to the previous one
 <
-				*gina#core#buffer#assign_content()*
-gina#core#buffer#assign_content({content})
-	Assign {content} to the current buffer.
-	It automatically detect an encoding and file-format from {content} by
-	Vim's native feature (See |edit|) with 'lockmarks', 'keepjumps', and
-	'keepalt'.
-
-				*gina#core#buffer#extend_content()*
-gina#core#buffer#assign_content({content})
-	Extendh a content of the current buffer with {content}.
-	It automatically detect an encoding and file-format from {content} by
-	Vim's native feature (See |edit|) with 'lockmarks', 'keepjumps', and
-	'keepalt'.
-
 				*gina#core#emitter#emit()*
 gina#core#emitter#emit({name} [, {arg}...])
 	Emit a {name} event with specified arguments.
