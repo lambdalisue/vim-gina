@@ -17,7 +17,7 @@ Describe gina#process
   End
 
   Before
-    silent! bufdo bwipeout!
+    bufdo! bwipeout!
   End
 
   Describe #open({git}, {args} [, {options}])

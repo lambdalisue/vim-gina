@@ -35,7 +35,7 @@ Describe gina#core
   End
 
   Before
-    silent! bufdo bwipeout!
+    bufdo! bwipeout!
   End
 
   Describe #get()

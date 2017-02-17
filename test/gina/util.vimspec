@@ -1,8 +1,11 @@
 let s:is_windows = has('win32') || has('win64')
 
 Describe gina#util
-  Before
+  Before all
     let Path = vital#gina#import('System.Filepath')
+    let Scope = themis#helper('scope')
+    let sfile = Path.realpath('autoload/gina/util.vim')
+    execute 'source' fnameescape(sfile)
   End
 
   Describe #yank({value})
@@ -15,8 +18,8 @@ Describe gina#util
 
   Describe #open({uri})
     Before
-      let scope = themis#helper('scope')
-      let vars = scope.vars(Path.realpath('autoload/gina/util.vim'))
+      let vars = Scope.vars(sfile)
+      let vars.File._open_called_with = []
 
       function! vars.File.open(...) abort
         let self._open_called_with = a:000

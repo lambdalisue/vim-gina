@@ -26,7 +26,7 @@ Describe gina#command#chaperon
   End
 
   Before
-    silent! bufdo bwipeout!
+    bufdo! bwipeout!
   End
 
   Describe Use cases

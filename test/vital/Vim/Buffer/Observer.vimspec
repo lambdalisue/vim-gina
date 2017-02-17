@@ -8,8 +8,8 @@ Describe Vim.Buffer.Observer
 
   Before
     let Observer = vital#gina#import('Vim.Buffer.Observer')
-    silent! bufdo bwipeout!
-    silent! bufdo bwipeout!
+    bufdo! bwipeout!
+    bufdo! bwipeout!
   End
 
   Describe behavior

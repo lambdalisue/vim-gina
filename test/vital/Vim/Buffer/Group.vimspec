@@ -15,8 +15,8 @@ Describe Vim.Buffer.Group
     Before
       let group = Group.new()
       silent! tabdo tabclose!
-      silent! bufdo bwipeout!
-      silent! bufdo bwipeout!
+      bufdo! bwipeout!
+      bufdo! bwipeout!
     End
 
     Describe the behavior

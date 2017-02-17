@@ -1,3 +1,5 @@
+let s:repository_root = expand('<sfile>:p:h:h:h')
+
 Describe gina#command#browse
   Before all
     let Path = vital#gina#import('System.Filepath')
@@ -13,7 +15,7 @@ Describe gina#command#browse
       let self._called_with = a:uri
     endfunction
 
-    silent! bufdo bwipeout!
+    bufdo! bwipeout!
     execute 'edit' fnameescape('autoload/gina.vim')
   End
 

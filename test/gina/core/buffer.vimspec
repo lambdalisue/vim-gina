@@ -5,7 +5,7 @@ Describe gina#core#buffer
   End
 
   Before
-    silent! bufdo bwipeout!
+    bufdo! bwipeout!
   End
 
   Describe #bufname({git}, {scheme} [, {options}])
@@ -154,7 +154,7 @@ Describe gina#core#buffer
 
   Describe #open({bufname}, [, {options}])
     Before
-      silent! bufdo! bwipeout!
+      bufdo! bwipeout!
     End
 
     It opens a new {bufname} buffer and return an informatio context
