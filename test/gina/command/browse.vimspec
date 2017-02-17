@@ -37,6 +37,9 @@ Describe gina#command#browse
     End
 
     It might be calle with 'origin/HEAD...'
+      if !empty($CI)
+        Skip CI may checkout a single PR branch with --depth 1 so skip this test.
+      endif
       GinaSync browse origin/HEAD...
       Assert Match(
             \ vars.File._called_with,
