@@ -18,7 +18,7 @@ Describe gina#command#info
   End
 
   Before
-    bufdo! bwipeout!
+    %bwipeout!
   End
 
   Describe Use cases

@@ -26,7 +26,7 @@ Describe gina#command#chaperon
   End
 
   Before
-    bufdo! bwipeout!
+    %bwipeout!
   End
 
   Describe Use cases

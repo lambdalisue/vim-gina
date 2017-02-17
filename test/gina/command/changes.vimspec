@@ -19,7 +19,7 @@ Describe gina#command#changes
   End
 
   Before
-    bufdo! bwipeout!
+    %bwipeout!
     execute 'edit' fnameescape(Path.join(slit1.worktree, 'A', 'foo.txt'))
   End
 

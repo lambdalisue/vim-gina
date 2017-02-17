@@ -4,7 +4,7 @@ Describe Vim.BufferWriter
   End
 
   Before
-    bufdo! bwipeout!
+    %bwipeout!
   End
 
   Describe .assign_content({bufnr}, {content})

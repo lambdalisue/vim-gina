@@ -12,7 +12,7 @@ Describe gina#command#commit
 
   Describe Use cases
     Before
-      bufdo! bwipeout!
+      %bwipeout!
       execute 'edit' fnameescape(slit1.worktree)
     End
 

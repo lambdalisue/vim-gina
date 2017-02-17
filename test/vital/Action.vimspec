@@ -4,7 +4,7 @@ Describe Action
   End
 
   After
-    bufdo! bwipeout!
+    %bwipeout!
   End
 
   Describe .attach({name}[, {candidates}])

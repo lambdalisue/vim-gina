@@ -7,12 +7,12 @@ Describe gina#command#lcd
   End
 
   After all
-    bufdo! bwipeout!
+    %bwipeout!
     execute 'cd' fnameescape(saved_cwd)
   End
 
   Before
-    bufdo! bwipeout!
+    %bwipeout!
     execute 'cd' fnameescape(saved_cwd)
     edit foo
     execute 'new' fnameescape(Path.join(slit1.worktree, 'A', 'foo.txt'))

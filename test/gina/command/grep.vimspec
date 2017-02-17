@@ -10,7 +10,7 @@ Describe gina#command#grep
   End
 
   Before
-    bufdo! bwipeout!
+    %bwipeout!
   End
 
   Describe Use cases

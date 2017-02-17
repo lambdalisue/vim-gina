@@ -5,7 +5,7 @@ Describe gina#core#path
   End
 
   Before
-    bufdo! bwipeout!
+    %bwipeout!
   End
 
   Describe #expand({expr})
