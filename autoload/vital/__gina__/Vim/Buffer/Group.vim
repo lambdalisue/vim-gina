@@ -49,7 +49,13 @@ function! s:group.close() abort
     if winnr == 0 || getbufvar(member.bufnr, '&modified') || bufwinid(member.bufnr) != member.winid
       continue
     endif
-    silent execute printf('%dclose', winnr)
+    try
+      execute printf('%dclose', winnr)
+    catch /^Vim\%((\a\+)\)\=:E444/
+      " E444: Cannot close last window may thrown but ignore that
+      " Vim.Buffer.Group should NOT close the last window so ignore
+      " this exception silently.
+    endtry
   endfor
 endfunction
 
