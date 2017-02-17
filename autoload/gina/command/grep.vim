@@ -61,10 +61,9 @@ function! s:init(args) abort
 
   setlocal nobuflisted
   setlocal buftype=nofile
-  setlocal bufhidden=unload
+  setlocal bufhidden=delete
   setlocal noswapfile
   setlocal nomodifiable
-  setlocal conceallevel=3 concealcursor=nvi
 
   " Attach modules
   call s:Anchor.attach()

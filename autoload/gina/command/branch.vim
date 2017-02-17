@@ -64,10 +64,12 @@ function! s:init(args) abort
 
   setlocal nobuflisted
   setlocal buftype=nofile
-  setlocal bufhidden=unload
+  setlocal bufhidden=delete
   setlocal noswapfile
   setlocal nomodifiable
-  setlocal conceallevel=3 concealcursor=nvic
+  " Without 'autoread', branch manipulation action requires ':e' to reload
+  " while Vim.Buffer.Observer does not update a buffer without 'autoread'
+  setlocal autoread
 
   " Attach modules
   call s:Anchor.attach()

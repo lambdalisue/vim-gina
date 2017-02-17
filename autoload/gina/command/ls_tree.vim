@@ -47,7 +47,7 @@ function! s:init(args) abort
 
   setlocal nobuflisted
   setlocal buftype=nofile
-  setlocal bufhidden=unload
+  setlocal bufhidden=delete
   setlocal noswapfile
   setlocal nomodifiable
 

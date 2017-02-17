@@ -11,26 +11,28 @@ let s:REGION_PATTERN = printf('%s.\{-}%s\r\?\n\?',
 function! gina#command#chaperon#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
+  let mods = a:mods =~# '\<\%(aboveleft\|belowright\|botright\|topleft\)\>'
+        \ ? a:mods
+        \ : join(['botright', a:mods])
   let group = s:Group.new()
 
-  silent diffoff!
-
+  diffoff!
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
-        \ ? 'botright split'
-        \ : 'botright vsplit'
+        \ ? 'split'
+        \ : 'vsplit'
 
-  call s:open(0, a:mods, opener1, ':2', args.params)
+  call s:open(0, mods, opener1, ':2', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr1 = bufnr('%')
 
-  call s:open(1, a:mods, opener2, s:WORKTREE, args.params)
+  call s:open(1, mods, opener2, s:WORKTREE, args.params)
   call gina#util#diffthis()
   call group.add({'keep': 1})
   let bufnr2 = bufnr('%')
 
-  call s:open(2, a:mods, opener2, ':3', args.params)
+  call s:open(2, mods, opener2, ':3', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr3 = bufnr('%')
@@ -69,8 +71,8 @@ function! gina#command#chaperon#call(range, args, mods) abort
     setlocal modified
   endif
 
-  " Update diff
   call gina#util#diffupdate()
+  normal! zm
 endfunction
 
 

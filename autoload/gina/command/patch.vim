@@ -9,26 +9,28 @@ let s:WORKTREE = '@@'
 function! gina#command#patch#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
+  let mods = a:mods =~# '\<\%(aboveleft\|belowright\|botright\|topleft\)\>'
+        \ ? a:mods
+        \ : join(['botright', a:mods])
   let group = s:Group.new()
 
-  silent diffoff!
-
+  diffoff!
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
 
-  call s:open(0, a:mods, opener1, 'HEAD', args.params)
+  call s:open(0, mods, opener1, 'HEAD', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr1 = bufnr('%')
 
-  call s:open(1, a:mods, opener2, ':0', args.params)
+  call s:open(1, mods, opener2, ':0', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr2 = bufnr('%')
 
-  call s:open(2, a:mods, opener2, s:WORKTREE, args.params)
+  call s:open(2, mods, opener2, s:WORKTREE, args.params)
   call gina#util#diffthis()
   call group.add({'keep': 1})
   let bufnr3 = bufnr('%')
@@ -78,8 +80,8 @@ function! gina#command#patch#call(range, args, mods) abort
     autocmd BufWriteCmd <buffer> call s:BufWriteCmd()
   augroup END
 
-  " Update diff
   call gina#util#diffupdate()
+  normal! zm
 endfunction
 
 

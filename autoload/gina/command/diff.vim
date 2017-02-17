@@ -60,7 +60,7 @@ function! s:init(args) abort
   let b:gina_initialized = 1
 
   setlocal buftype=nowrite
-  setlocal bufhidden=unload
+  setlocal bufhidden=delete
   setlocal noswapfile
   setlocal nomodifiable
 

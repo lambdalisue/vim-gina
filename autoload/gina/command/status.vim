@@ -40,9 +40,11 @@ function! s:init(args) abort
 
   setlocal nobuflisted
   setlocal buftype=nofile
-  setlocal bufhidden=unload
+  setlocal bufhidden=delete
   setlocal noswapfile
   setlocal nomodifiable
+  " Without 'autoread', status manipulation action requires ':e' to reload
+  " while Vim.Buffer.Observer does not update a buffer without 'autoread'
   setlocal autoread
 
   " Attach modules

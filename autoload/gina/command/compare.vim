@@ -6,6 +6,10 @@ let s:WORKTREE = '@@'
 function! gina#command#compare#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
+  let mods = a:mods =~# '\<\%(aboveleft\|belowright\|botright\|topleft\)\>'
+        \ ? a:mods
+        \ : join(['botright', a:mods])
+  let group = s:Group.new()
 
   let [revision1, revision2] = gina#core#revision#split(
         \ git, args.params.revision
@@ -21,22 +25,21 @@ function! gina#command#compare#call(range, args, mods) abort
     let [revision2, revision1] = [revision1, revision2]
   endif
 
-  silent! windo diffoff!
-
-  let group = s:Group.new()
+  diffoff!
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
-        \ ? 'botright split'
-        \ : 'botright vsplit'
-  call s:open(0, a:mods, opener1, revision1, args.params)
+        \ ? 'split'
+        \ : 'vsplit'
+  call s:open(0, mods, opener1, revision1, args.params)
   call gina#util#diffthis()
   call group.add()
 
-  call s:open(1, a:mods, opener2, revision2, args.params)
+  call s:open(1, mods, opener2, revision2, args.params)
   call gina#util#diffthis()
   call group.add({'keep': 1})
 
   call gina#util#diffupdate()
+  normal! zm
 endfunction
 
 
