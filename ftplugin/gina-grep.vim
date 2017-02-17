@@ -61,10 +61,19 @@ if g:gina#command#grep#use_default_mappings
 endif
 
 if g:gina#command#grep#send_to_quickfix
-  function! s:on_command_called(scheme) abort
-    if a:scheme ==# 'grep'
-      call gina#action#call('export:quickfix')
+  function! s:on_grep(scheme) abort
+    if a:scheme !=# 'grep'
+      return
     endif
+    let focus = gina#core#buffer#focus(bufnr('gina://*:grep*'))
+    if empty(focus)
+      return
+    endif
+    try
+      call gina#action#call('export:quickfix')
+    finally
+      call focus.restore()
+    endtry
   endfunction
-  call gina#core#emitter#subscribe('command:called', function('s:on_command_called'))
+  call gina#core#emitter#subscribe('command:called', function('s:on_grep'))
 endif
