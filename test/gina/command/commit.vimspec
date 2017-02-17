@@ -20,14 +20,10 @@ Describe gina#command#commit
       GinaSync commit
       Assert Equals(winnr('$'), 2)
       Assert Equals(bufname('%'), printf('gina://%s:commit', slit1.refname))
-      Assert Equals(getline(1, '$'), [
+      Assert Equals(getline(1, 3), [
             \ '',
             \ '# Please enter the commit message for your changes. Lines starting',
             \ '# with ''#'' will be ignored, and an empty message aborts the commit.',
-            \ '# On branch master',
-            \ '# Changes to be committed:',
-            \ "#\tnew file:   C/foo.txt",
-            \ '#',
             \])
       " Commit commitmsg
       call setline(1, ['Test Message']) | wq
@@ -43,18 +39,12 @@ Describe gina#command#commit
       GinaSync commit --verbose
       Assert Equals(winnr('$'), 2)
       Assert Equals(bufname('%'), printf('gina://%s:commit', slit1.refname))
-      Assert Equals(getline(1, 10), [
+      Assert Equals(getline(1, 3), [
             \ '',
             \ '# Please enter the commit message for your changes. Lines starting',
             \ '# with ''#'' will be ignored, and an empty message aborts the commit.',
-            \ '# On branch master',
-            \ '# Changes to be committed:',
-            \ "#\tnew file:   C/foo.txt",
-            \ '#',
-            \ '# ------------------------ >8 ------------------------',
-            \ '# Do not touch the line above.',
-            \ '# Everything below will be removed.',
             \])
+      Assert True(index(getline(1, '$'), '# ------------------------ >8 ------------------------') >= 0)
       " Commit commitmsg
       call setline(1, ['Test Message']) | wq
       Assert Equals(slit1.execute('log --pretty=format:%s'), [
