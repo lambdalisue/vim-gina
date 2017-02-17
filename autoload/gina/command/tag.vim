@@ -55,9 +55,8 @@ function! s:init(args) abort
   endif
   let b:gina_initialized = 1
 
-  setlocal nobuflisted
   setlocal buftype=nofile
-  setlocal bufhidden=delete
+  setlocal bufhidden=wipe
   setlocal noswapfile
   setlocal nomodifiable
 

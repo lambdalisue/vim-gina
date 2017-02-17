@@ -57,13 +57,15 @@ function! s:init(args) abort
   let b:gina_initialized = 1
 
   setlocal buftype=nowrite
-  setlocal bufhidden=delete
+  setlocal bufhidden&
   setlocal noswapfile
   setlocal nomodifiable
 
   augroup gina_internal_command
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
+    autocmd BufWinEnter <buffer> setlocal buflisted
+    autocmd BufWinLeave <buffer> setlocal nobuflisted
   augroup END
 endfunction
 
