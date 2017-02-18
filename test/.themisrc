@@ -1,8 +1,3 @@
-if !has('nvim')
-  let &termencoding=&encoding
-  set encoding=utf-8
-endif
-
 " Force English interface
 language message C
 set helplang=en
