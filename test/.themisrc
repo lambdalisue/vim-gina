@@ -43,7 +43,7 @@ execute 'source' fnameescape(s:scriptroot . s:separator . 'slit.vim')
 call themis#log('git version:     ' . g:git_version)
 call themis#log('  worktree:      ' . g:git_support_worktree)
 call themis#log('git config:')
-for record in Slit('.').execute('config --list')
+for record in split(system('git config --list'), '\r\?\n')
   call themis#log('  ' . record)
 endfor
 call themis#log('***********************************************************')
