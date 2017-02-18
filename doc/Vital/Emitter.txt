@@ -1,6 +1,6 @@
 *Vital/Emitter.txt*			An emitter library
 
-Version: 0.1.0
+Version: 0.1.0-dev
 Author : Alisue <lambdalisue@hashnote.net>
 License: MIT license
 Support: Vim 8.0.0134 and above
@@ -40,31 +40,6 @@ FUNCTION					*Vital.Emitter-function*
 			*Vital.Emitter.emit()*
 .emit({name}[, {args}...])
 	Call registered listeners of {name} with {args}.
-	This does nothing when |Vital.Emitter.is_blocked()| return 1.
-
-			*Vital.Emitter.block_start()*
-.block_start()
-	Block emittion until |Vital.Emitter.block_end()| is called.
-	The block can be nested like:
->
-	call Emitter.emit('foo')   " Emit
-	call Emitter.block_start() " -----+
-	call Emitter.emit('foo')   "      | <- Do nothing
-	call Emitter.block_start() " --+  |
-	call Emitter.emit('foo')   "   |  | <- Do nothing
-	call Emitter.block_end()   " --+  |
-	call Emitter.emit('foo')   "      | <- Do nothing
-	call Emitter.block_end()   " -----+
-	call Emitter.emit('foo')   " Emit
-<
-			*Vital.Emitter.block_end()*
-.block_end()
-	End block. See |Vital.Emitter.block_start()|.
-
-			*Vital.Emitter.is_blocked()*
-.is_blocked()
-	Return 1 if the emitter is in block mode.
-	See |Vital.Emitter.block_start()|
 
 
 =============================================================================

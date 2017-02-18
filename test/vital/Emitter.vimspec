@@ -27,18 +27,5 @@ Describe Emitter
     call Emitter.emit('bar', 2, 2, 2)
     Assert Equals(foo.called_with, [1, 1, 1])
     Assert Equals(bar.called_with, [2, 2, 2])
-
-    call Emitter.block_start()
-    call Emitter.block_start()
-    call Emitter.emit('bar', 3, 3, 3)
-    Assert Equals(bar.called_with, [2, 2, 2])
-
-    call Emitter.block_end()
-    call Emitter.emit('bar', 3, 3, 3)
-    Assert Equals(bar.called_with, [2, 2, 2])
-
-    call Emitter.block_end()
-    call Emitter.emit('bar', 3, 3, 3)
-    Assert Equals(bar.called_with, [3, 3, 3])
   End
 End

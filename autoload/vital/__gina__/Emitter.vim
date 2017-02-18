@@ -1,5 +1,4 @@
 let s:listeners = {}
-let s:block_count = 0
 
 
 function! s:subscribe(name, listener, ...) abort
@@ -18,10 +17,8 @@ function! s:unsubscribe(name, listener, ...) abort
 endfunction
 
 function! s:emit(name, ...) abort
-  if s:is_blocked()
-    return
-  endif
   let listeners = get(s:listeners, a:name, [])
+  let listeners += get(s:listeners, '_', [])
   for [Listener, instance] in listeners
     if empty(instance)
       call call(Listener, a:000)
@@ -29,17 +26,4 @@ function! s:emit(name, ...) abort
       call call(Listener, a:000, instance)
     endif
   endfor
-endfunction
-
-function! s:block_start() abort
-  let s:block_count += 1
-endfunction
-
-function! s:block_end() abort
-  let s:block_count -= 1
-  let s:block_count = s:block_count < 0 ? 0 : s:block_count
-endfunction
-
-function! s:is_blocked() abort
-  return s:block_count > 0
 endfunction
