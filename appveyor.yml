@@ -21,5 +21,5 @@ install:
 build: off
 test_script:
   - '%THEMIS_VIM% --version'
-  - '%TEMP%\vim-themis\bin\themis.bat --reporter spec --runtimepath %TEMP%\vital'
+  - '%TEMP%\vim-themis\bin\themis.bat --reporter dot --runtimepath %TEMP%\vital'
 deploy: off
