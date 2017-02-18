@@ -1,3 +1,6 @@
+let s:t_number = type(0)
+
+
 function! s:_vital_loaded(V) abort
   let s:Guard = a:V.import('Vim.Guard')
   let s:Queue = a:V.import('Data.Queue')
@@ -191,9 +194,15 @@ let s:timers = {}
 let s:writer = {'_timer': v:null}
 
 function! s:_timer_callback(timer) abort
-  let writer = get(s:timers, a:timer, v:null)
-  if writer is# v:null
-    call timer_stop(a:timer)
+  let writer = get(s:timers, a:timer, 0)
+  if type(writer) == s:t_number
+    if writer > 1000 / s:module.updatetime
+      " Somehow a timer is running without a proper writer
+      call timer_stop(a:timer)
+      unlet s:timers[a:timer]
+    else
+      let s:timers[a:timer] += 1
+    endif
     return
   endif
   call writer.flush()
