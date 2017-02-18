@@ -1,11 +1,15 @@
 Describe Emitter
-  Before
+  Before all
     let Emitter = vital#gina#import('Emitter')
     let listener = { 'called_with': [] }
 
     function! listener.func(...) abort
       let self.called_with = a:000
     endfunction
+  End
+
+  Before
+    call Emitter.unsubscribe_all()
   End
 
   It calls {listener} which subscribe {name}
@@ -27,5 +31,47 @@ Describe Emitter
     call Emitter.emit('bar', 2, 2, 2)
     Assert Equals(foo.called_with, [1, 1, 1])
     Assert Equals(bar.called_with, [2, 2, 2])
+  End
+
+  It can hook by middlewares
+    let middleware = {}
+    let middleware.on_emit_pre_called_with = []
+    let middleware.on_emit_post_called_with = []
+
+    function! middleware.on_emit_pre(name, listeners, attrs) abort
+      call add(self.on_emit_pre_called_with, [a:name, len(a:listeners), a:attrs])
+      call remove(a:listeners, 0)
+    endfunction
+
+    function! middleware.on_emit_post(name, listeners, attrs) abort
+      call add(self.on_emit_post_called_with, [a:name, len(a:listeners), a:attrs])
+    endfunction
+
+    call Emitter.add_middleware(middleware)
+
+    let foo = deepcopy(listener)
+    let bar = deepcopy(listener)
+    call Emitter.subscribe('foo', foo.func, foo)
+    call Emitter.subscribe('bar', foo.func, foo)
+    call Emitter.subscribe('bar', bar.func, bar)
+
+    " Middleware remove the fist listener
+    call Emitter.emit('foo', 0, 1, 2)
+    Assert Equals(foo.called_with, [], 'While middleware remove the fist one')
+    Assert Equals(bar.called_with, [])
+
+    " Middleware remove the fist listener
+    call Emitter.emit('bar', 1, 1, 1)
+    Assert Equals(foo.called_with, [], 'While middleware remove the fist one')
+    Assert Equals(bar.called_with, [1, 1, 1])
+
+    Assert Equals(middleware.on_emit_pre_called_with, [
+          \ ['foo', 1, [0, 1, 2]],
+          \ ['bar', 2, [1, 1, 1]],
+          \])
+    Assert Equals(middleware.on_emit_post_called_with, [
+          \ ['foo', 0, [0, 1, 2]],
+          \ ['bar', 1, [1, 1, 1]],
+          \])
   End
 End

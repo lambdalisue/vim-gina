@@ -37,10 +37,38 @@ FUNCTION					*Vital.Emitter-function*
 .unsubscribe({name}, {listener}[, {instance}])
 	Unsubscribe {name} event with {listener}.
 
+			*Vital.Emitter.unsubscribe_all()*
+.unsubscribe_all([{name}])
+	Unsubscribe all listerns of {name} event.
+	If no {name} has specified, it unsubscribe all listeners of all
+	events.
+
+			*Vital.Emitter.add_middleware()*
+.add_middleware({middleware})
+	Add {middleware} to the middleware list.
+	See |Vital.Emitter-middleware| for the detail.
+
+			*Vital.Emitter.remove_middleware()*
+.remove_middleware([{middleware}])
+	Remove {middleware} from the middleware list.
+	If no {middleware} has specified, it remove all middlewares.
+	See |Vital.Emitter-middleware| for the detail.
+
 			*Vital.Emitter.emit()*
 .emit({name}[, {args}...])
 	Call registered listeners of {name} with {args}.
 
+-----------------------------------------------------------------------------
+MIDDLEWARE					*Vital.Emitter-middleware*
+
+
+			*Vital.Emitter-middleware.on_emit_pre()*
+.on_emit_pre({name}, {listeners}, {attrs})
+	Called before the event has been sent to all listeners.
+
+			*Vital.Emitter-middleware.on_emit_post()*
+.on_emit_post({name}, {listeners}, {attrs})
+	Called after the event had been sent to all listeners.
 
 =============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
