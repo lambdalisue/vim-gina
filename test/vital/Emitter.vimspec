@@ -1,77 +1,178 @@
 Describe Emitter
   Before all
+    let Guard = vital#gina#import('Vim.Guard')
     let Emitter = vital#gina#import('Emitter')
-    let listener = { 'called_with': [] }
+    let guard = Guard.store([Emitter, 0])
 
+    let listener = {}
+    let listener.called_with = []
     function! listener.func(...) abort
       let self.called_with = a:000
     endfunction
-  End
 
-  Before
-    call Emitter.unsubscribe_all()
-  End
-
-  It calls {listener} which subscribe {name}
-    let foo = deepcopy(listener)
-    let bar = deepcopy(listener)
-    call Emitter.subscribe('foo', foo.func, foo)
-    call Emitter.subscribe('bar', foo.func, foo)
-    call Emitter.subscribe('bar', bar.func, bar)
-
-    call Emitter.emit('foo', 0, 1, 2)
-    Assert Equals(foo.called_with, [0, 1, 2])
-    Assert Equals(bar.called_with, [])
-
-    call Emitter.emit('bar', 1, 1, 1)
-    Assert Equals(foo.called_with, [1, 1, 1])
-    Assert Equals(bar.called_with, [1, 1, 1])
-
-    call Emitter.unsubscribe('bar', foo.func, foo)
-    call Emitter.emit('bar', 2, 2, 2)
-    Assert Equals(foo.called_with, [1, 1, 1])
-    Assert Equals(bar.called_with, [2, 2, 2])
-  End
-
-  It can hook by middlewares
     let middleware = {}
     let middleware.on_emit_pre_called_with = []
     let middleware.on_emit_post_called_with = []
-
     function! middleware.on_emit_pre(name, listeners, attrs) abort
-      call add(self.on_emit_pre_called_with, [a:name, len(a:listeners), a:attrs])
+      call add(self.on_emit_pre_called_with, [a:name, len(a:listeners), copy(a:attrs)])
       call remove(a:listeners, 0)
+      call remove(a:attrs, 0)
     endfunction
 
     function! middleware.on_emit_post(name, listeners, attrs) abort
-      call add(self.on_emit_post_called_with, [a:name, len(a:listeners), a:attrs])
+      call add(self.on_emit_post_called_with, [a:name, len(a:listeners), copy(a:attrs)])
     endfunction
+  End
 
-    call Emitter.add_middleware(middleware)
+  After all
+    call guard.restore()
+  End
 
-    let foo = deepcopy(listener)
-    let bar = deepcopy(listener)
-    call Emitter.subscribe('foo', foo.func, foo)
-    call Emitter.subscribe('bar', foo.func, foo)
-    call Emitter.subscribe('bar', bar.func, bar)
+  Before
+    call Emitter.unsubscribe()
+    call Emitter.remove_middleware()
+  End
 
-    " Middleware remove the fist listener
-    call Emitter.emit('foo', 0, 1, 2)
-    Assert Equals(foo.called_with, [], 'While middleware remove the fist one')
-    Assert Equals(bar.called_with, [])
+  Describe .subscribe({name}, {listener} [, {instance}])
+    It registers {lister} to subscribe {name} event
+      let foo = deepcopy(listener)
+      let bar = deepcopy(listener)
+      call Emitter.subscribe('foo', foo.func, foo)
+      call Emitter.subscribe('bar', foo.func, foo)
+      call Emitter.subscribe('bar', bar.func, bar)
 
-    " Middleware remove the fist listener
-    call Emitter.emit('bar', 1, 1, 1)
-    Assert Equals(foo.called_with, [], 'While middleware remove the fist one')
-    Assert Equals(bar.called_with, [1, 1, 1])
+      Assert Equals(Emitter.listeners['foo'], [
+            \ [foo.func, foo],
+            \])
+      Assert Equals(Emitter.listeners['bar'], [
+            \ [foo.func, foo],
+            \ [bar.func, bar],
+            \])
+    End
+  End
 
-    Assert Equals(middleware.on_emit_pre_called_with, [
-          \ ['foo', 1, [0, 1, 2]],
-          \ ['bar', 2, [1, 1, 1]],
-          \])
-    Assert Equals(middleware.on_emit_post_called_with, [
-          \ ['foo', 0, [0, 1, 2]],
-          \ ['bar', 1, [1, 1, 1]],
-          \])
+  Describe .unsubscribe([{name} [, {listener} [, {instance}]]])
+    It unregisters a {listener} of {name} event
+      let foo = deepcopy(listener)
+      let bar = deepcopy(listener)
+      call Emitter.subscribe('foo', foo.func, foo)
+      call Emitter.subscribe('bar', foo.func, foo)
+      call Emitter.subscribe('bar', bar.func, bar)
+      call Emitter.unsubscribe('bar', foo.func, foo)
+
+      Assert Equals(Emitter.listeners['foo'], [
+            \ [foo.func, foo],
+            \])
+      Assert Equals(Emitter.listeners['bar'], [
+            \ [bar.func, bar],
+            \])
+    End
+
+    It unregisters all listeners of {name} event
+      let foo = deepcopy(listener)
+      let bar = deepcopy(listener)
+      call Emitter.subscribe('foo', foo.func, foo)
+      call Emitter.subscribe('bar', foo.func, foo)
+      call Emitter.subscribe('bar', bar.func, bar)
+      call Emitter.unsubscribe('foo')
+
+      Assert Equals(Emitter.listeners['foo'], [])
+      Assert Equals(Emitter.listeners['bar'], [
+            \ [foo.func, foo],
+            \ [bar.func, bar],
+            \])
+    End
+
+    It unregisters all listeners
+      let foo = deepcopy(listener)
+      let bar = deepcopy(listener)
+      call Emitter.subscribe('foo', foo.func, foo)
+      call Emitter.subscribe('bar', foo.func, foo)
+      call Emitter.subscribe('bar', bar.func, bar)
+      call Emitter.unsubscribe()
+
+      Assert Equals(Emitter.listeners, {})
+    End
+  End
+
+  Describe .add_middleware({middleware})
+    It adds {middleware}
+      let foo = deepcopy(middleware)
+      let bar = deepcopy(middleware)
+      call Emitter.add_middleware(foo)
+      call Emitter.add_middleware(bar)
+      Assert Equals(Emitter.middlewares, [foo, bar])
+    End
+  End
+
+  Describe .remove_middleware([{middleware}])
+    It removes {middleware}
+      let foo = deepcopy(middleware)
+      let bar = deepcopy(middleware)
+      call Emitter.add_middleware(foo)
+      call Emitter.add_middleware(bar)
+      call Emitter.remove_middleware(foo)
+      Assert Equals(Emitter.middlewares, [bar])
+    End
+
+    It removes all middlewares
+      let foo = deepcopy(middleware)
+      let bar = deepcopy(middleware)
+      call Emitter.add_middleware(foo)
+      call Emitter.add_middleware(bar)
+      call Emitter.remove_middleware()
+      Assert Equals(Emitter.middlewares, [])
+    End
+  End
+
+  Describe .emit({name} [, {attr}...])
+    It calls registered listerns of {name} with {attr}s
+      let foo = deepcopy(listener)
+      let bar = deepcopy(listener)
+      call Emitter.subscribe('foo', foo.func, foo)
+      call Emitter.subscribe('bar', foo.func, foo)
+      call Emitter.subscribe('bar', bar.func, bar)
+
+      call Emitter.emit('foo', 0, 1, 2)
+      Assert Equals(foo.called_with, [0, 1, 2])
+      Assert Equals(bar.called_with, [])
+
+      call Emitter.emit('bar', 1, 1, 1)
+      Assert Equals(foo.called_with, [1, 1, 1])
+      Assert Equals(bar.called_with, [1, 1, 1])
+
+      call Emitter.unsubscribe('bar', foo.func, foo)
+      call Emitter.emit('bar', 2, 2, 2)
+      Assert Equals(foo.called_with, [1, 1, 1])
+      Assert Equals(bar.called_with, [2, 2, 2])
+    End
+
+    It calls callbacks of middlewares
+      let foo = deepcopy(listener)
+      let bar = deepcopy(listener)
+      call Emitter.subscribe('foo', foo.func, foo)
+      call Emitter.subscribe('bar', foo.func, foo)
+      call Emitter.subscribe('bar', bar.func, bar)
+      call Emitter.add_middleware(middleware)
+
+      " Middleware removes first listeners/attrs
+      call Emitter.emit('foo', 0, 1, 2)
+      Assert Equals(foo.called_with, [], 'While middleware remove the fist one')
+      Assert Equals(bar.called_with, [])
+
+      " Middleware removes first listeners/attrs
+      call Emitter.emit('bar', 1, 2, 3)
+      Assert Equals(foo.called_with, [], 'While middleware remove the fist one')
+      Assert Equals(bar.called_with, [2, 3])
+
+      Assert Equals(middleware.on_emit_pre_called_with, [
+            \ ['foo', 1, [0, 1, 2]],
+            \ ['bar', 2, [1, 2, 3]],
+            \])
+      Assert Equals(middleware.on_emit_post_called_with, [
+            \ ['foo', 0, [1, 2]],
+            \ ['bar', 1, [2, 3]],
+            \])
+    End
   End
 End

@@ -1,60 +1,61 @@
-let s:listeners = {}
-let s:middlewares = []
+function! s:_vital_created(module) abort
+  let a:module.listeners = {}
+  let a:module.middlewares = []
+endfunction
 
 
-function! s:subscribe(name, listener, ...) abort
+function! s:subscribe(name, listener, ...) abort dict
   let instance = get(a:000, 0, v:null)
-  let s:listeners[a:name] = get(s:listeners, a:name, [])
-  call add(s:listeners[a:name], [a:listener, instance])
+  let self.listeners[a:name] = get(self.listeners, a:name, [])
+  call add(self.listeners[a:name], [a:listener, instance])
 endfunction
 
-function! s:unsubscribe(name, listener, ...) abort
-  let instance = get(a:000, 0, v:null)
-  let s:listeners[a:name] = get(s:listeners, a:name, [])
-  let index = index(s:listeners[a:name], [a:listener, instance])
-  if index != -1
-    call remove(s:listeners[a:name], index)
-  endif
-endfunction
-
-function! s:unsubscribe_all(...) abort
+function! s:unsubscribe(...) abort dict
   if a:0 == 0
-    let s:listeners = {}
+    let self.listeners = {}
+  elseif a:0 == 1
+    let self.listeners[a:1] = []
   else
-    let s:listeners[a:1] = []
-  endif
-endfunction
-
-function! s:add_middleware(middleware) abort
-  call add(s:middlewares, a:middleware)
-endfunction
-
-function! s:remove_middleware(...) abort
-  if a:0 == 0
-    let s:middlewares = []
-  else
-    let index = index(s:middlewares, a:1)
+    let instance = a:0 == 3 ? a:3 : v:null
+    let self.listeners[a:1] = get(self.listeners, a:1, [])
+    let index = index(self.listeners[a:1], [a:2, instance])
     if index != -1
-      call remove(s:middlewares, index)
+      call remove(self.listeners[a:1], index)
     endif
   endif
 endfunction
 
-function! s:emit(name, ...) abort
-  let listeners = copy(get(s:listeners, a:name, []))
-  let middlewares = map(s:middlewares, 'extend(copy(s:middleware), v:val)')
+function! s:add_middleware(middleware) abort dict
+  call add(self.middlewares, a:middleware)
+endfunction
+
+function! s:remove_middleware(...) abort dict
+  if a:0 == 0
+    let self.middlewares = []
+  else
+    let index = index(self.middlewares, a:1)
+    if index != -1
+      call remove(self.middlewares, index)
+    endif
+  endif
+endfunction
+
+function! s:emit(name, ...) abort dict
+  let attrs = copy(a:000)
+  let listeners = copy(get(self.listeners, a:name, []))
+  let middlewares = map(self.middlewares, 'extend(copy(s:middleware), v:val)')
   for middleware in middlewares
-    call call(middleware.on_emit_pre, [a:name, listeners, a:000], middleware)
+    call call(middleware.on_emit_pre, [a:name, listeners, attrs], middleware)
   endfor
   for [Listener, instance] in listeners
     if empty(instance)
-      call call(Listener, a:000)
+      call call(Listener, attrs)
     else
-      call call(Listener, a:000, instance)
+      call call(Listener, attrs, instance)
     endif
   endfor
   for middleware in middlewares
-    call call(middleware.on_emit_post, [a:name, listeners, a:000], middleware)
+    call call(middleware.on_emit_post, [a:name, listeners, attrs], middleware)
   endfor
 endfunction
 
