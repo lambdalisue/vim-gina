@@ -408,4 +408,59 @@ Describe gina#core#buffer
     " NOTE:
     " This feature is already tested in Vital.Vim.Window
   End
+
+  Describe #assign_cmdarg([{cmdarg}])
+    It assigns &fileencoding if {cmdarg} has ++enc=xxxxx
+      edit foo
+      call gina#core#buffer#assign_cmdarg(' ++enc=utf-8')
+      Assert Equals(&fileencoding, 'utf-8')
+      Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+
+      call gina#core#buffer#assign_cmdarg(' ++enc=cp1250')
+      Assert Equals(&fileencoding, 'cp1250')
+      Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+
+      call gina#core#buffer#assign_cmdarg('')
+      Assert Equals(&fileencoding, 'cp1250')
+      Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+    End
+
+    It assigns &fileformat if {cmdarg} has ++ff=xxxxx
+      edit foo
+      call gina#core#buffer#assign_cmdarg(' ++ff=unix')
+      Assert Equals(&fileencoding, '')
+      Assert Equals(&fileformat, 'unix')
+
+      call gina#core#buffer#assign_cmdarg(' ++ff=dos')
+      Assert Equals(&fileencoding, '')
+      Assert Equals(&fileformat, 'dos')
+
+      call gina#core#buffer#assign_cmdarg(' ++ff=mac')
+      Assert Equals(&fileencoding, '')
+      Assert Equals(&fileformat, 'mac')
+
+      call gina#core#buffer#assign_cmdarg('')
+      Assert Equals(&fileencoding, '')
+      Assert Equals(&fileformat, 'mac')
+    End
+
+    It assigns &fileencoding and &fileformat if {cmdarg} has ++enc=xxxxx and ++ff=xxxxx
+      edit foo
+      call gina#core#buffer#assign_cmdarg(' ++enc=utf-8 ++ff=unix')
+      Assert Equals(&fileencoding, 'utf-8')
+      Assert Equals(&fileformat, 'unix')
+
+      call gina#core#buffer#assign_cmdarg(' ++enc=cp1250 ++ff=dos')
+      Assert Equals(&fileencoding, 'cp1250')
+      Assert Equals(&fileformat, 'dos')
+
+      call gina#core#buffer#assign_cmdarg(' ++ff=mac ++enc=sjis')
+      Assert Equals(&fileencoding, 'sjis')
+      Assert Equals(&fileformat, 'mac')
+
+      call gina#core#buffer#assign_cmdarg('')
+      Assert Equals(&fileencoding, 'sjis')
+      Assert Equals(&fileformat, 'mac')
+    End
+  End
 End

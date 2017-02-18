@@ -101,6 +101,24 @@ function! gina#core#buffer#focus(expr) abort
   return s:Window.focus_buffer(a:expr)
 endfunction
 
+function! gina#core#buffer#assign_cmdarg(...) abort
+  let guard = s:Guard.store(['&l:modifiable'])
+  try
+    setlocal modifiable
+    let cmdarg = a:0 == 0 ? v:cmdarg : a:1
+    let fileencoding = matchstr(cmdarg, '++enc=\zs\S\+')
+    if !empty(fileencoding)
+      let &l:fileencoding = fileencoding
+    endif
+    let fileformat = matchstr(cmdarg, '++ff=\zs\S\+')
+    if !empty(fileformat)
+      let &l:fileformat = fileformat
+    endif
+  finally
+    call guard.restore()
+  endtry
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:focus(winnr) abort
