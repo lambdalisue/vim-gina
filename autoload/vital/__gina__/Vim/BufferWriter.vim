@@ -15,18 +15,18 @@ function! s:_vital_created(module) abort
   let a:module.use_python = 1
   let a:module.use_python3 = 1
   let a:module.updatetime = 10
-  let s:module = a:module
 endfunction
 
-
-function! s:new(...) abort
+function! s:new(...) abort dict
   let options = extend({
         \ 'bufnr': bufnr('%'),
-        \ 'updatetime': s:module.updatetime,
+        \ 'updatetime': self.updatetime,
         \}, get(a:000, 0, {})
         \)
   let writer = extend(copy(s:writer), options)
   let writer._queue = s:Queue.new()
+  let writer._module = copy(self)
+  lockvar writer._module
   return writer
 endfunction
 
@@ -196,7 +196,7 @@ let s:writer = {'_timer': v:null}
 function! s:_timer_callback(timer) abort
   let writer = get(s:timers, a:timer, 0)
   if type(writer) == s:t_number
-    if writer > 1000 / s:module.updatetime
+    if writer > 1000
       " Somehow a timer is running without a proper writer
       call timer_stop(a:timer)
       unlet s:timers[a:timer]
@@ -232,7 +232,7 @@ function! s:writer.stop() abort
 endfunction
 
 function! s:writer.clear() abort
-  call s:module.assign_content(self.bufnr, [])
+  call self._module.assign_content(self.bufnr, [])
   call self.on_clear()
 endfunction
 
@@ -249,7 +249,7 @@ function! s:writer.flush() abort
     endif
     return
   endif
-  if !s:module.extend_content(self.bufnr, msg)
+  if !self._module.extend_content(self.bufnr, msg)
     return self.stop()
   endif
   call self.on_flush(msg)
