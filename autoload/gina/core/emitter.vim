@@ -1,5 +1,4 @@
 let s:Emitter = vital#gina#import('Emitter')
-let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 
 let s:modified_timer = v:null
 
@@ -25,7 +24,6 @@ endfunction
 
 " Subscribe ------------------------------------------------------------------
 function! s:on_modified(...) abort
-  call s:Observer.update()
 endfunction
 
 function! s:on_modified_delay() abort

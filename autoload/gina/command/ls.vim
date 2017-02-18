@@ -1,5 +1,4 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
-let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
@@ -58,7 +57,6 @@ function! s:init(args) abort
 
   " Attach modules
   call s:Anchor.attach()
-  call s:Observer.attach()
   call gina#action#attach(function('s:get_candidates'))
   call gina#action#include('browse')
   call gina#action#include('changes')

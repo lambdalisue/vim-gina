@@ -1,5 +1,4 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
-let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:String = vital#gina#import('Data.String')
 let s:Git = vital#gina#import('Git')
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
