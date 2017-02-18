@@ -79,6 +79,7 @@ function! s:BufReadCmd() abort
         \ gina#process#pipe#stream_writer(),
         \ s:writer
         \))
+  call gina#core#buffer#assign_cmdarg()
   call gina#process#open(git, args, pipe)
   setlocal filetype=git
 endfunction
