@@ -15,6 +15,13 @@ function! gina#core#emitter#unsubscribe(name, listener, ...) abort
   call call(s:Emitter.unsubscribe, [a:name, a:listener] + a:000, s:Emitter)
 endfunction
 
+function! gina#core#emitter#add_middleware(middleware) abort
+  call call(s:Emitter.add_middleware, [a:middleware] + a:000, s:Emitter)
+endfunction
+
+function! gina#core#emitter#remove_middleware(...) abort
+  call call(s:Emitter.remove_middleware, a:000, s:Emitter)
+endfunction
 
 " Subscribe ------------------------------------------------------------------
 function! s:on_modified(...) abort

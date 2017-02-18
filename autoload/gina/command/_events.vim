@@ -1,0 +1,149 @@
+let s:String = vital#gina#import('Data.String')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
+let s:current = {
+      \ 'bufnr': 0,
+      \ 'middleware': {},
+      \}
+
+
+function! gina#command#_events#call(range, args, mods) abort
+  let git = gina#core#get_or_fail()
+  let args = s:build_args(git, a:args)
+
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME)
+  call gina#core#buffer#open(bufname, {
+        \ 'mods': a:mods,
+        \ 'group': args.params.group,
+        \ 'opener': args.params.opener,
+        \ 'cmdarg': args.params.cmdarg,
+        \ 'callback': {
+        \   'fn': function('s:init'),
+        \   'args': [args],
+        \ }
+        \})
+endfunction
+
+
+" Private --------------------------------------------------------------------
+function! s:build_args(git, args) abort
+  let args = gina#command#parse_args(a:args)
+  let args.params.group = args.pop('--group', 'console')
+  let args.params.opener = args.pop('--opener', 'botright 80vsplit')
+  let args.params.detail = args.pop('--detail')
+
+  return args.lock()
+endfunction
+
+function! s:init(args) abort
+  call gina#core#meta#set('args', a:args)
+
+  if exists('b:gina_initialized')
+    return
+  endif
+  let b:gina_initialized = 1
+
+  setlocal winfixwidth
+  setlocal winfixheight
+  setlocal buftype=nofile
+  setlocal bufhidden=wipe
+  setlocal noswapfile
+  setlocal nomodifiable
+  setlocal noautoread
+  setlocal nolist nospell
+  setlocal nowrap nonumber norelativenumber
+
+  augroup gina_internal_command
+    autocmd! * <buffer>
+    autocmd BufReadCmd <buffer> call s:BufReadCmd()
+    autocmd BufWipeout <buffer> call s:BufWipeout()
+  augroup END
+endfunction
+
+function! s:BufReadCmd() abort
+  call gina#core#emitter#remove_middleware(s:current.middleware)
+  setlocal nobuflisted
+  setlocal filetype=gina-_events
+  let args = gina#core#meta#get_or_fail('args')
+  let s:current.bufnr = bufnr('%')
+  let s:current.middleware = copy(s:middleware)
+  let s:current.middleware.detail = args.params.detail
+  call gina#core#emitter#add_middleware(s:current.middleware)
+endfunction
+
+function! s:BufWipeout() abort
+  call gina#core#emitter#remove_middleware(s:current.middleware)
+endfunction
+
+function! s:print_message(msg) abort
+  let bufnr = s:current.bufnr
+  if !bufnr || bufwinnr(bufnr) < 1
+    call gina#core#emitter#remove_middleware(s:current.middleware)
+    let s:current.bufnr = 0
+    return
+  endif
+  let focus = gina#core#buffer#focus(bufnr)
+  try
+    call gina#core#writer#extend_content(bufnr, [a:msg, ''])
+    normal! G
+  finally
+    call focus.restore()
+  endtry
+endfunction
+
+function! s:print_event(prefix, name, attrs) abort
+  let width = winwidth(bufwinnr(s:current.bufnr))
+  let head = printf('%-5s: %s: %s(%s)',
+        \ a:prefix,
+        \ s:now(),
+        \ a:name,
+        \ join(map(copy(a:attrs), 'string(v:val)'), ', ')
+        \)
+  let tail = printf('[%s]', bufname('%'))
+  let message = head . s:String.pad_left(tail, width - len(head))
+  call s:print_message(message)
+endfunction
+
+function! s:print_listeners(listeners) abort
+  for [Listener, instance] in a:listeners
+    call s:print_message(printf(
+          \ '| %s [%s]',
+          \ string(Listener),
+          \ string(instance),
+          \))
+  endfor
+endfunction
+
+
+if has('python3')
+  python3 import datetime
+  function! s:now() abort
+    return py3eval('datetime.datetime.now().strftime("%H:%M:%S.%f")')
+  endfunction
+elseif has('python')
+  python import datetime
+  function! s:now() abort
+    return pyeval('datetime.datetime.now().strftime("%H:%M:%S.%f")')
+  endfunction
+else
+  function! s:now() abort
+    return strftime('%H:%M:%S.??????')
+  endfunction
+endif
+
+
+" Middleware -----------------------------------------------------------------
+let s:middleware = {'detail': 0}
+
+function! s:middleware.on_emit_pre(name, listeners, attrs) abort
+  call s:print_event('pre', a:name, a:attrs)
+  if self.detail
+    call s:print_listeners(a:listeners)
+  endif
+endfunction
+
+function! s:middleware.on_emit_post(name, listeners, attrs) abort
+  call s:print_event('post', a:name, a:attrs)
+  if self.detail
+    call s:print_listeners(a:listeners)
+  endif
+endfunction
