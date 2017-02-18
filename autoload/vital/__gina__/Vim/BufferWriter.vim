@@ -4,11 +4,12 @@ let s:t_number = type(0)
 function! s:_vital_loaded(V) abort
   let s:Guard = a:V.import('Vim.Guard')
   let s:Queue = a:V.import('Data.Queue')
+  let s:String = a:V.import('Data.String')
   let s:Window = a:V.import('Vim.Window')
 endfunction
 
 function! s:_vital_depends() abort
-  return ['Vim.Guard', 'Data.Queue', 'Vim.Window']
+  return ['Vim.Guard', 'Data.Queue', 'Data.String', 'Vim.Window']
 endfunction
 
 function! s:_vital_created(module) abort
@@ -32,23 +33,108 @@ endfunction
 
 
 " Utility functions ----------------------------------------------------------
+function! s:assign_content(bufnr, content) abort dict
+  if bufwinnr(a:bufnr) < 1
+    return 0
+  endif
+  let content = s:_iconv(a:bufnr, a:content)
+  if has('python3') && self.use_python3 && s:_ready_python3()
+    call s:_assign_content_python3(a:bufnr, content)
+  elseif has('python') && self.use_python && s:_ready_python()
+    call s:_assign_content_python(a:bufnr, content)
+  else
+    call s:_assign_content_vim(a:bufnr, content)
+  endif
+  return 1
+endfunction
+
+if has('nvim')
+  function! s:_assign_content_python3(bufnr, content) abort
+python3 << EOC
+def _vital_vim_bufferwriter_assign_content():
+  content = vim.eval('a:content')
+  vbuffer = vim.buffers[int(vim.eval('a:bufnr'))]
+  modifiable = vbuffer.options['modifiable']
+  vbuffer.options['modifiable'] = True
+  try:
+    vbuffer[:] = content
+  finally:
+    vbuffer.options['modifiable'] = modifiable
+_vital_vim_bufferwriter_assign_content()
+EOC
+  endfunction
+else
+  " Vim's builtin python3 implementation does not handle Unicode well so
+  " manually encode/decode from byte-stream (vim.bindeval)
+  function! s:_assign_content_python3(bufnr, content) abort
+python3 << EOC
+def _vital_vim_bufferwriter_assign_content():
+  encoding = vim.eval('&encoding')
+  fileencoding = vim.eval('&fileencoding')
+  content = vim.bindeval('a:content')  # vim.eval raise Unicode error
+  vbuffer = vim.buffers[int(vim.eval('a:bufnr'))]
+  modifiable = vbuffer.options['modifiable']
+  vbuffer.options['modifiable'] = True
+  try:
+    vbuffer[:] = content[:]   # content[:] for vim.list -> list conversion
+  finally:
+    vbuffer.options['modifiable'] = modifiable
+try:
+  _vital_vim_bufferwriter_assign_content()
+except Exception as e:
+  vim.command('call themis#log(%s)' % str(e).splitlines())
+EOC
+  endfunction
+endif
+
+function! s:_assign_content_python(bufnr, content) abort
+python << EOC
+def _vital_vim_bufferwriter_assign_content():
+  content = vim.eval('a:content')
+  vbuffer = vim.buffers[int(vim.eval('a:bufnr'))]
+  modifiable = vbuffer.options['modifiable']
+  vbuffer.options['modifiable'] = True
+  try:
+    vbuffer[:] = content
+  finally:
+    vbuffer.options['modifiable'] = modifiable
+_vital_vim_bufferwriter_assign_content()
+EOC
+endfunction
+
+function! s:_assign_content_vim(bufnr, content) abort
+  let focus = s:Window.focus_buffer(a:bufnr)
+  let guard = s:Guard.store(['&l:modifiable'])
+  try
+    setlocal modifiable
+    silent keepjumps %delete _
+    call setline(1, a:content)
+  finally
+    call guard.restore()
+    call focus.restore()
+  endtry
+endfunction
+
+
 function! s:extend_content(bufnr, content) abort dict
   if bufwinnr(a:bufnr) < 1
     return 0
   elseif empty(a:content)
     return 1
   endif
+  let content = s:_iconv(a:bufnr, a:content)
   if has('python3') && self.use_python3 && s:_ready_python3()
-    call s:_extend_content_python3(a:bufnr, a:content)
+    call s:_extend_content_python3(a:bufnr, content)
   elseif has('python') && self.use_python && s:_ready_python()
-    call s:_extend_content_python(a:bufnr, a:content)
+    call s:_extend_content_python(a:bufnr, content)
   else
-    call s:_extend_content_vim(a:bufnr, a:content)
+    call s:_extend_content_vim(a:bufnr, content)
   endif
   return 1
 endfunction
 
-function! s:_extend_content_python3(bufnr, content) abort
+if has('nvim')
+  function! s:_extend_content_python3(bufnr, content) abort
 python3 << EOC
 def _vital_vim_bufferwriter_extend_content():
   content = vim.eval('a:content')
@@ -66,7 +152,29 @@ def _vital_vim_bufferwriter_extend_content():
     vbuffer.options['modifiable'] = modifiable
 _vital_vim_bufferwriter_extend_content()
 EOC
-endfunction
+  endfunction
+else
+  function! s:_extend_content_python3(bufnr, content) abort
+python3 << EOC
+def _vital_vim_bufferwriter_extend_content():
+  encoding = vim.eval('&encoding')
+  content = vim.bindeval('a:content')
+  vbuffer = vim.buffers[int(vim.eval('a:bufnr'))]
+  modifiable = vbuffer.options['modifiable']
+  vbuffer.options['modifiable'] = True
+  try:
+    leading = vbuffer[-1].encode(encoding, 'surrogateescape') + content[0]
+    del vbuffer[-1]
+    initial = vbuffer[0] == '' and len(vbuffer) == 1
+    vbuffer.append([leading] + content[1:])
+    if initial:
+      del vbuffer[0]
+  finally:
+    vbuffer.options['modifiable'] = modifiable
+_vital_vim_bufferwriter_extend_content()
+EOC
+  endfunction
+endif
 
 function! s:_extend_content_python(bufnr, content) abort
 python << EOC
@@ -102,64 +210,6 @@ function! s:_extend_content_vim(bufnr, content) abort
 endfunction
 
 
-function! s:assign_content(bufnr, content) abort dict
-  if bufwinnr(a:bufnr) < 1
-    return 0
-  endif
-  if has('python3') && self.use_python3 && s:_ready_python3()
-    call s:_assign_content_python3(a:bufnr, a:content)
-  elseif has('python') && self.use_python && s:_ready_python()
-    call s:_assign_content_python(a:bufnr, a:content)
-  else
-    call s:_assign_content_vim(a:bufnr, a:content)
-  endif
-  return 1
-endfunction
-
-function! s:_assign_content_python3(bufnr, content) abort
-python3 << EOC
-def _vital_vim_bufferwriter_assign_content():
-  content = vim.eval('a:content')
-  vbuffer = vim.buffers[int(vim.eval('a:bufnr'))]
-  modifiable = vbuffer.options['modifiable']
-  vbuffer.options['modifiable'] = True
-  try:
-    vbuffer[:] = content
-  finally:
-    vbuffer.options['modifiable'] = modifiable
-_vital_vim_bufferwriter_assign_content()
-EOC
-endfunction
-
-function! s:_assign_content_python(bufnr, content) abort
-python << EOC
-def _vital_vim_bufferwriter_assign_content():
-  content = vim.eval('a:content')
-  vbuffer = vim.buffers[int(vim.eval('a:bufnr'))]
-  modifiable = vbuffer.options['modifiable']
-  vbuffer.options['modifiable'] = True
-  try:
-    vbuffer[:] = content
-  finally:
-    vbuffer.options['modifiable'] = modifiable
-_vital_vim_bufferwriter_assign_content()
-EOC
-endfunction
-
-function! s:_assign_content_vim(bufnr, content) abort
-  let focus = s:Window.focus_buffer(a:bufnr)
-  let guard = s:Guard.store(['&l:modifiable'])
-  try
-    setlocal modifiable
-    silent keepjumps %delete _
-    call setline(1, a:content)
-  finally
-    call guard.restore()
-    call focus.restore()
-  endtry
-endfunction
-
-
 function! s:_ready_python() abort
   if exists('s:python_enabled')
     return s:python_enabled
@@ -186,6 +236,16 @@ function! s:_ready_python3() abort
     let s:python3_enabled = 0
   endtry
   return s:python3_enabled
+endfunction
+
+function! s:_iconv(bufnr, content) abort
+  let fileencoding = getbufvar(a:bufnr, '&fileencoding')
+  if fileencoding ==# ''
+    return a:content
+  endif
+  let expr = join(a:content, "\n")
+  let result = s:String.iconv(expr, fileencoding, &encoding)
+  return split(result, '\n')
 endfunction
 
 
