@@ -59,9 +59,7 @@ endfunction
 
 function! gina#util#doautocmd(name, ...) abort
   let pattern = get(a:000, 0, '')
-  let expr = empty(pattern)
-        \ ? '#' . a:name
-        \ : '#' . a:name . '#' . pattern
+  let expr = '#' . a:name
   let eis = split(&eventignore, ',')
   if index(eis, a:name) != -1 || index(eis, 'all') != -1 || !exists(expr)
     " the specified event is ignored or does not exists
