@@ -28,7 +28,7 @@ Describe gina#command#log
       Assert Equals(bufname('%'), printf('gina://%s:log', slit1.refname))
       Assert Match(
             \ getline(1),
-            \ '\* [32m\w\{7}[m - Thrid [33;1m\d\+ seconds\? ago[m [35;1m<.*>[m[36;1m (HEAD -> master)[m'
+            \ '\* [32m\w\{7}[m - Thrid [33;1m\d\+ seconds\? ago[m [35;1m<.*>[m[36;1m (.*)[m'
             \)
       Assert Match(
             \ getline(2),
@@ -54,7 +54,7 @@ Describe gina#command#log
       Assert Equals(bufname('%'), printf('gina://%s:log', slit1.refname))
       Assert Match(
             \ getline(1),
-            \ '\* [32m\w\{7}[m - Thrid [33;1m\d\+ seconds\? ago[m [35;1m<.*>[m[36;1m (HEAD -> master)[m'
+            \ '\* [32m\w\{7}[m - Thrid [33;1m\d\+ seconds\? ago[m [35;1m<.*>[m[36;1m (.*)[m'
             \)
       Assert Match(
             \ getline(2),
