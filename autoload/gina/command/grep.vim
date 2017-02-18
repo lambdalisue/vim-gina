@@ -86,7 +86,10 @@ function! s:BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
   let pipe = gina#process#pipe#stream()
-  let pipe.writer = gina#core#writer#new(s:writer)
+  let pipe.writer = gina#core#writer#new(extend(
+        \ gina#process#pipe#stream_writer(),
+        \ s:writer
+        \))
   call gina#process#open(git, args, pipe)
   setlocal filetype=gina-grep
 endfunction
@@ -124,7 +127,7 @@ endfunction
 
 " Writer ---------------------------------------------------------------------
 let s:writer_super = gina#process#pipe#stream_writer()
-let s:writer = deepcopy(s:writer_super)
+let s:writer = {}
 
 function! s:writer.on_stop() abort
   call call(s:writer_super.on_stop, [], self)
