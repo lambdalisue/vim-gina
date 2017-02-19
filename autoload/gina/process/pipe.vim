@@ -2,6 +2,24 @@ let s:Guard = vital#gina#import('Vim.Guard')
 let s:Queue = vital#gina#import('Data.Queue')
 
 
+" Default pipe ---------------------------------------------------------------
+function! gina#process#pipe#default() abort
+  let pipe = copy(s:default_pipe)
+  return pipe
+endfunction
+
+let s:default_pipe = {}
+
+function! s:default_pipe.on_start(job, msg, event) abort
+  call gina#process#register(self)
+endfunction
+
+function! s:default_pipe.on_exit(job, msg, event) abort
+  call gina#process#unregister(self)
+endfunction
+
+
+
 " Store pipe -----------------------------------------------------------------
 function! gina#process#pipe#store() abort
   let pipe = copy(s:store_pipe)

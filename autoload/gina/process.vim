@@ -49,7 +49,7 @@ endfunction
 
 function! gina#process#open(git, args, ...) abort
   let args = type(a:args) == s:t_dict ? a:args : s:Argument.new(a:args)
-  let pipe = extend(copy(s:pipe), get(a:000, 0, {}))
+  let pipe = extend(gina#process#pipe#default(), get(a:000, 0, {}))
   let pipe.params = get(args, 'params', {})
   let pipe.params.scheme = get(pipe.params, 'scheme', args.get(0, ''))
   let job = s:Job.start(s:build_raw_args(a:git, args), pipe)
@@ -114,18 +114,6 @@ function! s:expand(value) abort
     return gina#core#path#expand(a:value)
   endif
   return a:value
-endfunction
-
-
-" Pipe -----------------------------------------------------------------------
-let s:pipe = {}
-
-function! s:pipe.on_start(job, msg, event) abort
-  call gina#process#register(self)
-endfunction
-
-function! s:pipe.on_exit(job, msg, event) abort
-  call gina#process#unregister(self)
 endfunction
 
 
