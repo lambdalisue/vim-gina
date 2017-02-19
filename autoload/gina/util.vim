@@ -1,3 +1,4 @@
+let s:Dict = vital#gina#import('Data.Dict')
 let s:File = vital#gina#import('System.File')
 let s:String = vital#gina#import('Data.String')
 let s:DIRECTION_PATTERN = printf('\<\%%(%s\)\>', join([
@@ -119,6 +120,16 @@ function! s:syncbind(...) abort
   syncbind
 endfunction
 
+function! gina#util#inherit(super, ...) abort
+  let prototype = a:0 ? a:1 : {}
+  let instance = extend(copy(a:super), prototype)
+  let instance.super = function('s:call_super')
+  let instance.__super = s:Dict.omit(a:super, ['super', '__super'])
+  return instance
+endfunction
+
+
+" Private --------------------------------------------------------------------
 function! s:diffoff() abort
   augroup gina_internal_util_diffthis
     autocmd! * <buffer>
@@ -130,4 +141,8 @@ endfunction
 function! s:diffupdate(...) abort
   diffupdate
   syncbind
+endfunction
+
+function! s:call_super(cls, method, ...) abort dict
+  return call(a:cls.__super[a:method], a:000, self)
 endfunction
