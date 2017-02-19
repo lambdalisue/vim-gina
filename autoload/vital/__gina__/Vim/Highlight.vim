@@ -1,6 +1,6 @@
 function! s:get(...) abort
   let name = a:0 ? a:1 : ''
-  let records = split(execute(printf('highlight %s', name)), '\r\?\n')
+  let records = split(s:_highlight(name), '\r\?\n')
   let highlights = map(records, 's:_parse_record(v:val)')
   let highlights = filter(highlights, '!empty(v:val)')
   return a:0 ? highlights[0] : highlights
@@ -27,7 +27,7 @@ endfunction
 
 
 function! s:_parse_record(record) abort
-  let m = matchlist(a:record, '^\(\S\+\)\s\+xxx\s\(.*\)$')
+  let m = matchlist(a:record, '^\(\S\+\)\s*xxx\s\(.*\)$')
   if empty(m)
     return {}
   endif
@@ -49,3 +49,21 @@ function! s:_parse_attrs(attrs) abort
   endfor
   return attrs
 endfunction
+
+if !has('nvim') || has('nvim-0.2.0')
+  function! s:_highlight(name) abort
+    return execute(printf('highlight %s', a:name))
+  endfunction
+else
+  " Neovim 0.1.7 has 'execute()' but it seems the result of
+  " execute('highlight') is squashd and cannot be parsed.
+  function! s:_highlight(name) abort
+    redir => content
+    try
+      execute 'highlight' a:name
+    finally
+      redir END
+    endtry
+    return content
+  endfunction
+endif
