@@ -1,3 +1,7 @@
+if &encoding ==# 'latin1'
+  set encoding=utf-8
+endif
+
 " Force English interface
 language message C
 set helplang=en
