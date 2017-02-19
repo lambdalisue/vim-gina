@@ -54,7 +54,9 @@ endfunction
 let s:echo_pipe = {}
 
 function! s:echo_pipe.on_exit(job, msg, event) abort
-  call gina#core#console#message(join(self._content, "\n"))
+  if len(self._content)
+    call gina#core#console#message(join(self._content, "\n"))
+  endif
   call gina#process#unregister(self)
 endfunction
 
