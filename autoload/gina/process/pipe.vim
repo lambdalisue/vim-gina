@@ -94,11 +94,21 @@ endfunction
 function! s:stream_pipe_writer.on_start() abort
   let self._winview = getbufvar(self.bufnr, 'gina_winview', [])
   call gina#process#register(self._job)
+  call gina#core#emitter#emit('writer:started', self.bufnr)
+endfunction
+
+function! s:stream_pipe_writer.on_write(msg) abort
+  call gina#core#emitter#emit('writer:wrote', self.bufnr, a:msg)
+endfunction
+
+function! s:stream_pipe_writer.on_flush(msg) abort
+  call gina#core#emitter#emit('writer:flushed', self.bufnr, a:msg)
 endfunction
 
 function! s:stream_pipe_writer.on_stop() abort
   call self._job.stop()
   call gina#process#unregister(self._job)
+  call gina#core#emitter#emit('writer:stopped', self.bufnr)
 
   let focus = gina#core#buffer#focus(self.bufnr)
   if empty(focus) || bufnr('%') != self.bufnr

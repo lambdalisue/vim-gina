@@ -92,13 +92,20 @@ endfunction
 
 function! s:print_event(prefix, name, attrs) abort
   let width = winwidth(bufwinnr(s:current.bufnr))
-  let head = printf('%-5s: %s: %s(%s)',
+  let head = printf('%-5s: %s: %s',
         \ a:prefix,
         \ s:now(),
         \ a:name,
-        \ join(map(copy(a:attrs), 'string(v:val)'), ', ')
         \)
-  let tail = printf('[%s]', bufname('%'))
+  let tail = printf('<%s>', bufname('%'))
+  let args = join(map(copy(a:attrs), 'string(v:val)'), ', ')
+  let args = substitute(args, '\r\?\n', '\\n', 'g')
+  let args = s:String.truncate_skipping(
+        \ printf('(%s)', args),
+        \ width - len(head) - len(tail) - 1,
+        \ 3, '...'
+        \)
+  let head = head . args . ' '
   let message = head . s:String.pad_left(tail, width - len(head))
   call s:print_message(message)
 endfunction

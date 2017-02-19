@@ -5,7 +5,7 @@ endif
 syntax match GinaEventsPrefix /^[^:]\+/
 syntax match GinaEventsTime /\d\{2}:\d\{2}:\d\{2}\.\d\{6}/
 syntax match GinaEventsComment /^| .*$/
-syntax match GinaEventsComment /\[.\{-}\]$/
+syntax match GinaEventsComment /<.\{-}>$/
 
 highlight default link GinaEventsComment Comment
 highlight default link GinaEventsPrefix  Statement
