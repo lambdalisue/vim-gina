@@ -27,7 +27,7 @@ endfunction
 
 
 function! s:_parse_record(record) abort
-  let m = matchlist(a:record, '^\(\S\+\)\s*xxx\s\(.*\)$')
+  let m = matchlist(a:record, '^\(\S\+\)\s\+xxx\s\(.*\)$')
   if empty(m)
     return {}
   endif
