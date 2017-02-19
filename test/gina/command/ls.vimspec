@@ -17,6 +17,10 @@ Describe gina#command#ls
     call slit1.execute('commit --quiet -m "Thrid"')
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     %bwipeout!
     execute 'edit' fnameescape(Path.join(slit1.worktree, 'A', 'foo.txt'))

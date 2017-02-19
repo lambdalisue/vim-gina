@@ -3,6 +3,10 @@ Describe gina#core#meta
     %bwipeout!
   End
 
+  After all
+    %bwipeout!
+  End
+
   Describe #get()
     It returns a default value when {name} does not exist
       Assert Equals(gina#core#meta#get('foo'), '')

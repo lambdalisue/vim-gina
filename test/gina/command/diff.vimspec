@@ -17,6 +17,10 @@ Describe gina#command#diff
     call slit1.write('A/foo.txt', ['4'])
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     %bwipeout!
   End

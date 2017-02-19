@@ -16,6 +16,10 @@ Describe gina#process
     call slit1.execute('commit --quiet -m "Thrid"')
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     %bwipeout!
   End

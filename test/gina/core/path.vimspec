@@ -4,6 +4,10 @@ Describe gina#core#path
     let slit1 = Slit(tempname(), 1)
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     %bwipeout!
   End

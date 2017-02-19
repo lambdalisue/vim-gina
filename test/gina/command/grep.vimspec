@@ -9,6 +9,10 @@ Describe gina#command#grep
     call slit1.execute('commit --quiet -am "First"')
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     %bwipeout!
   End

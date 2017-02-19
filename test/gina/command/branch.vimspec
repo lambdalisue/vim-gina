@@ -28,6 +28,10 @@ Describe gina#command#branch
     call slit1.execute('checkout master')
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     %bwipeout!
     execute 'edit' fnameescape(slit1.worktree)

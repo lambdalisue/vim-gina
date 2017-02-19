@@ -8,6 +8,10 @@ Describe gina#command#browse
     execute 'source' fnameescape(sfile)
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     let vars = Scope.vars(sfile)
     let vars.File._called_with = ''

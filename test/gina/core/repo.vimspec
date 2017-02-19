@@ -5,6 +5,10 @@ Describe gina#core#repo
     call slit1.execute('config core.commentChar $')
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     %bwipeout!
   End

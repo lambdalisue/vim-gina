@@ -4,6 +4,10 @@ Describe gina#core#buffer
     let is_windows = has('win32') || has('win64')
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     %bwipeout!
   End

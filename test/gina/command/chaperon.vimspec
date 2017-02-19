@@ -25,6 +25,10 @@ Describe gina#command#chaperon
     call slit1.execute('merge develop')
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     %bwipeout!
   End

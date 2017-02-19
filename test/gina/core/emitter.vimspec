@@ -5,6 +5,10 @@ Describe gina#core#emitter
     let slit3 = Slit(tempname())
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     let tracker = {
           \ 'modified_called_count': 0,

@@ -13,6 +13,10 @@ Describe gina#command#patch
     call slit1.write('A/foo.txt', ['3'])
   End
 
+  After all
+    %bwipeout!
+  End
+
   Before
     %bwipeout!
   End
