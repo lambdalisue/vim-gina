@@ -323,20 +323,6 @@ function! s:writer.flush() abort
   call self.on_flush(msg)
 endfunction
 
-function! s:writer.flush_all() abort
-  let msg = self._queue.get()
-  if msg is# v:null
-    if !self.on_check()
-      call self.stop()
-    endif
-    return
-  endif
-  if !self._module.extend_content(self.bufnr, msg)
-    return self.stop()
-  endif
-  call self.on_flush(msg)
-endfunction
-
 function! s:writer.on_start() abort
   " User can override this method
 endfunction
