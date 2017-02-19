@@ -28,7 +28,7 @@ endfunction
 function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
   let args.params.group = args.pop('--group', 'console')
-  let args.params.opener = args.pop('--opener', 'botright 80vsplit')
+  let args.params.opener = args.pop('--opener', 'botright 30split')
   let args.params.detail = args.pop('--detail')
 
   return args.lock()
