@@ -38,12 +38,15 @@ function! gina#process#wait(...) abort
   let timeout = timeout is# v:null ? v:null : timeout / 1000.0
   let start_time = reltime()
   let updatetime = g:gina#process#updatetime . 'm'
+  call gina#core#emitter#emit('wait:start')
   while timeout is# v:null || timeout > reltimefloat(reltime(start_time))
     if empty(s:runnings)
+      call gina#core#emitter#emit('wait:end')
       return
     endif
     execute 'sleep' updatetime
   endwhile
+  call gina#core#emitter#emit('wait:timeout')
   return -1
 endfunction
 
