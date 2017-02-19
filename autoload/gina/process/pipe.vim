@@ -107,11 +107,11 @@ endfunction
 
 function! s:stream_pipe_writer.on_stop() abort
   call self._job.stop()
-  call gina#process#unregister(self._job)
-  call gina#core#emitter#emit('writer:stopped', self.bufnr)
 
   let focus = gina#core#buffer#focus(self.bufnr)
   if empty(focus) || bufnr('%') != self.bufnr
+    call gina#core#emitter#emit('writer:stopped', self.bufnr)
+    call gina#process#unregister(self._job)
     return
   endif
   let guard = s:Guard.store(['&l:modifiable'])
@@ -127,6 +127,8 @@ function! s:stream_pipe_writer.on_stop() abort
     endif
     call guard.restore()
     call focus.restore()
+    call gina#core#emitter#emit('writer:stopped', self.bufnr)
+    call gina#process#unregister(self._job)
   endtry
 endfunction
 
