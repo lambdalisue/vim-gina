@@ -98,6 +98,9 @@ Describe Vim.BufferWriter
       End
 
       It assigns a content of a {bufnr} buffer (cp1250) to {content} (utf-8)
+        if !empty(&termencoding)
+          Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
+        endif
         edit foo1 | setlocal fileencoding=cp1250
         vnew foo2
         let bufnr = bufnr('foo1')
@@ -198,6 +201,9 @@ Describe Vim.BufferWriter
       End
 
       It assigns a content of a {bufnr} buffer (cp1250) to {content} (utf-8)
+        if !empty(&termencoding)
+          Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
+        endif
         edit foo1 | setlocal fileencoding=cp1250
         vnew foo2
         let bufnr = bufnr('foo1')
@@ -295,6 +301,9 @@ Describe Vim.BufferWriter
       End
 
       It assigns a content of a {bufnr} buffer (cp1250) to {content} (utf-8)
+        if !empty(&termencoding)
+          Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
+        endif
         edit foo1 | setlocal fileencoding=cp1250
         vnew foo2
         let bufnr = bufnr('foo1')
@@ -444,6 +453,9 @@ Describe Vim.BufferWriter
       End
 
       It extends a content of a {bufnr} buffer (cp1250) with {content} (utf-8)
+        if !empty(&termencoding)
+          Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
+        endif
         edit foo1 | setlocal fileencoding=cp1250
         vnew foo2
         let bufnr = bufnr('foo1')
@@ -633,6 +645,9 @@ Describe Vim.BufferWriter
       End
 
       It extends a content of a {bufnr} buffer (cp1250) with {content} (utf-8)
+        if !empty(&termencoding)
+          Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
+        endif
         edit foo1 | setlocal fileencoding=cp1250
         vnew foo2
         let bufnr = bufnr('foo1')
@@ -785,6 +800,9 @@ Describe Vim.BufferWriter
       End
 
       It extends a content of a {bufnr} buffer (cp1250) with {content} (utf-8)
+        if !empty(&termencoding)
+          Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
+        endif
         edit foo1 | setlocal fileencoding=cp1250
         vnew foo2
         let bufnr = bufnr('foo1')

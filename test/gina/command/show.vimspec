@@ -87,6 +87,24 @@ Describe gina#command#show
             \ 'árvíztűrő tükörfúrógép',
             \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
             \])
+    End
+
+    It might be called with ++enc=cp1250 on ++enc=utf-8 buffer
+      if !empty(&termencoding)
+        Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
+      endif
+      execute 'edit' fnameescape(slit1.path('utf8-encoding.txt'))
+      GinaSync show ++enc=utf-8
+      Assert Equals(winnr('$'), 1)
+      " Focused buffer
+      Assert Equals(bufname('%'), printf('gina://%s:show/:utf8-encoding.txt', slit1.refname))
+      Assert Equals(gina#core#meta#get('args').params.cmdarg, '++enc=utf-8 ')
+      Assert Equals(&fileencoding, 'utf-8')
+      Assert Equals(getline(1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
 
       GinaSync show ++enc=cp1250
       Assert Equals(getline(1, '$'), [
@@ -110,6 +128,27 @@ Describe gina#command#show
             \])
 
       GinaSync show
+      Assert Equals(getline(1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+
+      GinaSync show ++enc=utf-8
+      Assert Equals(getline(1, '$'), [
+            \ 'Unix EOL',
+            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
+            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
+            \])
+    End
+
+    It might be called with ++enc=cp1250 on ++enc=cp1250 buffer
+      execute 'edit' fnameescape(slit1.path('cp1250-encoding.txt'))
+      GinaSync show ++enc=cp1250
+      Assert Equals(winnr('$'), 1)
+      " Focused buffer
+      Assert Equals(bufname('%'), printf('gina://%s:show/:cp1250-encoding.txt', slit1.refname))
+      Assert Equals(&fileencoding, 'cp1250')
       Assert Equals(getline(1, '$'), [
             \ 'Unix EOL',
             \ 'árvíztűrő tükörfúrógép',
