@@ -17,6 +17,14 @@ function! gina#util#contain_direction(mods) abort
   return a:mods =~# s:DIRECTION_PATTERN
 endfunction
 
+function! gina#util#extend_content(content, msg) abort
+  let leading = get(a:content, -1, '')
+  if len(a:content) > 0
+    call remove(a:content, -1)
+  endif
+  call extend(a:content, [leading . get(a:msg, 0, '')] + a:msg[1:])
+endfunction
+
 function! gina#util#yank(value) abort
   call setreg(v:register, a:value)
 endfunction

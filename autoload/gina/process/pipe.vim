@@ -22,23 +22,23 @@ endfunction
 
 " Store pipe -----------------------------------------------------------------
 function! gina#process#pipe#store() abort
-  let pipe = copy(s:store_pipe)
+  let pipe = extend(gina#process#pipe#default(), s:store_pipe)
   let pipe._stdout = []
   let pipe._stderr = []
   let pipe._content = []
   return pipe
 endfunction
 
-let s:store_pipe = {}
+let s:store_pipe = gina#util#inherit(s:default_pipe)
 
 function! s:store_pipe.on_stdout(job, msg, event) abort
-  call s:extend_content(self._stdout, a:msg)
-  call s:extend_content(self._content, a:msg)
+  call gina#util#extend_content(self._stdout, a:msg)
+  call gina#util#extend_content(self._content, a:msg)
 endfunction
 
 function! s:store_pipe.on_stderr(job, msg, event) abort
-  call s:extend_content(self._stderr, a:msg)
-  call s:extend_content(self._content, a:msg)
+  call gina#util#extend_content(self._stderr, a:msg)
+  call gina#util#extend_content(self._content, a:msg)
 endfunction
 
 function! s:store_pipe.on_exit(job, msg, event) abort
@@ -51,15 +51,7 @@ function! s:store_pipe.on_exit(job, msg, event) abort
   if empty(get(self._stderr, -1, 'a'))
     call remove(self._stderr, -1)
   endif
-  call gina#process#unregister(self)
-endfunction
-
-function! s:extend_content(content, msg) abort
-  let leading = get(a:content, -1, '')
-  if len(a:content) > 0
-    call remove(a:content, -1)
-  endif
-  call extend(a:content, [leading . get(a:msg, 0, '')] + a:msg[1:])
+  call self.super(s:store_pipe, 'on_exit', a:job, a:msg, a:event)
 endfunction
 
 
@@ -69,19 +61,19 @@ function! gina#process#pipe#echo() abort
   return pipe
 endfunction
 
-let s:echo_pipe = {}
+let s:echo_pipe = gina#util#inherit(s:store_pipe)
 
 function! s:echo_pipe.on_exit(job, msg, event) abort
   if len(self._content)
     call gina#core#console#message(join(self._content, "\n"))
   endif
-  call gina#process#unregister(self)
+  call self.super(s:echo_pipe, 'on_exit', a:job, a:msg, a:event)
 endfunction
 
 
 " Stream pipe ----------------------------------------------------------------
 function! gina#process#pipe#stream() abort
-  let pipe = copy(s:stream_pipe)
+  let pipe = extend(gina#process#pipe#echo(), s:stream_pipe)
   let pipe.writer = gina#core#writer#new(s:stream_pipe_writer)
   return pipe
 endfunction
@@ -90,11 +82,11 @@ function! gina#process#pipe#stream_writer() abort
   return copy(s:stream_pipe_writer)
 endfunction
 
-let s:stream_pipe = {}
+let s:stream_pipe = gina#util#inherit(s:echo_pipe)
 let s:stream_pipe_writer = {}
 
 function! s:stream_pipe.on_start(job, msg, event) abort
-  " DO NOT call gina#proceiss#register() here
+  call self.super(s:stream_pipe, 'on_start', a:job, a:msg, a:event)
   let self.writer._job = self
   call self.writer.start()
 endfunction
@@ -103,17 +95,13 @@ function! s:stream_pipe.on_stdout(job, msg, event) abort
   call self.writer.write(a:msg)
 endfunction
 
-function! s:stream_pipe.on_stderr(job, msg, event) abort
-  call self.on_stdout(a:job, a:msg, a:event)
-endfunction
-
 function! s:stream_pipe.on_exit(job, msg, event) abort
-  " DO NOT call gina#proceiss#unregister() here
+  call self.super(s:stream_pipe, 'on_exit', a:job, a:msg, a:event)
 endfunction
 
 function! s:stream_pipe_writer.on_start() abort
   let self._winview = getbufvar(self.bufnr, 'gina_winview', [])
-  call gina#process#register(self._job)
+  call gina#process#register('writer:' . self.bufnr, 1)
   call gina#core#emitter#emit('writer:started', self.bufnr)
 endfunction
 
@@ -131,7 +119,7 @@ function! s:stream_pipe_writer.on_stop() abort
   let focus = gina#core#buffer#focus(self.bufnr)
   if empty(focus) || bufnr('%') != self.bufnr
     call gina#core#emitter#emit('writer:stopped', self.bufnr)
-    call gina#process#unregister(self._job)
+    call gina#process#unregister('writer:' . self.bufnr, 1)
     return
   endif
   let guard = s:Guard.store(['&l:modifiable'])
@@ -148,7 +136,7 @@ function! s:stream_pipe_writer.on_stop() abort
     call guard.restore()
     call focus.restore()
     call gina#core#emitter#emit('writer:stopped', self.bufnr)
-    call gina#process#unregister(self._job)
+    call gina#process#unregister('writer:' . self.bufnr, 1)
   endtry
 endfunction
 
