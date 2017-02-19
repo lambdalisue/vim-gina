@@ -288,6 +288,14 @@ function! s:writer.stop() abort
   silent! call timer_stop(self._timer)
   unlockvar! self.bufnr
   unlockvar! self.updatetime
+  " Flush all
+  let msg = self._queue.get()
+  while msg isnot# v:null
+    if !self._module.extend_content(self.bufnr, msg)
+      break
+    endif
+    let msg = self._queue.get()
+  endwhile
   call self.on_stop()
 endfunction
 
@@ -302,6 +310,20 @@ function! s:writer.write(msg) abort
 endfunction
 
 function! s:writer.flush() abort
+  let msg = self._queue.get()
+  if msg is# v:null
+    if !self.on_check()
+      call self.stop()
+    endif
+    return
+  endif
+  if !self._module.extend_content(self.bufnr, msg)
+    return self.stop()
+  endif
+  call self.on_flush(msg)
+endfunction
+
+function! s:writer.flush_all() abort
   let msg = self._queue.get()
   if msg is# v:null
     if !self.on_check()
