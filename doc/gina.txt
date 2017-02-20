@@ -245,9 +245,9 @@ COMMANDS					*gina-commands*
 
 	See "man git-log" for other available {options}.
 
-						*:Gina-ls-files*
-:Gina ls-files [{options}]
-	List files in the working tree.
+						*:Gina-ls*
+:Gina ls [{options}] [{commit}]
+	List files in the working tree, the index, or the commit.
 	The followings are allowed in {options}
 
 	--opener={opener}
@@ -262,23 +262,6 @@ COMMANDS					*gina-commands*
 	|gina-action-show|
 
 	See "man git-ls-files" for other available {options}.
-
-						*:Gina-ls-tree*
-:Gina ls-tree [{options}] [{commit}]
-	List files in the index or the commit.
-	The followings are allowed in {options}
-
-	--opener={opener}
-		An opener command for the new buffer (|gina-options-opener|)
-
-	The following action groups are available in the buffer.
-
-	|gina-action-browse|
-	|gina-action-compare|
-	|gina-action-diff|
-	|gina-action-edit|
-	|gina-action-show|
-
 	See "man git-ls-tree" for other available {options}.
 
 						*:Gina-patch*
@@ -299,8 +282,6 @@ COMMANDS					*gina-commands*
 
 						*:Gina-qrep*
 :Gina qrep[!] [{options}]
-	NOTE: Experimental feature
-
 	Like |:Gina-grep| but it uses |quickfix| window to show the result.
 	
 	It tries to mimic a Vim's builtin |:grep| command. So
@@ -419,8 +400,8 @@ like:
 -----------------------------------------------------------------------------
 FUNCTIONS					*gina-functions*
 
-						*gina#action#alias()*
-gina#action#alias({alias}, {name})
+					*gina#custom#action#alias()*
+gina#custom#action#alias({scheme}, {alias}, {name})
 	Add an {alias} of {name} action. Users can access the action with the
 	{alias} in "builtin:choice" action.
 
