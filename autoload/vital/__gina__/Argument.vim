@@ -239,9 +239,7 @@ function! s:args.lock() abort
 endfunction
 
 function! s:args.clone() abort
-  let args = copy(s:args)
-  let args.raw = copy(self.raw)
-  silent unlockvar args.raw
+  let args = deepcopy(self)
   lockvar 1 args
   return args
 endfunction
