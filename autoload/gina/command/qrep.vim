@@ -40,7 +40,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
-  let args = gina#command#parse_args(a:args)
+  let args = a:args.clone()
   let args.params.bang = args.get(0) =~# '!$'
   let args.params.action = args.pop('--action', ' ')
   let args.params.pattern = args.pop(1, '')

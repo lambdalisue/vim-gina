@@ -1,25 +1,22 @@
 let s:Argument = vital#gina#import('Argument')
-let s:t_number = type(0)
 
 
-function! gina#command#call(bang, range, args, mods) abort
+function! gina#command#call(bang, range, rargs, mods) abort
   if a:bang ==# '!'
-    return gina#command#call('', a:range, '_raw ' . a:args, a:mods)
+    return gina#command#call('', a:range, '_raw ' . a:rargs, a:mods)
   endif
-  let scheme = matchstr(a:args, '^\S\+')
-  let scheme = substitute(scheme, '!$', '', '')
-  let scheme = substitute(scheme, '\W', '_', 'g')
+  let args = s:build_args(a:rargs)
   try
     call gina#core#exception#call(
-          \ printf('gina#command#%s#call', scheme),
-          \ [a:range, a:args, a:mods],
+          \ printf('gina#command#%s#call', args.params.scheme),
+          \ [a:range, args, a:mods],
           \)
     return
   catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#command#[^#]\+#call/
     call gina#core#console#debug(v:exception)
     call gina#core#console#debug(v:throwpoint)
   endtry
-  return gina#command#call('', a:range, '_raw ' . a:args, a:mods)
+  return gina#command#call('', a:range, '_raw ' . a:rargs, a:mods)
 endfunction
 
 function! gina#command#complete(arglead, cmdline, cursorpos) abort
@@ -52,10 +49,29 @@ function! gina#command#complete(arglead, cmdline, cursorpos) abort
         \)
 endfunction
 
-function! gina#command#parse_args(args) abort
-  let args = s:Argument.new(a:args)
-  let custom = s:get_custom(args.get(0))
-  for [query, value, remover] in custom
+function! gina#command#scheme(sfile) abort
+  let name = fnamemodify(a:sfile, ':t')
+  let name = matchstr(name, '.*\ze\.vim')
+  let scheme = substitute(name, '_', '-', 'g')
+  return scheme
+endfunction
+
+
+" Obsolete -------------------------------------------------------------------
+function! gina#command#custom(scheme, query, ...) abort
+  call gina#core#console#warn(
+        \ 'gina#command#custom is obsolete. Use gina#custom#command#option'
+        \)
+  call gina#custom#command#option(a:scheme, a:query, get(a:000, 0, 1))
+endfunction
+
+
+" Private
+function! s:build_args(rargs) abort
+  let args = s:Argument.new(a:rargs)
+  let preference = gina#custom#command#preference(args.get(0))
+  " Assign default options
+  for [query, value, remover] in preference.options
     if !empty(remover) && args.has(remover)
       call args.pop(remover)
       call args.pop(query)
@@ -63,6 +79,12 @@ function! gina#command#parse_args(args) abort
       call args.set(query, value)
     endif
   endfor
+  " Assign alias
+  if preference.raw
+    call args.set(0, ['_raw', preference.origin])
+  else
+    call args.set(0, preference.origin)
+  endif
   " Expand residuals to allow '%'
   let pathlist = args.residual()
   if !empty(pathlist)
@@ -76,41 +98,4 @@ function! gina#command#parse_args(args) abort
         \ args.pop('^++ff'),
         \])
   return args
-endfunction
-
-function! gina#command#custom(scheme, query, ...) abort
-  if a:query !~# '^--\?\S\+\%(|--\?\S\+\)*$'
-    throw 'gina: Invalid query has specified. See :h gina#command#custom'
-  endif
-  let value = get(a:000, 0, 1)
-  let remover = type(value) == s:t_number ? s:build_remover(a:query) : ''
-  let custom = s:get_custom(a:scheme)
-  call add(custom, [a:query, value, remover])
-endfunction
-
-function! gina#command#scheme(sfile) abort
-  let name = fnamemodify(a:sfile, ':t')
-  let name = matchstr(name, '.*\ze\.vim')
-  let scheme = substitute(name, '_', '-', 'g')
-  return scheme
-endfunction
-
-
-" Private --------------------------------------------------------------------
-function! s:get_custom(scheme) abort
-  let scheme = substitute(a:scheme, '\W', '_', 'g')
-  if !exists('s:custom_' . scheme)
-    let s:custom_{scheme} = []
-  endif
-  return s:custom_{scheme}
-endfunction
-
-function! s:build_remover(query) abort
-  let terms = split(a:query, '|')
-  let names = map(copy(terms), 'matchstr(v:val, ''^--\?\zs\S\+'')')
-  let remover = map(
-        \ range(len(terms)),
-        \ '(terms[v:val] =~# ''^--'' ? ''--no-'' : ''-!'') . names[v:val]'
-        \)
-  return join(remover, '|')
 endfunction

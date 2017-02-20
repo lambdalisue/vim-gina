@@ -22,7 +22,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
-  let args = gina#command#parse_args(a:args)
+  let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
   call args.set('--porcelain', 1)

@@ -27,7 +27,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
-  let args = gina#command#parse_args(a:args)
+  let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.line = args.pop('--line', v:null)

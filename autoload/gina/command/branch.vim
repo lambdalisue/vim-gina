@@ -9,7 +9,7 @@ function! gina#command#branch#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
 
   if s:is_raw_command(args)
-    return gina#command#call('!', a:range, a:args, a:mods)
+    return gina#command#_raw#call(a:range, a:args, a:mods)
   endif
 
   let bufname = gina#core#buffer#bufname(git, 'branch')
@@ -28,7 +28,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
-  let args = gina#command#parse_args(a:args)
+  let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
 

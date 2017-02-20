@@ -89,7 +89,7 @@ function! s:call(range, args, mods) abort
 endfunction
 
 function! s:build_args(git, args) abort
-  let args = gina#command#parse_args(a:args)
+  let args = a:args.clone()
   let args.params.groups = [
         \ args.pop('--group1', 'chaperon-l'),
         \ args.pop('--group2', 'chaperon-c'),

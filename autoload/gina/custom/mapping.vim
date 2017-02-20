@@ -43,35 +43,8 @@ function! s:FileType() abort
   endif
   let preference = gina#custom#mapping#preference(scheme)
   for [lhs, rhs, options] in preference.mappings
-    call s:map(lhs, rhs, options)
+    call gina#util#map(lhs, rhs, options)
   endfor
-endfunction
-
-function! s:map(lhs, rhs, options) abort
-  let options = extend({
-        \ 'mode': '',
-        \ 'noremap': 1,
-        \ 'buffer': 1,
-        \ 'nowait': 0,
-        \ 'silent': 0,
-        \ 'special': 0,
-        \ 'script': 0,
-        \ 'unique': 0,
-        \ 'expr': 0,
-        \}, a:options
-        \)
-  let command = join([
-        \ options.mode . (options.noremap ? 'noremap' : 'map'),
-        \ options.buffer ? '<buffer>' : '',
-        \ options.nowait ? '<nowait>' : '',
-        \ options.silent ? '<silent>' : '',
-        \ options.special ? '<special>' : '',
-        \ options.script ? '<script>' : '',
-        \ options.unique ? '<unique>' : '',
-        \ options.expr ? '<expr>' : '',
-        \ a:lhs, a:rhs
-        \])
-  execute command
 endfunction
 
 

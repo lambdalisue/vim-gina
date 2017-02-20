@@ -25,6 +25,33 @@ function! gina#util#extend_content(content, msg) abort
   call extend(a:content, [leading . get(a:msg, 0, '')] + a:msg[1:])
 endfunction
 
+function! gina#util#map(lhs, rhs, ...) abort
+  let options = extend({
+        \ 'mode': '',
+        \ 'noremap': 1,
+        \ 'buffer': 1,
+        \ 'nowait': 0,
+        \ 'silent': 0,
+        \ 'special': 0,
+        \ 'script': 0,
+        \ 'unique': 0,
+        \ 'expr': 0,
+        \}, get(a:000, 0, {})
+        \)
+  let command = join([
+        \ options.mode . (options.noremap ? 'noremap' : 'map'),
+        \ options.buffer ? '<buffer>' : '',
+        \ options.nowait ? '<nowait>' : '',
+        \ options.silent ? '<silent>' : '',
+        \ options.special ? '<special>' : '',
+        \ options.script ? '<script>' : '',
+        \ options.unique ? '<unique>' : '',
+        \ options.expr ? '<expr>' : '',
+        \ a:lhs, a:rhs
+        \])
+  execute command
+endfunction
+
 function! gina#util#yank(value) abort
   call setreg(v:register, a:value)
 endfunction

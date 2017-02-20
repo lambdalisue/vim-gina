@@ -12,7 +12,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
-  let args = gina#command#parse_args(a:args)
+  let args = a:args.clone()
   let args.params.abspath = gina#core#path#abspath(args.pop(1, '.'), a:git.worktree)
 
   return args.lock()
