@@ -48,7 +48,7 @@ function! s:attach(name, ...) abort
   let name = substitute(a:name, ':', '-', 'g')
   execute printf('nmap <buffer> ?     <Plug>(%s-builtin-help)', name)
   execute printf('nmap <buffer> <Tab> <Plug>(%s-builtin-choice)', name)
-  execute printf('vmap <buffer> <Tab> <Plug>(%s-builtin-choice)gv', name)
+  execute printf('vmap <buffer> <Tab> <Plug>(%s-builtin-choice)', name)
   execute printf('imap <buffer> <Tab> <Plug>(%s-builtin-choice)', name)
   execute printf('nmap <buffer> . <Plug>(%s-builtin-repeat)', name)
   execute printf('vmap <buffer> . <Plug>(%s-builtin-repeat)gv', name)
@@ -58,7 +58,7 @@ function! s:attach(name, ...) abort
 endfunction
 
 function! s:get(name) abort
-  return b:{s:PREFIX . a:name}
+  return get(b:, s:PREFIX . a:name, v:null)
 endfunction
 
 

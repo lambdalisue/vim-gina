@@ -1,7 +1,29 @@
+let s:Dict = vital#gina#import('Data.Dict')
 let s:File = vital#gina#import('System.File')
 let s:String = vital#gina#import('Data.String')
+let s:DIRECTION_PATTERN = printf('\<\%%(%s\)\>', join([
+      \ 'lefta\%[bove]',
+      \ 'abo\%[veleft]',
+      \ 'rightb\%[elow]',
+      \ 'bel\%[owright]',
+      \ 'to\%[pleft]',
+      \ 'bo\%[tright]',
+      \], '\|')
+      \)
 let s:t_list = type([])
 
+
+function! gina#util#contain_direction(mods) abort
+  return a:mods =~# s:DIRECTION_PATTERN
+endfunction
+
+function! gina#util#extend_content(content, msg) abort
+  let leading = get(a:content, -1, '')
+  if len(a:content) > 0
+    call remove(a:content, -1)
+  endif
+  call extend(a:content, [leading . get(a:msg, 0, '')] + a:msg[1:])
+endfunction
 
 function! gina#util#yank(value) abort
   call setreg(v:register, a:value)
@@ -46,9 +68,7 @@ endfunction
 
 function! gina#util#doautocmd(name, ...) abort
   let pattern = get(a:000, 0, '')
-  let expr = empty(pattern)
-        \ ? '#' . a:name
-        \ : '#' . a:name . '#' . pattern
+  let expr = '#' . a:name
   let eis = split(&eventignore, ',')
   if index(eis, a:name) != -1 || index(eis, 'all') != -1 || !exists(expr)
     " the specified event is ignored or does not exists
@@ -108,6 +128,16 @@ function! s:syncbind(...) abort
   syncbind
 endfunction
 
+function! gina#util#inherit(super, ...) abort
+  let prototype = a:0 ? a:1 : {}
+  let instance = extend(copy(a:super), prototype)
+  let instance.super = function('s:call_super')
+  let instance.__super = s:Dict.omit(a:super, ['super', '__super'])
+  return instance
+endfunction
+
+
+" Private --------------------------------------------------------------------
 function! s:diffoff() abort
   augroup gina_internal_util_diffthis
     autocmd! * <buffer>
@@ -119,4 +149,8 @@ endfunction
 function! s:diffupdate(...) abort
   diffupdate
   syncbind
+endfunction
+
+function! s:call_super(cls, method, ...) abort dict
+  return call(a:cls.__super[a:method], a:000, self)
 endfunction

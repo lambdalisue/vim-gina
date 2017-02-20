@@ -18,6 +18,7 @@ Interface			|gina-interface|
   Functions			|gina-functions|
   Options			|gina-options|
   Actions			|gina-actions|
+  Events			|gina-events|
 ASKPASS				|gina-askpass|
 
 
@@ -613,6 +614,96 @@ show:right
 show:tab
 show:preview
 	Show a content in the index or the commit.
+
+
+-----------------------------------------------------------------------------
+EVENTS						*gina-events*
+
+Gina will emit an event when something has happend.
+The following events are used internally.
+
+modified
+	Emitted when a status of a git repository seems to be modified.
+	This event is used to update the buffer content and caches internally.
+	Users should NOT emit this event directly, use "modified:delay"
+	instead.
+
+modified:delay
+	Used to squash sequential modified event into a single "modified"
+	event.
+	It emits "modified" event few milliseconds after the event emitted and
+	ignore all previous "modified:delay" events emitted within that time.
+	Users should NOT subscribe this event directly, use "modifihed"
+	instead.
+
+command:called {scheme}
+	Emitted when a gina's command (|:Gina|) has called and the initial
+	process has terminated.
+	A listener will be called with {scheme} which indicate what command
+	has called.
+	Note that a command which requires an additional step (e.g. commit,
+	patch) will emit this event when the command get ready and will emit
+	"command:called:complete" after the actual command has terminated
+	(e.g. A commit message was comitted. A patch was saved into an index)
+
+command:called:raw {scheme}
+	Emitted when a raw git command (|:Gina!|) has called and the process
+	has terminated.
+	A listener will be called with {scheme} which indicate what command
+	has called.
+	Note that it is NOT called for an internal process. It is called only
+	for a command invoked by |:Gina!| or |:Gina| with missing command.
+
+command:called:complete {scheme}
+	Emitted when a gina's command which requires additional steps has
+	complete (e.g. commit, patch).
+
+For example, if users want to do something when a commit message has comitted,
+use a combination of "command:called:raw" and "command:called:complete" like
+>
+	function! s:on_commit(scheme) abort
+	  if a:scheme !=# 'commit'
+            return
+          endif
+          " Do more useful thing
+          echomsg "Committed!"
+	endfunction
+
+	" Subscribe 'command:called:raw' event for :Gina commit -m{message}
+	" which invoke a git raw command internally
+	call gina#core#emitter#subscribe(
+	      \ 'command:called:raw',
+	      \ function('s:on_commit')
+	      \)
+	" Subscribe 'command:called:complete' event for an actual commit
+	" event which may invoked by closing gina-commit window
+	call gina#core#emitter#subscribe(
+	      \ 'command:called:complete',
+	      \ function('s:on_commit')
+	      \)
+<
+Another for example is already used in ftplugin/gina-grep.vim. If user want to
+update a quickfix candidates with gina-grep candidates automatically, use
+"command:called" event like:
+>
+	" NOTE: Already written in ftplugin/gina-grep.vim
+	function! s:on_grep(scheme) abort
+	  if a:scheme !=# 'grep'
+	    return 
+	  endif
+	  " Find a corresponding buffer and focus
+	  let focus = gina#core#buffer#focus(bufnr('gina://*:grep*'))
+	  if empty(focus)
+	    return
+	  endif
+	  " Export entire candidates into a quickfic and restore the focus
+	  try
+	    call gina#action#call('export:quickfix')
+	  finally
+	    call focus.restore()
+	  endtry
+	endfunction
+<
 
 =============================================================================
 ASKPASS						*gina-askpass*

@@ -22,7 +22,7 @@ function! gina#complete#common#command(arglead, cmdline, cursorpos) abort
     call cache.set('command_names', s:get_command_names())
   endif
   let command_names = cache.get('command_names')
-  return gina#util#filter(a:arglead, command_names)
+  return gina#util#filter(a:arglead, command_names, '^_')
 endfunction
 
 

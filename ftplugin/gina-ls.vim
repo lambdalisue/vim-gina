@@ -3,19 +3,30 @@ if exists('b:did_ftplugin')
 endif
 let b:did_ftplugin = 1
 
+setlocal nobuflisted
 setlocal winfixheight
 setlocal nolist nospell
 setlocal nowrap nofoldenable
 setlocal nonumber norelativenumber
 setlocal foldcolumn=0 colorcolumn=0
 
-if g:gina#command#ls_files#use_default_aliases
+let s:revision = gina#core#buffer#param('%', 'revision')
+
+if g:gina#command#ls#use_default_aliases
   call gina#action#shorten('browse')
-  call gina#action#shorten('edit')
+  if empty(s:revision)
+    call gina#action#shorten('edit')
+  else
+    call gina#action#shorten('show')
+  endif
 endif
 
-if g:gina#command#ls_files#use_default_mappings
-  nmap <buffer> <Return> <Plug>(gina-edit)zv
+if g:gina#command#ls#use_default_mappings
+  if empty(s:revision)
+    nmap <buffer> <Return> <Plug>(gina-edit)zv
+  else
+    nmap <buffer> <Return> <Plug>(gina-show)zv
+  endif
 
   nmap <buffer> oo <Plug>(gina-edit)zv
   nmap <buffer> OO <Plug>(gina-edit-right)zv

@@ -1,15 +1,15 @@
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Path = vital#gina#import('System.Filepath')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#info#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = printf(
-        \ 'gina://%s:info/%s',
-        \ git.refname,
-        \ args.params.object,
-        \)
+  let bufname = gina#core#buffer#bufname(git, 'info', {
+        \ 'revision': args.params.revision,
+        \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
+        \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -26,25 +26,27 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
-  let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.cmdarg = join([
-        \ args.pop('^++enc'),
-        \ args.pop('^++ff'),
-        \])
-  let args.params.commit = gina#core#commit#resolve(a:git, args.pop(1, ''))
-  let residual = args.residual()
-  if len(residual) == 1
-    let args.params.path = gina#core#repo#path(a:git, residual[0])
-    let args.params.object = args.params.commit . ':' . args.params.path
+
+  let pathlist = copy(args.residual())
+  if empty(pathlist)
+    let args.params.revision = args.get(1, gina#core#buffer#param('%', 'revision'))
+    let args.params.abspath = gina#core#path#abspath('%')
+    let pathlist = [args.params.abspath]
+  elseif len(pathlist) == 1
+    let args.params.revision = args.get(1, gina#core#buffer#param(pathlist[0], 'revision'))
+    let args.params.abspath = gina#core#path#abspath(pathlist[0])
+    let pathlist = [args.params.abspath]
   else
-    let args.params.path = ''
-    let args.params.object = args.params.commit
+    let args.params.revision = args.get(1, '')
+    let args.params.abspath = ''
+    let pathlist = map(pathlist, 'gina#core#path#abspath(v:val)')
   endif
+
   call args.set(0, 'show')
-  call args.set(1, args.params.commit)
+  call args.set(1, args.params.revision)
+  call args.residual(pathlist)
   return args.lock()
 endfunction
 
@@ -57,20 +59,37 @@ function! s:init(args) abort
   let b:gina_initialized = 1
 
   setlocal buftype=nowrite
-  setlocal bufhidden=unload
+  setlocal bufhidden&
   setlocal noswapfile
   setlocal nomodifiable
 
   augroup gina_internal_command
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
+    autocmd BufWinEnter <buffer> setlocal buflisted
+    autocmd BufWinLeave <buffer> setlocal nobuflisted
   augroup END
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#core#process#exec(
-        \ gina#core#get_or_fail(),
-        \ gina#core#meta#get_or_fail('args'),
-        \)
+  let git = gina#core#get_or_fail()
+  let args = gina#core#meta#get_or_fail('args')
+  let pipe = gina#process#pipe#stream()
+  let pipe.writer = gina#core#writer#new(extend(
+        \ gina#process#pipe#stream_writer(),
+        \ s:writer
+        \))
+  call gina#core#buffer#assign_cmdarg()
+  call gina#process#open(git, args, pipe)
   setlocal filetype=git
+endfunction
+
+
+" Writer ---------------------------------------------------------------------
+let s:writer_super = gina#process#pipe#stream_writer()
+let s:writer = {}
+
+function! s:writer.on_stop() abort
+  call call(s:writer_super.on_stop, [], self)
+  call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction

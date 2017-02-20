@@ -58,7 +58,7 @@ function! s:on_edit(candidates, options) abort
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),
-          \ gina#util#fnameescape(candidate.path),
+          \ gina#util#shellescape(candidate.path),
           \)
   endfor
 endfunction

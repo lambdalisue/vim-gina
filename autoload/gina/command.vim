@@ -1,26 +1,10 @@
 let s:Argument = vital#gina#import('Argument')
-let s:Config = vital#gina#import('Config')
-let s:Console = vital#gina#import('Vim.Console')
-
 let s:t_number = type(0)
 
 
 function! gina#command#call(bang, range, args, mods) abort
   if a:bang ==# '!'
-    let git = gina#core#get()
-    let args = gina#command#parse_args(a:args)
-    let args.params = {}
-    let args.params.scheme = args.get(0, '')
-    let args.params.async = args.pop('--async')
-    if args.params.async
-      let options = copy(s:async_process)
-      let options.params = args.params
-      call gina#core#process#open(git, args, options)
-    else
-      call gina#core#process#inform(gina#core#process#call(git, args))
-      call gina#core#emitter#emit('command:called:raw', args.params.scheme)
-    endif
-    return
+    return gina#command#call('', a:range, '_raw ' . a:args, a:mods)
   endif
   let scheme = matchstr(a:args, '^\S\+')
   let scheme = substitute(scheme, '!$', '', '')
@@ -32,15 +16,19 @@ function! gina#command#call(bang, range, args, mods) abort
           \)
     return
   catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#command#[^#]\+#call/
-    call s:Console.debug(v:exception)
-    call s:Console.debug(v:throwpoint)
+    call gina#core#console#debug(v:exception)
+    call gina#core#console#debug(v:throwpoint)
   endtry
-  call gina#command#call('!', a:range, a:args, a:mods)
+  return gina#command#call('', a:range, '_raw ' . a:args, a:mods)
 endfunction
 
 function! gina#command#complete(arglead, cmdline, cursorpos) abort
   if a:cmdline =~# '^Gina!'
-    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+    return gina#command#complete(
+          \ a:arglead,
+          \ substitute(a:cmdline, '^Gina!', 'Gina _raw', ''),
+          \ a:cursorpos,
+          \)
   elseif a:cmdline =~# printf('^Gina\s\+%s$', a:arglead)
     return gina#complete#common#command(a:arglead, a:cmdline, a:cursorpos)
   endif
@@ -54,10 +42,14 @@ function! gina#command#complete(arglead, cmdline, cursorpos) abort
           \ [a:arglead, cmdline, a:cursorpos],
           \)
   catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#command#[^#]\+#complete/
-    call s:Console.debug(v:exception)
-    call s:Console.debug(v:throwpoint)
+    call gina#core#console#debug(v:exception)
+    call gina#core#console#debug(v:throwpoint)
   endtry
-  return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  return gina#command#complete(
+        \ a:arglead,
+        \ substitute(a:cmdline, '^Gina', 'Gina _raw', ''),
+        \ a:cursorpos,
+        \)
 endfunction
 
 function! gina#command#parse_args(args) abort
@@ -71,6 +63,18 @@ function! gina#command#parse_args(args) abort
       call args.set(query, value)
     endif
   endfor
+  " Expand residuals to allow '%'
+  let pathlist = args.residual()
+  if !empty(pathlist)
+    call args.residual(map(pathlist, 'gina#core#path#expand(v:val)'))
+  endif
+  " Assig global params
+  let args.params = {}
+  let args.params.scheme = args.get(0, '')
+  let args.params.cmdarg = join([
+        \ args.pop('^++enc'),
+        \ args.pop('^++ff'),
+        \])
   return args
 endfunction
 
@@ -82,6 +86,13 @@ function! gina#command#custom(scheme, query, ...) abort
   let remover = type(value) == s:t_number ? s:build_remover(a:query) : ''
   let custom = s:get_custom(a:scheme)
   call add(custom, [a:query, value, remover])
+endfunction
+
+function! gina#command#scheme(sfile) abort
+  let name = fnamemodify(a:sfile, ':t')
+  let name = matchstr(name, '.*\ze\.vim')
+  let scheme = substitute(name, '_', '-', 'g')
+  return scheme
 endfunction
 
 
@@ -102,26 +113,4 @@ function! s:build_remover(query) abort
         \ '(terms[v:val] =~# ''^--'' ? ''--no-'' : ''-!'') . names[v:val]'
         \)
   return join(remover, '|')
-endfunction
-
-
-" Async process --------------------------------------------------------------
-let s:async_process = {}
-
-function! s:async_process.on_stdout(job, msg, event) abort
-  for line in a:msg
-    echomsg line
-  endfor
-endfunction
-
-function! s:async_process.on_stderr(job, msg, event) abort
-  echohl ErrorMsg
-  for line in a:msg
-    echomsg line
-  endfor
-  echohl None
-endfunction
-
-function! s:async_process.on_exit(job, msg, event) abort
-  call gina#core#emitter#emit('command:called:raw', self.params.scheme)
 endfunction

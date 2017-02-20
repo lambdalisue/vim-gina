@@ -79,7 +79,6 @@ function! s:on_merge(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'no-ff': 0,
         \ 'ff-only': 0,
@@ -100,7 +99,6 @@ function! s:on_rebase(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'merge': 0,
         \}, a:options)
@@ -117,7 +115,6 @@ function! s:on_revert(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'mainline': '',
         \}, a:options)
@@ -134,7 +131,6 @@ function! s:on_cherry_pick(candidates, options) abort
   if empty(a:candidates)
     return
   endif
-  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'mainline': '',
         \}, a:options)

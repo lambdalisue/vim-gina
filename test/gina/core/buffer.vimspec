@@ -1,106 +1,470 @@
 Describe gina#core#buffer
-  Describe #params({expr})
-    It returns an empty dictionary when {bufname} does not start from 'gina:'
-      let params = gina#core#buffer#params('autoload/gina.vim')
-      Assert Equals(params, {})
+  Before all
+    let Path = vital#gina#import('System.Filepath')
+    let is_windows = has('win32') || has('win64')
+  End
+
+  After all
+    %bwipeout!
+  End
+
+  Before
+    %bwipeout!
+  End
+
+  Describe #bufname({git}, {scheme} [, {options}])
+    Before
+      let git = {'refname': 'valid'}
     End
 
-    It returns a params dictionary for 'gina://gina.vim:status'
-      let params = gina#core#buffer#params('gina://gina.vim:status')
-      Assert Equals(params.repo, 'gina.vim')
-      Assert Equals(params.scheme, 'status')
-      Assert Equals(params.params, [])
-      Assert Equals(params.revision, '')
-      Assert Equals(params.path, '')
+    It returns a shortest path for the specified params
+      Assert Equals(gina#core#buffer#bufname(git, 'status'), 'gina://valid:status')
+      Assert Equals(gina#core#buffer#bufname(git, 'commit', {
+            \ 'params': ['amend'],
+            \}),
+            \'gina://valid:commit:amend'
+            \)
+      Assert Equals(gina#core#buffer#bufname(git, 'show', {
+            \ 'relpath': 'README.md',
+            \}),
+            \'gina://valid:show/:README.md'
+            \)
+      Assert Equals(gina#core#buffer#bufname(git, 'diff', {
+            \ 'revision': 'origin/HEAD',
+            \ 'relpath': 'README.md',
+            \}),
+            \'gina://valid:diff/origin/HEAD:README.md'
+            \)
+      Assert Equals(gina#core#buffer#bufname(git, 'changes', {
+            \ 'revision': 'origin/HEAD...',
+            \}),
+            \'gina://valid:changes/origin/HEAD...'
+            \)
+
     End
 
-    It returns a params dictionary for 'gina://gina.vim:commit:amend'
-      let params = gina#core#buffer#params('gina://gina.vim:commit:amend')
-      Assert Equals(params.repo, 'gina.vim')
-      Assert Equals(params.scheme, 'commit')
-      Assert Equals(params.params, ['amend'])
-      Assert Equals(params.revision, '')
-      Assert Equals(params.path, '')
+    It returns an Unix-like path (separate with '/' rather than '\') always
+      Assert Equals(gina#core#buffer#bufname(git, 'show', {
+            \ 'relpath': 'autoload\gina\core.vim',
+            \}),
+            \'gina://valid:show/:autoload/gina/core.vim'
+            \)
+      Assert Equals(gina#core#buffer#bufname(git, 'diff', {
+            \ 'revision': 'origin/HEAD',
+            \ 'relpath': 'autoload\gina\core.vim',
+            \}),
+            \'gina://valid:diff/origin/HEAD:autoload/gina/core.vim'
+            \)
+    End
+  End
+
+  Describe #parse({expr})
+    Before
+      let git = {'refname': 'valid'}
     End
 
-    It returns a params dictionary for 'gina://gina.vim:commit:ignore-submodule'
-      let params = gina#core#buffer#params('gina://gina.vim:commit:amend:ignore-submodule')
-      Assert Equals(params.repo, 'gina.vim')
-      Assert Equals(params.scheme, 'commit')
-      Assert Equals(params.params, ['amend', 'ignore-submodule'])
-      Assert Equals(params.revision, '')
-      Assert Equals(params.path, '')
+    It returns an empty dictionary when {expr} is not built by gina#core#buffer#bufname()
+      Assert Equals(gina#core#buffer#parse('README.md'), {})
+      Assert Equals(gina#core#buffer#parse('autoload/gina/core.vim'), {})
     End
 
-    It returns a params dictionary for 'gina://gina.vim:show/HEAD:README.md'
-      let params = gina#core#buffer#params('gina://gina.vim:show/HEAD:README.md')
-      Assert Equals(params.repo, 'gina.vim')
-      Assert Equals(params.scheme, 'show')
-      Assert Equals(params.params, [])
-      Assert Equals(params.revision, 'HEAD')
-      Assert Equals(params.path, 'README.md')
+    It returns params of {expr} which has built by gina#core#buffer#bufname()
+      Assert Equals(gina#core#buffer#parse('gina://valid:status'), {
+            \ 'repo': 'valid',
+            \ 'scheme': 'status',
+            \ 'params': [],
+            \ 'revision': '',
+            \ 'relpath': '',
+            \})
+      Assert Equals(gina#core#buffer#parse('gina://valid:commit:amend'), {
+            \ 'repo': 'valid',
+            \ 'scheme': 'commit',
+            \ 'params': ['amend'],
+            \ 'revision': '',
+            \ 'relpath': '',
+            \})
+      Assert Equals(gina#core#buffer#parse('gina://valid:show/:README.md'), {
+            \ 'repo': 'valid',
+            \ 'scheme': 'show',
+            \ 'params': [],
+            \ 'revision': '',
+            \ 'relpath': 'README.md',
+            \})
+      Assert Equals(gina#core#buffer#parse('gina://valid:diff/origin/HEAD:README.md'), {
+            \ 'repo': 'valid',
+            \ 'scheme': 'diff',
+            \ 'params': [],
+            \ 'revision': 'origin/HEAD',
+            \ 'relpath': 'README.md',
+            \})
+      Assert Equals(gina#core#buffer#parse('gina://valid:changes/origin/HEAD...'), {
+            \ 'repo': 'valid',
+            \ 'scheme': 'changes',
+            \ 'params': [],
+            \ 'revision': 'origin/HEAD...',
+            \ 'relpath': '',
+            \})
+      Assert Equals(gina#core#buffer#parse('gina://valid:show/:3:README.md'), {
+            \ 'repo': 'valid',
+            \ 'scheme': 'show',
+            \ 'params': [],
+            \ 'revision': ':3',
+            \ 'relpath': 'README.md',
+            \})
     End
 
-    It returns a params dictionary for 'gina://gina.vim:show/:README.md'
-      let params = gina#core#buffer#params('gina://gina.vim:show/:README.md')
-      Assert Equals(params.repo, 'gina.vim')
-      Assert Equals(params.scheme, 'show')
-      Assert Equals(params.params, [])
-      Assert Equals(params.revision, '')
-      Assert Equals(params.path, 'README.md')
-    End
-
-    It returns a params dictionary for 'gina://gina.vim:show/HEAD'
-      let params = gina#core#buffer#params('gina://gina.vim:show/HEAD')
-      Assert Equals(params.repo, 'gina.vim')
-      Assert Equals(params.scheme, 'show')
-      Assert Equals(params.params, [])
-      Assert Equals(params.revision, 'HEAD')
-      Assert Equals(params.path, '')
+    It returns params of {expr} which has built by gina#core#buffer#bufname()
+      execute 'edit' 'gina://valid:status'
+      Assert Equals(gina#core#buffer#parse('%'), {
+            \ 'repo': 'valid',
+            \ 'scheme': 'status',
+            \ 'params': [],
+            \ 'revision': '',
+            \ 'relpath': '',
+            \})
     End
   End
 
   Describe #param({expr}, {attr} [, {default}])
     It throws an exception when unknown {attr} has specified
-      Throws /Unknown attribute "foo" has specified/
-            \ gina#core#buffer#param('autoload/gina.vim', 'foo')
+      Throws /Unknown attribute/ gina#core#buffer#param('gina://valid:status', 'path')
     End
 
-    It returns a {default} when {attr} is not found in a params of {expr}
-      let expr = 'autoload/gina.vim'
-      Assert Equals(gina#core#buffer#param(expr, 'repo'), '')
-      Assert Equals(gina#core#buffer#param(expr, 'scheme'), '')
-      Assert Equals(gina#core#buffer#param(expr, 'params'), [])
-      Assert Equals(gina#core#buffer#param(expr, 'revision'), '')
-      Assert Equals(gina#core#buffer#param(expr, 'path'), '')
-
-      Assert Equals(gina#core#buffer#param(expr, 'repo', 'foo'), 'foo')
-      Assert Equals(gina#core#buffer#param(expr, 'scheme', 'foo'), 'foo')
-      Assert Equals(gina#core#buffer#param(expr, 'params', 'foo'), 'foo')
-      Assert Equals(gina#core#buffer#param(expr, 'revision', 'foo'), 'foo')
-      Assert Equals(gina#core#buffer#param(expr, 'path', 'foo'), 'foo')
+    It returns a value of an {attr} in params of {expr}
+      Assert Equals(gina#core#buffer#param('gina://valid:status', 'repo'), 'valid')
+      Assert Equals(gina#core#buffer#param('gina://valid:status', 'scheme'), 'status')
+      Assert Equals(gina#core#buffer#param('gina://valid:commit:amend', 'params'), ['amend'])
+      Assert Equals(gina#core#buffer#param('gina://valid:show/:README.md', 'relpath'), 'README.md')
+      Assert Equals(gina#core#buffer#param('gina://valid:diff/origin/HEAD:README.md', 'revision'), 'origin/HEAD')
+      Assert Equals(gina#core#buffer#param('gina://valid:changes/origin/HEAD...', 'revision'), 'origin/HEAD...')
     End
 
-    It returns a {default} when {attr} in a params of {expr} is empty
-      let expr = 'gina://gina.vim:status'
-      Assert Equals(gina#core#buffer#param(expr, 'repo'), 'gina.vim')
-      Assert Equals(gina#core#buffer#param(expr, 'scheme'), 'status')
-      Assert Equals(gina#core#buffer#param(expr, 'params'), [])
-      Assert Equals(gina#core#buffer#param(expr, 'revision'), '')
-      Assert Equals(gina#core#buffer#param(expr, 'path'), '')
-
-      Assert Equals(gina#core#buffer#param(expr, 'params', 'foo'), 'foo')
-      Assert Equals(gina#core#buffer#param(expr, 'revision', 'foo'), 'foo')
-      Assert Equals(gina#core#buffer#param(expr, 'path', 'foo'), 'foo')
+    It returns a correct default value of an {attr} when {expr} is invalid
+      Assert Equals(gina#core#buffer#param('README.md', 'repo'), '')
+      Assert Equals(gina#core#buffer#param('README.md', 'scheme'), '')
+      Assert Equals(gina#core#buffer#param('README.md', 'params'), [])
+      Assert Equals(gina#core#buffer#param('README.md', 'revision'), '')
+      Assert Equals(gina#core#buffer#param('README.md', 'relpath'), '')
     End
 
-    It returns a value of {attr} in params of {expr}
-      let expr = 'gina://gina.vim:diff:cached/HEAD:README.md'
-      Assert Equals(gina#core#buffer#param(expr, 'repo'), 'gina.vim')
-      Assert Equals(gina#core#buffer#param(expr, 'scheme'), 'diff')
-      Assert Equals(gina#core#buffer#param(expr, 'params'), ['cached'])
-      Assert Equals(gina#core#buffer#param(expr, 'revision'), 'HEAD')
-      Assert Equals(gina#core#buffer#param(expr, 'path'), 'README.md')
+    It returns a specified default value of an {attr} when {expr} is invalid
+      Assert Equals(gina#core#buffer#param('README.md', 'repo', 'foo'), 'foo')
+      Assert Equals(gina#core#buffer#param('README.md', 'scheme', 'foo'), 'foo')
+      Assert Equals(gina#core#buffer#param('README.md', 'params', 'foo'), 'foo')
+      Assert Equals(gina#core#buffer#param('README.md', 'revision', 'foo'), 'foo')
+      Assert Equals(gina#core#buffer#param('README.md', 'relpath', 'foo'), 'foo')
+    End
+  End
+
+  Describe #open({bufname}, [, {options}])
+    Before
+      %bwipeout!
+    End
+
+    It opens a new {bufname} buffer and return an informatio context
+      edit foo1
+      new foo2
+      let context = gina#core#buffer#open('foo3')
+      Assert Equals(winnr('$'), 2)
+      Assert Equals(bufname('%'), 'foo3')
+      Assert KeyExists(context, 'bufexists')
+      Assert KeyExists(context, 'bufloaded')
+      Assert KeyExists(context, 'bufname')
+      Assert KeyExists(context, 'bufnr')
+      Assert KeyExists(context, 'preview')
+      Assert Equals(context.bufexists, 0)
+      Assert Equals(context.bufloaded, 0)
+      Assert Equals(context.bufname, 'foo3')
+      Assert Equals(context.bufnr, bufnr('%'))
+      Assert Equals(context.preview, 0)
+    End
+
+    It focus a {bufname} buffer when exist and return an informatio context
+      edit foo1
+      new foo2
+      let context = gina#core#buffer#open('foo1')
+      Assert Equals(winnr('$'), 2)
+      Assert Equals(bufname('%'), 'foo1')
+      Assert KeyExists(context, 'bufexists')
+      Assert KeyExists(context, 'bufloaded')
+      Assert KeyExists(context, 'bufname')
+      Assert KeyExists(context, 'bufnr')
+      Assert KeyExists(context, 'preview')
+      Assert Equals(context.bufexists, 1)
+      Assert Equals(context.bufloaded, 1)
+      Assert Equals(context.bufname, 'foo1')
+      Assert Equals(context.bufnr, bufnr('%'))
+      Assert Equals(context.preview, 0)
+    End
+
+    Context Buffer name normalization
+      It remove leading/trailing whitespaces in {bufname}
+        let context = gina#core#buffer#open('  foo  ')
+        Assert Equals(bufname('%'), 'foo')
+      End
+
+      It remove trailing : in {bufname}
+        let context = gina#core#buffer#open('foo:::')
+        Assert Equals(bufname('%'), 'foo')
+      End
+
+      It remove trailing / in {bufname}
+        let context = gina#core#buffer#open('foo///')
+        Assert Equals(bufname('%'), 'foo')
+      End
+
+      It remove trailing \ in {bufname}
+        let context = gina#core#buffer#open('foo\\\')
+        Assert Equals(bufname('%'), 'foo')
+      End
+
+      It recursively remove aboves
+        let context = gina#core#buffer#open(' foo :/\ :/\ :/\')
+        Assert Equals(bufname('%'), 'foo')
+      End
+    End
+
+    Context Anchoring before open
+      It does not moves focus before opening a new {bufname} if a current window is suitable for opening a buffer
+        edit foo1
+        new foo2
+        let context = gina#core#buffer#open('foo3')
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname(winbufnr(1)), 'foo3')
+        Assert Equals(bufname(winbufnr(2)), 'foo1')
+      End
+
+      It moves focus before opening a new {bufname} if a current window is not suitable for opening a buffer
+        edit foo1
+        new foo2 | setlocal buftype=nofile
+        let context = gina#core#buffer#open('foo3')
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname(winbufnr(1)), 'foo2')
+        Assert Equals(bufname(winbufnr(2)), 'foo3')
+      End
+    End
+
+    Context {options.mod}
+      It opens a new {bufname} with respecting {options.mods}
+        edit foo1
+        let options = {'opener': 'split'}
+        call gina#core#buffer#open('foo2', options)
+        Assert Equals(bufname(winbufnr(1)), 'foo2')
+        Assert Equals(bufname(winbufnr(2)), 'foo1')
+
+        let options.mods = 'botright'
+        call gina#core#buffer#open('foo3', options)
+        Assert Equals(bufname(winbufnr(1)), 'foo2')
+        Assert Equals(bufname(winbufnr(2)), 'foo1')
+        Assert Equals(bufname(winbufnr(3)), 'foo3')
+      End
+    End
+
+    Context {options.opener}
+      It opens a new {bufname} buffer with {options.opener}
+        edit foo1
+        call gina#core#buffer#open('foo2')
+        Assert Equals(winnr('$'), 1)
+        Assert Equals(bufname(winbufnr(1)), 'foo2')
+
+        let options = {'opener': 'split'}
+        call gina#core#buffer#open('foo3', options)
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname(winbufnr(1)), 'foo3')
+        Assert Equals(bufname(winbufnr(2)), 'foo2')
+
+        let options = {'opener': 'botright split'}
+        call gina#core#buffer#open('foo4', options)
+        Assert Equals(winnr('$'), 3)
+        Assert Equals(bufname(winbufnr(1)), 'foo3')
+        Assert Equals(bufname(winbufnr(2)), 'foo2')
+        Assert Equals(bufname(winbufnr(3)), 'foo4')
+      End
+    End
+
+    Context {options.cmdarg}
+      It opens a new {bufname} with {cmdarg}
+        call gina#core#buffer#open('foo', {
+              \ 'cmdarg': '++enc=sjis ++ff=mac'
+              \})
+        Assert Equals(&fileencoding, 'sjis')
+        Assert Equals(&fileformat, 'mac')
+      End
+
+      It focus a new {bufname} with {cmdarg}
+        edit foo
+        Assert Equals(&fileencoding, '')
+        Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+
+        call gina#core#buffer#open('foo', {
+              \ 'cmdarg': '++enc=sjis ++ff=mac'
+              \})
+        Assert Equals(&fileencoding, 'sjis')
+        Assert Equals(&fileformat, 'mac')
+      End
+
+      It opens a new {bufname} with {cmdarg} with {group}
+        call gina#core#buffer#open('foo', {
+              \ 'group': 'short',
+              \ 'cmdarg': '++enc=sjis ++ff=mac'
+              \})
+        Assert Equals(&fileencoding, 'sjis')
+        Assert Equals(&fileformat, 'mac')
+      End
+
+      It focus a new {bufname} with {cmdarg} with {group}
+        call gina#core#buffer#open('foo', {
+              \ 'group': 'short',
+              \})
+        Assert Equals(&fileencoding, '')
+        Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+
+        call gina#core#buffer#open('foo', {
+              \ 'group': 'short',
+              \ 'cmdarg': '++enc=sjis ++ff=mac'
+              \})
+        Assert Equals(&fileencoding, 'sjis')
+        Assert Equals(&fileformat, 'mac')
+      End
+    End
+
+    Context {options.callback}
+      It throws an exception if a content of the buffer has modified by callback function
+        let callback = {}
+
+        function! callback.fn() abort
+          call append(0, ['This should not be allowed.'])
+        endfunction
+
+        Throws /A buffer content could not be modified by callback/
+              \ gina#core#buffer#open('foo', {'callback': callback})
+      End
+
+      It calls a callback funcion on a opened buffer in any case
+        let options = {}
+        let options.callback = {}
+        function! options.callback.fn() abort
+          let b:gina_core_buffer_called = 1
+        endfunction
+
+        let context = gina#core#buffer#open('foo1', options)
+        Assert Equals(bufnr('%'), context.bufnr)
+        Assert Equals(getbufvar(context.bufnr, 'gina_core_buffer_called'), 1)
+
+        let options.opener = 'pedit'
+        let context = gina#core#buffer#open('foo2', options)
+        Assert NotEquals(bufnr('%'), context.bufnr)
+        Assert Equals(getbufvar(context.bufnr, 'gina_core_buffer_called'), 1)
+      End
+
+      It calls a callback function on a focused buffer in any case
+        edit foo1
+        new foo2
+
+        let options = {}
+        let options.callback = {}
+        function! options.callback.fn() abort
+          let b:gina_core_buffer_called = 1
+        endfunction
+
+        let context = gina#core#buffer#open('foo1', options)
+        Assert Equals(bufnr('%'), context.bufnr)
+        Assert Equals(getbufvar(context.bufnr, 'gina_core_buffer_called'), 1)
+        bwipeout!
+      End
+
+      It calls a callback with {args}
+        let options = {}
+        let options.callback = {}
+        function! options.callback.fn(...) abort
+          let b:gina_core_buffer_called = a:000
+        endfunction
+
+        let options.callback.args = ['foo', 'bar']
+        let context = gina#core#buffer#open('foo1', options)
+        Assert Equals(b:gina_core_buffer_called, ['foo', 'bar'])
+      End
+    End
+
+    Context {options.group}
+      It reuses an opend window which opens a buffer with same {options.group}
+        edit foo1
+        call gina#core#buffer#open('foo2', {
+              \ 'opener': 'split',
+              \ 'group': 'short',
+              \})
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname(winbufnr(1)), 'foo2')
+        Assert Equals(bufname(winbufnr(2)), 'foo1')
+
+        call gina#core#buffer#open('foo3', {
+              \ 'opener': 'split',
+              \ 'group': 'short',
+              \})
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname(winbufnr(1)), 'foo3')
+        Assert Equals(bufname(winbufnr(2)), 'foo1')
+      End
+    End
+  End
+
+  Describe #focus({expr})
+    " NOTE:
+    " This feature is already tested in Vital.Vim.Window
+  End
+
+  Describe #assign_cmdarg([{cmdarg}])
+    It assigns &fileencoding if {cmdarg} has ++enc=xxxxx
+      edit foo
+      call gina#core#buffer#assign_cmdarg(' ++enc=utf-8')
+      Assert Equals(&fileencoding, 'utf-8')
+      Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+
+      call gina#core#buffer#assign_cmdarg(' ++enc=cp1250')
+      Assert Equals(&fileencoding, 'cp1250')
+      Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+
+      call gina#core#buffer#assign_cmdarg('')
+      Assert Equals(&fileencoding, 'cp1250')
+      Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+    End
+
+    It assigns &fileformat if {cmdarg} has ++ff=xxxxx
+      edit foo
+      call gina#core#buffer#assign_cmdarg(' ++ff=unix')
+      Assert Equals(&fileencoding, '')
+      Assert Equals(&fileformat, 'unix')
+
+      call gina#core#buffer#assign_cmdarg(' ++ff=dos')
+      Assert Equals(&fileencoding, '')
+      Assert Equals(&fileformat, 'dos')
+
+      call gina#core#buffer#assign_cmdarg(' ++ff=mac')
+      Assert Equals(&fileencoding, '')
+      Assert Equals(&fileformat, 'mac')
+
+      call gina#core#buffer#assign_cmdarg('')
+      Assert Equals(&fileencoding, '')
+      Assert Equals(&fileformat, 'mac')
+    End
+
+    It assigns &fileencoding and &fileformat if {cmdarg} has ++enc=xxxxx and ++ff=xxxxx
+      edit foo
+      call gina#core#buffer#assign_cmdarg(' ++enc=utf-8 ++ff=unix')
+      Assert Equals(&fileencoding, 'utf-8')
+      Assert Equals(&fileformat, 'unix')
+
+      call gina#core#buffer#assign_cmdarg(' ++enc=cp1250 ++ff=dos')
+      Assert Equals(&fileencoding, 'cp1250')
+      Assert Equals(&fileformat, 'dos')
+
+      call gina#core#buffer#assign_cmdarg(' ++ff=mac ++enc=sjis')
+      Assert Equals(&fileencoding, 'sjis')
+      Assert Equals(&fileformat, 'mac')
+
+      call gina#core#buffer#assign_cmdarg('')
+      Assert Equals(&fileencoding, 'sjis')
+      Assert Equals(&fileformat, 'mac')
     End
   End
 End

@@ -1,6 +1,10 @@
 Describe gina#core#meta
   Before
-    windo bwipeout!
+    %bwipeout!
+  End
+
+  After all
+    %bwipeout!
   End
 
   Describe #get()

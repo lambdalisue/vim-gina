@@ -146,20 +146,6 @@ gina#core#buffer#focus({expr})
 	call guard.restore()
 	" Focus is backed to the previous one
 <
-				*gina#core#buffer#assign_content()*
-gina#core#buffer#assign_content({content})
-	Assign {content} to the current buffer.
-	It automatically detect an encoding and file-format from {content} by
-	Vim's native feature (See |edit|) with 'lockmarks', 'keepjumps', and
-	'keepalt'.
-
-				*gina#core#buffer#extend_content()*
-gina#core#buffer#assign_content({content})
-	Extendh a content of the current buffer with {content}.
-	It automatically detect an encoding and file-format from {content} by
-	Vim's native feature (See |edit|) with 'lockmarks', 'keepjumps', and
-	'keepalt'.
-
 				*gina#core#emitter#emit()*
 gina#core#emitter#emit({name} [, {arg}...])
 	Emit a {name} event with specified arguments.
@@ -254,21 +240,21 @@ gina#core#meta#remove({name})
 gina#core#meta#clear()
 	Clear a meta dictionary of the current buffer.
 
-				*gina#core#process#open()*
-gina#core#process#open({git}, {args} [, {options}])
+				*gina#process#open()*
+gina#process#open({git}, {args} [, {options}])
 	A low-level API to execute a process.
 	Start a new job process with {git} and {args} (Vital.Argument) and
 	return a Vital.System.Job instance.
 	Developers can confirm an exact argument by executing this function
 	with |verbose|.
-	The prefix of the actual argument is |g:gina#core#process#command|.
+	The prefix of the actual argument is |g:gina#process#command|.
 
 	See documents about Vital.System.Job (lambdalisue/vital-System-Job)
 	and Vital.Argument (self-vital of gina.vim currently).
 
-				*gina#core#process#call()*
-gina#core#process#call({git}, {args} [, {options}])
-	Similar to |gina#core#process#open()| but it wait until the process
+				*gina#process#call()*
+gina#process#call({git}, {args} [, {options}])
+	Similar to |gina#process#open()| but it wait until the process
 	has terminate and return a result instance which has
 
 	"args"		An actual argument used to start the process
@@ -277,8 +263,8 @@ gina#core#process#call({git}, {args} [, {options}])
 	"stderr"	A stderr content list
 	"content"	A mixture of stdout/stderr list
 
-				*gina#core#process#exec()*
-gina#core#process#exec({git}, {args})
+				*gina#process#exec()*
+gina#process#exec({git}, {args})
 	A high-level API to execute a process.
 
 	With {args.params.async} = 0 (Default):
@@ -286,24 +272,24 @@ gina#core#process#exec({git}, {args})
 	After that, it assign a content into the current buffer and emit
 	"command:called" event with the first positional argument (e.g.
 	"show").
-	It throws an error message by |gina#core#process#error()| when an exit
+	It throws an error message by |gina#process#error()| when an exit
 	status of the process is not 0.
 
 	With {args.params.async} = 1:
 	It starts a process and start update timer and return a job process.
-	The update timer will be called every |g:gina#core#process#updatetime|
+	The update timer will be called every |g:gina#process#updatetime|
 	milliseconds and update a buffer content with updated stdout of the
 	process.
 	It emit "command:called" with the first positional argument when the
 	process has terminated.
 
-				*gina#core#process#inform()*
-gina#core#process#inform({result})
+				*gina#process#inform()*
+gina#process#inform({result})
 	Echo the {result.content}.
 	It also shows {result.args} when the {result.status} is not 0.
 
-				*gina#core#process#error()*
-gina#core#process#error({result})
+				*gina#process#error()*
+gina#process#error({result})
 	It return an exception message of {result} built by
 	|gina#core#exception#error()|.
 

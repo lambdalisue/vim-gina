@@ -1,3 +1,4 @@
+let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
 
 
@@ -28,19 +29,15 @@ function! s:on_quickfix(candidates, options) abort dict
   let options = extend({
         \ 'action': ' ',
         \}, a:options)
-  let candidates = map(
-        \ copy(a:candidates),
-        \ 's:to_quickfix(v:val)'
-        \)
   call setqflist(
-        \ candidates,
+        \ map(copy(a:candidates), 's:to_quickfix(v:val)'),
         \ options.action,
         \)
 endfunction
 
 function! s:to_quickfix(candidate) abort
   return {
-        \ 'filename': a:candidate.path,
+        \ 'filename': s:Path.realpath(a:candidate.path),
         \ 'lnum': get(a:candidate, 'line', 1),
         \ 'col': get(a:candidate, 'col', 1),
         \ 'text': s:String.remove_ansi_sequences(a:candidate.word),

@@ -1,16 +1,12 @@
 let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
-let s:Config = vital#gina#import('Config')
-let s:Observer = vital#gina#import('Vim.Buffer.Observer')
 let s:String = vital#gina#import('Data.String')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#reflog#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = printf(
-        \ 'gina://%s:reflog',
-        \ git.refname,
-        \)
+  let bufname = gina#core#buffer#bufname(git, 'reflog')
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -27,14 +23,8 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
-  let args.params.async = args.pop('--async')
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
-  let args.params.cmdarg = join([
-        \ args.pop('^++enc'),
-        \ args.pop('^++ff'),
-        \])
 
   call args.set('--color', 'always')
   return args.lock()
@@ -48,16 +38,13 @@ function! s:init(args) abort
   endif
   let b:gina_initialized = 1
 
-  setlocal nobuflisted
   setlocal buftype=nofile
-  setlocal bufhidden=unload
+  setlocal bufhidden=wipe
   setlocal noswapfile
   setlocal nomodifiable
-  setlocal conceallevel=3 concealcursor=nvi
 
   " Attach modules
   call s:Anchor.attach()
-  call s:Observer.attach()
   call gina#action#attach(function('s:get_candidates'))
   call gina#action#include('changes')
   call gina#action#include('commit')
@@ -70,10 +57,15 @@ function! s:init(args) abort
 endfunction
 
 function! s:BufReadCmd() abort
-  call gina#core#process#exec(
-        \ gina#core#get_or_fail(),
-        \ gina#core#meta#get_or_fail('args'),
-        \)
+  let git = gina#core#get_or_fail()
+  let args = gina#core#meta#get_or_fail('args')
+  let pipe = gina#process#pipe#stream()
+  let pipe.writer = gina#core#writer#new(extend(
+        \ gina#process#pipe#stream_writer(),
+        \ s:writer
+        \))
+  call gina#core#buffer#assign_cmdarg()
+  call gina#process#open(git, args, pipe)
   setlocal filetype=gina-reflog
 endfunction
 
@@ -97,7 +89,17 @@ function! s:parse_record(record) abort
 endfunction
 
 
-call s:Config.define('g:gina#command#reflog', {
+" Writer ---------------------------------------------------------------------
+let s:writer_super = gina#process#pipe#stream_writer()
+let s:writer = {}
+
+function! s:writer.on_stop() abort
+  call call(s:writer_super.on_stop, [], self)
+  call gina#core#emitter#emit('command:called', s:SCHEME)
+endfunction
+
+
+call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,
       \})

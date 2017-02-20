@@ -1,10 +1,10 @@
-let s:Config = vital#gina#import('Config')
 let s:Formatter = vital#gina#import('Data.String.Formatter')
 let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 let s:FORMAT_MAP = {
-      \ 'pt': 'path',
+      \ 'pt': 'relpath',
       \ 'ls': 'line_start',
       \ 'le': 'line_end',
       \ 'c0': 'commit0',
@@ -27,11 +27,11 @@ function! gina#command#browse#call(range, args, mods) abort
   let base_url = s:build_base_url(
         \ s:get_remote_url(git, revinfo.commit1, revinfo.commit2),
         \ args.params.scheme is# v:null
-        \   ? empty(args.params.path) ? 'root' : '_'
+        \   ? empty(args.params.abspath) ? 'root' : '_'
         \   : args.params.scheme,
         \)
   let url = s:Formatter.format(base_url, s:FORMAT_MAP, {
-        \ 'path': s:Path.unixpath(gina#core#repo#relpath(git, args.params.path)),
+        \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
         \ 'line_start': get(args.params.range, 0, ''),
         \ 'line_end': get(args.params.range, 1, ''),
         \ 'commit0': revinfo.commit0,
@@ -47,7 +47,7 @@ function! gina#command#browse#call(range, args, mods) abort
   if empty(url)
     throw gina#core#exception#warn(printf(
           \ 'No url translation pattern for "%s" is found.',
-          \ args.params.rev,
+          \ args.params.revision,
           \))
   endif
 
@@ -56,48 +56,48 @@ function! gina#command#browse#call(range, args, mods) abort
   else
     call gina#util#open(url)
   endif
+  call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args, range) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
   let args.params.yank = args.pop('--yank')
   let args.params.exact = args.pop('--exact')
   let args.params.range = a:range == [1, line('$')] ? [] : a:range
   let args.params.scheme = args.pop('--scheme', v:null)
-  let args.params.revision = args.pop(1, get(gina#core#buffer#params('%'), 'revision', ''))
-  let args.params.path = gina#core#repo#expand(get(args.residual(), 0, '%'))
+  let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
+  let args.params.revision = args.pop(1, gina#core#buffer#param('%', 'revision', ''))
   return args.lock()
 endfunction
 
 function! s:parse_revision(git, revision) abort
   if a:revision =~# '^.\{-}\.\.\..*$'
-    let [commit1, commit2] = gina#core#commit#split(a:git, a:revision)
+    let [commit1, commit2] = gina#core#revision#split(a:git, a:revision)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
   elseif a:revision =~# '^.\{-}\.\..*$'
-    let [commit1, commit2] = gina#core#commit#split(a:git, a:revision)
+    let [commit1, commit2] = gina#core#revision#split(a:git, a:revision)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
   else
     let commit1 = empty(a:revision) ? 'HEAD' : a:revision
     let commit2 = 'HEAD'
   endif
-  let commit0 = gina#core#commit#resolve(a:git, a:revision)
+  let commit0 = gina#core#revision#resolve(a:git, a:revision)
   let commit0 = empty(commit0) ? 'HEAD' : commit0
 
-  let ref0 = s:Git.ref(a:git, commit0)
-  let ref1 = s:Git.ref(a:git, commit1)
-  let ref2 = s:Git.ref(a:git, commit2)
+  let hash0 = gina#core#revision#sha1(a:git, commit0)
+  let hash1 = gina#core#revision#sha1(a:git, commit1)
+  let hash2 = gina#core#revision#sha1(a:git, commit2)
   return {
-        \ 'commit0': empty(ref0) ? commit0 : ref0.name,
-        \ 'commit1': empty(ref1) ? commit1 : ref1.name,
-        \ 'commit2': empty(ref2) ? commit2 : ref2.name,
-        \ 'hash0': empty(ref0) ? commit0 : ref0.hash,
-        \ 'hash1': empty(ref1) ? commit1 : ref1.hash,
-        \ 'hash2': empty(ref2) ? commit2 : ref2.hash,
+        \ 'commit0': commit0,
+        \ 'commit1': commit1,
+        \ 'commit2': commit2,
+        \ 'hash0': hash0,
+        \ 'hash1': hash1,
+        \ 'hash2': hash2,
         \}
 endfunction
 
@@ -135,8 +135,7 @@ function! s:build_base_url(remote_url, scheme) abort
   return ''
 endfunction
 
-
-call s:Config.define('gina#command#browse', {
+call gina#config(expand('<sfile>'), {
       \ 'translation_patterns': {
       \   'github.com': [
       \     [

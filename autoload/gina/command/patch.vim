@@ -1,33 +1,48 @@
 let s:Group = vital#gina#import('Vim.Buffer.Group')
+let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 let s:is_windows = has('win32') || has('win64')
 let s:WORKTREE = '@@'
 
 
 function! gina#command#patch#call(range, args, mods) abort
+  call gina#process#register('patch', 1)
+  try
+    call s:call(a:range, a:args, a:mods)
+  finally
+    call gina#process#unregister('patch', 1)
+  endtry
+endfunction
+
+
+" Private --------------------------------------------------------------------
+function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
+  let mods = gina#util#contain_direction(a:mods)
+        \ ? a:mods
+        \ : join(['rightbelow', a:mods])
   let group = s:Group.new()
 
-  silent diffoff!
-
+  diffoff!
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
 
-  call s:open(0, a:mods, opener1, 'HEAD', args.params)
+  call s:open(0, mods, opener1, 'HEAD', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr1 = bufnr('%')
 
-  call s:open(1, a:mods, opener2, '', args.params)
+  call s:open(1, mods, opener2, ':0', args.params)
   call gina#util#diffthis()
   call group.add()
   let bufnr2 = bufnr('%')
 
-  call s:open(2, a:mods, opener2, s:WORKTREE, args.params)
+  call s:open(2, mods, opener2, s:WORKTREE, args.params)
   call gina#util#diffthis()
   call group.add({'keep': 1})
   let bufnr3 = bufnr('%')
@@ -77,83 +92,72 @@ function! gina#command#patch#call(range, args, mods) abort
     autocmd BufWriteCmd <buffer> call s:BufWriteCmd()
   augroup END
 
-  " Update diff
   call gina#util#diffupdate()
+  normal! zm
+  call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
-
-" Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = gina#command#parse_args(a:args)
-  let args.params = {}
-  let args.params.async = args.pop('--async')
   let args.params.groups = [
         \ args.pop('--group1', 'patch-l'),
         \ args.pop('--group2', 'patch-c'),
         \ args.pop('--group3', 'patch-r'),
         \]
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.cmdarg = join([
-        \ args.pop('^++enc'),
-        \ args.pop('^++ff'),
-        \])
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
-  let args.params.path = gina#core#repo#relpath(
-        \ a:git,
-        \ gina#core#repo#expand(get(args.residual(), 0, '%'))
-        \)
+  let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
   return args.lock()
 endfunction
 
-function! s:open(n, mods, opener, commit, params) abort
-  if a:commit ==# s:WORKTREE
+function! s:open(n, mods, opener, revision, params) abort
+  if a:revision ==# s:WORKTREE
     execute printf(
-          \ '%s Gina %s edit %s %s %s %s %s -- %s',
+          \ '%s Gina edit %s %s %s %s %s -- %s',
           \ a:mods,
-          \ a:params.async ? '--async' : '',
           \ a:params.cmdarg,
           \ gina#util#shellescape(a:opener, '--opener='),
           \ gina#util#shellescape(a:params.groups[a:n], '--group='),
           \ gina#util#shellescape(a:params.line, '--line='),
           \ gina#util#shellescape(a:params.col, '--col='),
-          \ gina#util#fnameescape(a:params.path),
+          \ gina#util#shellescape(a:params.abspath),
           \)
   else
     execute printf(
-          \ '%s Gina %s show %s %s %s %s %s %s -- %s',
+          \ '%s Gina show %s %s %s %s %s %s -- %s',
           \ a:mods,
-          \ a:params.async ? '--async' : '',
           \ a:params.cmdarg,
           \ gina#util#shellescape(a:opener, '--opener='),
           \ gina#util#shellescape(a:params.groups[a:n], '--group='),
           \ gina#util#shellescape(a:params.line, '--line='),
           \ gina#util#shellescape(a:params.col, '--col='),
-          \ gina#util#shellescape(a:commit),
-          \ gina#util#fnameescape(a:params.path),
+          \ gina#util#shellescape(a:revision),
+          \ gina#util#shellescape(a:params.abspath),
           \)
   endif
 endfunction
 
 function! s:patch(git) abort
-  let path = gina#core#repo#expand('%')
-  call gina#core#process#call(a:git, [
+  let abspath = gina#core#path#abspath('%')
+  let relpath = gina#core#repo#relpath(a:git, abspath)
+  call gina#process#call(a:git, [
         \ 'add',
         \ '--intent-to-add',
         \ '--',
-        \ gina#core#repo#abspath(a:git, path),
+        \ s:Path.realpath(abspath),
         \])
-  let diff = s:diff(a:git, path, getline(1, '$'))
+  let diff = s:diff(a:git, relpath, getline(1, '$'))
   let result = s:apply(a:git, diff)
   return result
 endfunction
 
-function! s:diff(git, path, buffer) abort
+function! s:diff(git, relpath, buffer) abort
   let tempfile = tempname()
   let tempfile1 = tempfile . '.index'
   let tempfile2 = tempfile . '.buffer'
   try
-    if writefile(s:index(a:git, a:path), tempfile1) == -1
+    if writefile(s:index(a:git, a:relpath), tempfile1) == -1
       return
     endif
     if writefile(a:buffer, tempfile2) == -1
@@ -163,7 +167,7 @@ function! s:diff(git, path, buffer) abort
     " --no-index force --exit-code option.
     " --exit-code mean that the program exits with 1 if there were differences
     " and 0 means no differences
-    let result = gina#core#process#call(a:git, [
+    let result = gina#process#call(a:git, [
           \ 'diff',
           \ '--no-index',
           \ '--unified=1',
@@ -180,7 +184,7 @@ function! s:diff(git, path, buffer) abort
           \ result.content,
           \ tempfile1,
           \ tempfile2,
-          \ a:path,
+          \ a:relpath,
           \)
   finally
     silent! call delete(tempfile1)
@@ -188,8 +192,8 @@ function! s:diff(git, path, buffer) abort
   endtry
 endfunction
 
-function! s:index(git, path) abort
-  let result = gina#core#process#call(a:git, ['show', ':' . a:path])
+function! s:index(git, relpath) abort
+  let result = gina#process#call(a:git, ['show', ':' . a:relpath])
   if result.status
     return []
   endif
@@ -231,13 +235,14 @@ function! s:apply(git, content) abort
     if writefile(a:content, tempfile) == -1
       return
     endif
-    let result = gina#core#process#call(a:git, [
+    let result = gina#process#call(a:git, [
           \ 'apply',
           \ '--verbose',
           \ '--cached',
           \ '--',
           \ tempfile,
           \])
+    call gina#core#emitter#emit('command:called:complete', s:SCHEME)
     return result
   finally
     silent! call delete(tempfile)
@@ -248,12 +253,7 @@ function! s:BufWriteCmd() abort
   let git = gina#core#get_or_fail()
   let result = gina#core#exception#call(function('s:patch'), [git])
   if !empty(result)
-    call gina#core#process#inform(result)
-    call timer_start(100, function('s:emit'))
+    call gina#process#inform(result)
     setlocal nomodified
   endif
-endfunction
-
-function! s:emit(...) abort
-  call gina#core#emitter#emit('command:called:raw', ['apply'])
 endfunction

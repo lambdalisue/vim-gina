@@ -1,8 +1,84 @@
 let s:is_windows = has('win32') || has('win64')
 
 Describe gina#util
-  Before
+  Before all
     let Path = vital#gina#import('System.Filepath')
+    let Scope = themis#helper('scope')
+    let sfile = Path.realpath('autoload/gina/util.vim')
+    execute 'source' fnameescape(sfile)
+  End
+
+  Describe #contain_direction({mods})
+    It returns 1 if {mods} contains 'leftabove'
+      Assert True(gina#util#contain_direction('leftabove'))
+      Assert True(gina#util#contain_direction('lefta'))
+      Assert True(gina#util#contain_direction('verbose leftabove'))
+      Assert True(gina#util#contain_direction('verbose lefta'))
+      Assert True(gina#util#contain_direction('leftabove vertical'))
+      Assert True(gina#util#contain_direction('lefta vertical'))
+    End
+
+    It returns 1 if {mods} contains 'aboveleft'
+      Assert True(gina#util#contain_direction('aboveleft'))
+      Assert True(gina#util#contain_direction('above'))
+      Assert True(gina#util#contain_direction('abo'))
+      Assert True(gina#util#contain_direction('verbose aboveleft'))
+      Assert True(gina#util#contain_direction('verbose above'))
+      Assert True(gina#util#contain_direction('verbose abo'))
+      Assert True(gina#util#contain_direction('aboveleft vertical'))
+      Assert True(gina#util#contain_direction('above vertical'))
+      Assert True(gina#util#contain_direction('abo vertical'))
+    End
+
+    It returns 1 if {mods} contains 'rightbelow'
+      Assert True(gina#util#contain_direction('rightbelow'))
+      Assert True(gina#util#contain_direction('rightb'))
+      Assert True(gina#util#contain_direction('verbose rightbelow'))
+      Assert True(gina#util#contain_direction('verbose rightb'))
+      Assert True(gina#util#contain_direction('rightbelow vertical'))
+      Assert True(gina#util#contain_direction('rightb vertical'))
+    End
+
+    It returns 1 if {mods} contains 'belowright'
+      Assert True(gina#util#contain_direction('belowright'))
+      Assert True(gina#util#contain_direction('below'))
+      Assert True(gina#util#contain_direction('bel'))
+      Assert True(gina#util#contain_direction('verbose belowright'))
+      Assert True(gina#util#contain_direction('verbose below'))
+      Assert True(gina#util#contain_direction('verbose bel'))
+      Assert True(gina#util#contain_direction('belowright vertical'))
+      Assert True(gina#util#contain_direction('below vertical'))
+      Assert True(gina#util#contain_direction('bel vertical'))
+    End
+
+    It returns 1 if {mods} contains 'topleft'
+      Assert True(gina#util#contain_direction('topleft'))
+      Assert True(gina#util#contain_direction('top'))
+      Assert True(gina#util#contain_direction('to'))
+      Assert True(gina#util#contain_direction('verbose topleft'))
+      Assert True(gina#util#contain_direction('verbose top'))
+      Assert True(gina#util#contain_direction('verbose to'))
+      Assert True(gina#util#contain_direction('topleft vertical'))
+      Assert True(gina#util#contain_direction('top vertical'))
+      Assert True(gina#util#contain_direction('to vertical'))
+    End
+
+    It returns 1 if {mods} contains 'botright'
+      Assert True(gina#util#contain_direction('botright'))
+      Assert True(gina#util#contain_direction('bot'))
+      Assert True(gina#util#contain_direction('bo'))
+      Assert True(gina#util#contain_direction('verbose botright'))
+      Assert True(gina#util#contain_direction('verbose bot'))
+      Assert True(gina#util#contain_direction('verbose bo'))
+      Assert True(gina#util#contain_direction('botright vertical'))
+      Assert True(gina#util#contain_direction('bot vertical'))
+      Assert True(gina#util#contain_direction('bo vertical'))
+    End
+
+    It returns 0 if {mods} does not contain above keywords
+      Assert False(gina#util#contain_direction('verbose'))
+      Assert False(gina#util#contain_direction('verbose vertical'))
+    End
   End
 
   Describe #yank({value})
@@ -15,8 +91,8 @@ Describe gina#util
 
   Describe #open({uri})
     Before
-      let scope = themis#helper('scope')
-      let vars = scope.vars(Path.realpath('autoload/gina/util.vim'))
+      let vars = Scope.vars(sfile)
+      let vars.File._open_called_with = []
 
       function! vars.File.open(...) abort
         let self._open_called_with = a:000
@@ -190,6 +266,55 @@ Describe gina#util
   Describe #diffupdate()
     It calls a "diffupdate" command a bit later
       " NO TEST
+    End
+  End
+
+  Describe #inherit({super} [, {prototype}])
+    It returns a new instance which inherit {super}
+      let s:A = {}
+      function! s:A.say() abort
+        echon self.name
+      endfunction
+      function! s:new_A(name) abort
+        let a = copy(s:A)
+        let a.name = a:name
+        return a
+      endfunction
+
+      let s:B = gina#util#inherit(s:A)
+      function! s:B.say() abort
+        echon 'Hello '
+        call self.super(s:B, 'say')
+      endfunction
+      function! s:new_B(name) abort
+        let b = extend(s:new_A(a:name), s:B)
+        return b
+      endfunction
+
+      let s:C = gina#util#inherit(s:B)
+      function! s:C.say() abort
+        echon 'Well, '
+        call self.super(s:C, 'say')
+      endfunction
+      function! s:new_C(name) abort
+        let c = extend(s:new_B(a:name), s:C)
+        return c
+      endfunction
+
+      let s:D = gina#util#inherit(s:C)
+      function! s:new_D(name) abort
+        let d = extend(s:new_C(a:name), s:D)
+        return d
+      endfunction
+
+      let a = s:new_A('John')
+      let b = s:new_B('Mark')
+      let c = s:new_C('Peter')
+      let d = s:new_D('Alice')
+      Assert Equals(execute('redraw | call a.say()'), 'John')
+      Assert Equals(execute('redraw | call b.say()'), 'Hello Mark')
+      Assert Equals(execute('redraw | call c.say()'), 'Well, Hello Peter')
+      Assert Equals(execute('redraw | call d.say()'), 'Well, Hello Alice')
     End
   End
 End

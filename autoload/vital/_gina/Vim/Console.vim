@@ -27,19 +27,19 @@ function! s:_vital_created(module) abort
   lockvar a:module.STATUS_DEBUG
   lockvar a:module.STATUS_BATCH
   let a:module.status = ''
+  let a:module.prefix = ''
 endfunction
 
-function! s:echo(msg, ...) abort
+function! s:echo(msg, ...) abort dict
   let hl = get(a:000, 0, 'None')
   let msg = s:_ensure_string(a:msg)
+  let msg = s:_assign_prefix(a:msg, self.prefix)
   execute 'echohl' hl
-  for line in split(msg, '\r\?\n')
-    echo line
-  endfor
+  echo msg
   echohl None
 endfunction
 
-function! s:echon(msg, ...) abort
+function! s:echon(msg, ...) abort dict
   let hl = get(a:000, 0, 'None')
   let msg = s:_ensure_string(a:msg)
   execute 'echohl' hl
@@ -47,9 +47,10 @@ function! s:echon(msg, ...) abort
   echohl None
 endfunction
 
-function! s:echomsg(msg, ...) abort
+function! s:echomsg(msg, ...) abort dict
   let hl = get(a:000, 0, 'None')
   let msg = s:_ensure_string(a:msg)
+  let msg = s:_assign_prefix(a:msg, self.prefix)
   execute 'echohl' hl
   for line in split(msg, '\r\?\n')
     echomsg line
@@ -62,11 +63,16 @@ function! s:input(hl, msg, ...) abort dict
     return ''
   endif
   let msg = s:_ensure_string(a:msg)
+  let msg = s:_assign_prefix(a:msg, self.prefix)
   execute 'echohl' a:hl
   call inputsave()
   try
-    return call('input', [msg] + a:000)
+    cnoremap <buffer> <Esc> <C-u>=====ESCAPE=====<CR>
+    let result = call('input', [msg] + a:000)
+    return result ==# '=====ESCAPE=====' ? 0 : result
   finally
+    redraw
+    cunmap <buffer> <Esc>
     echohl None
     call inputrestore()
   endtry
@@ -91,22 +97,22 @@ function! s:debug(msg) abort dict
   if !s:_is_status_debug(self)
     return
   endif
-  call s:echomsg(a:msg, 'Comment')
+  call self.echomsg(a:msg, 'Comment')
 endfunction
 
-function! s:info(msg) abort
+function! s:info(msg) abort dict
   let v:statusmsg = s:_ensure_string(a:msg)
-  call s:echomsg(a:msg, 'Title')
+  call self.echomsg(a:msg, 'Title')
 endfunction
 
-function! s:warn(msg) abort
+function! s:warn(msg) abort dict
   let v:warningmsg = s:_ensure_string(a:msg)
-  call s:echomsg(a:msg, 'WarningMsg')
+  call self.echomsg(a:msg, 'WarningMsg')
 endfunction
 
-function! s:error(msg) abort
+function! s:error(msg) abort dict
   let v:errmsg = s:_ensure_string(a:msg)
-  call s:echomsg(a:msg, 'ErrorMsg')
+  call self.echomsg(a:msg, 'ErrorMsg')
 endfunction
 
 function! s:ask(...) abort dict
@@ -136,31 +142,34 @@ function! s:confirm(msg, ...) abort dict
   if s:_is_status_batch(self)
     return 0
   endif
+  let default = get(a:000, 0, '')
+  if default !~? '^\%(y\%[es]\|n\%[o]\|\)$'
+    throw 'vital: Vim.Console: An invalid default value has specified.'
+  endif
+  let choices = default =~? 'y\%[es]'
+        \ ? 'Y[es]/n[o]'
+        \ : default =~? 'n\%[o]'
+        \   ? 'y[es]/N[o]'
+        \   : 'y[es]/n[o]'
   let completion = printf(
         \ 'customlist,%s',
         \ s:_get_function_name(function('s:_confirm_complete'))
         \)
-  let result = self.input(
-        \ 'Question',
-        \ printf('%s (y[es]/n[o]): ', a:msg),
-        \ get(a:000, 0, ''),
-        \ completion,
-        \)
+  let result = 'invalid'
   while result !~? '^\%(y\%[es]\|n\%[o]\)$'
     redraw
-    if result ==# ''
-      call s:echo('Canceled.', 'WarningMsg')
-      break
-    endif
-    call s:echo('Invalid input.', 'WarningMsg')
     let result = self.input(
           \ 'Question',
-          \ printf('%s (y[es]/n[o]): ', a:msg),
-          \ get(a:000, 0, ''),
+          \ printf('%s (%s): ', a:msg, choices),
+          \ '',
           \ completion,
           \)
+    if type(result) != s:t_string
+      call self.echo('Canceled.', 'WarningMsg')
+      return 0
+    endif
+    let result = empty(result) ? default : result
   endwhile
-  redraw
   return result =~? 'y\%[es]'
 endfunction
 
@@ -217,6 +226,10 @@ endfunction
 
 function! s:_ensure_string(x) abort
   return type(a:x) == s:t_string ? a:x : string(a:x)
+endfunction
+
+function! s:_assign_prefix(msg, prefix) abort
+  return join(map(split(a:msg, '\r\?\n'), 'a:prefix . v:val'), "\n")
 endfunction
 
 if has('patch-7.4.1842')

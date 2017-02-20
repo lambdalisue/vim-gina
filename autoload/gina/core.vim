@@ -1,5 +1,4 @@
 let s:Cache = vital#gina#import('System.Cache.Memory')
-let s:Console = vital#gina#import('Vim.Console')
 let s:Git = vital#gina#import('Git')
 
 let s:registry = s:Cache.new()
@@ -35,14 +34,14 @@ function! gina#core#get(...) abort
   if options.cache !=# s:CACHE_NEVER
     let cached = s:get_cached_instance(options.expr)
     if !empty(cached)
-      call s:Console.debug(printf(
+      call gina#core#console#debug(printf(
             \ 'A cached git instanse "%s" is used for "%s"',
             \ get(cached, 'refname', ''),
             \ expand(options.expr),
             \))
       return cached
     elseif options.cache ==# s:CACHE_TRUTH && cached isnot# v:null
-      call s:Console.debug(printf(
+      call gina#core#console#debug(printf(
             \ 'An empty cached git instanse is used for "%s"',
             \ expand(options.expr),
             \))
@@ -50,16 +49,16 @@ function! gina#core#get(...) abort
     endif
   endif
 
-  let params = gina#core#buffer#params(options.expr)
+  let params = gina#core#buffer#parse(options.expr)
   if empty(params)
     let git = {}
-    let params.path = expand(options.expr)
+    let params.relpath = expand(options.expr)
   else
     let git = s:get_from_cache(params.repo)
   endif
   if empty(git)
     if s:is_file_buffer(options.expr)
-      let git = s:get_from_bufname(params.path)
+      let git = s:get_from_bufname(params.relpath)
     else
       let git = s:get_from_cwd(bufnr(options.expr))
     endif
@@ -92,12 +91,14 @@ function! s:get_cached_instance(expr) abort
 endfunction
 
 function! s:set_cached_instance(expr, git) abort
-  call setbufvar(a:expr, 'gina', {
-        \ 'refname': get(a:git, 'refname', ''),
-        \ 'bufname': simplify(bufname(a:expr)),
-        \ 'buftype': getbufvar(a:expr, '&buftype', ''),
-        \ 'cwd': simplify(getcwd()),
-        \})
+  if bufexists(a:expr)
+    call setbufvar(a:expr, 'gina', {
+          \ 'refname': get(a:git, 'refname', ''),
+          \ 'bufname': simplify(bufname(a:expr)),
+          \ 'buftype': getbufvar(a:expr, '&buftype', ''),
+          \ 'cwd': simplify(getcwd()),
+          \})
+  endif
 endfunction
 
 function! s:get_available_refname(refname, git) abort

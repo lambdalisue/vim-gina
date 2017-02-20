@@ -12,3 +12,4 @@ Data.String.Formatter
 System.Job
 Vim.Buffer.ANSI
 Vim.Window
+DateTime
