@@ -1,5 +1,3 @@
-
-
 function! gina#action#branch#define(binder) abort
   call a:binder.define('branch:refresh', function('s:on_refresh'), {
         \ 'description': 'Refresh remote branches',
@@ -77,17 +75,19 @@ function! s:on_checkout(candidates, options) abort
         \ 'track': 0,
         \}, a:options)
   for candidate in a:candidates
-    let is_remote = !empty(candidate.remote)
-    if is_remote && options.track
+    if options.track
+      let branch = candidate.remote ==# 'origin'
+            \ ? candidate.branch
+            \ : candidate.revision
       execute printf(
             \ 'Gina checkout -b %s %s',
-            \ gina#util#shellescape(candidate.branch),
+            \ gina#util#shellescape(branch),
             \ gina#util#shellescape(candidate.revision),
             \)
     else
       execute printf(
             \ 'Gina checkout %s',
-            \ gina#util#shellescape(candidate.branch),
+            \ gina#util#shellescape(candidate.revision),
             \)
     endif
   endfor
@@ -103,7 +103,7 @@ function! s:on_new(candidates, options) abort
           \ 'Name: ', '',
           \)
     let from = gina#core#console#ask(
-          \ 'From: ', candidate.branch,
+          \ 'From: ', candidate.revision,
           \ 'customlist,gina#complete#commit#branch',
           \)
     execute printf(
@@ -115,13 +115,14 @@ function! s:on_new(candidates, options) abort
 endfunction
 
 function! s:on_move(candidates, options) abort
-  if empty(a:candidates)
+  let candidates = filter(copy(a:candidates), 'empty(v:val.remote)')
+  if empty(candidates)
     return
   endif
   let options = extend({
         \ 'force': 0,
         \}, a:options)
-  for candidate in a:candidates
+  for candidate in candidates
     let name = gina#core#console#ask(
           \ 'Rename: ',
           \ candidate.branch,
@@ -162,15 +163,19 @@ function! s:on_delete(candidates, options) abort
 endfunction
 
 function! s:on_set_upstream_to(candidates, options) abort
-  if empty(a:candidates)
+  let candidates = filter(copy(a:candidates), 'empty(v:val.remote)')
+  if empty(candidates)
     return
   endif
   let options = extend({}, a:options)
-  for candidate in a:candidates
+  for candidate in candidates
     let upstream = gina#core#console#ask(
           \ 'Upstream: ',
           \ candidate.branch,
           \ function('gina#complete#commit#remote_branch'),
+          \)
+    let upstream = substitute(
+          \ upstream, printf('^%s/', candidate.remote), '', ''
           \)
     execute printf(
           \ 'Gina branch --set-upstream-to=%s %s',
@@ -181,11 +186,12 @@ function! s:on_set_upstream_to(candidates, options) abort
 endfunction
 
 function! s:on_unset_upstream(candidates, options) abort
-  if empty(a:candidates)
+  let candidates = filter(copy(a:candidates), 'empty(v:val.remote)')
+  if empty(candidates)
     return
   endif
   let options = extend({}, a:options)
-  for candidate in a:candidates
+  for candidate in candidates
     execute printf(
           \ 'Gina branch --unset-upstream %s',
           \ gina#util#shellescape(candidate.branch),
