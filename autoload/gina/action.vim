@@ -34,19 +34,19 @@ function! gina#action#alias(...) abort
   return call(binder.alias, a:000, binder)
 endfunction
 
-function! gina#action#shorten(scheme, ...) abort
+function! gina#action#shorten(root, ...) abort
   let excludes = get(a:000, 0, [])
   let binder = s:get()
   if binder is# v:null
     return
   endif
-  let scheme = substitute(a:scheme, '-', '_', 'g')
+  let root = substitute(a:root, '-', '_', 'g')
   let names = filter(
         \ keys(binder.actions),
-        \ 'v:val =~# ''^'' . scheme . '':'''
+        \ 'v:val =~# ''^'' . root . '':'''
         \)
   for name in filter(names, 'index(excludes, v:val) == -1')
-    call binder.alias(matchstr(name, '^' . scheme . ':\zs.*'), name)
+    call binder.alias(matchstr(name, '^' . root . ':\zs.*'), name)
   endfor
 endfunction
 
