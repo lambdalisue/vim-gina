@@ -2,11 +2,12 @@ let s:t_number = type(0)
 let s:t_string = type('')
 
 function! s:_vital_loaded(V) abort
+  let s:List = a:V.import('Data.List')
   let s:String = a:V.import('Data.String')
 endfunction
 
 function! s:_vital_depends() abort
-  return ['Data.String']
+  return ['Data.List', 'Data.String']
 endfunction
 
 function! s:_vital_created(module) abort
@@ -224,6 +225,7 @@ function! s:_set_p(query, value) abort dict
   else
     let self.raw[index] = a:value
   endif
+  let self.raw = s:List.flatten(self.raw)
   return self
 endfunction
 

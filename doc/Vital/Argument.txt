@@ -280,7 +280,10 @@ args.pop({index} [, {term}])
 args.set({pattern}, {term})
 args.set({query}, {value})
 args.set({index}, {term})
-	Sets a {term} or {value} of a term to a term found.
+args.set({index}, [{term}...])
+	Sets a {term} or {value} of a term to a term found. When a list is
+	specified in case of {index}, the list content is flatten into the
+	term found.
 	It returns an instance itself (method chain).
 	Note that it automatically add missing positional terms when not
 	enough positional terms exist for the {index}.
@@ -301,6 +304,11 @@ args.set({index}, {term})
 	call args.set(0, 'FOO')
 	echo args.raw
 	" -> ['--FOO', '-FOOf', 'FOO', '-bbar']
+
+	" set({index}, [{term}...])
+	call args.set(0, ['BAR', 'HOGE'])
+	echo args.raw
+	" -> ['--FOO', '-FOOf', 'BAR', 'HOGE', '-bbar']
 <
 				*Vital.Argument-args.split()*
 args.split()

@@ -321,16 +321,22 @@ Describe Argument
               \ '-f', 'foo', '--foo', 'FOO', '--hoge=hoge',
               \ '--', '-hHOGE', 'hoge',
               \])
+
+        Assert Equals(args.set(1, ['BAR', 'HOGE']).get(1), 'BAR')
+        Assert Equals(args.raw, [
+              \ '-f', 'foo', '--foo', 'BAR', 'HOGE', '--hoge=hoge',
+              \ '--', '-hHOGE', 'hoge',
+              \])
       End
 
       It appends positonal terms when no enough positional terms exist for {query}-th
         let args = Argument.new('-f bar --foo BAR --hoge=hoge -- -hHOGE hoge')
         Assert Equals(args.set(2, 'foo').get(2), 'foo')
         Assert Equals(args.set(4, 'FOO').get(4), 'FOO')
-        Assert Equals(args.set(9, 'HOGE').get(9), 'HOGE')
+        Assert Equals(args.set(9, ['HOGE', 'PIYO']).get(9), 'HOGE')
         Assert Equals(args.raw, [
               \ '-f', 'bar', '--foo', 'BAR', '--hoge=hoge', 'foo', '', 'FOO',
-              \ '', '', '', '', 'HOGE',
+              \ '', '', '', '', 'HOGE', 'PIYO',
               \ '--', '-hHOGE', 'hoge',
               \])
       End
@@ -533,6 +539,10 @@ Describe Argument
       " set({index}, {term})
       call args.set(0, 'FOO')
       Assert Equals(args.raw, ['--FOO', '-fFOO', 'FOO', '-bbar'])
+
+      " set({index}, {terms})
+      call args.set(0, ['BAR', 'HOGE'])
+      Assert Equals(args.raw, ['--FOO', '-fFOO', 'BAR', 'HOGE', '-bbar'])
     End
   End
 End
