@@ -64,11 +64,19 @@ function! s:input(hl, msg, ...) abort dict
   endif
   let msg = s:_ensure_string(a:msg)
   let msg = s:_assign_prefix(a:msg, self.prefix)
+  let text = get(a:000, 0, '')
+  let Completion = get(a:000, 1, '')
   execute 'echohl' a:hl
   call inputsave()
   try
     cnoremap <buffer> <Esc> <C-u>=====ESCAPE=====<CR>
-    let result = call('input', [msg] + a:000)
+    let result = call('input', [
+          \ msg,
+          \ text,
+          \ type(Completion) == s:t_string
+          \   ? Completion
+          \   : 'customlist,' . s:_get_function_name(Completion)
+          \])
     return result ==# '=====ESCAPE=====' ? 0 : result
   finally
     redraw
@@ -151,10 +159,6 @@ function! s:confirm(msg, ...) abort dict
         \ : default =~? 'n\%[o]'
         \   ? 'y[es]/N[o]'
         \   : 'y[es]/n[o]'
-  let completion = printf(
-        \ 'customlist,%s',
-        \ s:_get_function_name(function('s:_confirm_complete'))
-        \)
   let result = 'invalid'
   while result !~? '^\%(y\%[es]\|n\%[o]\)$'
     redraw
@@ -162,7 +166,7 @@ function! s:confirm(msg, ...) abort dict
           \ 'Question',
           \ printf('%s (%s): ', a:msg, choices),
           \ '',
-          \ completion,
+          \ function('s:_confirm_complete'),
           \)
     if type(result) != s:t_string
       call self.echo('Canceled.', 'WarningMsg')
