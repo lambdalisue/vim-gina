@@ -3,20 +3,20 @@ git:
   depth: 3
 
 os:
-  - linux
+  #- linux
   - osx
 env:
-  - PYTHON=0 VIM=vim  VIM_VERSION=HEAD
-  - PYTHON=0 VIM=vim  VIM_VERSION=v8.0.0027
-  - PYTHON=2 VIM=vim  VIM_VERSION=HEAD
-  - PYTHON=2 VIM=vim  VIM_VERSION=v8.0.0027
-  - PYTHON=3 VIM=vim  VIM_VERSION=HEAD
-  - PYTHON=3 VIM=vim  VIM_VERSION=v8.0.0027
-  - PYTHON=0 VIM=nvim VIM_VERSION=HEAD   THEMIS_ARGS="-e -s --headless"
-  - PYTHON=0 VIM=nvim VIM_VERSION=v0.1.7 THEMIS_ARGS="-e -s --headless"
-  - PYTHON=2 VIM=nvim VIM_VERSION=HEAD   THEMIS_ARGS="-e -s --headless"
+  #- PYTHON=0 VIM=vim  VIM_VERSION=HEAD
+  #- PYTHON=0 VIM=vim  VIM_VERSION=v8.0.0027
+  #- PYTHON=2 VIM=vim  VIM_VERSION=HEAD
+  #- PYTHON=2 VIM=vim  VIM_VERSION=v8.0.0027
+  #- PYTHON=3 VIM=vim  VIM_VERSION=HEAD
+  #- PYTHON=3 VIM=vim  VIM_VERSION=v8.0.0027
+  #- PYTHON=0 VIM=nvim VIM_VERSION=HEAD   THEMIS_ARGS="-e -s --headless"
+  #- PYTHON=0 VIM=nvim VIM_VERSION=v0.1.7 THEMIS_ARGS="-e -s --headless"
+  #- PYTHON=2 VIM=nvim VIM_VERSION=HEAD   THEMIS_ARGS="-e -s --headless"
   - PYTHON=2 VIM=nvim VIM_VERSION=v0.1.7 THEMIS_ARGS="-e -s --headless"
-  - PYTHON=3 VIM=nvim VIM_VERSION=HEAD   THEMIS_ARGS="-e -s --headless"
+  #- PYTHON=3 VIM=nvim VIM_VERSION=HEAD   THEMIS_ARGS="-e -s --headless"
   - PYTHON=3 VIM=nvim VIM_VERSION=v0.1.7 THEMIS_ARGS="-e -s --headless"
 
 cache:
