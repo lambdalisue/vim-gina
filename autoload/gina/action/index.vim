@@ -231,9 +231,11 @@ function! s:on_stage(candidates, options) abort dict
   endfor
   if options.force
     call self.call('index:add:force', add_candidates)
+    call gina#process#wait()
     call self.call('index:rm:force', rm_candidates)
   else
     call self.call('index:add', add_candidates)
+    call gina#process#wait()
     call self.call('index:rm', rm_candidates)
   endif
 endfunction
@@ -256,6 +258,7 @@ function! s:on_toggle(candidates, options) abort dict
     endif
   endfor
   call self.call('index:stage', stage_candidates)
+  call gina#process#wait()
   call self.call('index:unstage', unstage_candidates)
 endfunction
 
