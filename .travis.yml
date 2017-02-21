@@ -1,31 +1,67 @@
 language: generic
-sudo: false
-env:
-  - VERSION=HEAD
-  - VERSION=v8.0.0134
-  - VERSION=nvim
+git:
+  depth: 3
+
 os:
   - linux
   - osx
-osx_image: xcode8
+env:
+  - PYTHON=0 VIM=vim  VIM_VERSION=HEAD
+  - PYTHON=0 VIM=vim  VIM_VERSION=v8.0.0027
+  - PYTHON=2 VIM=vim  VIM_VERSION=HEAD
+  - PYTHON=2 VIM=vim  VIM_VERSION=v8.0.0027
+  - PYTHON=3 VIM=vim  VIM_VERSION=HEAD
+  - PYTHON=3 VIM=vim  VIM_VERSION=v8.0.0027
+  - PYTHON=0 VIM=nvim VIM_VERSION=HEAD   THEMIS_ARGS="-e -s --headless"
+  - PYTHON=0 VIM=nvim VIM_VERSION=v0.1.7 THEMIS_ARGS="-e -s --headless"
+  - PYTHON=2 VIM=nvim VIM_VERSION=HEAD   THEMIS_ARGS="-e -s --headless"
+  - PYTHON=2 VIM=nvim VIM_VERSION=v0.1.7 THEMIS_ARGS="-e -s --headless"
+    #- PYTHON=3 VIM=nvim VIM_VERSION=HEAD   THEMIS_ARGS="-e -s --headless"
+    #- PYTHON=3 VIM=nvim VIM_VERSION=v0.1.7 THEMIS_ARGS="-e -s --headless"
+
+cache:
+  - pip
+  - directories:
+    - $HOME/cache
+    - $HOME/themis
 
 addons:
   apt:
     packages:
-      - vim
       - gettext
       - libncurses5-dev
       - libacl1-dev
       - libgpm-dev
-      - libperl-dev
-      - ruby-dev
       - python-dev
       - python3-dev
+        #- python3-pip does not exist
       - lua5.2
       - liblua5.2-dev
 
 install:
-  - bash .ci/install.sh
+  - git config --global user.name "ci"
+  - git config --global user.email ci@example.com
+  - OS_NAME=${TRAVIS_OS_NAME} .ci/install.sh
+  - export PATH="$HOME/vim/bin:$HOME/themis/bin:$PATH"
+  - export THEMIS_HOME=$HOME/themis
+  - export THEMIS_VIM=$VIM
+
+before_script:
+  - echo $PATH
+  - echo $THEMIS_HOME
+  - echo $THEMIS_VIM
+  - echo $THEMIS_ARGS
+  - uname -a
+  - which -a python
+  - python --version
+  - which -a $VIM
+  - $VIM --version
+  - which -a vint
+  - vint --version
+  - which -a themis
+  - themis --version
 
 script:
-  - bash .ci/script.sh
+  - vint autoload/gina autoload/vital/__gina__ plugin ftplugin
+  - themis --reporter dot
+  - $THEMIS_VIM --cmd "try | helptags doc/ | catch | cquit | endtry" --cmd quit

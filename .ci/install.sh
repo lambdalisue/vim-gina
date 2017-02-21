@@ -1,11 +1,24 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# Fail on unset variables and command errors
+set -ue -o pipefail
+
+# Prevent commands misbehaving due to locale differences
+export LC_ALL=C
+
+# Get root path of the script
 root=$(cd $(dirname $0); pwd)
-set -ex
 
-git config --global user.name "ci"
-git config --global user.email ci@example.com
-git clone -q --depth 1 --single-branch https://github.com/thinca/vim-themis /tmp/vim-themis
-git clone -q --depth 1 --single-branch https://github.com/vim-jp/vital.vim  /tmp/vital
+# Load OS specific script
+. $root/install/${OS_NAME}.sh
 
-PYTHONUSERBASE=$HOME/.local pip install --user vim-vint
-bash $root/install/${TRAVIS_OS_NAME}.sh
+# Install Vim/Neovim
+install $PYTHON $VIM $VIM_VERSION
+
+# Install other requirements
+if [[ -d "$HOME/themis/bin" ]]; then
+  echo "Use a cache version $HOME/themis/bin"
+else
+  git clone --depth 1 --single-branch https://github.com/thinca/vim-themis "$HOME/themis"
+fi
+pip install --user vim-vint
