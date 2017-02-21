@@ -16,6 +16,7 @@ endif
 let s:save_cpo = &cpo
 set cpo&vim
 
+let s:t_number = type(0)
 let s:t_string = type('')
 let s:STATUS_DEBUG = 'debug'
 let s:STATUS_BATCH = 'batch'
@@ -65,18 +66,20 @@ function! s:input(hl, msg, ...) abort dict
   let msg = s:_ensure_string(a:msg)
   let msg = s:_assign_prefix(a:msg, self.prefix)
   let text = get(a:000, 0, '')
-  let Completion = get(a:000, 1, '')
+  if a:0 > 1
+    let args = [
+          \ type(a:1) == s:t_string
+          \   ? a:1
+          \   : 'customlist,' . s:_get_function_name(a:1)
+          \]
+  else
+    let args = []
+  endif
   execute 'echohl' a:hl
   call inputsave()
   try
     cnoremap <buffer> <Esc> <C-u>=====ESCAPE=====<CR>
-    let result = call('input', [
-          \ msg,
-          \ text,
-          \ type(Completion) == s:t_string
-          \   ? Completion
-          \   : 'customlist,' . s:_get_function_name(Completion)
-          \])
+    let result = call('input', [msg, text] + args)
     return result ==# '=====ESCAPE=====' ? 0 : result
   finally
     redraw
