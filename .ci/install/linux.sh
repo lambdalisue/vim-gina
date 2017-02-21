@@ -48,7 +48,7 @@ install_nvim() {
   if [[ $python == "2" ]]; then
     pip install --user neovim
   elif [[ $python == "3" ]]; then
-    pip3 install --user neovim
+    easy_install3 --user neovim
   fi
   ln -sf $out $HOME/vim
 }
@@ -57,6 +57,7 @@ install() {
   local python=$1
   local vim=$2
   local tag=$3
+
   [[ -d $HOME/vim ]] && rm -f $HOME/vim
   if [[ $tag != "HEAD" ]] && [[ -d "$HOME/cache/$python-$vim-$tag" ]]; then
     echo "Use a cached version '$HOME/cache/$python-$vim-$tag'."
