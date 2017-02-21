@@ -285,9 +285,9 @@ function! s:on_discard(candidates, options) abort dict
           \ 'This operation will be performed to the following candidates:'
           \)
     for candidate in extend(copy(delete_candidates), checkout_candidates)
-      echo '- ' . s:Path.realpath(candidate.path)
+      call gina#core#console#echo('- ' . s:Path.realpath(candidate.path))
     endfor
-    if !gina#core#console#confirm('Are you sure to discard the changes?')
+    if !gina#core#console#confirm('Are you sure to discard the changes?', 'n')
       return
     endif
   endif
