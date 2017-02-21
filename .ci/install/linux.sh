@@ -1,31 +1,18 @@
 install_vim() {
   local URL=https://github.com/vim/vim
-  local python=$1
-  local tag=$2
+  local tag=$1
   local ext=$([[ $tag == "HEAD" ]] && echo "" || echo "-b $tag")
   local tmp="$(mktemp -d)"
-  local out="$HOME/cache/$python-vim-$tag"
+  local out="$HOME/cache/vim-$tag"
   local ncpu=$(awk '/^processor/{n+=1}END{print n}' /proc/cpuinfo)
   git clone --depth 1 --single-branch $ext $URL $tmp
   cd $tmp
-  if [[ $python == "2" ]]; then
-    ./configure --prefix=$out \
-        --enable-fail-if-missing \
-        --with-features=huge \
-        --enable-pythoninterp \
-        --enable-luainterp
-  elif [[ $python == "3" ]]; then
-    ./configure --prefix=$out \
-        --enable-fail-if-missing \
-        --with-features=huge \
-        --enable-python3interp \
-        --enable-luainterp
-  else
-    ./configure --prefix=$out \
-        --enable-fail-if-missing \
-        --with-features=huge \
-        --enable-luainterp
-  fi
+  ./configure --prefix=$out \
+      --enable-fail-if-missing \
+      --with-features=huge \
+      --enable-pythoninterp \
+      --enable-python3interp \
+      --enable-luainterp
   make -j$ncpu
   make install
   ln -s $out $HOME/vim
@@ -33,11 +20,10 @@ install_vim() {
 
 install_nvim() {
   local URL=https://github.com/neovim/neovim
-  local python=$1
-  local tag=$2
+  local tag=$1
   local ext=$([[ $tag == "HEAD" ]] && echo "" || echo "-b $tag")
   local tmp="$(mktemp -d)"
-  local out="$HOME/cache/$python-nvim-$tag"
+  local out="$HOME/cache/nvim-$tag"
   local ncpu=$(awk '/^processor/{n+=1}END{print n}' /proc/cpuinfo)
   git clone --depth 1 --single-branch $ext $URL $tmp
   cd $tmp
@@ -45,28 +31,24 @@ install_nvim() {
     CMAKE_BUILD_TYPE=Release \
     CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX:PATH=$out"
   make install
-  if [[ $python == "2" ]]; then
-    pip install --user neovim
-  elif [[ $python == "3" ]]; then
-    easy_install3 --user neovim
-  fi
+  pip install --user neovim
+  easy_install3 --user neovim
   ln -sf $out $HOME/vim
 }
 
 install() {
-  local python=$1
-  local vim=$2
-  local tag=$3
+  local vim=$1
+  local tag=$2
 
   [[ -d $HOME/vim ]] && rm -f $HOME/vim
-  if [[ $tag != "HEAD" ]] && [[ -d "$HOME/cache/$python-$vim-$tag" ]]; then
-    echo "Use a cached version '$HOME/cache/$python-$vim-$tag'."
-    ln -sf $HOME/cache/$python-$vim-$tag $HOME/vim
+  if [[ $tag != "HEAD" ]] && [[ -d "$HOME/cache/$vim-$tag" ]]; then
+    echo "Use a cached version '$HOME/cache/$vim-$tag'."
+    ln -sf $HOME/cache/$vim-$tag $HOME/vim
     return
   fi
   if [[ $vim == "nvim" ]]; then
-    install_nvim $python $tag
+    install_nvim $tag
   else
-    install_vim $python $tag
+    install_vim $tag
   fi
 }

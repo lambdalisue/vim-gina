@@ -13,7 +13,7 @@ root=$(cd $(dirname $0); pwd)
 . $root/install/${OS_NAME}.sh
 
 # Install Vim/Neovim
-install $PYTHON $VIM $VIM_VERSION
+install $VIM $VIM_VERSION
 
 # Install other requirements
 if [[ -d "$HOME/themis/bin" ]]; then
