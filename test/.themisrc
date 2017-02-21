@@ -2,13 +2,6 @@ if &encoding ==# 'latin1'
   set encoding=utf-8
 endif
 
-if !empty($CI) && has('nvim')
-  " Reset python host prog to the system one
-  " https://github.com/neovim/neovim/issues/3396#issuecomment-164007558
-  let g:python_host_prog = '/usr/bin/python'
-  let g:python3_host_prog = '/usr/bin/python3'
-endif
-
 " Force English interface
 language message C
 set helplang=en
