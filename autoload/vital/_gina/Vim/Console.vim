@@ -16,7 +16,6 @@ endif
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:t_number = type(0)
 let s:t_string = type('')
 let s:STATUS_DEBUG = 'debug'
 let s:STATUS_BATCH = 'batch'
@@ -68,9 +67,9 @@ function! s:input(hl, msg, ...) abort dict
   let text = get(a:000, 0, '')
   if a:0 > 1
     let args = [
-          \ type(a:1) == s:t_string
-          \   ? a:1
-          \   : 'customlist,' . s:_get_function_name(a:1)
+          \ type(a:2) == s:t_string
+          \   ? a:2
+          \   : 'customlist,' . s:_get_function_name(a:2)
           \]
   else
     let args = []
