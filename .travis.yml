@@ -41,6 +41,7 @@ addons:
 install:
   - git config --global user.name "ci"
   - git config --global user.email ci@example.com
+  - export PYTHONUSERBASE="$HOME/.local"  # Override it for OS X
   - OS_NAME=${TRAVIS_OS_NAME} .ci/install.sh
   - export PATH="$HOME/vim/bin:$HOME/themis/bin:$PATH"
   - export THEMIS_HOME=$HOME/themis
