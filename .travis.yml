@@ -20,10 +20,13 @@ env:
   - PYTHON=3 VIM=nvim VIM_VERSION=v0.1.7 THEMIS_ARGS="-e -s --headless"
 
 cache:
-  - pip
   - directories:
     - $HOME/cache
     - $HOME/themis
+    - $HOME/.cache/pip
+    - $HOME/Library/Caches/Homebrew
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
 
 addons:
   apt:
