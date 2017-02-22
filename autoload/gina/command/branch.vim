@@ -1,4 +1,3 @@
-let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
@@ -68,7 +67,7 @@ function! s:init(args) abort
   setlocal autoread
 
   " Attach modules
-  call s:Anchor.attach()
+  call gina#core#anchor#attach()
   call gina#action#attach(function('s:get_candidates'))
   call gina#action#include('branch')
   call gina#action#include('browse')

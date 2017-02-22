@@ -1,4 +1,4 @@
-let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
+
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Guard = vital#gina#import('Vim.Guard')
@@ -75,8 +75,8 @@ function! gina#core#buffer#open(bufname, ...) abort
         \)
   let bufname = s:normalize_bufname(a:bufname)
   " Move focus to an anchor buffer if necessary
-  if !s:Anchor.is_suitable(winnr())
-    call s:Anchor.focus_if_available(options.opener)
+  if !gina#core#anchor#is_suitable(winnr())
+    call gina#core#anchor#focus_if_available(options.opener)
   endif
   " Open a buffer
   if options.callback is# v:null

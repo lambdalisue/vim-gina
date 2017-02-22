@@ -1,4 +1,3 @@
-let s:Anchor = vital#gina#import('Vim.Buffer.Anchor')
 let s:String = vital#gina#import('Data.String')
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
@@ -44,7 +43,7 @@ function! s:init(args) abort
   setlocal nomodifiable
 
   " Attach modules
-  call s:Anchor.attach()
+  call gina#core#anchor#attach()
   call gina#action#attach(function('s:get_candidates'))
   call gina#action#include('changes')
   call gina#action#include('commit')

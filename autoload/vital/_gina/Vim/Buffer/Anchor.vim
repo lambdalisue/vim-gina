@@ -3,43 +3,52 @@
 " Do not mofidify the code nor insert new lines before '" ___vital___'
 if v:version > 703 || v:version == 703 && has('patch1170')
   function! vital#_gina#Vim#Buffer#Anchor#import() abort
-    return map({'focus': '', '_vital_depends': '', 'is_suitable': '', 'get_config': '', 'focus_if_available': '', 'find_suitable': '', 'set_config': '', 'is_available': '', 'attach': '', '_vital_loaded': ''},  'function("s:" . v:key)')
+    return map({'focus': '', '_vital_depends': '', 'is_suitable': '', 'focus_if_available': '', '_vital_created': '', 'find_suitable': '', 'get_config': '', 'set_config': '', 'is_available': '', 'attach': '', '_vital_loaded': ''},  'function("s:" . v:key)')
   endfunction
 else
   function! s:_SID() abort
     return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
   endfunction
-  execute join(['function! vital#_gina#Vim#Buffer#Anchor#import() abort', printf("return map({'focus': '', '_vital_depends': '', 'is_suitable': '', 'get_config': '', 'focus_if_available': '', 'find_suitable': '', 'set_config': '', 'is_available': '', 'attach': '', '_vital_loaded': ''}, \"function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+  execute join(['function! vital#_gina#Vim#Buffer#Anchor#import() abort', printf("return map({'focus': '', '_vital_depends': '', 'is_suitable': '', 'focus_if_available': '', '_vital_created': '', 'find_suitable': '', 'get_config': '', 'set_config': '', 'is_available': '', 'attach': '', '_vital_loaded': ''}, \"function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
   delfunction s:_SID
 endif
 " ___vital___
 let s:save_cpo = &cpo
 set cpo&vim
 
+" An unique identifier for autocmd definition
+let s:UNIQUE = sha256(expand('<sfile>:p'))
+
 function! s:_vital_loaded(V) abort
   let s:Dict = a:V.import('Data.Dict')
-  let s:Compat = a:V.import('Vim.Compat')
-  let s:config = {
-        \ 'buflisted_required': 1,
-        \ 'unsuitable_buftype_pattern': '^\%(nofile\|quickfix\)$',
-        \ 'unsuitable_bufname_pattern': '',
-        \ 'unsuitable_filetype_pattern': '',
-        \}
 endfunction
 
 function! s:_vital_depends() abort
-  return [
-        \ 'Data.Dict',
-        \ 'Vim.Compat',
-        \]
+  return ['Data.Dict']
 endfunction
 
-function! s:get_config() abort
-  return copy(s:config)
+function! s:_vital_created(module) abort
+  let a:module.disallow_preview = 0
+  let a:module.buflisted_required = 1
+  let a:module.unsuitable_buftype_pattern = '^\%(nofile\|quickfix\)$'
+  let a:module.unsuitable_bufname_pattern = ''
+  let a:module.unsuitable_filetype_pattern = ''
+  let s:module = a:module
 endfunction
 
-function! s:set_config(config) abort
-  let s:config = extend(s:config, s:Dict.pick(a:config, [
+function! s:get_config() abort dict
+  return s:Dict.pick(self, [
+        \ 'disallow_preview',
+        \ 'buflisted_required',
+        \ 'unsuitable_buftype_pattern',
+        \ 'unsuitable_bufname_pattern',
+        \ 'unsuitable_filetype_pattern',
+        \])
+endfunction
+
+function! s:set_config(config) abort dict
+  call extend(self, s:Dict.pick(a:config, [
+        \ 'disallow_preview',
         \ 'buflisted_required',
         \ 'unsuitable_buftype_pattern',
         \ 'unsuitable_bufname_pattern',
@@ -62,26 +71,28 @@ function! s:is_available(opener) abort
   return 1
 endfunction
 
-function! s:is_suitable(winnum) abort
+function! s:is_suitable(winnum) abort dict
   let bufnum  = winbufnr(a:winnum)
   if empty(bufname(bufnum))
     return 1
-  elseif s:config.buflisted_required && !buflisted(bufnum)
+  elseif self.disallow_preview && &previewwindow
     return 0
-  elseif !empty(s:config.unsuitable_bufname_pattern)
-        \ && bufname(bufnum) =~# s:config.unsuitable_bufname_pattern
+  elseif self.buflisted_required && !buflisted(bufnum)
     return 0
-  elseif !empty(s:config.unsuitable_buftype_pattern)
-        \ && s:Compat.getbufvar(bufnum, '&buftype') =~# s:config.unsuitable_buftype_pattern
+  elseif !empty(self.unsuitable_bufname_pattern)
+        \ && bufname(bufnum) =~# self.unsuitable_bufname_pattern
     return 0
-  elseif !empty(s:config.unsuitable_filetype_pattern)
-        \ && s:Compat.getbufvar(bufnum, '&filetype') =~# s:config.unsuitable_filetype_pattern
+  elseif !empty(self.unsuitable_buftype_pattern)
+        \ && getbufvar(bufnum, '&buftype') =~# self.unsuitable_buftype_pattern
+    return 0
+  elseif !empty(self.unsuitable_filetype_pattern)
+        \ && getbufvar(bufnum, '&filetype') =~# self.unsuitable_filetype_pattern
     return 0
   endif
   return 1
 endfunction
 
-function! s:find_suitable(winnum, ...) abort
+function! s:find_suitable(winnum, ...) abort dict
   let winnum = max([1, a:winnum])
   if winnr('$') == 1
     return 1
@@ -92,13 +103,13 @@ function! s:find_suitable(winnum, ...) abort
         \ : [range(winnum, winnr('$')), range(1, winnum - 1)]
   " find a suitable window in rightbelow from a previous window
   for winnum in rangeset[0]
-    if s:is_suitable(winnum)
+    if self.is_suitable(winnum)
       return winnum
     endif
   endfor
   " find a suitable window in leftabove to before a previous window
   for winnum in rangeset[1]
-    if s:is_suitable(winnum)
+    if self.is_suitable(winnum)
       return winnum
     endif
   endfor
@@ -106,31 +117,30 @@ function! s:find_suitable(winnum, ...) abort
   return 0
 endfunction
 
-function! s:focus(...) abort
-  if s:is_suitable(winnr())
+function! s:focus(...) abort dict
+  if self.is_suitable(winnr())
     return
   endif
   " find suitable window from the previous window
   let previous_winnum = winnr('#')
-  let suitable_winnum = s:find_suitable(previous_winnum, get(a:000, 0, 0))
+  let suitable_winnum = self.find_suitable(previous_winnum, get(a:000, 0, 0))
   let suitable_winnum = suitable_winnum == 0
         \ ? previous_winnum
         \ : suitable_winnum
   silent execute printf('keepjumps %dwincmd w', suitable_winnum)
 endfunction
 
-function! s:focus_if_available(opener, ...) abort
-  if s:is_available(a:opener)
-    call call('s:focus', a:000)
+function! s:focus_if_available(opener, ...) abort dict
+  if self.is_available(a:opener)
+    call call('s:focus', a:000, self)
   endif
 endfunction
 
 function! s:attach() abort
-  augroup vital_vim_buffer_anchor_internal
-    autocmd! *
-    autocmd WinLeave <buffer> call s:_on_WinLeave()
-    autocmd WinEnter * call s:_on_WinEnter()
-  augroup END
+  execute 'augroup vital_vim_buffer_anchor_attach_internal' s:UNIQUE
+  execute 'autocmd! * <buffer>'
+  execute 'autocmd WinLeave <buffer> call s:_on_WinLeave()'
+  execute 'augroup END'
 endfunction
 
 function! s:_on_WinLeave() abort
@@ -141,11 +151,16 @@ function! s:_on_WinEnter() abort
   if exists('s:_vital_vim_buffer_anchor_winleave')
     let nwin = s:_vital_vim_buffer_anchor_winleave
     if winnr('$') < nwin
-      call s:focus(1)
+      call call('s:focus', [1], s:module)
     endif
     unlet s:_vital_vim_buffer_anchor_winleave
   endif
 endfunction
+
+execute 'augroup vital_vim_buffer_anchor_internal' s:UNIQUE
+execute 'autocmd! *'
+execute 'autocmd WinEnter * call s:_on_WinEnter()'
+execute 'augroup END'
 
 let &cpo = s:save_cpo
 unlet! s:save_cpo
