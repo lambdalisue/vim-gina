@@ -29,7 +29,7 @@ endfunction
 
 function! gina#command#commit#cleanup_commitmsg(content, mode, comment) abort
   let content = copy(a:content)
-  if a:mode =~# '^\%(default\|strip\|whitespace\|scissors\)$'
+  if a:mode =~# '^\%(default\|strip\|whitespace\|scissors\|_verbose\)$'
     " Strip leading and trailing empty lines
     let content = split(
           \ substitute(join(content, "\n"), '^\n\+\|\n\+$', '', 'g'),
@@ -38,12 +38,12 @@ function! gina#command#commit#cleanup_commitmsg(content, mode, comment) abort
     " Strip trailing whitespace
     call map(content, 'substitute(v:val, ''\s\+$'', '''', '''')')
     " Remove content after a scissor
-    if a:mode =~# '^\%(scissors\)$'
+    if a:mode =~# '^\%(scissors\|_verbose\)$'
       let scissor = index(content, printf('%s %s', a:comment, s:SCISSOR))
       let content = scissor == -1 ? content : content[:scissor-1]
     endif
     " Strip commentary
-    if a:mode =~# '^\%(default\|strip\|scissors\)$'
+    if a:mode =~# '^\%(default\|strip\|_verbose\)$'
       call map(content, printf(
             \ 'v:val =~# ''^%s'' ? '''' : v:val',
             \ s:String.escape_pattern(a:comment)
@@ -256,27 +256,15 @@ function! s:commit_commitmsg_confirm(git, args) abort
   endif
 endfunction
 
-function! s:get_cleanup_mode(git, args, config) abort
-  if a:args.get('--cleanup')
-    return a:args.get('--cleanup')
-  elseif a:args.get('--verbose')
-    return 'scissors'
-  endif
-  if get(get(a:config, 'commit', {}), 'verbose', '') ==# 'true'
-    return 'scissors'
-  endif
-  return get(get(a:config, 'commit', {}), 'cleanup', 'strip')
-endfunction
-
 function! s:cleanup_commitmsg(git, args, content) abort
   let config = gina#core#repo#config(a:git)
   let comment = get(get(config, 'core', {}), 'commentchar', '#')
   if a:args.get('--cleanup')
     let mode = a:args.get('--cleanup')
   elseif a:args.get('--verbose')
-    let mode = 'scissors'
+    let mode = '_verbose'
   elseif get(get(config, 'commit', {}), 'verbose', '') ==# 'true'
-    let mode = 'scissors'
+    let mode = '_verbose'
   else
     let mode = get(get(config, 'commit', {}), 'cleanup', 'strip')
   endif
