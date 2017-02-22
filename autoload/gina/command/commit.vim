@@ -209,7 +209,7 @@ function! s:get_commitmsg(git, args) abort
     let result = gina#process#call(a:git, args)
     if !result.status
       " NOTE: Operation should be fail while GIT_EDITOR=false
-      throw gina#process#error(result)
+      throw gina#process#errormsg(result)
     endif
     " Get entire content (with comment) of commitmsg
     return s:get_commit_editmsg(a:git)

@@ -88,7 +88,7 @@ function! gina#process#inform(result) abort
         \)
 endfunction
 
-function! gina#process#error(result) abort
+function! gina#process#errormsg(result) abort
   return gina#core#exception#error(printf(
         \ "Fail: %s\n%s",
         \ join(a:result.args),

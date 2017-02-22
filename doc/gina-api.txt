@@ -272,7 +272,7 @@ gina#process#exec({git}, {args})
 	After that, it assign a content into the current buffer and emit
 	"command:called" event with the first positional argument (e.g.
 	"show").
-	It throws an error message by |gina#process#error()| when an exit
+	It throws an errormsg message by |gina#process#errormsg()| when an exit
 	status of the process is not 0.
 
 	With {args.params.async} = 1:
@@ -288,8 +288,8 @@ gina#process#inform({result})
 	Echo the {result.content}.
 	It also shows {result.args} when the {result.status} is not 0.
 
-				*gina#process#error()*
-gina#process#error({result})
+				*gina#process#errormsg()*
+gina#process#errormsg({result})
 	It return an exception message of {result} built by
 	|gina#core#exception#error()|.
 

@@ -9,7 +9,7 @@ function! gina#core#revision#sha1(git, revision) abort
   " Fallback to rev-parse (e.g. HEAD@{2.days.ago})
   let result = gina#process#call(a:git, ['rev-parse', a:revision])
   if result.status
-    throw gina#process#error(result)
+    throw gina#process#errormsg(result)
   endif
   return get(result.stdout, 0, '')
 endfunction
@@ -51,7 +51,7 @@ function! s:find_common_ancestor(git, revision1, revision2) abort
         \ 'merge-base', lhs, rhs
         \])
   if result.status
-    throw gina#process#error(result)
+    throw gina#process#errormsg(result)
   endif
   return get(result.stdout, 0, '')
 endfunction

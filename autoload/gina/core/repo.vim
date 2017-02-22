@@ -20,7 +20,7 @@ endfunction
 function! gina#core#repo#config(git) abort
   let result = gina#process#call(a:git, ['config', '--list'])
   if result.status
-    throw gina#process#error(result)
+    throw gina#process#errormsg(result)
   endif
   let config = {}
   for record in filter(result.content, '!empty(v:val)')

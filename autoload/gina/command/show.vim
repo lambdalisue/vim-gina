@@ -74,7 +74,7 @@ function! s:BufReadCmd() abort
   let args = gina#core#meta#get_or_fail('args')
   let result = gina#process#call(git, args)
   if result.status
-    throw gina#process#error(result)
+    throw gina#process#errormsg(result)
   endif
   call gina#core#buffer#assign_cmdarg()
   call gina#core#writer#assign_content(bufnr('%'), result.content)
