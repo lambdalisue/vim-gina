@@ -118,6 +118,61 @@ Describe gina#command#show
       End
     End
 
+    Context jumps without python
+      Before
+        if !exists(':clearjumps')
+          Skip This Vim does not have :clearjumps so skip.
+        endif
+        let g:gina#core#writer#use_python = 0
+        let g:gina#core#writer#use_python3 = 0
+      End
+
+      After
+        let g:gina#core#writer#use_python = 1
+        let g:gina#core#writer#use_python3 = 1
+      End
+
+      It respects a native Vim's behavior for jumps for ':edit'
+        let opener = 'edit'
+        clearjumps
+        execute opener 'README.md'
+        let expect = split(execute('jumps'), '\r\?\n')
+        %bwipeout! | clearjumps
+        execute printf('Gina show --opener=%s -- README.md', opener)
+        Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+      End
+
+      It respects a native Vim's behavior for jumps for ':new'
+        let opener = 'new'
+        clearjumps
+        execute opener 'README.md'
+        let expect = split(execute('jumps'), '\r\?\n')
+        %bwipeout! | clearjumps
+        execute printf('Gina show --opener=%s -- README.md', opener)
+        Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+      End
+
+      It respects a native Vim's behavior for jumps for ':pedit'
+        let opener = 'pedit'
+        clearjumps
+        execute opener 'README.md'
+        let expect = split(execute('jumps'), '\r\?\n')
+        %bwipeout! | clearjumps
+        execute printf('Gina show --opener=%s -- README.md', opener)
+        Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+      End
+
+      It respects a native Vim's behavior for jumps for ':tabedit'
+        let opener = 'tabedit'
+        clearjumps
+        execute opener 'README.md'
+        let expect = split(execute('jumps'), '\r\?\n')
+        %bwipeout! | clearjumps
+        execute printf('Gina show --opener=%s -- README.md', opener)
+        Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+      End
+    End
+
     Context +cmd
       Before
         let filename = 'test/gina/_testdata/pluscmd.txt'

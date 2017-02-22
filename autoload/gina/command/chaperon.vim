@@ -78,7 +78,7 @@ function! s:call(range, args, mods) abort
   nmap dor <Plug>(gina-diffget-r)
   if !&l:modified
     let content = s:strip_conflict(getline(1, '$'))
-    silent %delete _
+    silent keepjumps %delete _
     call setline(1, content)
     setlocal modified
   endif

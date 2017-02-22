@@ -107,7 +107,7 @@ function! s:_assign_content_vim(bufnr, content) abort
   let guard = s:Guard.store(['&l:modifiable'])
   try
     setlocal modifiable
-    silent %delete _
+    silent keepjumps %delete _
     call setline(1, a:content)
   finally
     call guard.restore()
