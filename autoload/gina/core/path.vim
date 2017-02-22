@@ -43,7 +43,7 @@ endif
 
 
 function! s:expand(expr) abort
-  if a:expr[0] ==# ':'
+  if empty(a:expr) || a:expr[0] ==# ':'
     return a:expr
   elseif a:expr[:6] ==# 'gina://'
     let git = gina#core#get_or_fail({'expr': a:expr})

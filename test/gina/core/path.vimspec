@@ -13,6 +13,10 @@ Describe gina#core#path
   End
 
   Describe #expand({expr})
+    It returns a empty string when {expr} is an empty string
+      Assert Equals(gina#core#path#expand(''), '')
+    End
+
     It returns a Unix-like path of {expr} when {expr} starts from ':'
       let expr = Path.realpath(':/foo/bar.txt')
       Assert Equals(gina#core#path#expand(expr), ':/foo/bar.txt')
