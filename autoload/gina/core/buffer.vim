@@ -176,7 +176,7 @@ function! s:open_with_callback(bufname, options) abort
   endif
   " Update content
   if !&modified
-    execute 'edit' a:options.cmdarg
+    execute 'keepjumps edit' a:options.cmdarg
   endif
   return context
 endfunction
