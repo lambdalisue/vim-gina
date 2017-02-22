@@ -157,10 +157,6 @@ Describe gina#core#buffer
   End
 
   Describe #open({bufname}, [, {options}])
-    Before
-      %bwipeout!
-    End
-
     It opens a new {bufname} buffer and return an informatio context
       edit foo1
       new foo2
@@ -283,48 +279,92 @@ Describe gina#core#buffer
     End
 
     Context {options.cmdarg}
-      It opens a new {bufname} with {cmdarg}
-        call gina#core#buffer#open('foo', {
-              \ 'cmdarg': '++enc=sjis ++ff=mac'
-              \})
-        Assert Equals(&fileencoding, 'sjis')
-        Assert Equals(&fileformat, 'mac')
+      Context +cmd
+        Before
+          let filename = 'test/gina/_testdata/pluscmd.txt'
+        End
+
+        It starts at thel last line with "+"
+          call gina#core#buffer#open(filename, {
+                \ 'cmdarg': '+ '
+                \})
+          Assert Equals(line('.'), line('$'))
+        End
+
+        It starts at line {num} with "+{num}"
+          call gina#core#buffer#open(filename, {
+                \ 'cmdarg': '+10 '
+                \})
+          Assert Equals(line('.'), 10)
+        End
+
+        It starts at first line containig {pat} with "+/{pat}"
+          call gina#core#buffer#open(filename, {
+                \ 'cmdarg': '+/The\ following\ is '
+                \})
+          Assert Equals(line('.'), 6)
+        End
+
+        It execute {command} after opening the new file with +{command}
+          call gina#core#buffer#open(filename, {
+                \ 'cmdarg': '+setlocal\ filetype=vim '
+                \})
+          Assert Equals(&filetype, 'vim')
+        End
+
+        It is overwritten by {options.line} option
+          call gina#core#buffer#open(filename, {
+                \ 'cmdarg': '+10 ',
+                \ 'line': 20,
+                \})
+          Assert Equals(line('.'), 20)
+        End
       End
 
-      It focus a new {bufname} with {cmdarg}
-        edit foo
-        Assert Equals(&fileencoding, '')
-        Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+      Context ++cmd
+        It opens a new {bufname} with {cmdarg}
+          call gina#core#buffer#open('foo', {
+                \ 'cmdarg': '++enc=sjis ++ff=mac '
+                \})
+          Assert Equals(&fileencoding, 'sjis')
+          Assert Equals(&fileformat, 'mac')
+        End
 
-        call gina#core#buffer#open('foo', {
-              \ 'cmdarg': '++enc=sjis ++ff=mac'
-              \})
-        Assert Equals(&fileencoding, 'sjis')
-        Assert Equals(&fileformat, 'mac')
-      End
+        It focus a new {bufname} with {cmdarg}
+          edit foo
+          Assert Equals(&fileencoding, '')
+          Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
 
-      It opens a new {bufname} with {cmdarg} with {group}
-        call gina#core#buffer#open('foo', {
-              \ 'group': 'short',
-              \ 'cmdarg': '++enc=sjis ++ff=mac'
-              \})
-        Assert Equals(&fileencoding, 'sjis')
-        Assert Equals(&fileformat, 'mac')
-      End
+          call gina#core#buffer#open('foo', {
+                \ 'cmdarg': '++enc=sjis ++ff=mac '
+                \})
+          Assert Equals(&fileencoding, 'sjis')
+          Assert Equals(&fileformat, 'mac')
+        End
 
-      It focus a new {bufname} with {cmdarg} with {group}
-        call gina#core#buffer#open('foo', {
-              \ 'group': 'short',
-              \})
-        Assert Equals(&fileencoding, '')
-        Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+        It opens a new {bufname} with {cmdarg} with {group}
+          call gina#core#buffer#open('foo', {
+                \ 'group': 'short',
+                \ 'cmdarg': '++enc=sjis ++ff=mac '
+                \})
+          Assert Equals(&fileencoding, 'sjis')
+          Assert Equals(&fileformat, 'mac')
+        End
 
-        call gina#core#buffer#open('foo', {
-              \ 'group': 'short',
-              \ 'cmdarg': '++enc=sjis ++ff=mac'
-              \})
-        Assert Equals(&fileencoding, 'sjis')
-        Assert Equals(&fileformat, 'mac')
+        It focus a new {bufname} with {cmdarg} with {group}
+          call gina#core#buffer#open('foo', {
+                \ 'group': 'short',
+                \})
+          Assert Equals(&fileencoding, '')
+          Assert Equals(&fileformat, is_windows ? 'dos' : 'unix')
+
+          call gina#core#buffer#open('foo', {
+                \ 'group': 'short',
+                \ 'cmdarg': '++enc=sjis ++ff=mac '
+                \})
+          Assert Equals(&fileencoding, 'sjis')
+          Assert Equals(&fileformat, 'mac')
+        End
       End
     End
 
@@ -406,6 +446,67 @@ Describe gina#core#buffer
         Assert Equals(bufname(winbufnr(2)), 'foo1')
       End
     End
+
+    Context jumps
+      Before
+        if !exists(':clearjumps')
+          Skip This Vim does not have :clearjumps so skip.
+        endif
+      End
+
+      It respects a native Vim's behavior for jumps for ':edit'
+        let opener = 'edit'
+        %bwipeout! | clearjumps
+        execute opener 'foo1'
+        let expect = split(execute('jumps'), '\r\?\n')
+
+        %bwipeout! | clearjumps
+        call gina#core#buffer#open('foo2', {
+              \ 'opener': opener,
+              \})
+        Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+      End
+
+      It respects a native Vim's behavior for jumps for ':new'
+        let opener = 'new'
+        %bwipeout! | clearjumps
+        execute opener 'foo1'
+        let expect = split(execute('jumps'), '\r\?\n')
+
+        %bwipeout! | clearjumps
+        call gina#core#buffer#open('foo2', {
+              \ 'opener': opener,
+              \})
+        Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+      End
+
+      It respects a native Vim's behavior for jumps for ':pedit'
+        let opener = 'pedit'
+        %bwipeout! | clearjumps
+        execute opener 'foo1'
+        let expect = split(execute('jumps'), '\r\?\n')
+
+        %bwipeout! | clearjumps
+        call gina#core#buffer#open('foo2', {
+              \ 'opener': opener,
+              \})
+        Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+      End
+
+      It respects a native Vim's behavior for jumps for ':tabedit'
+        let opener = 'tabedit'
+        %bwipeout! | clearjumps
+        execute opener 'foo1'
+        let expect = split(execute('jumps'), '\r\?\n')
+
+        %bwipeout! | clearjumps
+        call gina#core#buffer#open('foo2', {
+              \ 'opener': opener,
+              \})
+        Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+      End
+    End
+
   End
 
   Describe #focus({expr})

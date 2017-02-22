@@ -93,9 +93,12 @@ function! s:build_args(rargs) abort
   " Assig global params
   let args.params = {}
   let args.params.scheme = args.get(0, '')
-  let args.params.cmdarg = join([
-        \ args.pop('^++enc'),
-        \ args.pop('^++ff'),
-        \])
+  let cmd = args.pop('^+')
+  let cmdarg = []
+  while !empty(cmd)
+    call add(cmdarg, cmd)
+    let cmd = args.pop('^+')
+  endwhile
+  let args.params.cmdarg = empty(cmdarg) ? '' : (join(cmdarg) . ' ')
   return args
 endfunction
