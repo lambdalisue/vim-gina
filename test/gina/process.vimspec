@@ -59,6 +59,25 @@ Describe gina#process
     End
   End
 
+  Describe #call_or_fail({git}, {args} [, {options}])
+    It calls an {args} of {git} and returns a result instance
+      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
+      let git = gina#core#get()
+      let result = gina#process#call_or_fail(git, ['branch'])
+      Assert Equals(result.status, 0)
+      Assert Equals(result.stdout, ['  develop', '* master'])
+      Assert Equals(result.stderr, [])
+      Assert Equals(result.content, ['  develop', '* master'])
+    End
+
+    It throws an exception when the command fail
+      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
+      let git = gina#core#get()
+      Throws /vital: Vim.Exception: Error: Fail:/
+            \ gina#process#call_or_fail(git, ['false'])
+    End
+  End
+
   Describe #inform({result})
     It shows a result content when success
       execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))

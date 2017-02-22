@@ -78,6 +78,14 @@ function! gina#process#call(git, args, ...) abort
         \}
 endfunction
 
+function! gina#process#call_or_fail(git, args, ...) abort
+  let result = call('gina#process#call', [a:git, a:args] + a:000)
+  if result.status
+    throw gina#process#errormsg(result)
+  endif
+  return result
+endfunction
+
 function! gina#process#inform(result) abort
   redraw | echo
   if a:result.status
@@ -95,6 +103,7 @@ function! gina#process#errormsg(result) abort
         \ join(a:result.content, "\n")
         \))
 endfunction
+
 
 
 " Private --------------------------------------------------------------------
