@@ -191,8 +191,7 @@ endfunction
 
 function! s:get_commitmsg(git, args) abort
   let args = a:args.clone()
-  let cname = args.get('--amend') ? 'amend' : '_'
-  let commitmsg = s:get_cached_commitmsg(a:git, cname)
+  let commitmsg = s:get_cached_commitmsg(a:git, args)
 
   let tempfile = tempname()
   try
@@ -220,9 +219,8 @@ function! s:get_commitmsg(git, args) abort
 endfunction
 
 function! s:set_commitmsg(git, args, content) abort
-  let cname = a:args.get('--amend') ? 'amend' : '_'
   call s:set_commit_editmsg(a:git, a:content)
-  call s:set_cached_commitmsg(a:git, cname, s:cleanup_commitmsg(
+  call s:set_cached_commitmsg(a:git, a:args, s:cleanup_commitmsg(
         \ a:git, a:args, a:content,
         \))
 endfunction
@@ -295,16 +293,18 @@ function! s:set_commit_editmsg(git, content) abort
   return writefile(a:content, path)
 endfunction
 
-function! s:get_cached_commitmsg(git, name) abort
-  let cname = a:git.worktree
-  let s:messages[cname] = get(s:messages, cname, {})
-  return get(s:messages[cname], a:name, [])
+function! s:get_cached_commitmsg(git, args) abort
+  let wname = a:git.worktree
+  let cname = a:args.get('--amend') ? 'amend' : '_'
+  let s:messages[wname] = get(s:messages, wname, {})
+  return get(s:messages[wname], cname, [])
 endfunction
 
-function! s:set_cached_commitmsg(git, name, commitmsg) abort
-  let cname = a:git.worktree
-  let s:messages[cname] = get(s:messages, cname, {})
-  let s:messages[cname][a:name] = a:commitmsg
+function! s:set_cached_commitmsg(git, args, commitmsg) abort
+  let wname = a:git.worktree
+  let cname = a:args.get('--amend') ? 'amend' : '_'
+  let s:messages[wname] = get(s:messages, wname, {})
+  let s:messages[wname][cname] = a:commitmsg
 endfunction
 
 function! s:remove_cached_commitmsg(git) abort
