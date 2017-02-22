@@ -32,11 +32,11 @@ if has('nvim')
       if !getbufvar(bufnr, '&modified')
             \ && getbufvar(bufnr, '&autoread')
             \ && bufname(bufnr) =~# '^gina://'
-        keepjumps call win_gotoid(bufwinid(bufnr))
-        keepjumps edit
+        call win_gotoid(bufwinid(bufnr))
+        edit
       endif
     endfor
-    keepjumps call win_gotoid(winid_saved)
+    call win_gotoid(winid_saved)
   endfunction
 else
   " Issue:
@@ -78,12 +78,12 @@ else
       if !getbufvar(bufnr, '&modified')
             \ && getbufvar(bufnr, '&autoread')
             \ && bufname(bufnr) =~# '^gina://'
-        keepjumps call win_gotoid(bufwinid(bufnr))
-        keepjumps call gina#core#writer#assign_content(bufnr, [])
-        keepjumps call gina#util#doautocmd('BufReadCmd')
+        call win_gotoid(bufwinid(bufnr))
+        call gina#core#writer#assign_content(bufnr, [])
+        call gina#util#doautocmd('BufReadCmd')
       endif
     endfor
-    keepjumps call win_gotoid(winid_saved)
+    call win_gotoid(winid_saved)
     call gina#process#wait()
   endfunction
 endif

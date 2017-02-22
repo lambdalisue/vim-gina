@@ -126,7 +126,7 @@ function! s:stream_pipe_writer.on_stop() abort
   try
     setlocal modifiable
     if empty(getline('$'))
-      silent lockmarks keepjumps $delete _
+      silent $delete _
     endif
     setlocal nomodified
   finally

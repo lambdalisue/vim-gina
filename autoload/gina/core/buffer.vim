@@ -121,10 +121,6 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:focus(winnr) abort
-  silent keepjumps keepalt execute printf('%dwincmd w', a:winnr)
-endfunction
-
 function! s:normalize_bufname(bufname) abort
   " The {bufname}
   " 1. Could not be started/ended with whitespaces
