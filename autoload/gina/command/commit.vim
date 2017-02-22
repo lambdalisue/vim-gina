@@ -2,7 +2,6 @@ let s:String = vital#gina#import('Data.String')
 let s:Git = vital#gina#import('Git')
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
-let s:SCISSOR = '------------------------ >8 ------------------------'
 let s:messages = {}
 
 
@@ -25,42 +24,6 @@ function! gina#command#commit#call(range, args, mods) abort
         \   'args': [args],
         \ }
         \})
-endfunction
-
-function! gina#command#commit#cleanup_commitmsg(content, mode, comment) abort
-  let content = copy(a:content)
-  if a:mode =~# '^\%(default\|strip\|whitespace\|scissors\|_verbose\)$'
-    " Strip leading and trailing empty lines
-    let content = split(
-          \ substitute(join(content, "\n"), '^\n\+\|\n\+$', '', 'g'),
-          \ "\n"
-          \)
-    " Strip trailing whitespace
-    call map(content, 'substitute(v:val, ''\s\+$'', '''', '''')')
-    " Remove content after a scissor
-    if a:mode =~# '^\%(scissors\|_verbose\)$'
-      let scissor = index(content, printf('%s %s', a:comment, s:SCISSOR))
-      let content = scissor == -1 ? content : content[:scissor-1]
-    endif
-    " Strip commentary
-    if a:mode =~# '^\%(default\|strip\|_verbose\)$'
-      call map(content, printf(
-            \ 'v:val =~# ''^%s'' ? '''' : v:val',
-            \ s:String.escape_pattern(a:comment)
-            \))
-    endif
-    " Collapse consecutive empty lines
-    let indices = range(len(content))
-    let status = ''
-    for index in reverse(indices)
-      if empty(content[index]) && status ==# 'consecutive'
-        call remove(content, index)
-      else
-        let status = empty(content[index]) ? 'consecutive' : ''
-      endif
-    endfor
-  endif
-  return content
 endfunction
 
 
@@ -189,52 +152,101 @@ function! s:toggle_amend() abort
   edit
 endfunction
 
-function! s:get_commitmsg(git, args) abort
-  let args = a:args.clone()
-  let commitmsg = s:get_cached_commitmsg(a:git, args)
+function! s:get_cleanup(git, args) abort
+  let config = gina#core#repo#config(a:git)
+  if a:args.get('--cleanup')
+    return a:args.get('--cleanup')
+  endif
+  return get(get(config, 'commit', {}), 'cleanup', 'strip')
+endfunction
 
-  let tempfile = tempname()
+function! s:get_commitmsg(git, args) abort
+  let content = s:get_cached_commitmsg(a:git, a:args)
+  if empty(content)
+    return s:get_commitmsg_template(a:git, a:args)
+  else
+    call gina#core#console#debug('Use a cached commit message:')
+    return s:get_commitmsg_cleanedup(a:git, a:args, content)
+  endif
+endfunction
+
+function! s:get_commitmsg_template(git, args) abort
+  let args = a:args.clone()
+  let filename = s:Git.resolve(a:git, 'COMMIT_EDITMSG')
+  let previous_content = readfile(filename)
   try
-    if !empty(commitmsg)
-      call writefile(commitmsg, tempfile)
-      call args.set('-F|--file', tempfile)
-      call args.pop('-C|--reuse-message')
-      call args.pop('-m|--message')
-      call gina#core#console#debug('Use a cached commit message:')
-      call gina#core#console#debug(join(map(copy(commitmsg), '''| '' . v:val'), "\n"))
-    endif
-    " Force edit mode
+    " Build a new commit message template
     call args.pop('--no-edit')
     call args.set('-e|--edit', 1)
     let result = gina#process#call(a:git, args)
     if !result.status
-      " NOTE: Operation should be fail while GIT_EDITOR=false
+      " While git is executed with '-c core.editor=false', the command above
+      " should fail after that create a COMMIT_EDITMSG for the current
+      " situation
       throw gina#process#errormsg(result)
     endif
-    " Get entire content (with comment) of commitmsg
-    return s:get_commit_editmsg(a:git)
+    " Get a built commitmsg template
+    return readfile(filename)
+  finally
+    " Restore the content
+    call writefile(previous_content, filename)
+  endtry
+endfunction
+
+" Note:
+" Commit the cached messate temporary to build a correct COMMIT_EDITMSG
+" This hacky implementation is required due to the lack of cleanup command.
+" https://github.com/lambdalisue/gina.vim/issues/37#issuecomment-281661605
+" Note:
+" It is not possible to remove diff content when user does
+"   1. Gina commit --verbose
+"   2. Save content
+"   3. Gina commit
+"   4. The diff part is cached so shown and no chance to remove that
+" This is a bit anoyying but I don't have any way to remove that so I just
+" ended up. PRs for this issue is welcome.
+" https://github.com/lambdalisue/gina.vim/issues/37#issuecomment-281687325
+function! s:get_commitmsg_cleanedup(git, args, content) abort
+  let args = a:args.clone()
+  let filename = s:Git.resolve(a:git, 'COMMIT_EDITMSG')
+  let previous_content = readfile(filename)
+  let tempfile = tempname()
+  try
+    call writefile(a:content, tempfile)
+    call args.set('--cleanup', s:get_cleanup(a:git, args))
+    call args.set('-F|--file', tempfile)
+    call args.set('--no-edit', 1)
+    call args.set('--allow-empty', 1)
+    call args.set('--allow-empty-message', 1)
+    call args.pop('-C|--reuse-message')
+    call args.pop('-m|--message')
+    call args.pop('-e|--edit')
+    call gina#process#call_or_fail(a:git, args)
+    " Reset the temporary commit and remove all logs
+    call gina#process#call_or_fail(a:git, ['reset', '--soft', 'HEAD@{1}'])
+    call gina#process#call_or_fail(a:git, ['reflog', 'delete', 'HEAD@{0}'])
+    call gina#process#call_or_fail(a:git, ['reflog', 'delete', 'HEAD@{0}'])
+    " Get entire content of commitmsg
+    return readfile(filename)
   finally
     call delete(tempfile)
+    call writefile(previous_content, filename)
   endtry
 endfunction
 
 function! s:set_commitmsg(git, args, content) abort
-  call s:set_commit_editmsg(a:git, a:content)
-  call s:set_cached_commitmsg(a:git, a:args, s:cleanup_commitmsg(
-        \ a:git, a:args, a:content,
-        \))
+  call s:set_cached_commitmsg(a:git, a:args, a:content)
 endfunction
 
 function! s:commit_commitmsg(git, args) abort
   let config = gina#core#repo#config(a:git)
   let args = a:args.clone()
-  let content = s:cleanup_commitmsg(
-        \ a:git, a:args, s:get_commit_editmsg(a:git),
-        \)
+  let content = s:get_cached_commitmsg(a:git, args)
   let tempfile = tempname()
   try
     call writefile(content, tempfile)
     call args.set('--no-edit', 1)
+    call args.set('--cleanup', s:get_cleanup(a:git, args))
     call args.set('-F|--file', tempfile)
     call args.pop('-C|--reuse-message')
     call args.pop('-m|--message')
@@ -254,31 +266,6 @@ function! s:commit_commitmsg_confirm(git, args) abort
   else
     redraw | echo ''
   endif
-endfunction
-
-function! s:cleanup_commitmsg(git, args, content) abort
-  let config = gina#core#repo#config(a:git)
-  let comment = get(get(config, 'core', {}), 'commentchar', '#')
-  if a:args.get('--cleanup')
-    let mode = a:args.get('--cleanup')
-  elseif a:args.get('--verbose')
-    let mode = '_verbose'
-  elseif get(get(config, 'commit', {}), 'verbose', '') ==# 'true'
-    let mode = '_verbose'
-  else
-    let mode = get(get(config, 'commit', {}), 'cleanup', 'strip')
-  endif
-  return gina#command#commit#cleanup_commitmsg(a:content, mode, comment)
-endfunction
-
-function! s:get_commit_editmsg(git) abort
-  let path = s:Git.resolve(a:git, 'COMMIT_EDITMSG')
-  return readfile(path)
-endfunction
-
-function! s:set_commit_editmsg(git, content) abort
-  let path = s:Git.resolve(a:git, 'COMMIT_EDITMSG')
-  return writefile(a:content, path)
 endfunction
 
 function! s:get_cached_commitmsg(git, args) abort
