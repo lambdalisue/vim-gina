@@ -108,27 +108,27 @@ function! gina#action#index#define(binder) abort
         \ 'description': 'Checkout a contents from HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'revision': 'HEAD' },
+        \ 'options': { 'rev': 'HEAD' },
         \})
   call a:binder.define('index:checkout:HEAD:force', function('s:on_checkout'), {
         \ 'hidden': 1,
         \ 'description': 'Checkout a contents from HEAD (force)',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'revision': 'HEAD', 'force': 1 },
+        \ 'options': { 'rev': 'HEAD', 'force': 1 },
         \})
   call a:binder.define('index:checkout:origin', function('s:on_checkout'), {
         \ 'description': 'Checkout a contents from origin/HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'revision': 'origin/HEAD' },
+        \ 'options': { 'rev': 'origin/HEAD' },
         \})
   call a:binder.define('index:checkout:origin:force', function('s:on_checkout'), {
         \ 'hidden': 1,
         \ 'description': 'Checkout a contents from origin/HEAD (force)',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'revision': 'origin/HEAD', 'force': 1 },
+        \ 'options': { 'rev': 'origin/HEAD', 'force': 1 },
         \})
   call a:binder.define('index:discard', function('s:on_discard'), {
         \ 'description': 'Discard changes on the working tree',
@@ -200,7 +200,7 @@ function! s:on_checkout(candidates, options) abort
         \ 'force': 0,
         \ 'ours': 0,
         \ 'theirs': 0,
-        \ 'revision': '',
+        \ 'rev': '',
         \}, a:options)
   let pathlist = map(copy(a:candidates), 'v:val.path')
   execute printf(
@@ -208,7 +208,7 @@ function! s:on_checkout(candidates, options) abort
         \ options.force ? '--force' : '',
         \ options.ours ? '--ours' : '',
         \ options.theirs ? '--theirs' : '',
-        \ gina#util#shellescape(options.revision),
+        \ gina#util#shellescape(options.rev),
         \ gina#util#shellescape(pathlist),
         \)
 endfunction

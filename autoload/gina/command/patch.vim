@@ -111,8 +111,8 @@ function! s:build_args(git, args) abort
   return args.lock()
 endfunction
 
-function! s:open(n, mods, opener, revision, params) abort
-  if a:revision ==# s:WORKTREE
+function! s:open(n, mods, opener, rev, params) abort
+  if a:rev ==# s:WORKTREE
     execute printf(
           \ '%s Gina edit %s %s %s %s %s -- %s',
           \ a:mods,
@@ -132,7 +132,7 @@ function! s:open(n, mods, opener, revision, params) abort
           \ gina#util#shellescape(a:params.groups[a:n], '--group='),
           \ gina#util#shellescape(a:params.line, '--line='),
           \ gina#util#shellescape(a:params.col, '--col='),
-          \ gina#util#shellescape(a:revision),
+          \ gina#util#shellescape(a:rev),
           \ gina#util#shellescape(a:params.abspath),
           \)
   endif

@@ -6,7 +6,7 @@ function! gina#command#changes#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
 
   let bufname = gina#core#buffer#bufname(git, 'changes', {
-        \ 'revision': args.params.revision,
+        \ 'rev': args.params.rev,
         \ 'params': [
         \   args.params.cached ? 'cached' : '',
         \ ],
@@ -30,11 +30,11 @@ function! s:build_args(git, args) abort
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.cached = args.get('--cached')
-  let args.params.revision = args.get(1, gina#core#buffer#param('%', 'revision', ''))
+  let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev', ''))
 
   call args.set('--numstat', 1)
   call args.set(0, 'diff')
-  call args.set(1, args.params.revision)
+  call args.set(1, args.params.rev)
   return args.lock()
 endfunction
 
@@ -81,16 +81,16 @@ endfunction
 
 function! s:get_candidates(fline, lline) abort
   let git = gina#core#get_or_fail()
-  let revision = gina#core#buffer#param('%', 'revision')
+  let rev = gina#core#buffer#param('%', 'rev')
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(git, revision, v:val)'
+        \ 's:parse_record(git, rev, v:val)'
         \)
   call filter(candidates, '!empty(v:val)')
   return candidates
 endfunction
 
-function! s:parse_record(git, revision, record) abort
+function! s:parse_record(git, rev, record) abort
   let m = matchlist(
         \ a:record,
         \ '^\(\d\+\)\s\+\(\d\+\)\s\+\(.\+\)$'
@@ -103,7 +103,7 @@ function! s:parse_record(git, revision, record) abort
         \ 'added': m[1],
         \ 'removed': m[2],
         \ 'path': gina#core#repo#abspath(a:git, m[3]),
-        \ 'revision': a:revision,
+        \ 'rev': a:rev,
         \}
 endfunction
 

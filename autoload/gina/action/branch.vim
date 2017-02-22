@@ -78,16 +78,16 @@ function! s:on_checkout(candidates, options) abort
     if options.track
       let branch = candidate.remote ==# 'origin'
             \ ? candidate.branch
-            \ : candidate.revision
+            \ : candidate.rev
       execute printf(
             \ 'Gina checkout -b %s %s',
             \ gina#util#shellescape(branch),
-            \ gina#util#shellescape(candidate.revision),
+            \ gina#util#shellescape(candidate.rev),
             \)
     else
       execute printf(
             \ 'Gina checkout %s',
-            \ gina#util#shellescape(candidate.revision),
+            \ gina#util#shellescape(candidate.rev),
             \)
     endif
   endfor
@@ -103,7 +103,7 @@ function! s:on_new(candidates, options) abort
           \ 'Name: ', '',
           \)
     let from = gina#core#console#ask(
-          \ 'From: ', candidate.revision,
+          \ 'From: ', candidate.rev,
           \ 'customlist,gina#complete#commit#branch',
           \)
     execute printf(

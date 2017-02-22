@@ -10,11 +10,11 @@ setlocal nowrap nofoldenable
 setlocal nonumber norelativenumber
 setlocal foldcolumn=0 colorcolumn=0
 
-let s:revision = gina#core#buffer#param('%', 'revision')
+let s:rev = gina#core#buffer#param('%', 'rev')
 
 if g:gina#command#ls#use_default_aliases
   call gina#action#shorten('browse')
-  if empty(s:revision)
+  if empty(s:rev)
     call gina#action#shorten('edit')
   else
     call gina#action#shorten('show')
@@ -22,7 +22,7 @@ if g:gina#command#ls#use_default_aliases
 endif
 
 if g:gina#command#ls#use_default_mappings
-  if empty(s:revision)
+  if empty(s:rev)
     nmap <buffer> <Return> <Plug>(gina-edit)zv
   else
     nmap <buffer> <Return> <Plug>(gina-show)zv

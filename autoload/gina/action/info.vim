@@ -2,43 +2,43 @@ function! gina#action#info#define(binder) abort
   call a:binder.define('info', function('s:on_info'), {
         \ 'description': 'Show a commit info',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['revision'],
+        \ 'requirements': ['rev'],
         \ 'options': {},
         \})
   call a:binder.define('info:above', function('s:on_info'), {
         \ 'description': 'Show a commit info',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['revision'],
+        \ 'requirements': ['rev'],
         \ 'options': { 'opener': 'leftabove new' },
         \})
   call a:binder.define('info:below', function('s:on_info'), {
         \ 'description': 'Show a commit info',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['revision'],
+        \ 'requirements': ['rev'],
         \ 'options': { 'opener': 'belowright new' },
         \})
   call a:binder.define('info:left', function('s:on_info'), {
         \ 'description': 'Show a commit info',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['revision'],
+        \ 'requirements': ['rev'],
         \ 'options': { 'opener': 'leftabove vnew' },
         \})
   call a:binder.define('info:right', function('s:on_info'), {
         \ 'description': 'Show a commit info',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['revision'],
+        \ 'requirements': ['rev'],
         \ 'options': { 'opener': 'belowright vnew' },
         \})
   call a:binder.define('info:tab', function('s:on_info'), {
         \ 'description': 'Show a commit info',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['revision'],
+        \ 'requirements': ['rev'],
         \ 'options': { 'opener': 'tabedit' },
         \})
   call a:binder.define('info:preview', function('s:on_info'), {
         \ 'description': 'Show a commit info',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['revision'],
+        \ 'requirements': ['rev'],
         \ 'options': { 'opener': 'pedit' },
         \})
 endfunction
@@ -56,7 +56,7 @@ function! s:on_info(candidates, options) abort
     execute printf(
           \ 'Gina info %s %s -- %s',
           \ gina#util#shellescape(options.opener, '--opener='),
-          \ gina#util#shellescape(candidate.revision),
+          \ gina#util#shellescape(candidate.rev),
           \ gina#util#shellescape(get(candidate, 'path', '')),
           \)
   endfor

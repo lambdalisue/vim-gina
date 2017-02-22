@@ -78,7 +78,7 @@ COMMANDS					*gina-commands*
 	--scheme={scheme}
 		Use a specified scheme to build a remote url.
 	--exact
-		Use an exact revision instead of a branch name
+		Use an exact rev instead of a branch name
 	--yank
 		Yank a url instead of opening
 	

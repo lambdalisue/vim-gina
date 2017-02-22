@@ -48,7 +48,7 @@ Describe gina#command#changes
             \   'path': Path.unixpath(Path.join(slit1.worktree, 'A', 'foo.txt')),
             \   'added': '1',
             \   'removed': '0',
-            \   'revision': '',
+            \   'rev': '',
             \ },
             \])
     End
@@ -66,7 +66,7 @@ Describe gina#command#changes
             \   'path': Path.unixpath(Path.join(slit1.worktree, 'C', 'foo.txt')),
             \   'added': '0',
             \   'removed': '0',
-            \   'revision': 'develop...',
+            \   'rev': 'develop...',
             \ },
             \])
     End
@@ -85,7 +85,7 @@ Describe gina#command#changes
             \   'path': Path.unixpath(Path.join(slit1.worktree, 'C', 'foo.txt')),
             \   'added': '0',
             \   'removed': '0',
-            \   'revision': 'develop...',
+            \   'rev': 'develop...',
             \ },
             \])
     End

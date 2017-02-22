@@ -13,9 +13,9 @@ let s:FORMAT_MAP = {
       \ 'h0': 'hash0',
       \ 'h1': 'hash1',
       \ 'h2': 'hash2',
-      \ 'r0': 'revision0',
-      \ 'r1': 'revision1',
-      \ 'r2': 'revision2',
+      \ 'r0': 'rev0',
+      \ 'r1': 'rev1',
+      \ 'r2': 'rev2',
       \}
 
 
@@ -23,7 +23,7 @@ function! gina#command#browse#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args, a:range)
 
-  let revinfo = s:parse_revision(git, args.params.revision)
+  let revinfo = s:parse_rev(git, args.params.rev)
   let base_url = s:build_base_url(
         \ s:get_remote_url(git, revinfo.commit1, revinfo.commit2),
         \ args.params.scheme is# v:null
@@ -40,14 +40,14 @@ function! gina#command#browse#call(range, args, mods) abort
         \ 'hash0': revinfo.hash0,
         \ 'hash1': revinfo.hash1,
         \ 'hash2': revinfo.hash2,
-        \ 'revision0': args.params.exact ? revinfo.hash0 : revinfo.commit0,
-        \ 'revision1': args.params.exact ? revinfo.hash1 : revinfo.commit1,
-        \ 'revision2': args.params.exact ? revinfo.hash2 : revinfo.commit2,
+        \ 'rev0': args.params.exact ? revinfo.hash0 : revinfo.commit0,
+        \ 'rev1': args.params.exact ? revinfo.hash1 : revinfo.commit1,
+        \ 'rev2': args.params.exact ? revinfo.hash2 : revinfo.commit2,
         \})
   if empty(url)
     throw gina#core#exception#warn(printf(
           \ 'No url translation pattern for "%s" is found.',
-          \ args.params.revision,
+          \ args.params.rev,
           \))
   endif
 
@@ -68,29 +68,29 @@ function! s:build_args(git, args, range) abort
   let args.params.range = a:range == [1, line('$')] ? [] : a:range
   let args.params.scheme = args.pop('--scheme', v:null)
   let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
-  let args.params.revision = args.pop(1, gina#core#buffer#param('%', 'revision', ''))
+  let args.params.rev = args.pop(1, gina#core#buffer#param('%', 'rev', ''))
   return args.lock()
 endfunction
 
-function! s:parse_revision(git, revision) abort
-  if a:revision =~# '^.\{-}\.\.\..*$'
-    let [commit1, commit2] = gina#core#revision#split(a:git, a:revision)
+function! s:parse_rev(git, rev) abort
+  if a:rev =~# '^.\{-}\.\.\..*$'
+    let [commit1, commit2] = gina#core#rev#split(a:git, a:rev)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
-  elseif a:revision =~# '^.\{-}\.\..*$'
-    let [commit1, commit2] = gina#core#revision#split(a:git, a:revision)
+  elseif a:rev =~# '^.\{-}\.\..*$'
+    let [commit1, commit2] = gina#core#rev#split(a:git, a:rev)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
   else
-    let commit1 = empty(a:revision) ? 'HEAD' : a:revision
+    let commit1 = empty(a:rev) ? 'HEAD' : a:rev
     let commit2 = 'HEAD'
   endif
-  let commit0 = gina#core#revision#resolve(a:git, a:revision)
+  let commit0 = gina#core#rev#resolve(a:git, a:rev)
   let commit0 = empty(commit0) ? 'HEAD' : commit0
 
-  let hash0 = gina#core#revision#sha1(a:git, commit0)
-  let hash1 = gina#core#revision#sha1(a:git, commit1)
-  let hash2 = gina#core#revision#sha1(a:git, commit2)
+  let hash0 = gina#core#rev#sha1(a:git, commit0)
+  let hash1 = gina#core#rev#sha1(a:git, commit1)
+  let hash2 = gina#core#rev#sha1(a:git, commit2)
   return {
         \ 'commit0': commit0,
         \ 'commit1': commit1,

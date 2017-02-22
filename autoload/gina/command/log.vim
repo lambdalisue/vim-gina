@@ -98,12 +98,12 @@ endfunction
 
 function! s:parse_record(abspath, record) abort
   let record = s:String.remove_ansi_sequences(a:record)
-  let revision = matchstr(record, '[a-z0-9]\+')
+  let rev = matchstr(record, '[a-z0-9]\+')
   let candidate = {
         \ 'word': record,
         \ 'abbr': a:record,
         \ 'path': a:abspath,
-        \ 'revision': revision,
+        \ 'rev': rev,
         \}
   return candidate
 endfunction

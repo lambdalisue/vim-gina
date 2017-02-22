@@ -9,7 +9,7 @@ let s:DEFAULT_PARAMS_ATTRIBUTES = {
       \ 'repo': '',
       \ 'scheme': '',
       \ 'params': [],
-      \ 'revision': '',
+      \ 'rev': '',
       \ 'relpath': '',
       \}
 
@@ -17,18 +17,18 @@ let s:DEFAULT_PARAMS_ATTRIBUTES = {
 function! gina#core#buffer#bufname(git, scheme, ...) abort
   let options = extend({
         \ 'params': [],
-        \ 'revision': '',
+        \ 'rev': '',
         \ 'relpath': '',
         \}, get(a:000, 0, {})
         \)
   let params = filter(copy(options.params), '!empty(v:val)')
-  let revision = substitute(options.revision, '^:0$', '', '')
+  let rev = substitute(options.rev, '^:0$', '', '')
   return s:normalize_bufname(printf(
         \ 'gina://%s:%s%s/%s:%s',
         \ a:git.refname,
         \ a:scheme,
         \ empty(params) ? '' : ':' . join(params, ':'),
-        \ revision,
+        \ rev,
         \ s:Path.unixpath(options.relpath),
         \))
 endfunction
@@ -45,7 +45,7 @@ function! gina#core#buffer#parse(expr) abort
         \ 'repo': m[1],
         \ 'scheme': m[2],
         \ 'params': filter(split(m[3], ':'), '!empty(v:val)'),
-        \ 'revision': substitute(m[4], '^:0$', '', ''),
+        \ 'rev': substitute(m[4], '^:0$', '', ''),
         \ 'relpath': m[5],
         \}
 endfunction

@@ -58,7 +58,7 @@ function! s:on_diff(candidates, options) abort
           \ 'Gina diff %s %s %s -- %s',
           \ cached ? '--cached' : '',
           \ gina#util#shellescape(options.opener, '--opener='),
-          \ gina#util#shellescape(get(candidate, 'revision', '')),
+          \ gina#util#shellescape(get(candidate, 'rev', '')),
           \ gina#util#shellescape(candidate.path),
           \)
   endfor

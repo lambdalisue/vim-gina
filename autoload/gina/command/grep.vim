@@ -6,7 +6,7 @@ function! gina#command#grep#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, 'grep', {
-        \ 'revision': args.params.revision,
+        \ 'rev': args.params.rev,
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -20,8 +20,8 @@ function! gina#command#grep#call(range, args, mods) abort
         \})
 endfunction
 
-function! gina#command#grep#parse_record(git, revision, record) abort
-  return s:parse_record(a:git, a:revision, a:record)
+function! gina#command#grep#parse_record(git, rev, record) abort
+  return s:parse_record(a:git, a:rev, a:record)
 endfunction
 
 
@@ -31,7 +31,7 @@ function! s:build_args(git, args) abort
   let args.params.group = args.pop('--group', 'quick')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.pattern = args.pop(1, '')
-  let args.params.revision = args.pop(1, gina#core#buffer#param('%', 'revision'))
+  let args.params.rev = args.pop(1, gina#core#buffer#param('%', 'rev'))
 
   " Check if available grep patterns has specified and ask if not
   if empty(args.params.pattern) && !(args.has('-e') || args.has('-f'))
@@ -45,7 +45,7 @@ function! s:build_args(git, args) abort
   call args.set('--line-number', 1)
   call args.set('--color', 'always')
   call args.set(1, args.params.pattern)
-  call args.set(2, args.params.revision)
+  call args.set(2, args.params.rev)
   return args.lock()
 endfunction
 
@@ -94,15 +94,15 @@ endfunction
 
 function! s:get_candidates(fline, lline) abort
   let git = gina#core#get_or_fail()
-  let revision = gina#core#buffer#param('%', 'revision')
+  let rev = gina#core#buffer#param('%', 'rev')
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(git, revision, v:val)'
+        \ 's:parse_record(git, rev, v:val)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(git, revision, record) abort
+function! s:parse_record(git, rev, record) abort
   let record = s:String.remove_ansi_sequences(a:record)
   let m = matchlist(record, '^\%([^:]\+:\)\?\(.*\):\(\d\+\):\(.*\)$')
   if empty(m)
@@ -117,7 +117,7 @@ function! s:parse_record(git, revision, record) abort
         \ 'line': line,
         \ 'col': col,
         \ 'path': gina#core#repo#abspath(a:git, m[1]),
-        \ 'revision': a:revision,
+        \ 'rev': a:rev,
         \}
   return candidate
 endfunction

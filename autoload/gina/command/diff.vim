@@ -6,7 +6,7 @@ function! gina#command#diff#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
 
   let bufname = gina#core#buffer#bufname(git, 'diff', {
-        \ 'revision': args.params.revision,
+        \ 'rev': args.params.rev,
         \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
         \ 'params': [
         \   args.params.cached ? 'cached' : '',
@@ -36,20 +36,20 @@ function! s:build_args(git, args) abort
 
   let pathlist = copy(args.residual())
   if empty(pathlist)
-    let args.params.revision = args.get(1, gina#core#buffer#param('%', 'revision'))
+    let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev'))
     let args.params.abspath = gina#core#path#abspath('%')
     let pathlist = [args.params.abspath]
   elseif len(pathlist) == 1
-    let args.params.revision = args.get(1, gina#core#buffer#param(pathlist[0], 'revision'))
+    let args.params.rev = args.get(1, gina#core#buffer#param(pathlist[0], 'rev'))
     let args.params.abspath = gina#core#path#abspath(pathlist[0])
     let pathlist = [args.params.abspath]
   else
-    let args.params.revision = args.get(1, '')
+    let args.params.rev = args.get(1, '')
     let args.params.abspath = ''
     let pathlist = map(pathlist, 'gina#core#path#abspath(v:val)')
   endif
 
-  call args.set(1, args.params.revision)
+  call args.set(1, args.params.rev)
   call args.residual(pathlist)
   return args.lock()
 endfunction

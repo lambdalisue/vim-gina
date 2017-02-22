@@ -58,7 +58,7 @@ function! s:on_show(candidates, options) abort
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),
-          \ gina#util#shellescape(get(candidate, 'revision', '')),
+          \ gina#util#shellescape(get(candidate, 'rev', '')),
           \ gina#util#shellescape(candidate.path),
           \)
   endfor

@@ -108,15 +108,15 @@ function! s:parse_record(record) abort
   let record = s:String.remove_ansi_sequences(a:record)
   let m = matchlist(record, '\(\*\|\s\) \([^ ]\+\)\%( -> \([^ ]\+\)\)\?')
   let remote = matchstr(m[2], '^remotes/\zs[^ /]\+')
-  let revision = matchstr(m[2], '^\%(remotes/\)\?\zs[^ ]\+')
-  let branch = matchstr(revision, printf('^\%%(%s/\)\?\zs[^ ]\+', remote))
+  let rev = matchstr(m[2], '^\%(remotes/\)\?\zs[^ ]\+')
+  let branch = matchstr(rev, printf('^\%%(%s/\)\?\zs[^ ]\+', remote))
   return {
         \ 'word': record,
         \ 'abbr': a:record,
         \ 'sign': m[1],
         \ 'alias': m[3],
         \ 'remote': remote,
-        \ 'revision': revision,
+        \ 'rev': rev,
         \ 'branch': branch,
         \}
 endfunction

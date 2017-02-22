@@ -23,18 +23,18 @@ function! s:call(range, args, mods) abort
         \ : join(['rightbelow', a:mods])
   let group = s:Group.new()
 
-  let [revision1, revision2] = gina#core#revision#split(
-        \ git, args.params.revision
+  let [rev1, rev2] = gina#core#rev#split(
+        \ git, args.params.rev
         \)
   if args.params.cached
-    let revision1 = empty(revision1) ? 'HEAD' : revision1
-    let revision2 = empty(revision2) ? ':0' : revision2
+    let rev1 = empty(rev1) ? 'HEAD' : rev1
+    let rev2 = empty(rev2) ? ':0' : rev2
   else
-    let revision1 = empty(revision1) ? ':0' : revision1
-    let revision2 = empty(revision2) ? s:WORKTREE : revision2
+    let rev1 = empty(rev1) ? ':0' : rev1
+    let rev2 = empty(rev2) ? s:WORKTREE : rev2
   endif
   if args.params.R
-    let [revision2, revision1] = [revision1, revision2]
+    let [rev2, rev1] = [rev1, rev2]
   endif
 
   diffoff!
@@ -42,11 +42,11 @@ function! s:call(range, args, mods) abort
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
-  call s:open(0, mods, opener1, revision1, args.params)
+  call s:open(0, mods, opener1, rev1, args.params)
   call gina#util#diffthis()
   call group.add()
 
-  call s:open(1, mods, opener2, revision2, args.params)
+  call s:open(1, mods, opener2, rev2, args.params)
   call gina#util#diffthis()
   call group.add({'keep': 1})
 
@@ -67,18 +67,18 @@ function! s:build_args(git, args) abort
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
   let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
-  let args.params.revision = args.pop(1, gina#core#buffer#param('%', 'revision', ''))
+  let args.params.rev = args.pop(1, gina#core#buffer#param('%', 'rev', ''))
   return args.lock()
 endfunction
 
-function! s:open(n, mods, opener, revision, params) abort
+function! s:open(n, mods, opener, rev, params) abort
   if s:Opener.is_preview_opener(a:opener)
     throw gina#core#exception#error(printf(
           \ 'An opener "%s" is not allowed.',
           \ a:opener,
           \))
   endif
-  if a:revision ==# s:WORKTREE
+  if a:rev ==# s:WORKTREE
     execute printf(
           \ '%s Gina edit %s %s %s %s %s -- %s',
           \ a:mods,
@@ -98,7 +98,7 @@ function! s:open(n, mods, opener, revision, params) abort
           \ gina#util#shellescape(a:params.groups[a:n], '--group='),
           \ gina#util#shellescape(a:params.line, '--line='),
           \ gina#util#shellescape(a:params.col, '--col='),
-          \ gina#util#shellescape(a:revision),
+          \ gina#util#shellescape(a:rev),
           \ gina#util#shellescape(a:params.abspath),
           \)
   endif

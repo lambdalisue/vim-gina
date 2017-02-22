@@ -30,13 +30,13 @@ Describe gina#core#buffer
             \'gina://valid:show/:README.md'
             \)
       Assert Equals(gina#core#buffer#bufname(git, 'diff', {
-            \ 'revision': 'origin/HEAD',
+            \ 'rev': 'origin/HEAD',
             \ 'relpath': 'README.md',
             \}),
             \'gina://valid:diff/origin/HEAD:README.md'
             \)
       Assert Equals(gina#core#buffer#bufname(git, 'changes', {
-            \ 'revision': 'origin/HEAD...',
+            \ 'rev': 'origin/HEAD...',
             \}),
             \'gina://valid:changes/origin/HEAD...'
             \)
@@ -50,7 +50,7 @@ Describe gina#core#buffer
             \'gina://valid:show/:autoload/gina/core.vim'
             \)
       Assert Equals(gina#core#buffer#bufname(git, 'diff', {
-            \ 'revision': 'origin/HEAD',
+            \ 'rev': 'origin/HEAD',
             \ 'relpath': 'autoload\gina\core.vim',
             \}),
             \'gina://valid:diff/origin/HEAD:autoload/gina/core.vim'
@@ -73,42 +73,42 @@ Describe gina#core#buffer
             \ 'repo': 'valid',
             \ 'scheme': 'status',
             \ 'params': [],
-            \ 'revision': '',
+            \ 'rev': '',
             \ 'relpath': '',
             \})
       Assert Equals(gina#core#buffer#parse('gina://valid:commit:amend'), {
             \ 'repo': 'valid',
             \ 'scheme': 'commit',
             \ 'params': ['amend'],
-            \ 'revision': '',
+            \ 'rev': '',
             \ 'relpath': '',
             \})
       Assert Equals(gina#core#buffer#parse('gina://valid:show/:README.md'), {
             \ 'repo': 'valid',
             \ 'scheme': 'show',
             \ 'params': [],
-            \ 'revision': '',
+            \ 'rev': '',
             \ 'relpath': 'README.md',
             \})
       Assert Equals(gina#core#buffer#parse('gina://valid:diff/origin/HEAD:README.md'), {
             \ 'repo': 'valid',
             \ 'scheme': 'diff',
             \ 'params': [],
-            \ 'revision': 'origin/HEAD',
+            \ 'rev': 'origin/HEAD',
             \ 'relpath': 'README.md',
             \})
       Assert Equals(gina#core#buffer#parse('gina://valid:changes/origin/HEAD...'), {
             \ 'repo': 'valid',
             \ 'scheme': 'changes',
             \ 'params': [],
-            \ 'revision': 'origin/HEAD...',
+            \ 'rev': 'origin/HEAD...',
             \ 'relpath': '',
             \})
       Assert Equals(gina#core#buffer#parse('gina://valid:show/:3:README.md'), {
             \ 'repo': 'valid',
             \ 'scheme': 'show',
             \ 'params': [],
-            \ 'revision': ':3',
+            \ 'rev': ':3',
             \ 'relpath': 'README.md',
             \})
     End
@@ -119,7 +119,7 @@ Describe gina#core#buffer
             \ 'repo': 'valid',
             \ 'scheme': 'status',
             \ 'params': [],
-            \ 'revision': '',
+            \ 'rev': '',
             \ 'relpath': '',
             \})
     End
@@ -135,15 +135,15 @@ Describe gina#core#buffer
       Assert Equals(gina#core#buffer#param('gina://valid:status', 'scheme'), 'status')
       Assert Equals(gina#core#buffer#param('gina://valid:commit:amend', 'params'), ['amend'])
       Assert Equals(gina#core#buffer#param('gina://valid:show/:README.md', 'relpath'), 'README.md')
-      Assert Equals(gina#core#buffer#param('gina://valid:diff/origin/HEAD:README.md', 'revision'), 'origin/HEAD')
-      Assert Equals(gina#core#buffer#param('gina://valid:changes/origin/HEAD...', 'revision'), 'origin/HEAD...')
+      Assert Equals(gina#core#buffer#param('gina://valid:diff/origin/HEAD:README.md', 'rev'), 'origin/HEAD')
+      Assert Equals(gina#core#buffer#param('gina://valid:changes/origin/HEAD...', 'rev'), 'origin/HEAD...')
     End
 
     It returns a correct default value of an {attr} when {expr} is invalid
       Assert Equals(gina#core#buffer#param('README.md', 'repo'), '')
       Assert Equals(gina#core#buffer#param('README.md', 'scheme'), '')
       Assert Equals(gina#core#buffer#param('README.md', 'params'), [])
-      Assert Equals(gina#core#buffer#param('README.md', 'revision'), '')
+      Assert Equals(gina#core#buffer#param('README.md', 'rev'), '')
       Assert Equals(gina#core#buffer#param('README.md', 'relpath'), '')
     End
 
@@ -151,7 +151,7 @@ Describe gina#core#buffer
       Assert Equals(gina#core#buffer#param('README.md', 'repo', 'foo'), 'foo')
       Assert Equals(gina#core#buffer#param('README.md', 'scheme', 'foo'), 'foo')
       Assert Equals(gina#core#buffer#param('README.md', 'params', 'foo'), 'foo')
-      Assert Equals(gina#core#buffer#param('README.md', 'revision', 'foo'), 'foo')
+      Assert Equals(gina#core#buffer#param('README.md', 'rev', 'foo'), 'foo')
       Assert Equals(gina#core#buffer#param('README.md', 'relpath', 'foo'), 'foo')
     End
   End

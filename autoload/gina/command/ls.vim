@@ -5,7 +5,7 @@ function! gina#command#ls#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, 'ls', {
-        \ 'revision': args.params.revision,
+        \ 'rev': args.params.rev,
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -25,9 +25,9 @@ function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
-  let args.params.revision = args.get(1, gina#core#buffer#param('%', 'revision', ''))
+  let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev', ''))
 
-  if empty(args.params.revision)
+  if empty(args.params.rev)
     call args.set(0, 'ls-files')
     call args.set('--full-name', 1)
   else
@@ -36,7 +36,7 @@ function! s:build_args(git, args) abort
     call args.set('--name-only', 1)
     call args.set('-r', 1)
     call args.set(0, 'ls-tree')
-    call args.set(1, args.params.revision)
+    call args.set(1, args.params.rev)
   endif
   return args.lock()
 endfunction
@@ -85,19 +85,19 @@ endfunction
 
 function! s:get_candidates(fline, lline) abort
   let git = gina#core#get_or_fail()
-  let revision = gina#core#buffer#param('%', 'revision')
+  let rev = gina#core#buffer#param('%', 'rev')
   let candidates = map(
         \ filter(getline(a:fline, a:lline), '!empty(v:val)'),
-        \ 's:parse_record(git, revision, v:val)'
+        \ 's:parse_record(git, rev, v:val)'
         \)
   return candidates
 endfunction
 
-function! s:parse_record(git, revision, record) abort
+function! s:parse_record(git, rev, record) abort
   let candidate = {
         \ 'word': a:record,
         \ 'path': gina#core#repo#abspath(a:git, a:record),
-        \ 'revision': a:revision,
+        \ 'rev': a:rev,
         \}
   return candidate
 endfunction
