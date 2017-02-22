@@ -23,9 +23,7 @@ function! s:call(range, args, mods) abort
         \ : join(['rightbelow', a:mods])
   let group = s:Group.new()
 
-  let [rev1, rev2] = gina#core#rev#split(
-        \ git, args.params.rev
-        \)
+  let [rev1, rev2] = gina#core#treeish#split_rev(git, args.params.rev)
   if args.params.cached
     let rev1 = empty(rev1) ? 'HEAD' : rev1
     let rev2 = empty(rev2) ? ':0' : rev2

@@ -11,6 +11,7 @@ let s:DEFAULT_PARAMS_ATTRIBUTES = {
       \ 'params': [],
       \ 'rev': '',
       \ 'relpath': '',
+      \ 'treeish': '',
       \}
 
 
@@ -23,31 +24,38 @@ function! gina#core#buffer#bufname(git, scheme, ...) abort
         \)
   let params = filter(copy(options.params), '!empty(v:val)')
   let rev = substitute(options.rev, '^:0$', '', '')
+  let path = s:Path.unixpath(options.relpath)
+  let treeish = get(options, 'treeish', rev . ':' . path)
   return s:normalize_bufname(printf(
-        \ 'gina://%s:%s%s/%s:%s',
+        \ 'gina://%s:%s%s/%s',
         \ a:git.refname,
         \ a:scheme,
         \ empty(params) ? '' : ':' . join(params, ':'),
-        \ rev,
-        \ s:Path.unixpath(options.relpath),
+        \ treeish,
         \))
 endfunction
 
 function! gina#core#buffer#parse(expr) abort
   let path = expand(a:expr)
   let m = matchlist(
-        \ path,'\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?(:[0-3]|[^:]*):?(.*)$',
+        \ path,'\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?(:[0-3]|[^:]*%(:.*)?)$',
         \)
   if empty(m)
     return {}
   endif
-  return {
+  let treeish = m[4]
+  let [rev, path] = gina#core#treeish#split(treeish)
+  let params = {
         \ 'repo': m[1],
         \ 'scheme': m[2],
         \ 'params': filter(split(m[3], ':'), '!empty(v:val)'),
-        \ 'rev': substitute(m[4], '^:0$', '', ''),
-        \ 'relpath': m[5],
+        \ 'rev': rev,
+        \ 'treeish': treeish,
         \}
+  if path isnot# v:null
+    let params['relpath'] = path
+  endif
+  return params
 endfunction
 
 function! gina#core#buffer#param(expr, attr, ...) abort

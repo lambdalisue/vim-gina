@@ -74,23 +74,23 @@ endfunction
 
 function! s:parse_rev(git, rev) abort
   if a:rev =~# '^.\{-}\.\.\..*$'
-    let [commit1, commit2] = gina#core#rev#split(a:git, a:rev)
+    let [commit1, commit2] = gina#core#treeish#split_rev(a:git, a:rev)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
   elseif a:rev =~# '^.\{-}\.\..*$'
-    let [commit1, commit2] = gina#core#rev#split(a:git, a:rev)
+    let [commit1, commit2] = gina#core#treeish#split_rev(a:git, a:rev)
     let commit1 = empty(commit1) ? 'HEAD' : commit1
     let commit2 = empty(commit2) ? 'HEAD' : commit2
   else
     let commit1 = empty(a:rev) ? 'HEAD' : a:rev
     let commit2 = 'HEAD'
   endif
-  let commit0 = gina#core#rev#resolve(a:git, a:rev)
+  let commit0 = gina#core#treeish#resolve_rev(a:git, a:rev)
   let commit0 = empty(commit0) ? 'HEAD' : commit0
 
-  let hash0 = gina#core#rev#sha1(a:git, commit0)
-  let hash1 = gina#core#rev#sha1(a:git, commit1)
-  let hash2 = gina#core#rev#sha1(a:git, commit2)
+  let hash0 = gina#core#treeish#sha1(a:git, commit0)
+  let hash1 = gina#core#treeish#sha1(a:git, commit1)
+  let hash2 = gina#core#treeish#sha1(a:git, commit2)
   return {
         \ 'commit0': commit0,
         \ 'commit1': commit1,

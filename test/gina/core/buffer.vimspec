@@ -74,14 +74,14 @@ Describe gina#core#buffer
             \ 'scheme': 'status',
             \ 'params': [],
             \ 'rev': '',
-            \ 'relpath': '',
+            \ 'treeish': '',
             \})
       Assert Equals(gina#core#buffer#parse('gina://valid:commit:amend'), {
             \ 'repo': 'valid',
             \ 'scheme': 'commit',
             \ 'params': ['amend'],
             \ 'rev': '',
-            \ 'relpath': '',
+            \ 'treeish': '',
             \})
       Assert Equals(gina#core#buffer#parse('gina://valid:show/:README.md'), {
             \ 'repo': 'valid',
@@ -89,6 +89,7 @@ Describe gina#core#buffer
             \ 'params': [],
             \ 'rev': '',
             \ 'relpath': 'README.md',
+            \ 'treeish': ':README.md',
             \})
       Assert Equals(gina#core#buffer#parse('gina://valid:diff/origin/HEAD:README.md'), {
             \ 'repo': 'valid',
@@ -96,13 +97,14 @@ Describe gina#core#buffer
             \ 'params': [],
             \ 'rev': 'origin/HEAD',
             \ 'relpath': 'README.md',
+            \ 'treeish': 'origin/HEAD:README.md',
             \})
       Assert Equals(gina#core#buffer#parse('gina://valid:changes/origin/HEAD...'), {
             \ 'repo': 'valid',
             \ 'scheme': 'changes',
             \ 'params': [],
             \ 'rev': 'origin/HEAD...',
-            \ 'relpath': '',
+            \ 'treeish': 'origin/HEAD...',
             \})
       Assert Equals(gina#core#buffer#parse('gina://valid:show/:3:README.md'), {
             \ 'repo': 'valid',
@@ -110,6 +112,7 @@ Describe gina#core#buffer
             \ 'params': [],
             \ 'rev': ':3',
             \ 'relpath': 'README.md',
+            \ 'treeish': ':3:README.md',
             \})
     End
 
@@ -120,7 +123,7 @@ Describe gina#core#buffer
             \ 'scheme': 'status',
             \ 'params': [],
             \ 'rev': '',
-            \ 'relpath': '',
+            \ 'treeish': '',
             \})
     End
   End
