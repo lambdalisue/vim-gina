@@ -1,4 +1,5 @@
 let s:String = vital#gina#import('Data.String')
+
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
@@ -9,7 +10,7 @@ function! gina#command#log#call(range, args, mods) abort
         \ 'path': args.params.path,
         \})
   call gina#core#buffer#open(bufname, {
-        \ 'mods': a:mods,
+        \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -27,11 +28,13 @@ function! s:build_args(git, args) abort
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
 
-  call gina#core#args#extend_path(a:git, args, args.pop(1, v:null))
   call args.set('--color', 'always')
   call args.set('--graph', 1)
   call args.set('--pretty', "format:\e[32m%h\e[m - %s \e[33;1m%cr\e[m \e[35;1m<%an>\e[m\e[36;1m%d\e[m")
-  call args.residual([args.params.path] + args.residual())
+  call gina#core#args#extend_path(a:git, args, args.pop(1, v:null))
+  if args.params.path isnot# v:null
+    call args.residual([args.params.path] + args.residual())
+  endif
   return args.lock()
 endfunction
 
@@ -80,7 +83,7 @@ endfunction
 
 function! s:get_candidates(fline, lline) abort
   let git = gina#core#get_or_fail()
-  let path = gina#core#buffer#param('%', 'path')
+  let path = gina#core#buffer#param('%', 'path', v:null)
   let candidates = map(
         \ filter(getline(a:fline, a:lline), '!empty(v:val)'),
         \ 's:parse_record(path, v:val)'
@@ -111,6 +114,7 @@ function! s:writer.on_stop() abort
 endfunction
 
 
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,

@@ -42,7 +42,7 @@ endfunction
 
 function! gina#core#args#extend_path(git, args, path) abort
   if a:path is# v:null
-    let a:args.params.path = ''
+    let a:args.params.path = v:null
   else
     let path = empty(a:path)
           \ ? gina#core#path#expand('%')
@@ -54,10 +54,10 @@ endfunction
 
 function! gina#core#args#extend_treeish(git, args, treeish) abort
   if a:treeish is# v:null
-    let rev = ''
-    let path = ''
+    let rev = v:null
+    let path = v:null
   else
-    let [rev, path] = gina#core#treeish#split(a:treeish)
+    let [rev, path] = gina#core#treeish#parse(a:treeish)
     " Guess a revision from the current buffer name if necessary
     if empty(rev)
       let rev = gina#core#buffer#param('%', 'rev')
@@ -71,7 +71,7 @@ function! gina#core#args#extend_treeish(git, args, treeish) abort
   endif
   call extend(a:args.params, {
         \ 'rev': rev,
-        \ 'path': path is# v:null ? '' : path,
+        \ 'path': path,
         \ 'treeish': gina#core#treeish#build(rev, path),
         \})
 endfunction

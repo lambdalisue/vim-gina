@@ -1,18 +1,18 @@
 let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
-let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
-let s:is_windows = has('win32') || has('win64')
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 let s:WORKTREE = '@@'
+let s:is_windows = has('win32') || has('win64')
 
 
 function! gina#command#patch#call(range, args, mods) abort
-  call gina#process#register('patch', 1)
+  call gina#process#register(s:SCHEME, 1)
   try
     call s:call(a:range, a:args, a:mods)
   finally
-    call gina#process#unregister('patch', 1)
+    call gina#process#unregister(s:SCHEME, 1)
   endtry
 endfunction
 
@@ -63,8 +63,8 @@ function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let mods = gina#util#contain_direction(a:mods)
-        \ ? a:mods
-        \ : join(['rightbelow', a:mods])
+        \ ? 'keepalt ' . a:mods
+        \ : join(['keepalt', 'rightbelow', a:mods])
   let group = s:Group.new()
 
   diffoff!
@@ -74,57 +74,45 @@ function! s:call(range, args, mods) abort
         \ : 'vsplit'
 
   call s:open(0, mods, opener1, 'HEAD', args.params)
-  call gina#util#diffthis()
-  call group.add()
   let bufnr1 = bufnr('%')
 
   call s:open(1, mods, opener2, ':0', args.params)
-  call gina#util#diffthis()
-  call group.add()
   let bufnr2 = bufnr('%')
 
   call s:open(2, mods, opener2, s:WORKTREE, args.params)
-  call gina#util#diffthis()
-  call group.add({'keep': 1})
   let bufnr3 = bufnr('%')
 
   " WORKTREE
-  execute printf(
-        \ 'nnoremap <silent><buffer> <Plug>(gina-diffput) :diffput %d<CR>',
-        \ bufnr2,
-        \)
-  execute printf(
-        \ 'nnoremap <silent><buffer> <Plug>(gina-diffget) :diffget %d<CR>',
-        \ bufnr2,
-        \)
-  nmap dp <Plug>(gina-diffput)
-  nmap do <Plug>(gina-diffget)
+  call gina#util#diffthis()
+  call group.add({'keep': 1})
+  call s:define_plug_mapping('diffput', bufnr2)
+  call s:define_plug_mapping('diffget', bufnr2)
+  if g:gina#command#patch#use_default_mappings
+    nmap dp <Plug>(gina-diffput)
+    nmap do <Plug>(gina-diffget)
+  endif
 
   " HEAD
   execute printf('%dwincmd w', bufwinnr(bufnr1))
-  execute printf(
-        \ 'nnoremap <silent><buffer> <Plug>(gina-diffput) :diffput %d<CR>',
-        \ bufnr2,
-        \)
-  nmap dp <Plug>(gina-diffput)
+  call gina#util#diffthis()
+  call group.add()
+  call s:define_plug_mapping('diffput', bufnr2)
+  if g:gina#command#patch#use_default_mappings
+    nmap dp <Plug>(gina-diffput)
+  endif
 
   " INDEX
   execute printf('%dwincmd w', bufwinnr(bufnr2))
-  execute printf(
-        \ 'nnoremap <silent><buffer> <Plug>(gina-diffput) :diffput %d<CR>',
-        \ bufnr3,
-        \)
-  execute printf(
-        \ 'nnoremap <silent><buffer> <Plug>(gina-diffget-l) :diffget %d<CR>',
-        \ bufnr1,
-        \)
-  execute printf(
-        \ 'nnoremap <silent><buffer> <Plug>(gina-diffget-r) :diffget %d<CR>',
-        \ bufnr3,
-        \)
-  nmap dp <Plug>(gina-diffput)
-  nmap dol <Plug>(gina-diffget-l)
-  nmap dor <Plug>(gina-diffget-r)
+  call gina#util#diffthis()
+  call group.add()
+  call s:define_plug_mapping('diffput', bufnr3)
+  call s:define_plug_mapping('diffget', bufnr1, '-l')
+  call s:define_plug_mapping('diffget', bufnr3, '-r')
+  if g:gina#command#patch#use_default_mappings
+    nmap dp <Plug>(gina-diffput)
+    nmap dol <Plug>(gina-diffget-l)
+    nmap dor <Plug>(gina-diffget-r)
+  endif
 
   setlocal buftype=acwrite
   setlocal modifiable
@@ -138,10 +126,21 @@ function! s:call(range, args, mods) abort
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
+function! s:define_plug_mapping(command, bufnr, ...) abort
+  let suffix = a:0 ? a:1 : ''
+  let lhs = printf('<Plug>(gina-%s%s)', a:command, suffix)
+  let rhs = printf(':<C-u>%s %d<CR>', a:command, a:bufnr)
+  call gina#util#map(lhs, rhs, {
+        \ 'mode': 'n',
+        \ 'noremap': 1,
+        \ 'silent': 1,
+        \})
+endfunction
+
 function! s:patch(git) abort
-  let abspath = gina#core#path#abspath('%')
+  let abspath = gina#core#path#expand('%')
   let path = gina#core#repo#relpath(a:git, abspath)
-  call gina#process#call(a:git, [
+  call gina#process#call_or_fail(a:git, [
         \ 'add',
         \ '--intent-to-add',
         \ '--',
@@ -235,7 +234,7 @@ function! s:apply(git, content) abort
     if writefile(a:content, tempfile) == -1
       return
     endif
-    let result = gina#process#call(a:git, [
+    let result = gina#process#call_or_fail(a:git, [
           \ 'apply',
           \ '--verbose',
           \ '--cached',
@@ -258,3 +257,9 @@ function! s:BufWriteCmd() abort
   endif
   call gina#util#diffupdate()
 endfunction
+
+
+" Config ---------------------------------------------------------------------
+call gina#config(expand('<sfile>'), {
+      \ 'use_default_mappings': 1,
+      \})

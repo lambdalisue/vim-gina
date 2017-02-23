@@ -1,5 +1,6 @@
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Path = vital#gina#import('System.Filepath')
+
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
@@ -57,13 +58,21 @@ function! s:init(args) abort
   augroup END
 endfunction
 
+function! s:reassign_rev(git, args) abort
+  let args = a:args.clone()
+  let treeish = args.get(1)
+  let [rev, path] = gina#core#treeish#parse(treeish)
+  let rev = gina#core#treeish#resolve(a:git, rev)
+  let treeish = gina#core#treeish#build(rev, path)
+  call args.set(1, treeish)
+  return args
+endfunction
+
 function! s:BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
-  let result = gina#process#call(git, args)
-  if result.status
-    throw gina#process#errormsg(result)
-  endif
+  let args = s:reassign_rev(git, args)
+  let result = gina#process#call_or_fail(git, args)
   call gina#core#buffer#assign_cmdarg()
   call gina#core#writer#assign_content(bufnr('%'), result.content)
   call gina#core#emitter#emit('command:called', s:SCHEME)

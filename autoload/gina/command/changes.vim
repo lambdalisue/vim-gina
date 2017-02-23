@@ -12,7 +12,7 @@ function! gina#command#changes#call(range, args, mods) abort
         \ ],
         \})
   call gina#core#buffer#open(bufname, {
-        \ 'mods': a:mods,
+        \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -80,25 +80,21 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let git = gina#core#get_or_fail()
   let rev = gina#core#buffer#param('%', 'rev')
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(git, rev, v:val)'
+        \ 's:parse_record(rev, v:val)'
         \)
   call filter(candidates, '!empty(v:val)')
   return candidates
 endfunction
 
-function! s:parse_record(git, rev, record) abort
+function! s:parse_record(rev, record) abort
   let m = matchlist(
         \ a:record,
         \ '^\(\d\+\)\s\+\(\d\+\)\s\+\(.\+\)$'
         \)
-  if empty(m)
-    return {}
-  endif
-  return {
+  return empty(m) ? {} : {
         \ 'word': a:record,
         \ 'added': m[1],
         \ 'removed': m[2],
@@ -118,6 +114,7 @@ function! s:writer.on_stop() abort
 endfunction
 
 
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,

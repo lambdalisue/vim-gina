@@ -1,4 +1,5 @@
 let s:String = vital#gina#import('Data.String')
+
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
@@ -7,7 +8,7 @@ function! gina#command#reflog#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, 'reflog')
   call gina#core#buffer#open(bufname, {
-        \ 'mods': a:mods,
+        \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -98,6 +99,7 @@ function! s:writer.on_stop() abort
 endfunction
 
 
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,

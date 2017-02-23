@@ -1,10 +1,10 @@
-
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:Path = vital#gina#import('System.Filepath')
 let s:Window = vital#gina#import('Vim.Window')
+
 let s:DEFAULT_PARAMS_ATTRIBUTES = {
       \ 'repo': '',
       \ 'scheme': '',
@@ -40,7 +40,7 @@ function! gina#core#buffer#parse(expr) abort
     return {}
   endif
   let treeish = m[4]
-  let [rev, path] = gina#core#treeish#split(treeish)
+  let [rev, path] = gina#core#treeish#parse(treeish)
   let params = {
         \ 'repo': m[1],
         \ 'scheme': m[2],

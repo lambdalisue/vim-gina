@@ -1,8 +1,8 @@
 let s:Formatter = vital#gina#import('Data.String.Formatter')
 let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
-let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 let s:FORMAT_MAP = {
       \ 'pt': 'path',
       \ 'ls': 'line_start',
@@ -20,18 +20,40 @@ let s:FORMAT_MAP = {
 
 
 function! gina#command#browse#call(range, args, mods) abort
+  call gina#process#register(s:SCHEME, 1)
+  try
+    call s:call(a:range, a:args, a:mods)
+  finally
+    call gina#process#unregister(s:SCHEME, 1)
+  endtry
+endfunction
+
+
+" Private --------------------------------------------------------------------
+function! s:build_args(git, args, range) abort
+  let args = a:args.clone()
+  let args.params.yank = args.pop('--yank')
+  let args.params.exact = args.pop('--exact')
+  let args.params.range = a:range == [1, line('$')] ? [] : a:range
+  let args.params.scheme = args.pop('--scheme', v:null)
+  call gina#core#args#extend_treeish(a:git, args, args.pop(1))
+  return args.lock()
+endfunction
+
+function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args, a:range)
-
-  let revinfo = s:parse_rev(git, args.params.rev)
+  let rev = gina#util#get(args.params, 'rev')
+  let path = gina#util#get(args.params, 'path')
+  let revinfo = s:parse_rev(git, rev)
   let base_url = s:build_base_url(
         \ s:get_remote_url(git, revinfo.commit1, revinfo.commit2),
         \ args.params.scheme is# v:null
-        \   ? empty(args.params.path) ? 'root' : '_'
+        \   ? empty(path) ? 'root' : '_'
         \   : args.params.scheme,
         \)
   let url = s:Formatter.format(base_url, s:FORMAT_MAP, {
-        \ 'path': args.params.path,
+        \ 'path': path,
         \ 'line_start': get(args.params.range, 0, ''),
         \ 'line_end': get(args.params.range, 1, ''),
         \ 'commit0': revinfo.commit0,
@@ -47,7 +69,7 @@ function! gina#command#browse#call(range, args, mods) abort
   if empty(url)
     throw gina#core#exception#warn(printf(
           \ 'No url translation pattern for "%s" is found.',
-          \ args.params.rev,
+          \ rev,
           \))
   endif
 
@@ -59,41 +81,18 @@ function! gina#command#browse#call(range, args, mods) abort
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
-
-" Private --------------------------------------------------------------------
-function! s:build_args(git, args, range) abort
-  let args = a:args.clone()
-  let args.params.yank = args.pop('--yank')
-  let args.params.exact = args.pop('--exact')
-  let args.params.range = a:range == [1, line('$')] ? [] : a:range
-  let args.params.scheme = args.pop('--scheme', v:null)
-  call gina#core#args#extend_treeish(a:git, args, args.pop(1))
-  return args.lock()
-endfunction
-
 function! s:parse_rev(git, rev) abort
-  if a:rev =~# '^.\{-}\.\.\..*$'
-    let [commit1, commit2] = gina#core#treeish#split_rev(a:git, a:rev)
-    let commit1 = empty(commit1) ? 'HEAD' : commit1
-    let commit2 = empty(commit2) ? 'HEAD' : commit2
-  elseif a:rev =~# '^.\{-}\.\..*$'
-    let [commit1, commit2] = gina#core#treeish#split_rev(a:git, a:rev)
-    let commit1 = empty(commit1) ? 'HEAD' : commit1
-    let commit2 = empty(commit2) ? 'HEAD' : commit2
-  else
-    let commit1 = empty(a:rev) ? 'HEAD' : a:rev
-    let commit2 = 'HEAD'
-  endif
-  let commit0 = gina#core#treeish#resolve_rev(a:git, a:rev)
-  let commit0 = empty(commit0) ? 'HEAD' : commit0
-
+  let [commit1, commit2] = gina#core#treeish#split(a:rev)
+  let commit0 = empty(a:rev) ? 'HEAD' : a:rev
+  let commit1 = empty(commit1) ? 'HEAD' : commit1
+  let commit2 = empty(commit2) ? 'HEAD' : commit2
   let hash0 = gina#core#treeish#sha1(a:git, commit0)
   let hash1 = gina#core#treeish#sha1(a:git, commit1)
   let hash2 = gina#core#treeish#sha1(a:git, commit2)
   return {
-        \ 'commit0': commit0,
-        \ 'commit1': commit1,
-        \ 'commit2': commit2,
+        \ 'commit0': gina#core#treeish#resolve(a:git, commit0),
+        \ 'commit1': gina#core#treeish#resolve(a:git, commit1),
+        \ 'commit2': gina#core#treeish#resolve(a:git, commit2),
         \ 'hash0': hash0,
         \ 'hash1': hash1,
         \ 'hash2': hash2,
@@ -134,6 +133,8 @@ function! s:build_base_url(remote_url, scheme) abort
   return ''
 endfunction
 
+
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'translation_patterns': {
       \   'github.com': [

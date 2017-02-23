@@ -1,4 +1,5 @@
 let s:String = vital#gina#import('Data.String')
+
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
@@ -9,7 +10,7 @@ function! gina#command#grep#call(range, args, mods) abort
         \ 'rev': args.params.rev,
         \})
   call gina#core#buffer#open(bufname, {
-        \ 'mods': a:mods,
+        \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -20,8 +21,8 @@ function! gina#command#grep#call(range, args, mods) abort
         \})
 endfunction
 
-function! gina#command#grep#parse_record(git, rev, record) abort
-  return s:parse_record(a:git, a:rev, a:record)
+function! gina#command#grep#parse_record(...) abort
+  return call('s:parse_record', a:000)
 endfunction
 
 
@@ -93,16 +94,15 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let git = gina#core#get_or_fail()
   let rev = gina#core#buffer#param('%', 'rev')
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(git, rev, v:val)'
+        \ 's:parse_record(rev, v:val)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(git, rev, record) abort
+function! s:parse_record(rev, record) abort
   let record = s:String.remove_ansi_sequences(a:record)
   let m = matchlist(record, '^\%([^:]\+:\)\?\(.*\):\(\d\+\):\(.*\)$')
   if empty(m)
@@ -133,6 +133,7 @@ function! s:writer.on_stop() abort
 endfunction
 
 
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'send_to_quickfix': 1,
       \ 'use_default_aliases': 1,

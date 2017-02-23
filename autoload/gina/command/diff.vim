@@ -35,7 +35,9 @@ function! s:build_args(git, args) abort
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   call args.set(1, args.params.rev)
-  call args.residual([args.params.path] + args.residual())
+  if args.params.path isnot# v:null
+    call args.residual([args.params.path] + args.residual())
+  endif
   return args.lock()
 endfunction
 

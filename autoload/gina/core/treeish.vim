@@ -2,7 +2,7 @@ let s:Path = vital#gina#import('System.Filepath')
 let s:Git = vital#gina#import('Git')
 
 
-function! gina#core#treeish#split(treeish) abort
+function! gina#core#treeish#parse(treeish) abort
   " Ref: https://git-scm.com/docs/gitrevisions
   if a:treeish =~# '^:/' || a:treeish =~# '^[^:]*^{/' || a:treeish !~# ':'
     return [a:treeish, v:null]
@@ -12,10 +12,27 @@ function! gina#core#treeish#split(treeish) abort
 endfunction
 
 function! gina#core#treeish#build(rev, path) abort
+  let rev = a:rev is# v:null ? ':0' : a:rev
   if a:path is# v:null
-    return a:rev
+    return rev
   endif
-  return printf('%s:%s', a:rev, s:Path.unixpath(a:path))
+  return printf('%s:%s', rev, s:Path.unixpath(a:path))
+endfunction
+
+function! gina#core#treeish#split(rev) abort
+  if a:rev =~# '^.\{-}\.\.\..*$'
+    let [lhs, rhs] = matchlist(a:rev, '^\(.\{-}\)\.\.\.\(.*\)$')[1 : 2]
+    let lhs = empty(lhs) ? 'HEAD' : lhs
+    let rhs = empty(rhs) ? 'HEAD' : rhs
+    return [lhs . '...' . rhs, rhs]
+  elseif a:rev =~# '^.\{-}\.\..*$'
+    let [lhs, rhs] = matchlist(a:rev, '^\(.\{-}\)\.\.\(.*\)$')[1 : 2]
+    let lhs = empty(lhs) ? 'HEAD' : lhs
+    let rhs = empty(rhs) ? 'HEAD' : rhs
+    return [lhs, rhs]
+  else
+    return [a:rev, '']
+  endif
 endfunction
 
 function! gina#core#treeish#sha1(git, rev) abort
@@ -28,28 +45,15 @@ function! gina#core#treeish#sha1(git, rev) abort
   return get(result.stdout, 0, '')
 endfunction
 
-function! gina#core#treeish#split_rev(git, rev) abort
+function! gina#core#treeish#resolve(git, rev) abort
   if a:rev =~# '^.\{-}\.\.\..*$'
     let [lhs, rhs] = matchlist(a:rev, '^\(.\{-}\)\.\.\.\(.*\)$')[1 : 2]
-    let rhs = empty(rhs) ? 'HEAD' : rhs
-    let lhs = s:find_common_ancestor(a:git, lhs, rhs)
-    return [lhs, rhs]
-  elseif a:rev =~# '^.\{-}\.\..*$'
-    let [lhs, rhs] = matchlist(a:rev, '^\(.\{-}\)\.\.\(.*\)$')[1 : 2]
     let lhs = empty(lhs) ? 'HEAD' : lhs
     let rhs = empty(rhs) ? 'HEAD' : rhs
-    return [lhs, rhs]
-  else
-    return [a:rev, '']
-  endif
-endfunction
-
-function! gina#core#treeish#resolve_rev(git, rev) abort
-  if a:rev =~# '^.\{-}\.\.\..*$'
-    let [lhs, rhs] = matchlist(a:rev, '^\(.\{-}\)\.\.\.\(.*\)$')[1 : 2]
     return s:find_common_ancestor(a:git, lhs, rhs)
   elseif a:rev =~# '^.\{-}\.\..*$'
-    let [lhs, rhs] = matchlist(a:rev, '^\(.\{-}\)\.\.\(.*\)$')[1 : 2]
+    let [lhs, _] = matchlist(a:rev, '^\(.\{-}\)\.\.\(.*\)$')[1 : 2]
+    let lhs = empty(lhs) ? 'HEAD' : lhs
     return lhs
   else
     return a:rev

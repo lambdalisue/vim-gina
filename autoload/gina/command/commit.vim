@@ -1,7 +1,7 @@
 let s:String = vital#gina#import('Data.String')
 let s:Git = vital#gina#import('Git')
-let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 let s:messages = {}
 
 
@@ -288,6 +288,7 @@ function! s:remove_cached_commitmsg(git) abort
 endfunction
 
 
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'use_default_mappings': 1,
       \})

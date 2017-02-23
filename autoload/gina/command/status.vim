@@ -1,4 +1,5 @@
 let s:Path = vital#gina#import('System.Filepath')
+
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
@@ -7,7 +8,7 @@ function! gina#command#status#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, 'status')
   call gina#core#buffer#open(bufname, {
-        \ 'mods': a:mods,
+        \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -81,16 +82,15 @@ function! s:compare_record(a, b) abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let git = gina#core#get_or_fail()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(git, v:val)'
+        \ 's:parse_record(v:val)'
         \)
   call filter(candidates, '!empty(v:val)')
   return candidates
 endfunction
 
-function! s:parse_record(git, record) abort
+function! s:parse_record(record) abort
   let m = matchlist(
         \ a:record,
         \ '^\(..\) \("[^"]\{-}"\|.\{-}\)\%( -> \("[^"]\{-}"\|[^ ]\+\)\)\?$'
@@ -101,7 +101,7 @@ function! s:parse_record(git, record) abort
           \ 'sign': m[1],
           \ 'path': s:strip_quotes(m[3]),
           \ 'path1': s:strip_quotes(m[2]),
-          \ 'path2': s:strip_quotes(m[3])),
+          \ 'path2': s:strip_quotes(m[3]),
           \}
   elseif len(m) && !empty(m[2])
     return {
@@ -131,6 +131,7 @@ function! s:writer.on_stop() abort
 endfunction
 
 
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,

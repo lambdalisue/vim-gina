@@ -1,5 +1,6 @@
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Path = vital#gina#import('System.Filepath')
+
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
@@ -63,7 +64,7 @@ endfunction
 
 function! s:parse_record(git, rev, record) abort
   " Parse record to make a gina candidate and translate it to a quickfix item
-  let candidate = gina#command#grep#parse_record(a:git, a:rev, a:record)
+  let candidate = gina#command#grep#parse_record(a:rev, a:record)
   if empty(candidate)
     return {}
   endif
