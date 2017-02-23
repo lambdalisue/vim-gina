@@ -97,6 +97,7 @@ endfunction
 
 function! s:stream_pipe.on_exit(job, msg, event) abort
   call self.super(s:stream_pipe, 'on_exit', a:job, a:msg, a:event)
+  call self.writer.stop()
 endfunction
 
 function! s:stream_pipe_writer.on_start() abort

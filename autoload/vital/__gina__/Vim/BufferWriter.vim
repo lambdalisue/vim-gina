@@ -1,6 +1,3 @@
-let s:t_number = type(0)
-
-
 function! s:_vital_loaded(V) abort
   let s:Guard = a:V.import('Vim.Guard')
   let s:Queue = a:V.import('Data.Queue')
@@ -254,15 +251,10 @@ let s:timers = {}
 let s:writer = {'_timer': v:null, '_running': 0}
 
 function! s:_timer_callback(timer) abort
-  let writer = get(s:timers, a:timer, 0)
-  if type(writer) == s:t_number
-    if writer > 1000
-      " Somehow a timer is running without a proper writer
-      call timer_stop(a:timer)
-      unlet s:timers[a:timer]
-    else
-      let s:timers[a:timer] += 1
-    endif
+  let writer = get(s:timers, a:timer, v:null)
+  if writer is# v:null
+    call timer_stop(a:timer)
+    unlet s:timers[a:timer]
     return
   endif
   call writer.flush()
@@ -285,19 +277,17 @@ function! s:writer.start() abort
 endfunction
 
 function! s:writer.stop() abort
+  " Now writer is going to stop
+  let self._running = 0
+endfunction
+
+function! s:writer.kill() abort
+  " Stop the writer now
   let self._running = 0
   silent! unlet s:timers[self._timer]
   silent! call timer_stop(self._timer)
   unlockvar! self.bufnr
   unlockvar! self.updatetime
-  " Flush all
-  let msg = self._queue.get()
-  while msg isnot# v:null
-    if !self._module.extend_content(self.bufnr, msg)
-      break
-    endif
-    let msg = self._queue.get()
-  endwhile
   call self.on_stop()
 endfunction
 
@@ -312,18 +302,15 @@ function! s:writer.write(msg) abort
 endfunction
 
 function! s:writer.flush() abort
-  if !self._running
-    return
-  endif
   let msg = self._queue.get()
-  if msg is# v:null
-    if !self.on_check()
-      call self.stop()
-    endif
-    return
+  if msg is# v:null && !self._running
+    " No left over content and the writer is going to stop
+    " so kill the writer to stop
+    return self.kill()
   endif
   if !self._module.extend_content(self.bufnr, msg)
-    return self.stop()
+    " The target buffer is missing so stop the writer immediately
+    return self.kill()
   endif
   call self.on_flush(msg)
 endfunction
@@ -342,11 +329,6 @@ endfunction
 
 function! s:writer.on_flush(msg) abort
   " User can override this method
-endfunction
-
-function! s:writer.on_check() abort
-  " User can override this method
-  return 1
 endfunction
 
 function! s:writer.on_stop() abort
