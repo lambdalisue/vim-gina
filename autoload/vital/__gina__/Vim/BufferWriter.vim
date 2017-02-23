@@ -251,7 +251,7 @@ endfunction
 
 " Writer instance ------------------------------------------------------------
 let s:timers = {}
-let s:writer = {'_timer': v:null}
+let s:writer = {'_timer': v:null, '_running': 0}
 
 function! s:_timer_callback(timer) abort
   let writer = get(s:timers, a:timer, 0)
@@ -274,6 +274,7 @@ function! s:writer.start() abort
   endif
   lockvar! self.bufnr
   lockvar! self.updatetime
+  let self._running = 1
   let self._timer = timer_start(
         \ self.updatetime,
         \ function('s:_timer_callback'),
@@ -284,6 +285,7 @@ function! s:writer.start() abort
 endfunction
 
 function! s:writer.stop() abort
+  let self._running = 0
   silent! unlet s:timers[self._timer]
   silent! call timer_stop(self._timer)
   unlockvar! self.bufnr
@@ -310,6 +312,9 @@ function! s:writer.write(msg) abort
 endfunction
 
 function! s:writer.flush() abort
+  if !self._running
+    return
+  endif
   let msg = self._queue.get()
   if msg is# v:null
     if !self.on_check()
