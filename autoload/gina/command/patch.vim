@@ -256,4 +256,5 @@ function! s:BufWriteCmd() abort
     call gina#process#inform(result)
     setlocal nomodified
   endif
+  call gina#util#diffupdate()
 endfunction
