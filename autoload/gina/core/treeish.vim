@@ -7,7 +7,7 @@ function! gina#core#treeish#split(treeish) abort
   if a:treeish =~# '^:/' || a:treeish =~# '^[^:]*^{/' || a:treeish !~# ':'
     return [a:treeish, v:null]
   endif
-  let m = matchlist(a:treeish, '^\(:[0-3]\|[^:]*\):\(.*\)$')
+  let m = matchlist(a:treeish, '^\(:[0-3]\|[^:]*\)\%(:\(.*\)\)\?$')
   return [m[1], m[2]]
 endfunction
 

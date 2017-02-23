@@ -127,6 +127,9 @@ Describe gina#core#treeish
     It splits :<n>:<path> and return [<rev>, v:null]
       let rev = ':0:README'
       Assert Equals(gina#core#treeish#split(rev), [':0', 'README'])
+
+      let rev = ':0'
+      Assert Equals(gina#core#treeish#split(rev), [':0', ''])
     End
   End
 
