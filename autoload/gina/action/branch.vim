@@ -12,6 +12,7 @@ function! gina#action#branch#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('branch:checkout:track', function('s:on_checkout'), {
+        \ 'hidden': 1,
         \ 'description': 'Checkout a branch and create a local branch',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['branch', 'remote'],
@@ -24,6 +25,7 @@ function! gina#action#branch#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('branch:delete:force', function('s:on_delete'), {
+        \ 'hidden': 1,
         \ 'description': 'Delete a branch',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['branch', 'remote'],
@@ -36,6 +38,7 @@ function! gina#action#branch#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('branch:move:force', function('s:on_move'), {
+        \ 'hidden': 1,
         \ 'description': 'Rename a branch',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['branch', 'remote'],

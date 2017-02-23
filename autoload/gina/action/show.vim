@@ -1,46 +1,32 @@
 function! gina#action#show#define(binder) abort
-  call a:binder.define('show', function('s:on_show'), {
-        \ 'description': 'Open a file in the index or commit',
+  let params = {
+        \ 'description': 'Show a commit or a content at the commit',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
+        \ 'requirements': [],
+        \}
+  call a:binder.define('show', function('s:on_show'), extend({
         \ 'options': {},
-        \})
-  call a:binder.define('show:above', function('s:on_show'), {
-        \ 'description': 'Open a file in the index or commit',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove new' },
-        \})
-  call a:binder.define('show:below', function('s:on_show'), {
-        \ 'description': 'Open a file in the index or commit',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright new' },
-        \})
-  call a:binder.define('show:left', function('s:on_show'), {
-        \ 'description': 'Open a file in the index or commit',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove vnew' },
-        \})
-  call a:binder.define('show:right', function('s:on_show'), {
-        \ 'description': 'Open a file in the index or commit',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright vnew' },
-        \})
-  call a:binder.define('show:tab', function('s:on_show'), {
-        \ 'description': 'Open a file in the index or commit',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'tabedit' },
-        \})
-  call a:binder.define('show:preview', function('s:on_show'), {
-        \ 'description': 'Open a file in the index or commit',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'pedit' },
-        \})
+        \}, params))
+  call a:binder.define('show:above', function('s:on_show'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove new'},
+        \}, params))
+  call a:binder.define('show:below', function('s:on_show'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright new'},
+        \}, params))
+  call a:binder.define('show:left', function('s:on_show'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove vnew'},
+        \}, params))
+  call a:binder.define('show:right', function('s:on_show'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright vnew'},
+        \}, params))
+  call a:binder.define('show:tab', function('s:on_show'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'tabedit'},
+        \}, params))
 endfunction
 
 
@@ -55,7 +41,7 @@ function! s:on_show(candidates, options) abort
   for candidate in a:candidates
     let treeish = gina#core#treeish#build(
           \ gina#util#get(candidate, 'rev'),
-          \ candidate.path,
+          \ gina#util#get(candidate, 'path', v:null),
           \)
     execute printf(
           \ 'Gina show %s %s %s %s',

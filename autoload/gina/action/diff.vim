@@ -1,46 +1,36 @@
 function! gina#action#diff#define(binder) abort
-  call a:binder.define('diff', function('s:on_diff'), {
+  let params = {
         \ 'description': 'Open a diff content',
         \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
+        \ 'requirements': [],
+        \}
+  call a:binder.define('diff', function('s:on_diff'), extend({
         \ 'options': {},
-        \})
-  call a:binder.define('diff:above', function('s:on_diff'), {
-        \ 'description': 'Open a diff content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove new' },
-        \})
-  call a:binder.define('diff:below', function('s:on_diff'), {
-        \ 'description': 'Open a diff content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright new' },
-        \})
-  call a:binder.define('diff:left', function('s:on_diff'), {
-        \ 'description': 'Open a diff content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove vnew' },
-        \})
-  call a:binder.define('diff:right', function('s:on_diff'), {
-        \ 'description': 'Open a diff content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright vnew' },
-        \})
-  call a:binder.define('diff:tab', function('s:on_diff'), {
-        \ 'description': 'Open a diff content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'tabedit' },
-        \})
-  call a:binder.define('diff:preview', function('s:on_diff'), {
-        \ 'description': 'Open a diff content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'pedit' },
-        \})
+        \}, params))
+  call a:binder.define('diff:above', function('s:on_diff'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove new'},
+        \}, params))
+  call a:binder.define('diff:below', function('s:on_diff'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright new'},
+        \}, params))
+  call a:binder.define('diff:left', function('s:on_diff'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove vnew'},
+        \}, params))
+  call a:binder.define('diff:right', function('s:on_diff'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright vnew'},
+        \}, params))
+  call a:binder.define('diff:tab', function('s:on_diff'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'tabedit'},
+        \}, params))
+  call a:binder.define('diff:preview', function('s:on_diff'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'pedit'},
+        \}, params))
 endfunction
 
 
@@ -55,8 +45,8 @@ function! s:on_diff(candidates, options) abort
   for candidate in a:candidates
     let cached = get(candidate, 'sign', '!!') !~# '^\%(??\|!!\|.\w\)$'
     let treeish = gina#core#treeish#build(
-          \ get(candidate, 'rev', ''),
-          \ candidate.path,
+          \ gina#util#get(candidate, 'rev'),
+          \ gina#util#get(candidate, 'path', v:null),
           \)
     execute printf(
           \ 'Gina diff %s %s %s',

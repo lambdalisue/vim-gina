@@ -1,41 +1,32 @@
 function! gina#action#chaperon#define(binder) abort
-  let description = 'Solve confict by chaperon'
-  call a:binder.define('chaperon', function('s:on_chaperon'), {
-        \ 'description': description,
+  let params = {
+        \ 'description': 'Open 3-way diff for solving conflicts',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['path', 'sign'],
+        \}
+  call a:binder.define('chaperon', function('s:on_chaperon'), extend({
         \ 'options': {},
-        \})
-  call a:binder.define('chaperon:above', function('s:on_chaperon'), {
-        \ 'description': description,
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path', 'sign'],
-        \ 'options': { 'opener': 'leftabove new' },
-        \})
-  call a:binder.define('chaperon:below', function('s:on_chaperon'), {
-        \ 'description': description,
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path', 'sign'],
-        \ 'options': { 'opener': 'belowright new' },
-        \})
-  call a:binder.define('chaperon:left', function('s:on_chaperon'), {
-        \ 'description': description,
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path', 'sign'],
-        \ 'options': { 'opener': 'leftabove vnew' },
-        \})
-  call a:binder.define('chaperon:right', function('s:on_chaperon'), {
-        \ 'description': description,
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path', 'sign'],
-        \ 'options': { 'opener': 'belowright vnew' },
-        \})
-  call a:binder.define('chaperon:tab', function('s:on_chaperon'), {
-        \ 'description': description,
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path', 'sign'],
-        \ 'options': { 'opener': 'tabedit' },
-        \})
+        \}, params))
+  call a:binder.define('chaperon:above', function('s:on_chaperon'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove new'},
+        \}, params))
+  call a:binder.define('chaperon:below', function('s:on_chaperon'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright new'},
+        \}, params))
+  call a:binder.define('chaperon:left', function('s:on_chaperon'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove vnew'},
+        \}, params))
+  call a:binder.define('chaperon:right', function('s:on_chaperon'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright vnew'},
+        \}, params))
+  call a:binder.define('chaperon:tab', function('s:on_chaperon'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'tabedit'},
+        \}, params))
 endfunction
 
 

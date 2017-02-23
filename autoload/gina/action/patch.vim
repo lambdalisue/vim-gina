@@ -1,40 +1,32 @@
 function! gina#action#patch#define(binder) abort
-  call a:binder.define('patch', function('s:on_patch'), {
-        \ 'description': 'Patch a content',
+  let params = {
+        \ 'description': 'Open 3-way diff for patching changes to the index',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['path'],
+        \}
+  call a:binder.define('patch', function('s:on_patch'), extend({
         \ 'options': {},
-        \})
-  call a:binder.define('patch:above', function('s:on_patch'), {
-        \ 'description': 'Patch a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove new' },
-        \})
-  call a:binder.define('patch:below', function('s:on_patch'), {
-        \ 'description': 'Patch a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright new' },
-        \})
-  call a:binder.define('patch:left', function('s:on_patch'), {
-        \ 'description': 'Patch a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove vnew' },
-        \})
-  call a:binder.define('patch:right', function('s:on_patch'), {
-        \ 'description': 'Patch a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright vnew' },
-        \})
-  call a:binder.define('patch:tab', function('s:on_patch'), {
-        \ 'description': 'Patch a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'tabedit' },
-        \})
+        \}, params))
+  call a:binder.define('patch:above', function('s:on_patch'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove new'},
+        \}, params))
+  call a:binder.define('patch:below', function('s:on_patch'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright new'},
+        \}, params))
+  call a:binder.define('patch:left', function('s:on_patch'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove vnew'},
+        \}, params))
+  call a:binder.define('patch:right', function('s:on_patch'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright vnew'},
+        \}, params))
+  call a:binder.define('patch:tab', function('s:on_patch'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'tabedit'},
+        \}, params))
 endfunction
 
 

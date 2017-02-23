@@ -10,13 +10,15 @@ function! gina#action#export#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('export:quickfix:add', function('s:on_quickfix'), {
-        \ 'description': 'Add selected candidates to quickfix list',
+        \ 'hidden': 1,
+        \ 'description': 'Add selected candidates to an existing quickfix list',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path', 'word'],
         \ 'options': { 'action': 'a' },
         \})
   call a:binder.define('export:quickfix:replace', function('s:on_quickfix'), {
-        \ 'description': 'Replace quickfix list with the selected candidates',
+        \ 'hidden': 1,
+        \ 'description': 'Replace an existing quickfix list with the selected candidates',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path', 'word'],
         \ 'options': { 'action': 'r' },

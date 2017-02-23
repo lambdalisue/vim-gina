@@ -78,7 +78,6 @@ function! gina#action#index#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('index:checkout', function('s:on_checkout'), {
-        \ 'hidden': 1,
         \ 'description': 'Checkout a contents',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
@@ -92,12 +91,14 @@ function! gina#action#index#define(binder) abort
         \ 'options': { 'force': 1 },
         \})
   call a:binder.define('index:checkout:ours', function('s:on_checkout'), {
+        \ 'hidden': 1,
         \ 'description': 'Checkout a contents',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'ours': 1 },
         \})
   call a:binder.define('index:checkout:theirs', function('s:on_checkout'), {
+        \ 'hidden': 1,
         \ 'description': 'Checkout a contents',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
@@ -118,6 +119,7 @@ function! gina#action#index#define(binder) abort
         \ 'options': { 'rev': 'HEAD', 'force': 1 },
         \})
   call a:binder.define('index:checkout:origin', function('s:on_checkout'), {
+        \ 'hidden': 1,
         \ 'description': 'Checkout a contents from origin/HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],

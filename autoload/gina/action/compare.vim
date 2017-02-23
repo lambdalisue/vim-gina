@@ -1,40 +1,32 @@
 function! gina#action#compare#define(binder) abort
-  call a:binder.define('compare', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
+  let params = {
+        \ 'description': 'Open 2-way diff for comparing the difference',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['path'],
+        \}
+  call a:binder.define('compare', function('s:on_compare'), extend({
         \ 'options': {},
-        \})
-  call a:binder.define('compare:above', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove new' },
-        \})
-  call a:binder.define('compare:below', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright new' },
-        \})
-  call a:binder.define('compare:left', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove vnew' },
-        \})
-  call a:binder.define('compare:right', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright vnew' },
-        \})
-  call a:binder.define('compare:tab', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'tabedit' },
-        \})
+        \}, params))
+  call a:binder.define('compare:above', function('s:on_compare'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove new'},
+        \}, params))
+  call a:binder.define('compare:below', function('s:on_compare'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright new'},
+        \}, params))
+  call a:binder.define('compare:left', function('s:on_compare'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove vnew'},
+        \}, params))
+  call a:binder.define('compare:right', function('s:on_compare'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright vnew'},
+        \}, params))
+  call a:binder.define('compare:tab', function('s:on_compare'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'tabedit'},
+        \}, params))
 endfunction
 
 

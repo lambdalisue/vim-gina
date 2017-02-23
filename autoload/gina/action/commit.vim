@@ -6,18 +6,21 @@ function! gina#action#commit#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('commit:merge:ff-only', function('s:on_merge'), {
+        \ 'hidden': 1,
         \ 'description': 'Merge the commit into HEAD',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['rev'],
         \ 'options': { 'ff-only': 1 },
         \})
   call a:binder.define('commit:merge:no-ff', function('s:on_merge'), {
+        \ 'hidden': 1,
         \ 'description': 'Merge the commit into HEAD',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['rev'],
         \ 'options': { 'no-ff': 1 },
         \})
   call a:binder.define('commit:merge:squash', function('s:on_merge'), {
+        \ 'hidden': 1,
         \ 'description': 'Merge the commit into HEAD',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['rev'],
@@ -30,6 +33,7 @@ function! gina#action#commit#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('commit:rebase:merge', function('s:on_rebase'), {
+        \ 'hidden': 1,
         \ 'description': 'Rebase HEAD by merging the commit',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['rev'],
@@ -42,12 +46,14 @@ function! gina#action#commit#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('commit:revert:1', function('s:on_revert'), {
+        \ 'hidden': 1,
         \ 'description': 'Revert the commit',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['rev'],
         \ 'options': { 'mainline': '1' },
         \})
   call a:binder.define('commit:revert:2', function('s:on_revert'), {
+        \ 'hidden': 1,
         \ 'description': 'Revert the commit',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['rev'],
@@ -60,12 +66,14 @@ function! gina#action#commit#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('commit:cherry-pick:1', function('s:on_cherry_pick'), {
+        \ 'hidden': 1,
         \ 'description': 'Apply the changes of the commit',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['rev'],
         \ 'options': { 'mainline': '1' },
         \})
   call a:binder.define('commit:cherry-pick:2', function('s:on_cherry_pick'), {
+        \ 'hidden': 1,
         \ 'description': 'Apply the changes of the commit',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['rev'],
@@ -89,7 +97,7 @@ function! s:on_merge(candidates, options) abort
           \ 'Gina merge --no-edit %s %s %s -- %s',
           \ options['no-ff'] ? '--no-ff' : '',
           \ options['ff-only'] ? '--ff-only' : '',
-          \ options['squash'] ? '--squash' : '',
+          \ options.squash ? '--squash' : '',
           \ gina#util#shellescape(candidate.rev),
           \)
   endfor
