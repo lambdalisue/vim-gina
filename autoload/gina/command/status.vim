@@ -99,16 +99,16 @@ function! s:parse_record(git, record) abort
     return {
           \ 'word': a:record,
           \ 'sign': m[1],
-          \ 'path': gina#core#repo#abspath(a:git, s:strip_quotes(m[3])),
-          \ 'path1': gina#core#repo#abspath(a:git, s:strip_quotes(m[2])),
-          \ 'path2': gina#core#repo#abspath(a:git, s:strip_quotes(m[3])),
+          \ 'path': gina#core#repo#relpath(a:git, s:strip_quotes(m[3])),
+          \ 'path1': gina#core#repo#relpath(a:git, s:strip_quotes(m[2])),
+          \ 'path2': gina#core#repo#relpath(a:git, s:strip_quotes(m[3])),
           \}
   elseif len(m) && !empty(m[2])
     return {
           \ 'word': a:record,
           \ 'sign': m[1],
-          \ 'path': gina#core#repo#abspath(a:git, s:strip_quotes(m[2])),
-          \ 'path1': gina#core#repo#abspath(a:git, s:strip_quotes(m[2])),
+          \ 'path': gina#core#repo#relpath(a:git, s:strip_quotes(m[2])),
+          \ 'path1': gina#core#repo#relpath(a:git, s:strip_quotes(m[2])),
           \ 'path2': '',
           \}
   else

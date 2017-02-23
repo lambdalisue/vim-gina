@@ -36,12 +36,15 @@ function! s:on_browse(candidates, options) abort
         \ 'yank': 0,
         \}, a:options)
   for candidate in a:candidates
+    let treeish = gina#core#treeish#build(
+          \ get(candidate, 'rev', ''),
+          \ get(candidate, 'path', ''),
+          \)
     execute printf(
-          \ 'Gina browse %s %s %s -- %s',
+          \ 'Gina browse %s %s %s',
           \ options.exact ? '--exact' : '',
           \ options.yank ? '--yank' : '',
-          \ gina#util#shellescape(get(candidate, 'rev', '')),
-          \ gina#util#shellescape(get(candidate, 'path', '')),
+          \ gina#util#shellescape(treeish),
           \)
   endfor
 endfunction

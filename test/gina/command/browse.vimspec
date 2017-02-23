@@ -28,12 +28,28 @@ Describe gina#command#browse
       GinaSync browse
       Assert Equals(
             \ vars.File._called_with,
+            \ 'https://github.com/lambdalisue/gina.vim/tree/HEAD/'
+            \)
+    End
+
+    It might be called with ':'
+      GinaSync browse :
+      Assert Equals(
+            \ vars.File._called_with,
             \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/autoload/gina.vim'
             \)
     End
 
     It might be called with 'HEAD@{2.days.ago}'
       GinaSync browse HEAD@{2.days.ago}
+      Assert Equals(
+            \ vars.File._called_with,
+            \ 'https://github.com/lambdalisue/gina.vim/tree/HEAD@{2.days.ago}/'
+            \)
+    End
+
+    It might be called with 'HEAD@{2.days.ago}:'
+      GinaSync browse HEAD@{2.days.ago}:
       Assert Equals(
             \ vars.File._called_with,
             \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD@{2.days.ago}/autoload/gina.vim'
@@ -47,12 +63,23 @@ Describe gina#command#browse
       GinaSync browse origin/HEAD...
       Assert Match(
             \ vars.File._called_with,
+            \ 'https://github\.com/lambdalisue/gina.vim/tree/[0-9a-z]\{40}'
+            \)
+    End
+
+    It might be calle with 'origin/HEAD...:'
+      if !empty($CI)
+        Skip CI may checkout a single PR branch with --depth 1 so skip this test.
+      endif
+      GinaSync browse origin/HEAD...:
+      Assert Match(
+            \ vars.File._called_with,
             \ 'https://github\.com/lambdalisue/gina.vim/blob/[0-9a-z]\{40}/autoload/gina\.vim'
             \)
     End
 
     It might be calle with --exact
-      GinaSync browse --exact
+      GinaSync browse --exact :
       Assert Match(
             \ vars.File._called_with,
             \ 'https://github\.com/lambdalisue/gina.vim/blob/[0-9a-z]\{40}/autoload/gina\.vim'
@@ -60,7 +87,7 @@ Describe gina#command#browse
     End
 
     It might be calle with --scheme=blame
-      GinaSync browse --scheme=blame
+      GinaSync browse --scheme=blame :
       Assert Equals(
             \ vars.File._called_with,
             \ 'https://github.com/lambdalisue/gina.vim/blame/HEAD/autoload/gina.vim'
@@ -68,7 +95,7 @@ Describe gina#command#browse
     End
 
     It might be calle with 3,3 prefix
-      3,3GinaSync browse
+      3,3GinaSync browse :
       Assert Equals(
             \ vars.File._called_with,
             \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/autoload/gina.vim#L3-L3'
@@ -76,15 +103,15 @@ Describe gina#command#browse
     End
 
     It might be calle with 3,5 prefix
-      3,5GinaSync browse
+      3,5GinaSync browse :
       Assert Equals(
             \ vars.File._called_with,
             \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/autoload/gina.vim#L3-L5'
             \)
     End
 
-    It might be calle with -- README.md
-      GinaSync browse -- README.md
+    It might be calle with :README.md
+      GinaSync browse :README.md
       Assert Equals(
             \ vars.File._called_with,
             \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/README.md'
@@ -92,7 +119,7 @@ Describe gina#command#browse
     End
 
     It might be calle with --yank
-      GinaSync browse --yank
+      GinaSync browse --yank :
       Assert Equals(vars.File._called_with, '')
       Assert Equals(
             \ getreg(),

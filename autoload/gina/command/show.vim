@@ -7,8 +7,7 @@ function! gina#command#show#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, 'show', {
-        \ 'rev': args.params.rev,
-        \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
+        \ 'treeish': args.params.treeish,
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -32,19 +31,8 @@ function! s:build_args(git, args) abort
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
-
-  let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
-  let args.params.rev = args.pop(1, gina#core#buffer#param('%', 'rev'))
-
-  if empty(args.params.abspath)
-    call args.set(1, args.params.rev)
-  else
-    call args.set(1, printf('%s:%s',
-          \ args.params.rev,
-          \ gina#core#repo#relpath(a:git, args.params.abspath)
-          \))
-  endif
-  call args.residual([])
+  call gina#core#treeish#extend(a:git, args, args.pop(1))
+  call args.set(1, args.params.treeish)
   return args.lock()
 endfunction
 

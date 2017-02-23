@@ -28,7 +28,7 @@ Describe gina#command#edit
   Describe Use cases
     It might be called without arguments
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
-      GinaSync show
+      GinaSync show :
       GinaSync edit
       Assert Equals(winnr('$'), 1)
       " Focused buffer

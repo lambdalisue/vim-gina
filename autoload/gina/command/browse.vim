@@ -27,11 +27,11 @@ function! gina#command#browse#call(range, args, mods) abort
   let base_url = s:build_base_url(
         \ s:get_remote_url(git, revinfo.commit1, revinfo.commit2),
         \ args.params.scheme is# v:null
-        \   ? empty(args.params.abspath) ? 'root' : '_'
+        \   ? empty(args.params.path) ? 'root' : '_'
         \   : args.params.scheme,
         \)
   let url = s:Formatter.format(base_url, s:FORMAT_MAP, {
-        \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
+        \ 'relpath': args.params.path,
         \ 'line_start': get(args.params.range, 0, ''),
         \ 'line_end': get(args.params.range, 1, ''),
         \ 'commit0': revinfo.commit0,
@@ -67,8 +67,7 @@ function! s:build_args(git, args, range) abort
   let args.params.exact = args.pop('--exact')
   let args.params.range = a:range == [1, line('$')] ? [] : a:range
   let args.params.scheme = args.pop('--scheme', v:null)
-  let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
-  let args.params.rev = args.pop(1, gina#core#buffer#param('%', 'rev', ''))
+  call gina#core#treeish#extend(a:git, args, args.pop(1))
   return args.lock()
 endfunction
 

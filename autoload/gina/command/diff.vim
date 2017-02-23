@@ -6,8 +6,7 @@ function! gina#command#diff#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
 
   let bufname = gina#core#buffer#bufname(git, 'diff', {
-        \ 'rev': args.params.rev,
-        \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
+        \ 'treeish': args.params.treeish,
         \ 'params': [
         \   args.params.cached ? 'cached' : '',
         \   args.params.R ? 'R' : '',
@@ -33,24 +32,11 @@ function! s:build_args(git, args) abort
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
-
-  let pathlist = copy(args.residual())
-  if empty(pathlist)
-    let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev'))
-    let args.params.abspath = gina#core#path#abspath('%')
-    let pathlist = [args.params.abspath]
-  elseif len(pathlist) == 1
-    let args.params.rev = args.get(1, gina#core#buffer#param(pathlist[0], 'rev'))
-    let args.params.abspath = gina#core#path#abspath(pathlist[0])
-    let pathlist = [args.params.abspath]
-  else
-    let args.params.rev = args.get(1, '')
-    let args.params.abspath = ''
-    let pathlist = map(pathlist, 'gina#core#path#abspath(v:val)')
-  endif
-
+  let pathspecs = copy(args.residual())
+  let pathspecs = map(pathspecs, 'gina#core#path#abspath(v:val)')
+  call gina#core#treeish#extend(a:git, args, args.pop(1))
   call args.set(1, args.params.rev)
-  call args.residual(pathlist)
+  call args.residual([args.params.path] + pathspecs)
   return args.lock()
 endfunction
 

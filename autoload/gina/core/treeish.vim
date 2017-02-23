@@ -2,6 +2,28 @@ let s:Path = vital#gina#import('System.Filepath')
 let s:Git = vital#gina#import('Git')
 
 
+function! gina#core#treeish#extend(git, args, treeish) abort
+  let [rev, path] = gina#core#treeish#split(a:treeish)
+  if empty(rev)
+    " Guess a revision from the current buffer name
+    let rev = gina#core#buffer#param('%', 'rev')
+  endif
+  if path isnot# v:null && empty(path)
+    " Guess a path from the current buffer name
+    let path = gina#core#buffer#param('%', 'relpath')
+    let path = empty(path) && filereadable(expand('%'))
+          \ ? expand('%:p')
+          \ : path
+  endif
+  let path = gina#core#repo#relpath(a:git, path)
+  call extend(a:args.params, {
+        \ 'rev': rev,
+        \ 'path': path,
+        \ 'treeish': gina#core#treeish#build(rev, path),
+        \})
+  return a:args
+endfunction
+
 function! gina#core#treeish#split(treeish) abort
   " Ref: https://git-scm.com/docs/gitrevisions
   if a:treeish =~# '^:/' || a:treeish =~# '^[^:]*^{/' || a:treeish !~# ':'

@@ -26,6 +26,7 @@ function! gina#core#buffer#bufname(git, scheme, ...) abort
   let rev = substitute(options.rev, '^:0$', '', '')
   let path = s:Path.unixpath(options.relpath)
   let treeish = get(options, 'treeish', rev . ':' . path)
+  let treeish = substitute(treeish, '^:0', '', '')
   return s:normalize_bufname(printf(
         \ 'gina://%s:%s%s/%s',
         \ a:git.refname,

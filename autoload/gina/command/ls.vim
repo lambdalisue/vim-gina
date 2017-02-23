@@ -96,7 +96,7 @@ endfunction
 function! s:parse_record(git, rev, record) abort
   let candidate = {
         \ 'word': a:record,
-        \ 'path': gina#core#repo#abspath(a:git, a:record),
+        \ 'path': gina#core#repo#relpath(a:git, a:record),
         \ 'rev': a:rev,
         \}
   return candidate

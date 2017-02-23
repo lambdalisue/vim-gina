@@ -15,6 +15,60 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:build_args(git, args) abort
+  let args = a:args.clone()
+  let args.params.groups = [
+        \ args.pop('--group1', 'compare-l'),
+        \ args.pop('--group2', 'compare-r'),
+        \]
+  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.line = args.pop('--line')
+  let args.params.col = args.pop('--col')
+  let args.params.cached = args.get('--cached')
+  let args.params.R = args.get('-R')
+  call gina#core#treeish#extend(a:git, args, args.pop(1))
+  if empty(args.params.path)
+    throw gina#core#exception#warn(printf(
+          \ 'No filename is specified. Did you mean "Gina compare %s:"?',
+          \ args.params.rev,
+          \))
+  endif
+  return args.lock()
+endfunction
+
+function! s:open(n, mods, opener, rev, params) abort
+  if s:Opener.is_preview_opener(a:opener)
+    throw gina#core#exception#error(printf(
+          \ 'An opener "%s" is not allowed.',
+          \ a:opener,
+          \))
+  endif
+  if a:rev ==# s:WORKTREE
+    execute printf(
+          \ '%s Gina edit %s %s %s %s %s %s',
+          \ a:mods,
+          \ a:params.cmdarg,
+          \ gina#util#shellescape(a:opener, '--opener='),
+          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
+          \ gina#util#shellescape(a:params.line, '--line='),
+          \ gina#util#shellescape(a:params.col, '--col='),
+          \ gina#util#shellescape(a:params.path),
+          \)
+  else
+    let treeish = gina#core#treeish#build(a:rev, a:params.path)
+    execute printf(
+          \ '%s Gina show %s %s %s %s %s %s',
+          \ a:mods,
+          \ a:params.cmdarg,
+          \ gina#util#shellescape(a:opener, '--opener='),
+          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
+          \ gina#util#shellescape(a:params.line, '--line='),
+          \ gina#util#shellescape(a:params.col, '--col='),
+          \ gina#util#shellescape(treeish),
+          \)
+  endif
+endfunction
+
 function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
@@ -51,53 +105,4 @@ function! s:call(range, args, mods) abort
   call gina#util#diffupdate()
   normal! zm
   call gina#core#emitter#emit('command:called', s:SCHEME)
-endfunction
-
-function! s:build_args(git, args) abort
-  let args = a:args.clone()
-  let args.params.groups = [
-        \ args.pop('--group1', 'compare-l'),
-        \ args.pop('--group2', 'compare-r'),
-        \]
-  let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.line = args.pop('--line')
-  let args.params.col = args.pop('--col')
-  let args.params.cached = args.get('--cached')
-  let args.params.R = args.get('-R')
-  let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
-  let args.params.rev = args.pop(1, gina#core#buffer#param('%', 'rev', ''))
-  return args.lock()
-endfunction
-
-function! s:open(n, mods, opener, rev, params) abort
-  if s:Opener.is_preview_opener(a:opener)
-    throw gina#core#exception#error(printf(
-          \ 'An opener "%s" is not allowed.',
-          \ a:opener,
-          \))
-  endif
-  if a:rev ==# s:WORKTREE
-    execute printf(
-          \ '%s Gina edit %s %s %s %s %s -- %s',
-          \ a:mods,
-          \ a:params.cmdarg,
-          \ gina#util#shellescape(a:opener, '--opener='),
-          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
-          \ gina#util#shellescape(a:params.line, '--line='),
-          \ gina#util#shellescape(a:params.col, '--col='),
-          \ gina#util#shellescape(a:params.abspath),
-          \)
-  else
-    execute printf(
-          \ '%s Gina show %s %s %s %s %s %s -- %s',
-          \ a:mods,
-          \ a:params.cmdarg,
-          \ gina#util#shellescape(a:opener, '--opener='),
-          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
-          \ gina#util#shellescape(a:params.line, '--line='),
-          \ gina#util#shellescape(a:params.col, '--col='),
-          \ gina#util#shellescape(a:rev),
-          \ gina#util#shellescape(a:params.abspath),
-          \)
-  endif
 endfunction

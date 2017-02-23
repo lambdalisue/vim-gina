@@ -48,7 +48,7 @@ function! s:on_patch(candidates, options) abort
         \}, a:options)
   for candidate in a:candidates
     execute printf(
-          \ 'Gina patch %s %s %s -- %s',
+          \ 'Gina patch %s %s %s %s',
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),

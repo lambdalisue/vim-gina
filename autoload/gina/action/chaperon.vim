@@ -50,7 +50,7 @@ function! s:on_chaperon(candidates, options) abort
         \}, a:options)
   for candidate in candidates
     execute printf(
-          \ 'Gina chaperon %s %s %s -- %s',
+          \ 'Gina chaperon %s %s %s %s',
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),

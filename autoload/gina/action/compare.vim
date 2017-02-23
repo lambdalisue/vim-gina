@@ -50,14 +50,17 @@ function! s:on_compare(candidates, options) abort
     let line = get(candidate, 'line', '')
     let col = get(candidate, 'col', '')
     let cached = get(candidate, 'sign', '!!') !~# '^\%(??\|!!\|.\w\)$'
+    let treeish = gina#core#treeish#build(
+          \ get(candidate, 'rev', ''),
+          \ candidate.path,
+          \)
     execute printf(
-          \ 'Gina compare %s %s %s %s %s -- %s',
+          \ 'Gina compare %s %s %s %s %s',
           \ cached ? '--cached' : '',
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),
-          \ gina#util#shellescape(get(candidate, 'rev', '')),
-          \ gina#util#shellescape(candidate.path),
+          \ gina#util#shellescape(treeish),
           \)
   endfor
 endfunction

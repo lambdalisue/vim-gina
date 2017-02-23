@@ -68,7 +68,9 @@ function! s:parse_record(git, rev, record) abort
     return {}
   endif
   return {
-        \ 'filename': s:Path.realpath(candidate.path),
+        \ 'filename': s:Path.realpath(
+        \   gina#core#repo#abspath(a:git, candidate.path)
+        \ ),
         \ 'text': candidate.word,
         \ 'lnum': candidate.line,
         \ 'col': candidate.col,

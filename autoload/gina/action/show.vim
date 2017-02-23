@@ -52,14 +52,18 @@ function! s:on_show(candidates, options) abort
   let options = extend({
         \ 'opener': '',
         \}, a:options)
+  let git = gina#core#get_or_fail()
   for candidate in a:candidates
+    let treeish = gina#core#treeish#build(
+          \ get(candidate, 'rev', ''),
+          \ candidate.path,
+          \)
     execute printf(
-          \ 'Gina show %s %s %s %s -- %s',
+          \ 'Gina show %s %s %s %s',
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),
-          \ gina#util#shellescape(get(candidate, 'rev', '')),
-          \ gina#util#shellescape(candidate.path),
+          \ gina#util#shellescape(treeish),
           \)
   endfor
 endfunction

@@ -102,7 +102,7 @@ function! s:parse_record(git, rev, record) abort
         \ 'word': a:record,
         \ 'added': m[1],
         \ 'removed': m[2],
-        \ 'path': gina#core#repo#abspath(a:git, m[3]),
+        \ 'path': gina#core#repo#relpath(a:git, m[3]),
         \ 'rev': a:rev,
         \}
 endfunction

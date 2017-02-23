@@ -28,7 +28,7 @@ Describe gina#command#compare
   Describe Use cases
     It might be called without arguments
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
-      GinaSync compare
+      GinaSync compare :
       Assert Equals(winnr('$'), 2)
       " Focused buffer
       Assert Equals(bufname('%'), slit1.path('A/foo.txt'))
@@ -52,7 +52,7 @@ Describe gina#command#compare
 
     It might be called with -R
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
-      GinaSync compare -R
+      GinaSync compare -R :
       Assert Equals(winnr('$'), 2)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:show/:A/foo.txt', slit1.refname))
@@ -76,7 +76,7 @@ Describe gina#command#compare
 
     It might be called with --cached
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
-      GinaSync compare --cached
+      GinaSync compare --cached :
       Assert Equals(winnr('$'), 2)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:show/:A/foo.txt', slit1.refname))
@@ -100,7 +100,7 @@ Describe gina#command#compare
 
     It might be called with HEAD~
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
-      GinaSync compare HEAD~
+      GinaSync compare HEAD~:
       Assert Equals(winnr('$'), 2)
       " Focused buffer
       Assert Equals(bufname('%'), slit1.path('A/foo.txt'))
@@ -124,7 +124,7 @@ Describe gina#command#compare
 
     It might be called with HEAD..HEAD~
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
-      GinaSync compare HEAD..HEAD~
+      GinaSync compare HEAD..HEAD~:
       Assert Equals(winnr('$'), 2)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:show/HEAD~:A/foo.txt', slit1.refname))

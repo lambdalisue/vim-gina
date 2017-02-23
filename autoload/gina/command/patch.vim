@@ -18,6 +18,48 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:build_args(git, args) abort
+  let args = a:args.clone()
+  let args.params.groups = [
+        \ args.pop('--group1', 'patch-l'),
+        \ args.pop('--group2', 'patch-c'),
+        \ args.pop('--group3', 'patch-r'),
+        \]
+  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.line = args.pop('--line', v:null)
+  let args.params.col = args.pop('--col', v:null)
+  let args.params.path = args.pop(1, gina#core#buffer#param('%', 'relpath'))
+  let args.params.path = gina#core#repo#relpath(a:git, args.params.path)
+  return args.lock()
+endfunction
+
+function! s:open(n, mods, opener, rev, params) abort
+  if a:rev ==# s:WORKTREE
+    execute printf(
+          \ '%s Gina edit %s %s %s %s %s %s',
+          \ a:mods,
+          \ a:params.cmdarg,
+          \ gina#util#shellescape(a:opener, '--opener='),
+          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
+          \ gina#util#shellescape(a:params.line, '--line='),
+          \ gina#util#shellescape(a:params.col, '--col='),
+          \ gina#util#shellescape(a:params.path),
+          \)
+  else
+    let treeish = gina#core#treeish#build(a:rev, a:params.path)
+    execute printf(
+          \ '%s Gina show %s %s %s %s %s %s',
+          \ a:mods,
+          \ a:params.cmdarg,
+          \ gina#util#shellescape(a:opener, '--opener='),
+          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
+          \ gina#util#shellescape(a:params.line, '--line='),
+          \ gina#util#shellescape(a:params.col, '--col='),
+          \ gina#util#shellescape(treeish),
+          \)
+  endif
+endfunction
+
 function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
@@ -95,47 +137,6 @@ function! s:call(range, args, mods) abort
   call gina#util#diffupdate()
   normal! zm
   call gina#core#emitter#emit('command:called', s:SCHEME)
-endfunction
-
-function! s:build_args(git, args) abort
-  let args = a:args.clone()
-  let args.params.groups = [
-        \ args.pop('--group1', 'patch-l'),
-        \ args.pop('--group2', 'patch-c'),
-        \ args.pop('--group3', 'patch-r'),
-        \]
-  let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.line = args.pop('--line', v:null)
-  let args.params.col = args.pop('--col', v:null)
-  let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
-  return args.lock()
-endfunction
-
-function! s:open(n, mods, opener, rev, params) abort
-  if a:rev ==# s:WORKTREE
-    execute printf(
-          \ '%s Gina edit %s %s %s %s %s -- %s',
-          \ a:mods,
-          \ a:params.cmdarg,
-          \ gina#util#shellescape(a:opener, '--opener='),
-          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
-          \ gina#util#shellescape(a:params.line, '--line='),
-          \ gina#util#shellescape(a:params.col, '--col='),
-          \ gina#util#shellescape(a:params.abspath),
-          \)
-  else
-    execute printf(
-          \ '%s Gina show %s %s %s %s %s %s -- %s',
-          \ a:mods,
-          \ a:params.cmdarg,
-          \ gina#util#shellescape(a:opener, '--opener='),
-          \ gina#util#shellescape(a:params.groups[a:n], '--group='),
-          \ gina#util#shellescape(a:params.line, '--line='),
-          \ gina#util#shellescape(a:params.col, '--col='),
-          \ gina#util#shellescape(a:rev),
-          \ gina#util#shellescape(a:params.abspath),
-          \)
-  endif
 endfunction
 
 function! s:patch(git) abort

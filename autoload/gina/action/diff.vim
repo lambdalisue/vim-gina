@@ -54,12 +54,15 @@ function! s:on_diff(candidates, options) abort
         \}, a:options)
   for candidate in a:candidates
     let cached = get(candidate, 'sign', '!!') !~# '^\%(??\|!!\|.\w\)$'
+    let treeish = gina#core#treeish#build(
+          \ get(candidate, 'rev', ''),
+          \ candidate.path,
+          \)
     execute printf(
-          \ 'Gina diff %s %s %s -- %s',
+          \ 'Gina diff %s %s %s',
           \ cached ? '--cached' : '',
           \ gina#util#shellescape(options.opener, '--opener='),
-          \ gina#util#shellescape(get(candidate, 'rev', '')),
-          \ gina#util#shellescape(candidate.path),
+          \ gina#util#shellescape(treeish),
           \)
   endfor
 endfunction
