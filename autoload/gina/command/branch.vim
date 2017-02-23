@@ -14,7 +14,7 @@ function! gina#command#branch#call(range, args, mods) abort
 
   let bufname = gina#core#buffer#bufname(git, 'branch')
   call gina#core#buffer#open(bufname, {
-        \ 'mods': 'keepalt ' . a:mods,
+        \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -124,11 +124,10 @@ endfunction
 
 
 " Writer ---------------------------------------------------------------------
-let s:writer_super = gina#process#pipe#stream_writer()
-let s:writer = {}
+let s:writer = gina#util#inherit(gina#process#pipe#stream_writer())
 
 function! s:writer.on_stop() abort
-  call call(s:writer_super.on_stop, [], self)
+  call self.super(s:writer, 'on_stop')
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
