@@ -159,6 +159,7 @@ function! gina#util#diffthis() abort
     autocmd BufWipeout <buffer> call s:diffoff()
     autocmd BufWritePost <buffer> call s:diffupdate()
   augroup END
+  call gina#util#diffupdate()
 endfunction
 
 function! gina#util#diffupdate() abort
