@@ -54,7 +54,7 @@ function! s:init(args) abort
   setlocal noswapfile
   setlocal nomodifiable
 
-  augroup gina_internal_command
+  augroup gina_command_diff_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
     autocmd BufWinEnter <buffer> setlocal buflisted

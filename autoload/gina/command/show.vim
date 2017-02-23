@@ -33,7 +33,6 @@ function! s:build_args(git, args) abort
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
-  call args.set(1, args.params.treeish)
   return args.lock()
 endfunction
 
@@ -50,7 +49,7 @@ function! s:init(args) abort
   setlocal noswapfile
   setlocal nomodifiable
 
-  augroup gina_internal_command
+  augroup gina_command_show_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
     autocmd BufWinEnter <buffer> setlocal buflisted
@@ -59,19 +58,16 @@ function! s:init(args) abort
 endfunction
 
 function! s:reassign_rev(git, args) abort
-  let args = a:args.clone()
-  let treeish = args.get(1)
-  let [rev, path] = gina#core#treeish#parse(treeish)
-  let rev = gina#core#treeish#resolve(a:git, rev)
-  let treeish = gina#core#treeish#build(rev, path)
-  call args.set(1, treeish)
-  return args
+  let rev = gina#core#treeish#resolve(a:git, a:args.params.rev)
+  let treeish = gina#core#treeish#build(rev, a:args.params.path)
+  call a:args.set(1, substitute(treeish, '^:0', '', ''))
+  return a:args
 endfunction
 
 function! s:BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
-  let args = s:reassign_rev(git, args)
+  let args = s:reassign_rev(git, args.clone())
   let result = gina#process#call_or_fail(git, args)
   call gina#core#buffer#assign_cmdarg()
   call gina#core#writer#assign_content(bufnr('%'), result.content)

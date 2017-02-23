@@ -3,7 +3,6 @@ let s:Path = vital#gina#import('System.Filepath')
 let s:Store = vital#gina#import('System.Store')
 
 
-" Public ---------------------------------------------------------------------
 function! gina#complete#commit#any(arglead, cmdline, cursorpos, ...) abort
   let candidates = []
   let candidates += gina#complete#commit#branch(a:arglead, a:cmdline, a:cursorpos)

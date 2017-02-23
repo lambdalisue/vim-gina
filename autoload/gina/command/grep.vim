@@ -74,7 +74,7 @@ function! s:init(args) abort
   call gina#action#include('patch')
   call gina#action#include('show')
 
-  augroup gina_internal_command
+  augroup gina_command_grep_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
   augroup END

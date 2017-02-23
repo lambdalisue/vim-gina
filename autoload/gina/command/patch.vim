@@ -116,7 +116,7 @@ function! s:call(range, args, mods) abort
 
   setlocal buftype=acwrite
   setlocal modifiable
-  augroup gina_internal_command
+  augroup gina_command_patch_internal
     autocmd! * <buffer>
     autocmd BufWriteCmd <buffer> call s:BufWriteCmd()
   augroup END
@@ -241,7 +241,7 @@ function! s:apply(git, content) abort
           \ '--',
           \ tempfile,
           \])
-    call gina#core#emitter#emit('command:called:complete', s:SCHEME)
+    call gina#core#emitter#emit('command:called:patch')
     return result
   finally
     silent! call delete(tempfile)
@@ -257,6 +257,20 @@ function! s:BufWriteCmd() abort
   endif
   call gina#util#diffupdate()
 endfunction
+
+
+" Event ----------------------------------------------------------------------
+function! s:on_command_called_patch(...) abort
+  call gina#core#emitter#emit('modified:delay')
+endfunction
+
+if !exists('s:subscribed')
+  let s:subscribed = 1
+  call gina#core#emitter#subscribe(
+        \ 'command:called:patch',
+        \ function('s:on_command_called_patch')
+        \)
+endif
 
 
 " Config ---------------------------------------------------------------------

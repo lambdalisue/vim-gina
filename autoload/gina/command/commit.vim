@@ -73,7 +73,7 @@ function! s:init(args) abort
   setlocal noswapfile
   setlocal modifiable
 
-  augroup gina_internal_command
+  augroup gina_command_commit_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
     autocmd BufWriteCmd <buffer> call s:BufWriteCmd()
@@ -254,7 +254,7 @@ function! s:commit_commitmsg(git, args) abort
     let result = gina#process#call(a:git, args)
     call gina#process#inform(result)
     call s:remove_cached_commitmsg(a:git)
-    call gina#core#emitter#emit('command:called:complete', s:SCHEME)
+    call gina#core#emitter#emit('command:called:commit')
   finally
     call delete(tempfile)
   endtry
@@ -286,6 +286,20 @@ function! s:remove_cached_commitmsg(git) abort
   let cname = a:git.worktree
   let s:messages[cname] = {}
 endfunction
+
+
+" Event ----------------------------------------------------------------------
+function! s:on_command_called_commit(...) abort
+  call gina#core#emitter#emit('modified:delay')
+endfunction
+
+if !exists('s:subscribed')
+  let s:subscribed = 1
+  call gina#core#emitter#subscribe(
+        \ 'command:called:commit',
+        \ function('s:on_command_called_commit')
+        \)
+endif
 
 
 " Config ---------------------------------------------------------------------
