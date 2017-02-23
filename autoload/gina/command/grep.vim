@@ -6,7 +6,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 function! gina#command#grep#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = gina#core#buffer#bufname(git, 'grep', {
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
         \ 'rev': args.params.rev,
         \})
   call gina#core#buffer#open(bufname, {

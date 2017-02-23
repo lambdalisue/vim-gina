@@ -9,7 +9,7 @@ function! gina#command#tag#call(range, args, mods) abort
     return gina#command#_raw#call(a:range, a:args, a:mods)
   endif
 
-  let bufname = gina#core#buffer#bufname(git, 'tag')
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
         \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,

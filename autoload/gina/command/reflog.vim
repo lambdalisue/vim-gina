@@ -6,7 +6,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 function! gina#command#reflog#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = gina#core#buffer#bufname(git, 'reflog')
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
         \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,

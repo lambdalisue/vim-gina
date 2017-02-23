@@ -13,7 +13,7 @@ function! gina#command#commit#call(range, args, mods) abort
     return gina#command#_raw#call(a:range, a:args, a:mods)
   endif
 
-  let bufname = gina#core#buffer#bufname(git, 'commit')
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,

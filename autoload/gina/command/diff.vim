@@ -5,7 +5,7 @@ function! gina#command#diff#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
-  let bufname = gina#core#buffer#bufname(git, 'diff', {
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
         \ 'treeish': args.params.treeish,
         \ 'params': [
         \   args.params.cached ? 'cached' : '',

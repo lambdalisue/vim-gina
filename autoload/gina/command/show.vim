@@ -7,7 +7,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 function! gina#command#show#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = gina#core#buffer#bufname(git, 'show', {
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
         \ 'treeish': args.params.treeish,
         \})
   call gina#core#buffer#open(bufname, {

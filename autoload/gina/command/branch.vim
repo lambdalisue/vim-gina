@@ -12,7 +12,7 @@ function! gina#command#branch#call(range, args, mods) abort
     return gina#command#_raw#call(a:range, a:args, a:mods)
   endif
 
-  let bufname = gina#core#buffer#bufname(git, 'branch')
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,

@@ -5,7 +5,7 @@ function! gina#command#changes#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
-  let bufname = gina#core#buffer#bufname(git, 'changes', {
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
         \ 'rev': args.params.rev,
         \ 'params': [
         \   args.params.cached ? 'cached' : '',
