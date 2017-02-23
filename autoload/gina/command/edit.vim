@@ -5,7 +5,8 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 function! gina#command#edit#call(range, args, mods) abort
   let git = gina#core#get()
   let args = s:build_args(git, a:args)
-  let bufname = s:Path.realpath(args.params.path)
+  let abspath = gina#core#repo#abspath(git, args.params.path)
+  let bufname = s:Path.realpath(abspath)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -25,7 +26,7 @@ function! s:build_args(git, args) abort
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
-  let args.params.path = args.pop(1, gina#core#buffer#param('%', 'relpath'))
-  let args.params.path = gina#core#repo#abspath(a:git, args.params.path)
+
+  call gina#core#args#extend_path(a:git, args, args.pop(1))
   return args.lock()
 endfunction

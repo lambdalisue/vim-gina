@@ -10,11 +10,11 @@ function! gina#core#repo#relpath(git, expr) abort
   if s:Path.is_relative(s:Path.realpath(path))
     return path
   endif
-  let relpath = gina#core#path#relpath(path, a:git.worktree)
-  if path ==# relpath && path !=# resolve(path)
+  let path = gina#core#path#relpath(path, a:git.worktree)
+  if path ==# path && path !=# resolve(path)
     return gina#core#path#relpath(resolve(path), a:git.worktree)
   endif
-  return relpath
+  return path
 endfunction
 
 function! gina#core#repo#config(git) abort

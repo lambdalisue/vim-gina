@@ -20,6 +20,20 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:build_args(git, args) abort
+  let args = a:args.clone()
+  let args.params.groups = [
+        \ args.pop('--group1', 'chaperon-l'),
+        \ args.pop('--group2', 'chaperon-c'),
+        \ args.pop('--group3', 'chaperon-r'),
+        \]
+  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.line = args.pop('--line', v:null)
+  let args.params.col = args.pop('--col', v:null)
+  call gina#core#args#extend_path(a:git, args, args.pop(1))
+  return args.lock()
+endfunction
+
 function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
@@ -88,21 +102,6 @@ function! s:call(range, args, mods) abort
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
-function! s:build_args(git, args) abort
-  let args = a:args.clone()
-  let args.params.groups = [
-        \ args.pop('--group1', 'chaperon-l'),
-        \ args.pop('--group2', 'chaperon-c'),
-        \ args.pop('--group3', 'chaperon-r'),
-        \]
-  let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.line = args.pop('--line', v:null)
-  let args.params.col = args.pop('--col', v:null)
-  let args.params.path = args.pop(1, gina#core#buffer#param('%', 'relpath'))
-  let args.params.path = gina#core#repo#relpath(a:git, args.params.path)
-  return args.lock()
-endfunction
-
 function! s:open(n, mods, opener, commit, params) abort
   if a:commit ==# s:WORKTREE
     execute printf(
@@ -129,7 +128,6 @@ function! s:open(n, mods, opener, commit, params) abort
           \)
   endif
 endfunction
-
 
 function! s:get_newline() abort
   let ff = &fileformat

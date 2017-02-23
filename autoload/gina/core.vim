@@ -52,13 +52,13 @@ function! gina#core#get(...) abort
   let params = gina#core#buffer#parse(options.expr)
   if empty(params)
     let git = {}
-    let params.relpath = expand(options.expr)
+    let params.path = expand(options.expr)
   else
     let git = s:get_from_cache(params.repo)
   endif
   if empty(git)
     if s:is_file_buffer(options.expr)
-      let git = s:get_from_bufname(params.relpath)
+      let git = s:get_from_bufname(params.path)
     else
       let git = s:get_from_cwd(bufnr(options.expr))
     endif

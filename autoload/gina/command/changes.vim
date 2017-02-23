@@ -30,7 +30,7 @@ function! s:build_args(git, args) abort
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.cached = args.get('--cached')
-  let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev', ''))
+  let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev'))
 
   call args.set('--numstat', 1)
   call args.set(0, 'diff')
@@ -102,7 +102,7 @@ function! s:parse_record(git, rev, record) abort
         \ 'word': a:record,
         \ 'added': m[1],
         \ 'removed': m[2],
-        \ 'path': gina#core#repo#relpath(a:git, m[3]),
+        \ 'path': m[3],
         \ 'rev': a:rev,
         \}
 endfunction

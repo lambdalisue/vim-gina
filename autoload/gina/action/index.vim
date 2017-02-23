@@ -231,11 +231,15 @@ function! s:on_stage(candidates, options) abort dict
   endfor
   if options.force
     call self.call('index:add:force', add_candidates)
-    call gina#process#wait()
+    if !empty(rm_candidates)
+      call gina#process#wait()
+    endif
     call self.call('index:rm:force', rm_candidates)
   else
     call self.call('index:add', add_candidates)
-    call gina#process#wait()
+    if !empty(rm_candidates)
+      call gina#process#wait()
+    endif
     call self.call('index:rm', rm_candidates)
   endif
 endfunction
@@ -258,7 +262,9 @@ function! s:on_toggle(candidates, options) abort dict
     endif
   endfor
   call self.call('index:stage', stage_candidates)
-  call gina#process#wait()
+  if !empty(unstage_candidates)
+    call gina#process#wait()
+  endif
   call self.call('index:unstage', unstage_candidates)
 endfunction
 
@@ -266,6 +272,7 @@ function! s:on_discard(candidates, options) abort dict
   if empty(a:candidates)
     return
   endif
+  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'force': 0,
         \}, a:options)
@@ -296,7 +303,7 @@ function! s:on_discard(candidates, options) abort dict
   endif
   " delete untracked files
   for candidate in delete_candidates
-    let abspath = s:Path.realpath(candidate.path)
+    let abspath = s:Path.realpath(gina#core#repo#abspath(git, candidate.path))
     if isdirectory(abspath)
       call s:File.rmdir(abspath, 'r')
     elseif filewritable(abspath)

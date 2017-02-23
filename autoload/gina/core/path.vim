@@ -16,7 +16,7 @@ if s:is_windows
 
   function! gina#core#path#relpath(expr, ...) abort
     let path = s:realpath(s:expand(s:realpath(a:expr)))
-    return s:Path.unixpath(call('s:relpath', [path] + a:000))
+    return s:Path.unixpath(call('s:path', [path] + a:000))
   endfunction
 
   function! s:realpath(path) abort
@@ -37,7 +37,7 @@ else
 
   function! gina#core#path#relpath(expr, ...) abort
     let path = s:expand(a:expr)
-    return call('s:relpath', [path] + a:000)
+    return call('s:path', [path] + a:000)
   endfunction
 endif
 
@@ -47,7 +47,7 @@ function! s:expand(expr) abort
     return a:expr
   elseif a:expr[:6] ==# 'gina://'
     let git = gina#core#get_or_fail({'expr': a:expr})
-    let path = gina#core#buffer#param(a:expr, 'relpath')
+    let path = gina#core#buffer#param(a:expr, 'path')
     return empty(path) ? '' : s:Path.join(git.worktree, path)
   elseif a:expr[0] =~# '[%#<]'
     let m = matchlist(a:expr, '^\([%#]\|<\w\+>\)\(.*\)')
@@ -66,7 +66,7 @@ function! s:abspath(path, ...) abort
   return s:Path.join(root, a:path)
 endfunction
 
-function! s:relpath(path, ...) abort
+function! s:path(path, ...) abort
   if s:Path.is_relative(a:path) || a:path[0] ==# ':'
     return a:path
   endif

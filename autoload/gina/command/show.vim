@@ -31,7 +31,7 @@ function! s:build_args(git, args) abort
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
-  call gina#core#treeish#extend(a:git, args, args.pop(1))
+  call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   call args.set(1, args.params.treeish)
   return args.lock()
 endfunction

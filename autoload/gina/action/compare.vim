@@ -47,11 +47,9 @@ function! s:on_compare(candidates, options) abort
         \ 'opener': '',
         \}, a:options)
   for candidate in a:candidates
-    let line = get(candidate, 'line', '')
-    let col = get(candidate, 'col', '')
-    let cached = get(candidate, 'sign', '!!') !~# '^\%(??\|!!\|.\w\)$'
+    let cached = gina#util#get(candidate, 'sign', '!!') !~# '^\%(??\|!!\|.\w\)$'
     let treeish = gina#core#treeish#build(
-          \ get(candidate, 'rev', ''),
+          \ gina#util#get(candidate, 'rev'),
           \ candidate.path,
           \)
     execute printf(

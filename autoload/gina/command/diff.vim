@@ -32,11 +32,10 @@ function! s:build_args(git, args) abort
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
-  let pathspecs = copy(args.residual())
-  let pathspecs = map(pathspecs, 'gina#core#path#abspath(v:val)')
-  call gina#core#treeish#extend(a:git, args, args.pop(1))
+
+  call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   call args.set(1, args.params.rev)
-  call args.residual([args.params.path] + pathspecs)
+  call args.residual([args.params.path] + args.residual())
   return args.lock()
 endfunction
 

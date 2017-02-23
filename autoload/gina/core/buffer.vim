@@ -10,29 +10,24 @@ let s:DEFAULT_PARAMS_ATTRIBUTES = {
       \ 'scheme': '',
       \ 'params': [],
       \ 'rev': '',
-      \ 'relpath': '',
+      \ 'path': '',
       \ 'treeish': '',
       \}
 
 
 function! gina#core#buffer#bufname(git, scheme, ...) abort
-  let options = extend({
-        \ 'params': [],
-        \ 'rev': '',
-        \ 'relpath': '',
-        \}, get(a:000, 0, {})
-        \)
-  let params = filter(copy(options.params), '!empty(v:val)')
-  let rev = substitute(options.rev, '^:0$', '', '')
-  let path = s:Path.unixpath(options.relpath)
-  let treeish = get(options, 'treeish', rev . ':' . path)
-  let treeish = substitute(treeish, '^:0', '', '')
+  let options = get(a:000, 0, {})
+  let params = filter(gina#util#get(options, 'params', []), '!empty(v:val)')
+  let treeish = gina#util#get(options, 'treeish', printf('%s:%s',
+        \ gina#util#get(options, 'rev'),
+        \ gina#util#get(options, 'path'),
+        \))
   return s:normalize_bufname(printf(
         \ 'gina://%s:%s%s/%s',
         \ a:git.refname,
         \ a:scheme,
         \ empty(params) ? '' : ':' . join(params, ':'),
-        \ treeish,
+        \ s:Path.unixpath(substitute(treeish, '^:0', '', '')),
         \))
 endfunction
 
@@ -54,7 +49,7 @@ function! gina#core#buffer#parse(expr) abort
         \ 'treeish': treeish,
         \}
   if path isnot# v:null
-    let params['relpath'] = path
+    let params.path = path
   endif
   return params
 endfunction
@@ -68,7 +63,7 @@ function! gina#core#buffer#param(expr, attr, ...) abort
   endif
   let default = get(a:000, 0, s:DEFAULT_PARAMS_ATTRIBUTES[a:attr])
   let params = gina#core#buffer#parse(a:expr)
-  return get(params, a:attr, default)
+  return gina#util#get(params, a:attr, default)
 endfunction
 
 function! gina#core#buffer#open(bufname, ...) abort

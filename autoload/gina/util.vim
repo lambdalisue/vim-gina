@@ -25,6 +25,11 @@ function! gina#util#extend_content(content, msg) abort
   call extend(a:content, [leading . get(a:msg, 0, '')] + a:msg[1:])
 endfunction
 
+function! gina#util#get(obj, key, ...) abort
+  let val = get(a:obj, a:key, v:null)
+  return val is# v:null ? get(a:000, 0, '') : val
+endfunction
+
 function! gina#util#map(lhs, rhs, ...) abort
   let options = extend({
         \ 'mode': '',

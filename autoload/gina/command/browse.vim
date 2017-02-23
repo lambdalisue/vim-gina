@@ -4,7 +4,7 @@ let s:Path = vital#gina#import('System.Filepath')
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 let s:FORMAT_MAP = {
-      \ 'pt': 'relpath',
+      \ 'pt': 'path',
       \ 'ls': 'line_start',
       \ 'le': 'line_end',
       \ 'c0': 'commit0',
@@ -31,7 +31,7 @@ function! gina#command#browse#call(range, args, mods) abort
         \   : args.params.scheme,
         \)
   let url = s:Formatter.format(base_url, s:FORMAT_MAP, {
-        \ 'relpath': args.params.path,
+        \ 'path': args.params.path,
         \ 'line_start': get(args.params.range, 0, ''),
         \ 'line_end': get(args.params.range, 1, ''),
         \ 'commit0': revinfo.commit0,
@@ -67,7 +67,7 @@ function! s:build_args(git, args, range) abort
   let args.params.exact = args.pop('--exact')
   let args.params.range = a:range == [1, line('$')] ? [] : a:range
   let args.params.scheme = args.pop('--scheme', v:null)
-  call gina#core#treeish#extend(a:git, args, args.pop(1))
+  call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   return args.lock()
 endfunction
 

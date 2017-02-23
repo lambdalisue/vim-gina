@@ -1,4 +1,3 @@
-let s:Argument = vital#gina#import('Argument')
 let s:Job = vital#gina#import('System.Job')
 let s:String = vital#gina#import('Data.String')
 
@@ -51,7 +50,7 @@ function! gina#process#wait(...) abort
 endfunction
 
 function! gina#process#open(git, args, ...) abort
-  let args = type(a:args) == s:t_dict ? a:args : s:Argument.new(a:args)
+  let args = type(a:args) == s:t_dict ? a:args : gina#core#args#raw(a:args)
   let pipe = extend(gina#process#pipe#default(), get(a:000, 0, {}))
   let pipe.params = get(args, 'params', {})
   let pipe.params.scheme = get(pipe.params, 'scheme', args.get(0, ''))
@@ -108,7 +107,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_raw_args(git, args) abort
-  let args = s:Argument.parse(g:gina#process#command)
+  let args = gina#core#args#raw(g:gina#process#command).raw
   if !empty(a:git) && isdirectory(a:git.worktree)
     call extend(args, ['-C', a:git.worktree])
   endif

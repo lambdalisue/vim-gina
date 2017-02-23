@@ -26,7 +26,8 @@ function! s:build_args(git, args) abort
   let args.params.col = args.pop('--col')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
-  call gina#core#treeish#extend(a:git, args, args.pop(1))
+
+  call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   if empty(args.params.path)
     throw gina#core#exception#warn(printf(
           \ 'No filename is specified. Did you mean "Gina compare %s:"?',

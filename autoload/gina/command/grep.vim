@@ -116,7 +116,7 @@ function! s:parse_record(git, rev, record) abort
         \ 'abbr': a:record,
         \ 'line': line,
         \ 'col': col,
-        \ 'path': gina#core#repo#relpath(a:git, m[1]),
+        \ 'path': m[1],
         \ 'rev': a:rev,
         \}
   return candidate

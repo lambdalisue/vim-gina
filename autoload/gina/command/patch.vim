@@ -28,8 +28,7 @@ function! s:build_args(git, args) abort
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
-  let args.params.path = args.pop(1, gina#core#buffer#param('%', 'relpath'))
-  let args.params.path = gina#core#repo#relpath(a:git, args.params.path)
+  call gina#core#args#extend_path(a:git, args, args.pop(1))
   return args.lock()
 endfunction
 
@@ -141,24 +140,24 @@ endfunction
 
 function! s:patch(git) abort
   let abspath = gina#core#path#abspath('%')
-  let relpath = gina#core#repo#relpath(a:git, abspath)
+  let path = gina#core#repo#relpath(a:git, abspath)
   call gina#process#call(a:git, [
         \ 'add',
         \ '--intent-to-add',
         \ '--',
         \ s:Path.realpath(abspath),
         \])
-  let diff = s:diff(a:git, relpath, getline(1, '$'))
+  let diff = s:diff(a:git, path, getline(1, '$'))
   let result = s:apply(a:git, diff)
   return result
 endfunction
 
-function! s:diff(git, relpath, buffer) abort
+function! s:diff(git, path, buffer) abort
   let tempfile = tempname()
   let tempfile1 = tempfile . '.index'
   let tempfile2 = tempfile . '.buffer'
   try
-    if writefile(s:index(a:git, a:relpath), tempfile1) == -1
+    if writefile(s:index(a:git, a:path), tempfile1) == -1
       return
     endif
     if writefile(a:buffer, tempfile2) == -1
@@ -185,7 +184,7 @@ function! s:diff(git, relpath, buffer) abort
           \ result.content,
           \ tempfile1,
           \ tempfile2,
-          \ a:relpath,
+          \ a:path,
           \)
   finally
     silent! call delete(tempfile1)
@@ -193,8 +192,8 @@ function! s:diff(git, relpath, buffer) abort
   endtry
 endfunction
 
-function! s:index(git, relpath) abort
-  let result = gina#process#call(a:git, ['show', ':' . a:relpath])
+function! s:index(git, path) abort
+  let result = gina#process#call(a:git, ['show', ':' . a:path])
   if result.status
     return []
   endif

@@ -25,7 +25,7 @@ function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
-  let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev', ''))
+  let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev'))
 
   if empty(args.params.rev)
     call args.set(0, 'ls-files')
@@ -96,7 +96,7 @@ endfunction
 function! s:parse_record(git, rev, record) abort
   let candidate = {
         \ 'word': a:record,
-        \ 'path': gina#core#repo#relpath(a:git, a:record),
+        \ 'path': a:record,
         \ 'rev': a:rev,
         \}
   return candidate

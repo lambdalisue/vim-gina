@@ -52,10 +52,9 @@ function! s:on_show(candidates, options) abort
   let options = extend({
         \ 'opener': '',
         \}, a:options)
-  let git = gina#core#get_or_fail()
   for candidate in a:candidates
     let treeish = gina#core#treeish#build(
-          \ get(candidate, 'rev', ''),
+          \ gina#util#get(candidate, 'rev'),
           \ candidate.path,
           \)
     execute printf(

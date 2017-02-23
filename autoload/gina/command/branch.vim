@@ -73,7 +73,7 @@ function! s:init(args) abort
   call gina#action#include('browse')
   call gina#action#include('changes')
   call gina#action#include('commit')
-  call gina#action#include('info')
+  call gina#action#include('show')
 
   augroup gina_internal_command
     autocmd! * <buffer>
