@@ -266,6 +266,8 @@ function! s:writer.start() abort
   endif
   lockvar! self.bufnr
   lockvar! self.updatetime
+  " Make sure the content is cleared
+  call self.clear()
   let self._running = 1
   let self._timer = timer_start(
         \ self.updatetime,
@@ -282,10 +284,9 @@ function! s:writer.stop() abort
 endfunction
 
 function! s:writer.kill() abort
-  " Stop the writer now
-  let self._running = 0
-  silent! unlet s:timers[self._timer]
   silent! call timer_stop(self._timer)
+  silent! unlet s:timers[self._timer]
+  let self._running = 0
   unlockvar! self.bufnr
   unlockvar! self.updatetime
   call self.on_stop()
