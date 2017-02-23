@@ -58,19 +58,20 @@ function! gina#core#args#extend_treeish(git, args, treeish) abort
     let path = ''
   else
     let [rev, path] = gina#core#treeish#split(a:treeish)
+    " Guess a revision from the current buffer name if necessary
     if empty(rev)
-      " Guess a revision from the current buffer name
       let rev = gina#core#buffer#param('%', 'rev')
     endif
-    if path isnot# v:null && empty(path)
-      " Guess a path from the current buffer name
-      let path = gina#core#path#expand('%')
+    " Guess a path from the current buffer name if necessary
+    " and make sure that the path is a relative path from rep root
+    if path isnot# v:null
+      let path = empty(path) ? gina#core#path#expand('%') : path
+      let path = gina#core#repo#relpath(a:git, path)
     endif
-    let path = gina#core#repo#relpath(a:git, path)
   endif
   call extend(a:args.params, {
         \ 'rev': rev,
-        \ 'path': path,
+        \ 'path': path is# v:null ? '' : path,
         \ 'treeish': gina#core#treeish#build(rev, path),
         \})
 endfunction
