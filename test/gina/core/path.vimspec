@@ -49,9 +49,12 @@ Describe gina#core#path
             \))
     End
 
-    It returns an expanded Unix-like path of {expr}
+    It does not expand pathspec such as $HOME or *.vim
+      let expr = 'autoload/gina/*.vim'
+      Assert Equals(gina#core#path#expand(expr), expr)
+
       let expr = '$HOME'
-      Assert Equals(gina#core#path#expand(expr), Path.unixpath(expand('$HOME')))
+      Assert Equals(gina#core#path#expand(expr), '$HOME')
 
       let expr = 'master'
       Assert Equals(gina#core#path#expand(expr), 'master')

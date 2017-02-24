@@ -55,7 +55,7 @@ function! s:expand(expr) abort
     let modifiers = m[2]
     return fnamemodify(s:expand(expr), modifiers)
   endif
-  return expand(a:expr)
+  return a:expr
 endfunction
 
 function! s:abspath(path, ...) abort
