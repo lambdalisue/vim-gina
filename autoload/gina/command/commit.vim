@@ -161,19 +161,11 @@ function! s:get_cleanup(git, args) abort
 endfunction
 
 function! s:get_commitmsg(git, args) abort
-  let content = s:get_cached_commitmsg(a:git, a:args)
-  if empty(content)
-    return s:get_commitmsg_template(a:git, a:args)
-  else
-    call gina#core#console#debug('Use a cached commit message:')
-    return s:get_commitmsg_cleanedup(a:git, a:args, content)
-  endif
-endfunction
-
-function! s:get_commitmsg_template(git, args) abort
   let args = a:args.clone()
   let filename = s:Git.resolve(a:git, 'COMMIT_EDITMSG')
-  let previous_content = readfile(filename)
+  if filereadable(filename)
+    let previous_content = readfile(filename)
+  endif
   try
     " Build a new commit message template
     call args.pop('--no-edit')
@@ -189,48 +181,9 @@ function! s:get_commitmsg_template(git, args) abort
     return readfile(filename)
   finally
     " Restore the content
-    call writefile(previous_content, filename)
-  endtry
-endfunction
-
-" Note:
-" Commit the cached messate temporary to build a correct COMMIT_EDITMSG
-" This hacky implementation is required due to the lack of cleanup command.
-" https://github.com/lambdalisue/gina.vim/issues/37#issuecomment-281661605
-" Note:
-" It is not possible to remove diff content when user does
-"   1. Gina commit --verbose
-"   2. Save content
-"   3. Gina commit
-"   4. The diff part is cached so shown and no chance to remove that
-" This is a bit anoyying but I don't have any way to remove that so I just
-" ended up. PRs for this issue is welcome.
-" https://github.com/lambdalisue/gina.vim/issues/37#issuecomment-281687325
-function! s:get_commitmsg_cleanedup(git, args, content) abort
-  let args = a:args.clone()
-  let filename = s:Git.resolve(a:git, 'COMMIT_EDITMSG')
-  let previous_content = readfile(filename)
-  let tempfile = tempname()
-  try
-    call writefile(a:content, tempfile)
-    call args.set('--cleanup', s:get_cleanup(a:git, args))
-    call args.set('-F|--file', tempfile)
-    call args.set('--no-edit', 1)
-    call args.set('--allow-empty', 1)
-    call args.set('--allow-empty-message', 1)
-    call args.pop('-C|--reuse-message')
-    call args.pop('-m|--message')
-    call args.pop('-e|--edit')
-    call gina#process#call_or_fail(a:git, args)
-    " Reset the temporary commit and remove all logs
-    call gina#process#call_or_fail(a:git, ['reset', '--soft', 'HEAD@{1}'])
-    call gina#process#call_or_fail(a:git, ['reflog', 'delete', 'HEAD@{0}'])
-    call gina#process#call_or_fail(a:git, ['reflog', 'delete', 'HEAD@{0}'])
-    " Get entire content of commitmsg
-    return readfile(filename)
-  finally
-    call delete(tempfile)
-    call writefile(previous_content, filename)
+    if exists('previous_content')
+      call writefile(previous_content, filename)
+    endif
   endtry
 endfunction
 
