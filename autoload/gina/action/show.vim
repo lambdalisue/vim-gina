@@ -44,11 +44,12 @@ function! s:on_show(candidates, options) abort
           \ gina#util#get(candidate, 'path', v:null),
           \)
     execute printf(
-          \ 'Gina show %s %s %s %s',
+          \ 'Gina show %s %s %s %s -- %s',
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),
           \ gina#util#shellescape(treeish),
+          \ gina#util#shellescape(gina#util#get(candidate, 'residual')),
           \)
   endfor
 endfunction
