@@ -43,6 +43,7 @@ MISC				|gina-misc|
   TREEISH			  |gina-misc-treeish|
   STRING FORMAT			  |gina-misc-string-format|
   ASKPASS     			  |gina-misc-askpass|
+CHANGELOG			|gina-changelog|
 
 
 =============================================================================
@@ -1862,6 +1863,13 @@ worry about this unless they disabled that by configuration.
 
 In short, use "git config --global credential.helper wincred" to use
 "wincred" in your system.
+
+
+=============================================================================
+CHANGELOG					*gina-changelog*
+
+2017.02.25 (v0.1.0)
+	Release first beta version.
 
 
 =============================================================================
