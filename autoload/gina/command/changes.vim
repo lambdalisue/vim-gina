@@ -9,6 +9,7 @@ function! gina#command#changes#call(range, args, mods) abort
         \ 'rev': args.params.rev,
         \ 'params': [
         \   args.params.cached ? 'cached' : '',
+        \   args.params.partial ? '--' : '',
         \ ],
         \})
   call gina#core#buffer#open(bufname, {
@@ -30,6 +31,7 @@ function! s:build_args(git, args) abort
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.cached = args.get('--cached')
+  let args.params.partial = !empty(args.residual())
   let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev'))
 
   call args.set('--numstat', 1)

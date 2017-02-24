@@ -9,6 +9,9 @@ function! gina#command#show#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
         \ 'treeish': args.params.treeish,
+        \ 'params': [
+        \   args.params.partial ? '--' : '',
+        \ ],
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -32,6 +35,7 @@ function! s:build_args(git, args) abort
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
+  let args.params.partial = !empty(args.residual())
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   return args.lock()
 endfunction
@@ -45,9 +49,13 @@ function! s:init(args) abort
   let b:gina_initialized = 1
 
   setlocal buftype=nowrite
-  setlocal bufhidden&
   setlocal noswapfile
   setlocal nomodifiable
+  if a:args.params.partial
+    setlocal bufhidden=wipe
+  else
+    setlocal bufhidden&
+  endif
 
   augroup gina_command_show_internal
     autocmd! * <buffer>
@@ -72,5 +80,9 @@ function! s:BufReadCmd() abort
   call gina#core#buffer#assign_cmdarg()
   call gina#core#writer#assign_content(bufnr('%'), result.content)
   call gina#core#emitter#emit('command:called', s:SCHEME)
-  call gina#util#doautocmd('BufRead')
+  if args.params.path is# v:null
+    setfiletype git
+  else
+    call gina#util#doautocmd('BufRead')
+  endif
 endfunction

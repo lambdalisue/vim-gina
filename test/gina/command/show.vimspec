@@ -39,12 +39,12 @@ Describe gina#command#show
     %bwipeout!
   End
 
-  Describe Use cases (commit)
+  Describe Use cases (without {path})
     It might be called without arguments
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
-      GinaSync show -- A/foo.txt
+      GinaSync show
+      Assert Equals(&filetype, 'git')
       Assert Equals(winnr('$'), 1)
-      " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:show', slit1.refname))
       Assert Equals(getline(4, 7) + getline(9, '$'), [
             \ '',
@@ -61,9 +61,9 @@ Describe gina#command#show
 
     It might be called with HEAD~
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
-      GinaSync show HEAD~ -- A/foo.txt
+      GinaSync show HEAD~
+      Assert Equals(&filetype, 'git')
       Assert Equals(winnr('$'), 1)
-      " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:show/HEAD~', slit1.refname))
       Assert Equals(getline(4, 6), [
             \ '',
@@ -71,9 +71,39 @@ Describe gina#command#show
             \ '',
             \])
     End
+
+    It might be called with -- A/*.txt
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync show -- A/*.txt
+      Assert Equals(&filetype, 'git')
+      Assert Equals(&bufhidden, 'wipe')
+      Assert Equals(winnr('$'), 1)
+      Assert Equals(bufname('%'), printf('gina://%s:show:--', slit1.refname))
+      Assert Equals(getline(4, 7) + getline(9, '$'), [
+            \ '',
+            \ '    Third',
+            \ '',
+            \ 'diff --git a/A/foo.txt b/A/foo.txt',
+            \ '--- a/A/foo.txt',
+            \ '+++ b/A/foo.txt',
+            \ '@@ -1 +1 @@',
+            \ '-1',
+            \ '+2',
+            \])
+    End
+
+    It might be called with -- A/*.vim
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync show -- A/*.vim
+      Assert Equals(&filetype, 'git')
+      Assert Equals(&bufhidden, 'wipe')
+      Assert Equals(winnr('$'), 1)
+      Assert Equals(bufname('%'), printf('gina://%s:show:--', slit1.refname))
+      Assert Equals(getline(1, '$'), [''])
+    End
   End
 
-  Describe Use cases (content)
+  Describe Use cases (with {path})
     It might be called without arguments
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync show :

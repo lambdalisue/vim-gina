@@ -6,7 +6,11 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 function! gina#command#status#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = gina#core#buffer#bufname(git, s:SCHEME)
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
+        \ 'params': [
+        \   args.params.partial ? '--' : '',
+        \ ],
+        \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,
@@ -25,6 +29,7 @@ function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
+  let args.params.partial = !empty(args.residual())
   call args.set('--porcelain', 1)
   return args.lock()
 endfunction

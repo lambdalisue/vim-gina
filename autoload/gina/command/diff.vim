@@ -10,6 +10,7 @@ function! gina#command#diff#call(range, args, mods) abort
         \ 'params': [
         \   args.params.cached ? 'cached' : '',
         \   args.params.R ? 'R' : '',
+        \   args.params.partial ? '--' : '',
         \ ],
         \})
   call gina#core#buffer#open(bufname, {
@@ -32,6 +33,7 @@ function! s:build_args(git, args) abort
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
+  let args.params.partial = !empty(args.residual())
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   call args.set(1, args.params.rev)
@@ -50,9 +52,13 @@ function! s:init(args) abort
   let b:gina_initialized = 1
 
   setlocal buftype=nowrite
-  setlocal bufhidden&
   setlocal noswapfile
   setlocal nomodifiable
+  if a:args.params.partial
+    setlocal bufhidden=wipe
+  else
+    setlocal bufhidden&
+  endif
 
   augroup gina_command_diff_internal
     autocmd! * <buffer>

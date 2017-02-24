@@ -8,6 +8,9 @@ function! gina#command#log#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
         \ 'path': args.params.path,
+        \ 'params': [
+        \   args.params.partial ? '--' : '',
+        \ ],
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': 'keepalt ' . a:mods,
@@ -27,6 +30,7 @@ function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
+  let args.params.partial = !empty(args.residual())
 
   call args.set('--color', 'always')
   call args.set('--graph', 1)

@@ -99,5 +99,24 @@ Describe gina#command#qrep
             \ }
             \])
     End
+
+    It might be called with {pattern} -- A/*.txt
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync qrep a -- A/*.txt
+      Assert Equals(winnr('$'), 1)
+      Assert Equals(getqflist(), [
+            \ {
+            \   'lnum': 1,
+            \   'bufnr': bufnr(slit1.path('A/foo.txt')),
+            \   'col': 1,
+            \   'valid': 1,
+            \   'vcol': 0,
+            \   'nr': 0,
+            \   'type': '',
+            \   'pattern': '',
+            \   'text': 'a'
+            \ },
+            \])
+    End
   End
 End

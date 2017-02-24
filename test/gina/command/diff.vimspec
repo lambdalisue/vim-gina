@@ -25,7 +25,7 @@ Describe gina#command#diff
     %bwipeout!
   End
 
-  Describe Use cases
+  Describe Use cases (with {path})
     It might be called without arguments
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync diff :
@@ -104,6 +104,49 @@ Describe gina#command#diff
             \ '-2',
             \ '+1',
             \])
+    End
+  End
+
+  Describe Use cases (without {path})
+    It might be called without argument
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync diff
+      Assert Equals(winnr('$'), 1)
+      " Focused buffer
+      Assert Equals(bufname('%'), printf('gina://%s:diff', slit1.refname))
+      Assert Equals(getline(1, 1) + getline(3, '$'), [
+            \ 'diff --git a/A/foo.txt b/A/foo.txt',
+            \ '--- a/A/foo.txt',
+            \ '+++ b/A/foo.txt',
+            \ '@@ -1 +1 @@',
+            \ '-3',
+            \ '+4',
+            \])
+    End
+
+    It might be called with -- A/*.txt
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync diff -- A/*.txt
+      Assert Equals(winnr('$'), 1)
+      " Focused buffer
+      Assert Equals(bufname('%'), printf('gina://%s:diff:--', slit1.refname))
+      Assert Equals(getline(1, 1) + getline(3, '$'), [
+            \ 'diff --git a/A/foo.txt b/A/foo.txt',
+            \ '--- a/A/foo.txt',
+            \ '+++ b/A/foo.txt',
+            \ '@@ -1 +1 @@',
+            \ '-3',
+            \ '+4',
+            \])
+    End
+
+    It might be called with -- A/*.vim
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync diff -- A/*.vim
+      Assert Equals(winnr('$'), 1)
+      " Focused buffer
+      Assert Equals(bufname('%'), printf('gina://%s:diff:--', slit1.refname))
+      Assert Equals(getline(1, '$'), [''])
     End
   End
 End

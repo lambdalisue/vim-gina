@@ -8,6 +8,9 @@ function! gina#command#grep#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
         \ 'rev': args.params.rev,
+        \ 'params': [
+        \   args.params.partial ? '--' : '',
+        \ ],
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': 'keepalt ' . a:mods,
@@ -32,6 +35,7 @@ function! s:build_args(git, args) abort
   let args.params.group = args.pop('--group', 'quick')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.pattern = args.pop(1, '')
+  let args.params.partial = !empty(args.residual())
   let args.params.rev = args.pop(1, gina#core#buffer#param('%', 'rev'))
 
   " Check if available grep patterns has specified and ask if not

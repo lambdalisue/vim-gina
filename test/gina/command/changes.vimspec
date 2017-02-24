@@ -89,5 +89,30 @@ Describe gina#command#changes
             \ },
             \])
     End
+
+    It might be called with --cached -- A/*.txt
+      GinaSync changes --cached -- A/*.txt
+      Assert Equals(winnr('$'), 2)
+      Assert Equals(bufname('%'), printf('gina://%s:changes:cached:--', slit1.refname))
+      Assert Equals(getline(1, '$'), [
+            \ "1\t0\tA/foo.txt",
+            \])
+      Assert Equals(gina#action#candidates(), [
+            \ {
+            \   'word': "1\t0\tA/foo.txt",
+            \   'path': 'A/foo.txt',
+            \   'added': '1',
+            \   'removed': '0',
+            \   'rev': '',
+            \ },
+            \])
+    End
+
+    It might be called with --cached -- A/*.vim
+      GinaSync changes --cached -- A/*.vim
+      Assert Equals(winnr('$'), 2)
+      Assert Equals(bufname('%'), printf('gina://%s:changes:cached:--', slit1.refname))
+      Assert Equals(getline(1, '$'), [''])
+    End
   End
 End
