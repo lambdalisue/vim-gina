@@ -87,37 +87,41 @@ function! s:compare_record(a, b) abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
+  let args = gina#core#meta#get_or_fail('args')
+  let residual = args.residual()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(v:val)'
+        \ 's:parse_record(a:fline + v:key, v:val, residual)'
         \)
-  call filter(candidates, '!empty(v:val)')
-  return candidates
+  return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(record) abort
+function! s:parse_record(lnum, record, residual) abort
   let m = matchlist(
         \ a:record,
         \ '^\(..\) \("[^"]\{-}"\|.\{-}\)\%( -> \("[^"]\{-}"\|[^ ]\+\)\)\?$'
         \)
+  if empty(m)
+    return {}
+  endif
+  let candidate = {
+        \ 'lnum': a:lnum,
+        \ 'word': a:record,
+        \ 'sign': m[1],
+        \ 'residual': a:residual,
+        \}
   if len(m) && !empty(m[3])
-    return {
-          \ 'word': a:record,
-          \ 'sign': m[1],
+    return extend(candidate, {
           \ 'path': s:strip_quotes(m[3]),
           \ 'path1': s:strip_quotes(m[2]),
           \ 'path2': s:strip_quotes(m[3]),
-          \}
-  elseif len(m) && !empty(m[2])
-    return {
-          \ 'word': a:record,
-          \ 'sign': m[1],
+          \})
+  else
+    return extend(candidate, {
           \ 'path': s:strip_quotes(m[2]),
           \ 'path1': s:strip_quotes(m[2]),
           \ 'path2': '',
-          \}
-  else
-    return {}
+          \})
   endif
 endfunction
 

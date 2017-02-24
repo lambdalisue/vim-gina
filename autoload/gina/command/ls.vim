@@ -88,22 +88,24 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let git = gina#core#get_or_fail()
-  let rev = gina#core#buffer#param('%', 'rev')
+  let args = gina#core#meta#get_or_fail('args')
+  let rev = args.params.rev
+  let residual = args.residual()
   let candidates = map(
-        \ filter(getline(a:fline, a:lline), '!empty(v:val)'),
-        \ 's:parse_record(git, rev, v:val)'
+        \ getline(a:fline, a:lline),
+        \ 's:parse_record(a:fline + v:key, v:val, rev, residual)'
         \)
-  return candidates
+  return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(git, rev, record) abort
-  let candidate = {
+function! s:parse_record(lnum, record, rev, residual) abort
+  return {
+        \ 'lnum': a:lnum,
         \ 'word': a:record,
         \ 'path': a:record,
         \ 'rev': a:rev,
+        \ 'residual': a:residual,
         \}
-  return candidate
 endfunction
 
 

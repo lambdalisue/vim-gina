@@ -82,26 +82,29 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let rev = gina#core#buffer#param('%', 'rev')
+  let args = gina#core#meta#get_or_fail('args')
+  let rev = args.params.rev
+  let residual = args.residual()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(rev, v:val)'
+        \ 's:parse_record(a:fline + v:key, v:val, rev, residual)'
         \)
-  call filter(candidates, '!empty(v:val)')
-  return candidates
+  return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(rev, record) abort
+function! s:parse_record(lnum, record, rev, residual) abort
   let m = matchlist(
         \ a:record,
         \ '^\(\d\+\)\s\+\(\d\+\)\s\+\(.\+\)$'
         \)
   return empty(m) ? {} : {
+        \ 'lnum': a:lnum,
         \ 'word': a:record,
         \ 'added': m[1],
         \ 'removed': m[2],
         \ 'path': m[3],
         \ 'rev': a:rev,
+        \ 'residual': a:residual,
         \}
 endfunction
 

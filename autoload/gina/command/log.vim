@@ -86,25 +86,27 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let git = gina#core#get_or_fail()
-  let path = gina#core#buffer#param('%', 'path', v:null)
+  let args = gina#core#meta#get_or_fail('args')
+  let path = args.params.path
+  let residual = args.residual()
   let candidates = map(
-        \ filter(getline(a:fline, a:lline), '!empty(v:val)'),
-        \ 's:parse_record(path, v:val)'
+        \ getline(a:fline, a:lline),
+        \ 's:parse_record(a:fline + v:key, v:val, path, residual)'
         \)
-  return candidates
+  return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(path, record) abort
+function! s:parse_record(lnum, record, path, residual) abort
   let record = s:String.remove_ansi_sequences(a:record)
-  let rev = matchstr(record, '[a-z0-9]\+')
-  let candidate = {
+  let rev = matchstr(record, '^[|/\* ]\+\s\+\zs[a-z0-9]\+')
+  return empty(rev) ? {} : {
+        \ 'lnum': a:lnum,
         \ 'word': record,
         \ 'abbr': a:record,
         \ 'path': a:path,
         \ 'rev': rev,
+        \ 'residual': a:residual,
         \}
-  return candidate
 endfunction
 
 

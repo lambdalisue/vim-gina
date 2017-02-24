@@ -96,22 +96,21 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let git = gina#core#get_or_fail()
-  let content = getline(a:fline, a:lline)
   let candidates = map(
-        \ filter(content, '!empty(v:val)'),
-        \ 's:parse_record(v:val)'
+        \ getline(a:fline, a:lline),
+        \ 's:parse_record(a:fline + v:key, v:val)'
         \)
-  return candidates
+  return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(record) abort
+function! s:parse_record(lnum, record) abort
   let record = s:String.remove_ansi_sequences(a:record)
   let m = matchlist(record, '\(\*\|\s\) \([^ ]\+\)\%( -> \([^ ]\+\)\)\?')
   let remote = matchstr(m[2], '^remotes/\zs[^ /]\+')
   let rev = matchstr(m[2], '^\%(remotes/\)\?\zs[^ ]\+')
   let branch = matchstr(rev, printf('^\%%(%s/\)\?\zs[^ ]\+', remote))
   return {
+        \ 'lnum': a:lnum,
         \ 'word': record,
         \ 'abbr': a:record,
         \ 'sign': m[1],
