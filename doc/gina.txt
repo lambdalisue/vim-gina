@@ -1,36 +1,894 @@
-*gina.txt*				Control a git repository from Vim
+*gina.txt*		Asynchronously control git repositories from Vim
 
-Version: 0.1.0-dev
+Version: 0.1.0
 Author:  Alisue <lambdalisue@hashnote.net>
-Support: Vim 8.0.0134 and above
+Support: Vim 8.0.0027 and above
 Support: Neovim 0.1.7 and above
-License: MIT license
+License: MIT License (See LICENSE)
+
 
 =============================================================================
 CONTENTS					*gina-contents*
 
-Introduction			|gina-introduction|
-Usage				|gina-usage|
-Interface			|gina-interface|
-  Commands			|gina-commands|
-  Variables			|gina-variables|
-  Mappings			|gina-mappings|
-  Functions			|gina-functions|
-  Options			|gina-options|
-  Actions			|gina-actions|
-  Events			|gina-events|
-ASKPASS				|gina-askpass|
+INTRODUCTION			|gina-introduction|
+USAGE				|gina-usage|
+  COMMAND			  |gina-usage-command|
+  ACTION			  |gina-usage-action|
+CUSTOM				|gina-custom|
+  ACTION			  |gina-custom-action|
+  MAPPING			  |gina-custom-mapping|
+  COMMAND			  |gina-custom-command|
+  EXECUTE			  |gina-custom-execute|
+  EXAMPLE			  |gina-custom-example|
+BUFFER				|gina-buffer|
+  BRANCH			  |gina-buffer-branch|
+  CHANGES			  |gina-buffer-changes|
+  COMMIT			  |gina-buffer-commit|
+  DIFF				  |gina-buffer-diff|
+  GREP				  |gina-buffer-grep|
+  LOG				  |gina-buffer-log|
+  LS				  |gina-buffer-ls|
+  REFLOG			  |gina-buffer-reflog|
+  SHOW				  |gina-buffer-show|
+  STATUS			  |gina-buffer-status|
+  TAG				  |gina-buffer-tag|
+INTERFACE			|gina-interface|
+  COMMANDS			  |gina-commands|
+  FUNCTIONS			  |gina-functions|
+  VARIABLES			  |gina-variables|
+  OPTIONS			  |gina-options|
+  ACTIONS			  |gina-actions|
+MISC				|gina-misc|
+  SHORT FORMAT			  |gina-misc-short-format|
+  TREEISH			  |gina-misc-treeish|
+  STRING FORMAT			  |gina-misc-string-format|
+  ASKPASS     			  |gina-misc-askpass|
 
 
 =============================================================================
 INTRODUCTION					*gina-introduction*
 
-*gina* is a git manipulation plugin which uses job feature of Neovim and Vim
-to support async process call.
+*gina.vim* (gina) is a plugin to asynchronously control git repositories.
+
+- Execute a git command asynchronously (|job|)
+- List candidates of a result of a git command
+- Perform actions on candidates above to control a git repository
+
+Latest version:~
+https://github.com/lambdalisue/gina.vim
 
 
 =============================================================================
 USAGE						*gina-usage*
+
+The following is a schematic image of general working-flow with gina.
+>
+           ┌─────┬──────────┐
+	   │     │          │
+	#DIRTY#  │          ▼
+	   ▲     │    :Gina status  │ <<  : stage
+	   │     │          │       │ >>  : unstage
+	   │     │          │       │ --  : toggle
+	:write   │       #STAGED#   │ ==  : discard
+	   ▲     │          │       │ pp  : patch
+	   │     ├──────────┤       │ dd  : diff
+	   │     │          ▼   
+	#CLEAN#  │     :Gina commit │ !   : switch --amend
+	   │     │          │       │ :w  : save cache
+	   │     ▼          │       │ :q  : commit changes (confirm)
+	   └────────────────┘       │ :wq : commit changes (immediate)
+<
+So basically user would
+
+1. Edit contents in a git repository
+2. Stage changes with |:Gina-status|
+   - "<<" to stage
+   - ">>" to unstage
+   - etc.
+3. Commit changes with |:Gina-commit|
+   - |:w| to save message into a cache
+   - |:q| to commit changes (user will be asked if they want)
+   - |:wq| to commit changes (immediately the commit will be performed)
+
+Read further to learn more basic of gina.
+
+-----------------------------------------------------------------------------
+COMMAND						*gina-usage-command*
+
+gina provides a single command |:Gina| which takes at least one argument.
+
+When |:Gina| is executed with a |bang| modifier, it executes a corresponding
+git command asynchronously and echo the result. For example, when users
+execute ":Gina! status", it echos the current status of a git repository like
+>
+	:Gina! status
+	[gina] On branch master
+	[gina] Your branch is up-to-date with 'origin/master'.
+	...
+	[gina] 
+	[gina] no changes added to commit (use "git add" and/or "git ...
+<
+When |:Gina| is executed without a |bang| modifier, it tries to find a
+corresponding gina command from a "gina#command#..." namespace and execute.
+If no corresponding command is found, it fallbacks to the above behavior,
+namely non-gina conmmand executes a raw git command.
+
+For example, when user executes ":Gina add", it fallbacks to ":Gina! add"
+while there is no corresponding gina command for "add" exist.
+>
+	:Gina add
+	[gina] Nothing specified, nothing added.
+	[gina] Maybe you wanted to say 'git add .'?
+<
+And when user executes ":Gina status", it opens a "gina-status" buffer while
+"status" is found in "gina#command#..." namespace and the function
+opens a "gina-status" buffer of the current git repository.
+>
+	:Gina status
+	--> Opens a "gina-status" window instead
+<
+And on the buffer, users can execute pre-defined actions which is explained
+in the next section. 
+
+-----------------------------------------------------------------------------
+ACTION						*gina-usage-action*
+
+When |:Gina| opens a non file-like buffer (e.g. "gina-status" buffer), users
+may able to perform pre-defined actions on candidates shown in the buffer.
+
+For example, ":Gina show" opens a "gina-status" buffer which looks like
+>
+	M  foo.txt
+	 M bar.txt
+<
+The buffer contents indiceate the index status of each files.
+The first line indicates that a "foo.txt" is staged and the last line
+indicates a "bar.txt" isn't.
+
+When users hit <Tab> on the last line, users will be asked to select an
+action to perform with a prompt like
+>
+	action: 
+<
+So now, type "sta" on that prompt like
+>
+	action: sta
+<
+And now, hit <Tab> again and "stage" is completed. This is a basic behavior
+of |cmdline-completion| so read that if you are not familiar with.
+
+And now, hit <Return> to perform the action. This will perform an
+"index:stage" action which is aliased to "stage", what users just input.
+And then the buffer content will becomes
+>
+	M  foo.txt
+	M  bar.txt
+<
+Which indicates all changes are staged into the index.
+
+So now, let's unstage "foo.txt" with an "index:unstage" action which is
+aliased to "unstage".
+Start a prompt by hitting <Tab> on the first line and type "uns" like
+>
+	action: uns
+<
+And this time, hit <Return> instead of <Tab>.
+It should execute a "index:unstage" action and the buffer content will become
+>
+	 M foo.txt
+	M  bar.txt
+<
+Action name is guessed from the input, mean that users do not need to input
+complete action name/alias if there is no confliction.
+
+You may lazy to type an action name/alias everytime.
+Fortunately, "gina-status" buffer provides some default mappings for
+fundemental actions. The "stage" and "unstage" are mapped to "<<" and ">>" so
+hitting these keys on a candidate will perform the corresponding action.
+
+Additionally, some actions are allowed in |visual-mode|. For example, if you
+would like to stage all files, use "ggVG<<" to perform an "index:stage"
+action on all candidates listed in the buffer.
+
+You may want to repeat a previous action. In that case, use a "builtin:repeat"
+action which is mapped to "." in default.
+Note that some actions are not repeatable. While most of actions are
+repeatable, there is no way to confirm if an action is repeatable or not for
+now.
+
+The "gina-status" buffer provides a lot more pre-defined actions and default
+mappings.
+To see what kind of actions and mappings are defined, hit "?" and a help
+message like below will be displayed.
+>
+	       browse    [browse] Bro..... <Plug>(gina-a...)[n]
+	...
+	<Tab>  b..choice [choice] Sel..... <Plug>(gina-a...)[nvi]
+	?      b..help   [help]   Sho..... <Plug>(gina-a...)[n]
+	...
+<
+Each columns in the message indicates
+
+1. A keymap assigned to the action (e.g. ?)
+2. An action full name (e.g. builtin:help)
+3. An action alias used for completion (e.g. [help])
+4. A description of an action
+5. A <Plug> mapping for customization (e.g. <Plug>(gina-action-builtin-help))
+6. A mapping mode which the <Plug> mapping supports (e.g. [n])
+
+If you would like to define custom aliases or mappings, see the next section.
+
+
+=============================================================================
+CUSTOM						*gina-custom*
+
+Users can customize the behavior by the following functions.
+
+	function			description~
+	|gina#custom#action#alias()|	Define an action alias on a specified
+					gina-xxxxx buffer
+	|gina#custom#action#shorten()|	Alt. to |gina#custom#action#alias()|.
+					It removes a scheme prefix from a
+					specified action scheme.
+	
+	|gina#custom#mapping#map()|	Define a custom mapping on a
+					specified gina-xxxxx buffer
+	|gina#custom#mapping#nmap()|	Alt. to |gina#custom#mapping#map()|.
+					This function use |nmap| internally.
+	|gina#custom#mapping#vmap()|	Alt. to |gina#custom#mapping#map()|.
+					This function use |vmap| internally.
+	|gina#custom#mapping#imap()|	Alt. to |gina#custom#mapping#map()|.
+					This function use |imap| internally.
+	
+	|gina#custom#command#option()|	Define a default option for a
+					specified :Gina xxxxx command
+	|gina#custom#command#alias()|	Define a command alias for a
+					specified :Gina xxxxx command
+
+	|gina#custom#execute()|		Execute a command on a specified
+					gina-xxxxx buffer
+	
+	
+The first argument of these function is {scheme} which indicates a buffer
+type or a command.
+
+If you are not satisfied with the functions above, use |autocmd|, |ftplugin|, or
+|ftplugin| in the |after| directory to do more complex customization.
+
+-----------------------------------------------------------------------------
+ACTION 						*gina-custom-action*
+
+Assume that you want to add a custom action alias for checking out a remote
+branch with tracking state ("branch:checkout:track" action) by "track".
+In this case, use |gina#custom#action#alias()| function to define a custom
+action alias for "gina-branch" buffer by
+>
+	" Alias 'track' to 'branch:checkout:track'
+	call gina#custom#action#alias(
+	      \ 'branch', 'track', 'branch:checkout:track',
+	      \)
+<
+The function above only affect actions for "gina-branch" buffer. If you would
+like to apply aliases to more than one buffer, use "/{pattern}" in {scheme}.
+
+Assume that you want to add global custom action alias for opening a diff
+content of a candidate in 'previewwindow' by "dp", add the following code
+in your |.vimrc|
+>
+	" Alias 'dp' to 'diff:preview' globally
+	call gina#custom#action#alias(
+	      \ '/.*', 'dp', 'diff:preview'
+	      \)
+<
+Note that the value of the {scheme} attribute starts from "/".
+If the {scheme} is "/{pattern}", the value without a leading "/" is assumed
+as a |pattern| and the function is applied to all buffer with the {pattern}.
+
+					*gina-custom-action-shorten*
+gina provides an alternative function |gina#custom#action#shorten()| which is
+used to define "short-form aliases of actions. For example, the following
+will define short-form aliases of "show".
+>
+	call gina#custom#action#shorten('status', 'show')
+<
+The code above will define the following aliases
+
+	short-form alias	action~
+	"show"			"show"
+	"left"			"show:left"
+	"right"			"show:right"
+	"above"			"show:above"
+	"below"			"show:below"
+	"tab"			"show:tab"
+	"preview"		"show:preview"
+
+If you want to exclude some actions to make aliases, specify the action names
+to the third argument like
+>
+	call gina#custom#action#shorten(
+	      \ 'status',
+	      \ 'show',
+	      \ ['show:tab', 'show:preview']
+	      \)
+<
+Then short-form aliases except for "show:tab" and "show:preview" will be
+defined on "gina-status" buffer.
+Note that "/{pattern}" is available on this function as well.
+
+-----------------------------------------------------------------------------
+MAPPING						*gina-custom-mapping*
+
+Assume that you want to add custom mappings for switching buffers between
+"gina-status" and "gina-commit" by "<C-^>".
+In this case, use |gina#custom#mapping#nmap()| function to define a custom
+mapping for "gina-status" and "gina-commit" buffers by
+>
+	" Execute :Gina commit with <C-^> on "gina-status" buffer
+	call gina#custom#mapping#nmap(
+	      \ 'status', '<C-^>',
+	      \ ':<C-u>Gina commit<CR>',
+	      \ {'noremap': 1, 'silent': 1},
+	      \)
+
+	" Execute :Gina status with <C-^> on "gina-commit" buffer
+	call gina#custom#mapping#nmap(
+	      \ 'commit', '<C-^>',
+	      \ ':<C-u>Gina status<CR>',
+	      \ {'noremap': 1, 'silent': 1},
+	      \)
+<
+The function above only affect mappings for "gina-status" and "gina-commit"
+buffers. Use "/{pattern}" in {scheme} to apply mappings to more than one
+buffer.
+
+Assume that you want to add global custom mappings for opening a candidate in
+a new tabpage by "g<CR>", add the following code in your |.vimrc|
+>
+	" Use g<CR> to open a candidate on a new tabpage
+	call gina#custom#mapping#nmap(
+	      \ '/.*', 'g<CR>',
+	      \ '<Plug>(gina-action-edit-tab)'
+	      \)
+<
+Note that the value of the {scheme} attribute starts from "/".
+If the {scheme} is "/{pattern}", the value without a leading "/" is assumed
+as a |pattern| and the function is applied to all buffer with the {pattern}.
+
+-----------------------------------------------------------------------------
+COMMAND 					*gina-custom-command*
+
+Assume that you would like to always open a "gina-log" buffer with |vsplit|
+rather than the default opener by |:Gina-log|.
+In this case, use |gina#custom#command#option()| function to define a default
+option for the "log" command by
+>
+	call gina#custom#command#option('log', '--opener', 'vsplit')
+<
+Then gina will automatically add "--opener=vsplit" to ":Gina log" if a
+corresponding option has not manually specified (":Gina log --opener=tabedit"
+still works even with the above code).
+
+The second argument of the function is called {query}. Users can specify
+multiple options with a bar ("|") separated string like
+>
+	call gina#custom#command#option('commit', '-v|--verbose')
+<
+In this case, the option "-v" and "--verbose" are assumed as a same option.
+When user execute ":Gina commit", gina automatically add "--verbose" option
+but when user execute ":Gina commit -v" or ":Gina commit --verbose", gina
+ignore the default option defined above.
+
+Additionally, if the option is for switch the feature like "--verbose" on
+":Gina commit", users can remove the default option by adding "--no-{option}"
+like
+>
+	call gina#custom#command#option('commit', '-v|--verbose')
+	:Gina commit
+	" --> Open "gina-commit" with "--verbose" option
+	:Gina commit --no-verbose
+	" --> Open "gina-commit" without "--verbose" option
+<
+Note that this "--no-{option}" is only available for options which default
+value is specified to 1 (or omitted).
+
+Assume that you want to add "--opener=vsplit" for all commands which opens
+a non file-like buffer. Then add the following code in your |.vimrc|
+>
+	" Add "--opener=vsplit" to branch/changes/grep/log
+	call gina#custom#command#option(
+	      \ '/\%(branch\|changes\|grep\|log\)',
+	      \ '--opener', 'vsplit'
+	      \)
+<
+Note that the value of the {scheme} attribute starts from "/".
+If the {scheme} is "/{pattern}", the value without a leading "/" is assumed
+as a |pattern| and the function is applied to all buffer with the {pattern}.
+
+					*gina-custom-command-alias*
+Assume that you want to use "st" for "status" command.
+In this case, use |gina#custom#command#alias()| function to define a custom
+command alias for "status" command by
+>
+	call gina#custom#command#alias('status', 'st')
+<
+Then ":Gina st" will execute ":Gina status" instead of ":Gina! st"
+
+It's worth to know that the command alias has its own default option space,
+mean that defalt options assigned to "status" by |gina#custom#command#option()|
+does not affect the command alias "st" for example
+>
+	call gina#custom#command#option('status', '--ignore-submodules')
+	call gina#custom#command#alias('status', 'st')
+	:Gina status
+	" --> Open "gina-status" with "--ignore-submodules"
+	:Gina st
+	" --> Open "gina-status" without "--ignore-submodules"
+>
+If you would like to make a command alias for a git raw command rather than
+gina's command, assign 1 to the third argument like
+>
+	call gina#custom#command#alias('status', 'st', 1)
+	:Gina st
+	[gina] On branch master
+	[gina] Your branch is up-to-date with 'origin/master'.
+	...
+	[gina] 
+	[gina] no changes added to commit (use "git add" and/or "git ...
+	
+Note that "/{pattern}" for {scheme} cannot be used in this function.
+
+-----------------------------------------------------------------------------
+EXECUTE 					*gina-custom-execute*
+
+This is a most powerful custom function which |execute| an arbital {expr} on a
+{scheme} buffer.
+
+Assume that you would like to set 'winfixheight' on "gina-status" buffer to
+fix the window height. Then the following code would help you.
+>
+	call gina#custom#execute('status', 'setlocal winfixheight')
+<
+As like other custom functions, "/{pattern}" is allowed for {scheme} so you
+can perform "setlocal winfixwidth" in multiple buffers like
+>
+	call gina#custom#execute(
+	      \ '/\%(status\|branch\|grep\)',
+	      \ 'setlocal winfixheight'
+	      \)
+<
+This is the most powerful custom function so use it with great care.
+
+-----------------------------------------------------------------------------
+EXAMPLE 					*gina-custom-example*
+
+The following is what I use for now to customize gina.
+>
+	call gina#custom#command#alias('branch', 'br')
+	call gina#custom#command#option('br', '-v', 'v')
+	call gina#custom#command#option(
+	      \ '/\%(log\|reflog\)',
+	      \ '--opener', 'vsplit'
+	      \)
+	call gina#custom#command#option(
+	      \ 'log', '--group', 'log-viewer'
+	      \)
+	call gina#custom#command#option(
+	      \ 'reflog', '--group', 'reflog-viewer'
+	      \)
+	call gina#custom#command#option(
+	      \ 'commit', '-v|--verbose'
+	      \)
+	call gina#custom#command#option(
+	      \ '/\%(status\|commit\)',
+	      \ '-u|--untracked-files'
+	      \)
+	call gina#custom#command#option(
+	      \ '/\%(status\|changes\)',
+	      \ '--ignore-submodules'
+	      \)
+	
+	call gina#custom#action#alias(
+	      \ 'branch', 'track',
+	      \ 'checkout:track'
+	      \)
+	call gina#custom#action#alias(
+	      \ 'branch', 'merge',
+	      \ 'commit:merge'
+	      \)
+	call gina#custom#action#alias(
+	      \ 'branch', 'rebase',
+	      \ 'commit:rebase'
+	      \)
+	
+	call gina#custom#mapping#nmap(
+	      \ 'branch', 'g<CR>',
+	      \ '<Plug>(gina-branch-checkout-track)'
+	      \)
+	call gina#custom#mapping#nmap(
+	      \ 'status', '<C-^>',
+	      \ ':<C-u>Gina commit<CR>',
+	      \ {'noremap': 1, 'silent': 1}
+	      \)
+	call gina#custom#mapping#nmap(
+	      \ 'commit', '<C-^>',
+	      \ ':<C-u>Gina status<CR>',
+	      \ {'noremap': 1, 'silent': 1}
+	      \)
+	
+	call gina#custom#execute(
+	      \ '/\%(status\|branch\|ls\|grep\|changes\|tag\)',
+	      \ 'setlocal winfixheight',
+	      \)
+<
+Latest version:~
+"home/.config/nvim/rc.d/gina.vim" on https://github.com/lambdalisue/rook/
+
+=============================================================================
+BUFFER						*gina-buffer*
+
+gina uses two kind of buffers internally. One is called a "file-like" buffer
+and another is called "non file-like" buffer.
+
+The main difference between "file-like" and "non file-like" is options.
+Some options are forcedly assigned by the command (upper part) and other
+options are defined in a corresponding |ftplugin| (lower part).
+The following table visualize the difference of options between file-like and
+non file-like ("?" in the table indicates the default value)
+
+	option			file-like	non file-like~
+	'buftype'		nowrite		nofile
+	'bufhidden'		?		wipe
+	'swapfile'		?		0
+	'modifiable'		0		0
+	
+	option			file-like	non file-like~
+	'buflisted'		1             	0
+	'list'			?		0
+	'spell'			?		0
+	'wrap'			?		0
+	'foldenable'		?		0
+	'number'		?		0
+	'relativenumber'	?		0 
+	'foldcolumn'		?		0
+	'colorcolumn'		?		0
+
+If you are not satisfied with this options, use a |ftplugin| in an |after|
+directory to overwrite.
+
+Additinal difference is |gina-actions|. Most of "non file-like" buffer
+pre-define some actions while non of "file-like" buffer does. 
+
+						*gina-buffer-naming*
+A buffer which shown by gina is one of the following
+
+	gina://{refname}:{scheme}[:{params}]
+	gina://{refname}:{scheme}[:{params}]/{rev}
+	gina://{refname}:{scheme}[:{params}]/{treeish}
+
+Where
+	{refname}	An unique name for a git repository
+			e.g. "gina.vim"
+	{scheme}	A command scheme
+			e.g. "status", "commit"
+	{params}	Optional parameters splitted by ":"
+			e.g. "cached", "cached:--"
+	{rev}		A target revision
+			e.g. "HEAD", "master"
+	{treeish}	A target treeish which is {rev}:{path}
+			e.g. "HEAD:README.md", ":autoload/gina.vim"
+
+When a command supports filtering candidates by "-- {pathspec}..." and the
+filteratio has performed, "--" is applied to {params} like
+>
+	:Gina log
+	" --> Open gina://xxxxx:log for entire log
+	:Gina log -- **/*.vim
+	" --> Open gina://xxxxx:log:-- for filtered log
+<
+The {treeish} is similar to the one used in "git show" command.
+See |gina-misc-treeish| for the detail about {treeish}
+
+						*gina-buffer-+cmd*
+When a buffer is opend by gina, [+cmd] specified to the command is recognized
+and performed. See ":h +cmd" for the detail.
+
+						*gina-buffer-++opt*
+When a buffer is opend by gina, [++opt] specified to the command is recognized
+and respected. Users can use this feature to open a buffer with a particular
+encoding or format like
+>
+	:Gina show ++enc=sjis ++ff=mac HEAD:README.md
+	" --> Open README.md in HEAD with sjis/mac
+<
+See ":h ++opt" for more detail.
+
+Note that automatical detection by 'fileencodings' or 'fileformats' are not
+supported. Upvote https://github.com/lambdalisue/gina.vim/issues/24 if need.
+
+-----------------------------------------------------------------------------
+BRANCH						*gina-buffer-branch*
+					{scheme}:	branch
+					'filetype':	gina-branch
+					'autoread':	1
+
+This is a "non file-like" buffer which is shown by |:Gina-branch| command.
+In this buffer, users can use the following action groups.
+
+	|gina-action-branch|	(shorten)
+	|gina-action-browse| 
+	|gina-action-changes|
+	|gina-action-commit|
+	|gina-action-show|
+
+And the following default keymappings
+	
+	<Return>	Checkout branch (detached head for remote)
+
+Users can disable the default aliases (shorten) and/or mappings by
+
+	|g:gina#command#branch#use_default_aliases|
+	|g:gina#command#branch#use_default_mappings|
+
+Set 0 to these value disable default settings.
+
+-----------------------------------------------------------------------------
+CHANGES						*gina-buffer-changes*
+					{scheme}:	changes
+					'filetype':	gina-changes
+
+This is a "non file-like" buffer which is shown by |:Gina-changes| command.
+In this buffer, users can use the following action groups.
+
+	|gina-action-browse|
+	|gina-action-compare|
+	|gina-action-diff|
+	|gina-action-edit|	(shorten)
+	|gina-action-show|
+
+And the following default keymappings are defined
+	
+	<Return>	Edit a file
+	dd		Open a unified-diff
+	DD		Open a unified-diff (right)
+	cc		Open two buffers to compare
+	CC		Open two buffers to compare (tab)
+
+Users can disable the default aliases (shorten) and/or mappings by
+
+	|g:gina#command#changes#use_default_aliases|
+	|g:gina#command#changes#use_default_mappings|
+
+Set 0 to these value disable default settings.
+
+-----------------------------------------------------------------------------
+COMMIT						*gina-buffer-commit*
+					{scheme}:	commit
+					'filetype':	gina-commit
+
+This is a "non file-like" buffer which is shown by |:Gina-commit| command.
+
+When users save a content with |:write| command, the content is cached.
+To read from content and discard the current modification which has not cached
+yet, use |:edit!|. Note that there are two content cache exist. One for commit
+without "--amend" and another for commit with "--amend".
+
+When users close the buffer with |:quit| command, users will be asked if they
+want to commit the changes like
+>
+	[gina] Do you want to commit changes? [Y(es)/n(o)]
+<
+"Y" is capital mean that if user hit <Return> without answering, that mean
+"Yes". If user type "n" or "no" and hit <Return>, the commit is canceled.
+Note that if users cache the content with |:w|, the cached message will be used
+when users open a "gina-commit" buffer again.
+
+When users close the buffer with |:wq| command, no confirmation prompt will
+appear and the commit is immediately performed.
+
+Note that no actions are available on this buffer.
+And the following default keymappings are defined
+	
+	!		Switch --amend option
+
+Users can disable the default mappings by
+
+	|g:gina#command#commit#use_default_mappings|
+
+Set 0 to these value disable default settings.
+
+-----------------------------------------------------------------------------
+DIFF						*gina-buffer-diff*
+					{scheme}:	diff
+					'filetype':	diff
+
+This is a "file-like" buffer which is shown by |:Gina-diff| command.
+Note that no actions or default mappings are available on this buffer.
+
+-----------------------------------------------------------------------------
+GREP						*gina-buffer-grep*
+					{scheme}:	grep
+					'filetype':	gina-grep
+
+This is a "non file-like" buffer which is shown by |:Gina-grep| command.
+The aliases of actions and default mappings are rely on {rev} part of the
+buffer name (|gina-buffer-naming|).
+In this buffer, users can use the following action groups.
+
+	|gina-action-browse|
+	|gina-action-compare|
+	|gina-action-diff|
+	|gina-action-edit|	(shorten when {rev} is missing)
+	|gina-action-expose|
+	|gina-action-show|	(shorten when {rev} exists)
+
+And the following default keymappings are defined
+	
+	<Return>	Edit/Show a file (depends on {rev})
+
+Users can disable the default aliases (shorten) and/or mappings by
+
+	|g:gina#command#qrep#use_default_aliases|
+	|g:gina#command#qrep#use_default_mappings|
+
+Set 0 to these value disable default settings.
+
+-----------------------------------------------------------------------------
+LOG						*gina-buffer-log*
+					{scheme}:	log
+					'filetype':	gina-log
+
+This is a "non file-like" buffer which is shown by |:Gina-log| command.
+In this buffer, users can use the following action groups.
+
+	|gina-action-browse|
+	|gina-action-changes|
+	|gina-action-commit|
+	|gina-action-compare|
+	|gina-action-diff|
+	|gina-action-edit|
+	|gina-action-show|	(shorten)
+
+And the following default keymappings are defined
+	
+	<Return>	Show a commit or content
+
+Users can disable the default aliases (shorten) and/or mappings by
+
+	|g:gina#command#log#use_default_aliases|
+	|g:gina#command#log#use_default_mappings|
+
+Set 0 to these value disable default settings.
+
+-----------------------------------------------------------------------------
+LS						*gina-buffer-ls*
+					{scheme}:	ls
+					'filetype':	gina-ls
+
+This is a "non file-like" buffer which is shown by |:Gina-ls| command.
+The aliases of actions and default mappings are rely on {rev} part of the
+buffer name (|gina-buffer-naming|).
+In this buffer, users can use the following action groups.
+
+	|gina-action-browse|
+	|gina-action-changes|
+	|gina-action-compare|
+	|gina-action-diff|
+	|gina-action-edit|	(shorten when {rev} is missing)
+	|gina-action-show|	(shorten when {rev} exists)
+
+And the following default keymappings are defined
+	
+	<Return>	Edit/Show a file (depends on {rev})
+
+Users can disable the default aliases (shorten) and/or mappings by
+
+	|g:gina#command#ls#use_default_aliases|
+	|g:gina#command#ls#use_default_mappings|
+
+Set 0 to these value disable default settings.
+
+-----------------------------------------------------------------------------
+REFLOG						*gina-buffer-reflog*
+					{scheme}:	reflog
+					'filetype':	gina-reflog
+
+This is a "non file-like" buffer which is shown by |:Gina-reflog| command.
+In this buffer, users can use the following action groups.
+
+	|gina-action-changes|
+	|gina-action-commit|
+	|gina-action-show|	(shorten)
+
+And the following default keymappings are defined
+	
+	<Return>	Show a commit or content
+
+Users can disable the default aliases (shorten) and/or mappings by
+
+	|g:gina#command#reflog#use_default_aliases|
+	|g:gina#command#reflog#use_default_mappings|
+
+Set 0 to these value disable default settings.
+
+-----------------------------------------------------------------------------
+SHOW						*gina-buffer-show*
+					{scheme}:	show
+					'filetype':	git without {path}
+
+This is a "file-like" buffer which is shown by |:Gina-show| command.
+The following commands also opens this buffer to compare the content.
+
+	|:Gina-chaperon|
+	|:Gina-compare|
+	|:Gina-patch|
+
+Note that no actions or default mappings are available on this buffer.
+
+-----------------------------------------------------------------------------
+STATUS						*gina-buffer-status*
+					{scheme}:	status
+					'filetype':	gina-status
+					'autoread':	1
+
+This is a "non file-like" buffer which is shown by |:Gina-status| command.
+In this buffer, users can use the following action groups.
+
+	|gina-action-browse|
+	|gina-action-chaperon|
+	|gina-action-compare|
+	|gina-action-diff|
+	|gina-action-edit|	(shorten)
+	|gina-action-export|
+	|gina-action-index|	(shorten)
+	|gina-action-patch|
+	|gina-action-show|
+
+And the following default keymappings are defined
+	
+	<Return>	Edit a file
+	dd		Open a unified-diff
+	DD		Open a unified-diff (right)
+	cc		Open two buffers to compare
+	CC		Open two buffers to compare (tab)
+	pp		Open three buffers to patch
+	PP		Open three buffers to patch (tab)
+	!!		Open three buffers to solve conflict
+	<<		Stage changes
+	>>		Unstage changes
+	--		Toggle stage/unstage
+	==		Discard local changes
+
+Users can disable the default aliases (shorten) and/or mappings by
+
+	|g:gina#command#status#use_default_aliases|
+	|g:gina#command#status#use_default_mappings|
+
+Set 0 to these value disable default settings.
+
+-----------------------------------------------------------------------------
+TAG						*gina-buffer-tag*
+					{scheme}:	tag
+					'filetype':	gina-tag
+
+This is a "non file-like" buffer which is shown by |:Gina-tag| command.
+In this buffer, users can use the following action groups.
+
+	|gina-action-branch|
+	|gina-action-browse|
+	|gina-action-changes|
+	|gina-action-commit|
+	|gina-action-show|	(shorten)
+
+And the following default keymappings are defined
+	
+	<Return>	Show a commit or content
+
+Users can disable the default aliases (shorten) and/or mappings by
+
+	|g:gina#command#tag#use_default_aliases|
+	|g:gina#command#tag#use_default_mappings|
+
+Set 0 to these value disable default settings.
 
 
 =============================================================================
@@ -39,102 +897,153 @@ INTERFACE					*gina-interface*
 -----------------------------------------------------------------------------
 COMMANDS					*gina-commands*
 
+Note that commands which opens a buffer understand <mods>, mean that users
+can control the directions like
+>
+	:topleft Gina show --opener=vsplit
+<
+Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
+|gina-buffer-++opt| for detail.
+
 						*:Gina*
 :Gina[!] {command} [{options}]
 	Call {command} with {options}.
-	It call a gina command of {command} when {command} is found under
+	It calls a gina command of {command} when {command} is found under
 	the namespace "gina#command#".
-	Otherwise it call a raw {command} ("git {command} {options}") and
-	echo the result. It immediately call a raw {command} rather than a
-	gina command even if there are {command} is found if a bang (!) has
-	specified.
+	Otherwise it calls a raw {command} ("git {command} {options}") and
+	echo the result.
+	Users can force to call a raw cammand by a |bang| modifier.
 
 						*:Gina-branch*
-:Gina branch [{options}]
+:Gina branch [+cmd] [++opt] [{options}]
 	Open a "gina-branch" buffer to list and manipulate branches.
-	The followings are allowed in {options}
 
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
+
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
+	
+	Note that a raw git command will be executed if the option contains
+	"--list", "-u/--set-upstream-to", "-m/--move", "-d/--delete", or
+	"--edit-description".
 
-	The following action groups are available in the buffer.
-
-	|gina-action-branch|
-	|gina-action-browse|
-	|gina-action-changes|
-	|gina-action-commit|
-	|gina-action-show|
-
-	See "man git-branch" for other available {options}.
+	See also~
+	|gina-buffer-branch|
+	:!man git-branch
 
 						*:Gina-browse*
-:Gina browse [{options}] [{commit}] [-- {path}]
-	Show a remote content of {path} or the repository in a connected
-	remote in a system browser (e.g. Firefox, Google Chrome, etc).
-	If no {path} is specified, the path of the current buffer is used.
-	If no {commit} has specified, the HEAD is used.
+:Gina browse [+cmd] [++opt] [{options}] [{treeish}]
+	Show a remote content of {treeish} of a connected remote in a system
+	browser (e.g. Firefox, Google Chrome, etc).
+	If {treeish} is missing, {rev} part of the {treeish} is guessed from a
+	current buffer and {path} part will be omitted. Use ":" instead if you
+	would like to guess {path} part as well (|gina-misc-treeish|).
+
 	The followings are allowed in {options}
 
 	--scheme={scheme}
 		Use a specified scheme to build a remote url.
+		Currently "_", "root", "blame", or "compare" is available on
+		github.com or bitbucket.org
 	--exact
-		Use an exact rev instead of a branch name
+		Use an exact revision instead of a branch name
 	--yank
 		Yank a url instead of opening
 	
-	See
-	|g:gina#command#browse#translation_patterns|
-	|g:gina#command#browse#extra_translation_patterns|
-	to find allowed {scheme} or available remote urls.
+	This command currently supports github.com and bitbucket.org.
+	Users can add rules for other web-service by adding entries to
+	|g:gina#command#browse#translation_patterns|.
 
 						*:Gina-cd*
-:Gina cd [-- {path}]
-	Change a current directory to the {path} or the repository root.
-	See also |:Gina-lcd|.
+:Gina cd [{path}]
+	Change a current directory to the {path} or the repository root by
+	|:cd| command.
+
+	See also~
+	|:Gina-lcd|
 
 						*:Gina-changes*
-:Gina changes [{options}] [{commit}]
-	Open a "gina-changes" buffer to show changed files of {commit}.
-	The followings are allowed in {options}
+:Gina changes [+cmd] [++opt] [{options}] [{rev}] [-- {pathspec}...]
+	Open a "gina-changes" buffer to list changes per file for {rev} or the
+	index.
+	If {rev} is missing, it is guessed from the current buffer. Use ":0"
+	to force the index (|gina-misc-treeish|).
 
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
+
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
 
 	It use "git diff --numstat" internally so see "man git-diff" for
 	other available {options}.
 
-	The following action groups are available in the buffer.
-	
-	|gina-action-browse|
-	|gina-action-compare|
-	|gina-action-diff|
-	|gina-action-edit|
-	|gina-action-show|
+	See also~
+	|gina-buffer-changes|
+	:!man git-diff
 
 						*:Gina-chaperon*
-:Gina chaperon [{options}]
-	Open three buffers to solve conflicted changes during merge.
-	NOTE: Not impelmented yet.
+:Gina chaperon [+cmd] [++opt] [{options}] [{path}]
+	Open 3-way diff to solve conflict.
+	If {path} is missing, it is guessed from the current buffer.
+	It opens the follwoing buffers by |:Gina-edit| and |:Gina-show| command.
+
+	REMOTE:		gina://{refname}:show/:3:{path}
+	WORKTREE:	{path}
+	LOCAL:		gina://{refname}:show/:2:{path}
+
+	Users can use |:diffput| and |:diffget| to copy diff content.
+	Additionally, gina defines the following additional mappings.
+
+	REMOTE/LOCAL
+	<Plug>(gina-diffput)	Put a diff chunk to WORKTREE buffer.
+				Assigned to "dp" in default.
+	
+	WORKTREE
+	<Plug>(gina-diffget-l)	Get a diff chunk from LOCAL buffer.
+				Assigned to "dol" in default.
+	<Plug>(gina-diffget-r)	Get a diff chunk from REMOTE buffer.
+				Assigned to "dor" in default.
+
+	See also~
+	|:Gina-patch|
 
 						*:Gina-commit*
-:Gina commit [{options}]
+:Gina commit [+cmd] [++opt] [{options}]
 	Open a "gina-commit" buffer to commit changes.
-	The changes will be commited when the buffer has closed.
+	Users can write a commit message on this buffer and the actual commit
+	will be performed when user close the buffer with |:q| or |:wq|.
 
-	The following buffer mapping is available
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
 
-	<Plug>(gina-commit-toggle)
-		Toggle "--amend" option. It is mapped to <C-^> in default.
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
+	--opener={opener}
+		An opener command for the new buffer (|gina-options-opener|)
+
+	See also~
+	|gina-buffer-commit|
+	|:Gina-status|
 
 						*:Gina-compare*
-:Gina compare [{options}] [{commit}] [-- {path}]
+:Gina compare [+cmd] [++opt] [{options}] [{treeish}]
 	Open two buffers to compare the content of {path} between 1) working
-	tree vs index or {commit}, 2) index vs HEAD or {commit}.
-	If no {path} has specified, the path of the current buffer is used.
-	If no {commit} has specified, the index or HEAD is used depends on
-	the --cached option.
+	tree vs index or {rev}, 2) index vs HEAD or {rev}.
+	If {treeish} is missing, {rev} part of the {treeish} is guessed from a
+	current buffer and {path} part will be omitted. Use ":" instead if you
+	would like to guess {path} part as well (|gina-misc-treeish|).
+	If {path} part of the {treeish} is omitted, it warn and fail.
+
 	The followings are allowed in {options}
 
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the 1st buffer (|gina-options-opener|)
 	--line={line}
@@ -149,28 +1058,23 @@ COMMANDS					*gina-commands*
 	It respects 'diffopt' when opening the 2nd buffer. Add "vertical" to
 	the option if you prefer to open the 2nd buffer vertically.
 
+	See also~
+	|gina-buffer-compare|
+	|:Gina-diff|
+
 						*:Gina-diff*
-:Gina diff [{options}] [{commit}] [-- {path}]
+:Gina diff [+cmd] [++opt] [{options}] [{treeish}] [-- {pathspec}...]
 	Show an unified diff of {path} or the repository between 1) working
-	tree vs index or {commit}, 2) index vs HEAD or {commit}.
-	If no {path} has specified, the path of the current buffer is used.
-	If no {commit} has specified, the index or HEAD is used depends on
-	the --cached option.
-	The followings are allowed in {options}
+	tree vs index or {rev}, 2) index vs HEAD or {rev}.
+	If {treeish} is missing, {rev} part of the {treeish} is guessed from a
+	current buffer and {path} part will be omitted. Use ":" instead if you
+	would like to guess {path} part as well (|gina-misc-treeish|).
 
-	--opener={opener}
-		An opener command for the new buffer (|gina-options-opener|)
-	--repository
-		Show a repository instead of the content of a specific file
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
 
-	See "man git-diff" for other available {options}.
-
-						*:Gina-edit*
-:Gina edit [{options}] [-- {path}]
-	Open a content of the {path} in the working tree.
-	If no {path} has specified, the path of the current buffer is used.
-	The followings are allowed in {options}
-
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
 	--line={line}
@@ -178,98 +1082,107 @@ COMMANDS					*gina-commands*
 	--col={col}
 		An initial column number
 
-	See "man git-diff" for other available {options}.
+	See also~
+	|gina-buffer-diff|
+	|:Gina-compare|
+	:!man git-diff
+
+						*:Gina-edit*
+:Gina edit [+cmd] [++opt] [{options}] [{path}]
+	Open a content of the {path} in the working tree.
+	If {path} is missing, it is guessed from the current buffer.
+
+	The followings are allowed in {options}
+
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
+	--opener={opener}
+		An opener command for the new buffer (|gina-options-opener|)
+	--line={line}
+		An initial line number
+	--col={col}
+		An initial column number
+
+	See also~
+	|:Gina-diff|
+	|:Gina-show|
 
 						*:Gina-grep*
-:Gina grep [{options}]
-	Open a "gina-grep" buffer to show files which match with the
-	specified patterns.
-	The followings are allowed in {options}
+:Gina grep [+cmd] [++opt] [{options}] [{pattern}] [{rev}] [-- {pathspec}...]
+	Open a "gina-grep" buffer to show files which contains the specified
+	patterns.
+	If {rev} is missing, it is guessed from the current buffer. Use ":0"
+	to force the index (|gina-misc-treeish|).
 
-	--opener={opener}
-		An opener command for the new buffer (|gina-options-opener|)
-	--async
-		Run grep command asynchronously
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
 
-	The following action groups are available in the buffer.
-
-	|gina-action-browse|
-	|gina-action-compare|
-	|gina-action-diff|
-	|gina-action-edit|
-	|gina-action-export|
-	|gina-action-patch|
-	|gina-action-show|
-
-	See "man git-grep" for other available {options}.
-	See |:Gina-qrep| if you prefer to use |quickfix| window instead.
-
-						*:Gina-info*
-:Gina info [{options}] [{commit}] [-- {path}]
-	Show an index or {commit} info.
-	If no {commit} has specified, the index is used.
-	The followings are allowed in {options}
-
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
 
-	See "man git-show" for other available {options}.
-	See |:Gina-show| if you would like to see a content of a file in a
-	particular commit.
+	See also~
+	|gina-buffer-grep|
+	|:Gina-qrep|
 
 						*:Gina-lcd*
-:Gina lcd [-- {path}]
-	Change a current directory to the {path} or the repository root.
-	See also |:Gina-cd|.
+:Gina lcd [{path}]
+	Change a current directory to the {path} or the repository root by
+	|:lcd| command.
+
+	See also~
+	|:Gina-cd|
 
 						*:Gina-log*
-:Gina log [{options}] [-- {path}]
+:Gina log [+cmd] [++opt] [{options}] [{path}] [-- {pathspec}...]
 	Open a "gina-log" buffer to show commits of the {paht} or the
 	repository.
-	The followings are allowed in {options}
+	If {path} is missing, it shows a log of the repository.
 
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
+
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
-	--async
-		Run grep command asynchronously
 
-	The following action groups are available in the buffer.
-
-	|gina-action-browse|
-	|gina-action-changes|
-	|gina-action-commit|
-	|gina-action-compare|
-	|gina-action-diff|
-	|gina-action-edit|
-	|gina-action-show|
-
-	See "man git-log" for other available {options}.
+	See also~
+	|gina-buffer-log|
+	:!man git-log
 
 						*:Gina-ls*
-:Gina ls [{options}] [{commit}]
+:Gina ls [+cmd] [++opt] [{options}] [{rev}] [-- {pathspec}...]
 	List files in the working tree, the index, or the commit.
-	The followings are allowed in {options}
+	If {rev} is missing, it is guessed from the current buffer. Use ":0"
+	to force the index (|gina-misc-treeish|).
 
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
+
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
 
-	The following action groups are available in the buffer.
+	Note that if {rev} is specified, it use "git ls-tree" internally.
+	Otherwise it use "git ls-files" internally.
 
-	|gina-action-browse|
-	|gina-action-compare|
-	|gina-action-diff|
-	|gina-action-edit|
-	|gina-action-show|
-
-	See "man git-ls-files" for other available {options}.
-	See "man git-ls-tree" for other available {options}.
+	See also~
+	|gina-buffer-ls|
+	:!man git-ls-files
+	:!man git-ls-tree
 
 						*:Gina-patch*
-:Gina patch [{options}] [-- {path}]
+:Gina patch [+cmd] [++opt] [{options}] [{path}]
 	Open three buffers to patch changes of {path} to the index.
-	If no {path} has specified, the path of the current buffer is used.
+	If {path} is missing, it is guessed from the current buffer.
+
 	The followings are allowed in {options}
 
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the 1st buffer (|gina-options-opener|)
 	--line={line}
@@ -280,8 +1193,11 @@ COMMANDS					*gina-commands*
 	It respects 'diffopt' when opening the 2nd, 3rd buffer. Add "vertical"
 	to the option if you prefer to open the 2nd, 3rd buffer vertically.
 
+	See also~
+	|:Gina-chaperon|
+
 						*:Gina-qrep*
-:Gina qrep[!] [{options}]
+:Gina qrep[!] [{options}] [--{pathspec}...]
 	Like |:Gina-grep| but it uses |quickfix| window to show the result.
 	
 	It tries to mimic a Vim's builtin |:grep| command. So
@@ -296,31 +1212,36 @@ COMMANDS					*gina-commands*
 	--action={action}
 		An action which is specified to |setqflist()|.
 
-	See "man git-grep" for other available {options}.
+	See also~
+	:!man git-grep
 
 						*:Gina-reflog*
-:Gina reflog [{options}]
+:Gina reflog [+cmd] [++opt] [{options}]
 	Open a "gina-reflog" buffer to see reflog of the repository.
-	The followings are allowed in {options}
 
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
+
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
 
-	The following action groups are available in the buffer.
-
-	|gina-action-changes|
-	|gina-action-commit|
-	|gina-action-show|
-
-	See "man git-reflog" for other available {options}.
+	See also~
+	|gina-buffer-reflog|
+	:!man git-reflog
 
 						*:Gina-show*
-:Gina show [{options}] [{commit}] [-- {path}]
-	Open a {path} in index or {commit}.
-	If no {path} has specified, the path of the current buffer is used.
-	If no {commit} has specified, the index is used.
-	The followings are allowed in {options}
+:Gina show [+cmd] [++opt] [{options}] [{treeish}] [-- {pathspec}...]
+	Show a commit of {rev} or content of {path} in {rev}.
+	If {treeish} is missing, {rev} part of the {treeish} is guessed from a
+	current buffer and {path} part will be omitted. Use ":" instead if you
 
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
+
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
 	--line={line}
@@ -328,127 +1249,337 @@ COMMANDS					*gina-commands*
 	--col={col}
 		An initial column number
 
-	See "man git-show" for other available {options}.
-	See |:Gina-info| if you would like to see a commit itself.
+	See also~
+	|gina-buffer-show|
+	:!man git-show
 
 						*:Gina-status*
-:Gina status [{options}]
+:Gina status [+cmd] [++opt] [{options}] [-- {pathspec}...]
 	Open a "gina-status" buffer to show status of the repository.
-	The followings are allowed in {options}
 
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
+
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
 
-	The following action groups are available in the buffer.
-
-	|gina-action-browse|
-	|gina-action-compare|
-	|gina-action-diff|
-	|gina-action-edit|
-	|gina-action-export|
-	|gina-action-index|
-	|gina-action-patch|
-	|gina-action-show|
-
-	See "man git-status" for other available {options}.
+	See also~
+	|gina-buffer-status|
+	:!man git-status
 
 						*:Gina-tag*
-:Gina tag [{options}]
+:Gina tag [+cmd] [++opt] [{options}]
 	Open a "gina-tag" buffer to list tags.
-	The followings are allowed in {options}
 
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
+
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
 
-	The following action groups are available in the buffer.
-
-	|gina-action-branch|
-	|gina-action-browse|
-	|gina-action-changes|
-	|gina-action-commit|
-	|gina-action-show|
-
-	See "man git-tag" for other available {options}.
-
------------------------------------------------------------------------------
-VARIABLES					*gina-variables*
-
-		*g:gina#command#browse#extra_translation_patterns*
-g:gina#command#browse#extra_translation_patterns
-	Add extra translation pattern for |:Gina-browse|.
+	See also~
+	|gina-buffer-tag|
+	:!man git-tag
 	
-
------------------------------------------------------------------------------
-MAPPINGS					*gina-mappings*
-
-The followings are builtin default mappings.
-
-Mode	Key	Action~
-n	?	builtin:help
-nvi	<Tab>	builtin:choice
-nvi	.	builtin:repeat
-
-Users can find <Plug> mappings of individual actions in a message shown by
-"builtin:help" action (hit ? in an action enabled buffer).
-Then use |map| command in a corresponding |ftplugin| to define a custom mapping
-like:
->
-	" e.g. ~/.vim/ftplugin/gina-status.vim
-	nmap <buffer> <Leader>t <Plug>(gina-edit-tabedit)
-	nmap <buffer> <Leader>p <Plug>(gina-edit-preview)
-<
 -----------------------------------------------------------------------------
 FUNCTIONS					*gina-functions*
 
 					*gina#custom#action#alias()*
 gina#custom#action#alias({scheme}, {alias}, {name})
-	Add an {alias} of {name} action. Users can access the action with the
-	{alias} in "builtin:choice" action.
+	Add an {alias} of {name} action on {scheme} buffers.
+	Users can access the action with the {alias} in "builtin:choice".
+	Note that this alias will not affect to a mappin name.
+	Note that "/{pattern}" for {scheme} is used to apply the function for
+	buffers which matches with {pattern}.
+
+	See also~
+	|gina-custom-action|
+
+					*gina#custom#action#shorten()*
+gina#custom#action#shorten({scheme}, {action_scheme} [, {excludes}])
+	Automatically add shorten aliases of actions in {action_scheme} on
+	{scheme} buffers.
+	Note that "/{pattern}" for {scheme} is used to apply the function for
+	buffers which matches with {pattern}.
+
+	See also~
+	|gina-custom-action-shorten|
+
+					*gina#custom#command#alias()*
+gina#custom#command#alias({scheme}, {alias} [, {raw}])
+	Define a command alias of {scheme} to {alias}.
+	If {raw} is specified, it alias to a git raw command instead of a
+	gina's command.
+	Note that "/{pattern}" for {scheme} is not allowed in this function.
+
+	See also~
+	|gina-custom-command-alias|
+
+					*gina#custom#command#option()*
+gina#custom#command#option({scheme}, {option} [, {value}])
+	Define a default command {option} for a {scheme} command.
+	If {value} is omitted, 1 is used instead.
+
+	The function automatically add a option remover "--no-{option}" when
+	the {value} is 1. So that user can disable the default option by using
+	that remover option.
+
+	Note that the default options are applied based on the alias, namely
+	the default options for "status" and "st" (assume this is an alias
+	of "status") are different.
+
+	Note that "/{pattern}" for {scheme} is used to apply the function for
+	commands which matches with {pattern}.
+
+	See also~
+	|gina-custom-command|
+	|gina-custom-command-alias|
+
+					*gina#custom#mapping#map()*
+					*gina#custom#mapping#nmap()*
+					*gina#custom#mapping#vmap()*
+					*gina#custom#mapping#imap()*
+gina#custom#mapping#map({scheme}, {lhs}, {rhs} [, {options}])
+gina#custom#mapping#nmap({scheme}, {lhs}, {rhs} [, {options}])
+gina#custom#mapping#vmap({scheme}, {lhs}, {rhs} [, {options}])
+gina#custom#mapping#imap({scheme}, {lhs}, {rhs} [, {options}])
+	Define {lhs} to {rhs} mapping on {scheme} buffers.
+	The {options} may contains the following attributes
+
+	"mode"		A single character for a prefix of a |:map| command
+			This is overwritten when nmap, vmap, or imap version
+			of the function has used.
+			Default is ""
+	"noremap"	Use |:noremap| instead of |:map|.
+			Default is 0
+	"buffer"	Add <buffer> to the command
+			Default is 1
+	"nowait"	Add <nowait> to the command
+			Default is 0
+	"silent"	Add <silent> to the command
+			Default is 0
+	"special"	Add <special> to the command
+			Default is 0
+	"script"	Add <script> to the command
+			Default is 0
+	"unique"	Add <unique> to the command
+			Default is 0
+	"expr"		Add <expr> to the command
+			Default is 0
+
+	Note that "/{pattern}" for {scheme} is used to apply the function for
+	buffers which matches with {pattern}.
+
+	See also~
+	|gina-custom-mapping|
+
+-----------------------------------------------------------------------------
+VARIABLES					*gina-variables*
+
+		*g:gina#command#branch#use_default_aliases*
+		*g:gina#command#changes#use_default_aliases*
+		*g:gina#command#grep#use_default_aliases*
+		*g:gina#command#log#use_default_aliases*
+		*g:gina#command#ls#use_default_aliases*
+		*g:gina#command#reflog#use_default_aliases*
+		*g:gina#command#status#use_default_aliases*
+		*g:gina#command#tag#use_default_aliases*
+g:gina#command#{scheme}#use_default_aliases
+	Define a default action aliases in a corresponding buffer.
+	Assign 0 if you would like to disable the default action aliases.
+	Default: 1
+
+		*g:gina#command#branch#use_default_mappings*
+		*g:gina#command#changes#use_default_mappings*
+		*g:gina#command#chaperon#use_default_mappings*
+		*g:gina#command#commit#use_default_mappings*
+		*g:gina#command#grep#use_default_mappings*
+		*g:gina#command#log#use_default_mappings*
+		*g:gina#command#ls#use_default_mappings*
+		*g:gina#command#patch#use_default_mappings*
+		*g:gina#command#reflog#use_default_mappings*
+		*g:gina#command#status#use_default_mappings*
+		*g:gina#command#tag#use_default_mappings*
+g:gina#command#{scheme}#use_default_mappings
+	Define a default mappings in a corresponding buffer.
+	Assign 0 if you would like to disable the default mappings.
+	Default: 1
+
+		*g:gina#command#grep#send_to_quickfix*
+g:gina#command#grep#send_to_quickfix
+	Send all candidates to quickfix after command execution.
+	Default: 1
+
+		*g:gina#command#browse#translation_patterns*
+g:gina#command#browse#translation_patterns
+	A translation pattern used to build a correspondidng URL in
+	|:Gina-browse| command.
+
+	An item of the dictionary is a |List|, which have an acceptable url
+	pattern |List| and a url translation scheme |Dictionary|.
+
+	The acceptable url pattern list contains |String| items which indicate
+	a url pattern in regular expression. "%domain" in the pattern will be
+	replaced into a key value of the dictionary for convinience.
+
+	Users can specify a particular scheme defined in the url translation
+	scheme dictionary with "--scheme" option, mean the following command
+	open a git blame page in github.com while a url translation scheme
+	dictionary of github.com has "blame" entry.
+>
+	:Gina browse --scheme=blame
+<
+	In the url translation scheme dictionary, the following format strings
+	are replaced by a rule which explained in |gina-misc-string-format|.
+
+	"pt"	A relative file path from a top of git working tree
+	"ls"	A start line number of the selection
+	"le"	A end line number of the selection
+	"c0"	A commit specified
+	"c1"	A lhs commit for diff
+	"c2"	A rhs commit for diff
+	"h0"	A sha1 hash of c0
+	"h1"	A sha1 hash of c1
+	"h2"	A sha1 hash of c2
+	"r0"	A commit or sha1 hash depends on "--exact"
+	"r1"	Same as r0 but for c1/h1
+	"r2"	Same as r0 but for c2/h2
+
+	Example: Add a pattern for GitLab
+>
+	" %domain in the acceptable url pattern list will be substituted into
+	" 'gitlab.hashnote.net'
+	" '_' of a url translation scheme dictionary is used as a default
+	" scheme
+	" '^' of a url translation scheme dictionary is used as a repository
+	" scheme
+	call extend(g:gina#command#browse#translation_patterns, {
+	    \ 'gitlab.hashnote.net': [
+	    \   [
+	    \     '\vhttps?://(%domain)/(.{-})/(.{-})%(\.git)?$',
+	    \     '\vgit://(%domain)/(.{-})/(.{-})%(\.git)?$',
+	    \     '\vgit\@(%domain):(.{-})/(.{-})%(\.git)?$',
+	    \     '\vssh://git\@(%domain)/(.{-})/(.{-})%(\.git)?$',
+	    \   ], {
+	    \     'root':  'https://\1/\2/\3/tree/%r1/',
+	    \     '_':     'https://\1/\2/\3/blob/%r1/%pt%{#L|}ls%{-}le',
+	    \     'exact': 'https://\1/\2/\3/blob/%h1/%pt%{#L|}ls%{-}le',
+	    \   },
+	    \ ],
+	    \})
+<
+		*g:gina#process#command*
+g:gina#process#command
+	A command string used to execute a git process.
+	Note: Users should not change the value unless you know what.
+	Default: "git --no-pager -c core.editori=false"
+
+		*g:gina#process#updatetime*
+g:gina#process#updatetime
+	A updatetime in millisecond used for synchronous feature.
+	Note: Users should not change the value unless you know what.
+	Default: 100
+
+		*g:gina#core#askpass#askpass_program*
+g:gina#core#askpass#askpass_program
+	A askpass program used in a git process.
+	See |gina-misc-askpass| for detail about "askpass".
+	Default: ""
+
+		*g:gina#core#askpass#force_internal*
+g:gina#core#askpass#force_internal
+	Force to use an internal script instead for "askpass".
+	See |gina-misc-askpass| for detail about "askpass".
+	Default: 0
+
+		*g:gina#core#emitter#modified_delay*
+g:gina#core#emitter#modified_delay
+	A delay in millisecon until "modified" event is emitted by
+	"modified:delay" event.
+	Note: Users should not change the value unless you know what.
+	Default: 10
+
+		*g:gina#core#writer#updatetime*
+g:gina#core#writer#updatetime
+	A updatetime in millisecond used for a Vim.BufferWriter.
+	Users may need to increase this value for a large repository.
+	Default: 10
+
+		*g:gina#core#writer#use_python*
+g:gina#core#writer#use_python
+	Use |python| to update the buffer content if available.
+	Default: 1
+
+		*g:gina#core#writer#use_python3*
+g:gina#core#writer#use_python3
+	Use |python3| to update the buffer content if available.
+	Default: 1
 
 -----------------------------------------------------------------------------
 OPTIONS						*gina-options*
 
+						*gina-options-group*
+--group={group}
+	Specify a window group name for a new buffer. If there is a buffer
+	which has same window group name exist, the new buffer will be opened
+	in the window instead of a new window. For example
+>
+	:Gina status --group=foo --opener=vsplit
+	" --> Open a new window with 'gina-status' window
+	:Gina branch --opener=vsplit
+	" --> Open a new window with 'gina-branch'
+	:Gina log --group=foo --opener=vsplit
+	" --> A 'gina-log' buffer is opened in a window which
+	"     had 'gina-status'
+<
 						*gina-options-opener*
 --opener={opener}
 	Specify an opener command for a new buffer. For example
 >
-	:Gina show --opener=vsplit
-	:Gina show --opener="botright split"
+	:Gina status --opener=vsplit
+	" --> Open a new window vertically split
+	:Gina branch --opener="botright split"
+	" --> Open a new window at the bottom
 <
 	See |opening-window| for available values.
 
 -----------------------------------------------------------------------------
 ACTIONS						*gina-actions*
 
-					*gina-action-builtin*
-builtin:echo
+See also~
+|gina-usage-action|
+
+					*gina-actions-builtin*
+builtin:echo (hidden)
 	Echo the selected candidates.
-	Note that this is a hidden action.
-builtin:help
-builtin:help:all
+builtin:help (unrepeatable)
+builtin:help:all (hidden/unrepeatable)
 	Show available actions in the buffer.
 	When ":all" has specified, all available actions including hidden
 	actions are shown.
 	The action is mapped to "?" in normal mode.
-	Note that this is not a repeatalbe action.
-builtin:choice
+builtin:choice (hiddden/unrepeatable)
 	Select an action to perform.
 	The action is mapped to "<Tab>" in normal, visual, and insert mode.
 	Note that this is not a repeatalbe action.
-builtin:repeat
+builtin:repeat (hidden)
 	Repeat a previous repeatable action.
 	The action is mapped to "." in normal, visual, and insert mode.
-	Note that this is not a repeatalbe action.
 
-					*gina-action-branch*
+					*gina-actions-branch*
 branch:checkout
-	Checkout a branch. It create a new local branch when a remote branch
-	has specified.
+	Checkout a branch. Detached head will be created for a remote branch.
+branch:checkout:track (hidden)
+	Checkout a branch. It create a local branch to track a remote branch.
 branch:delete
-branch:delete:force
+branch:delete:force (hidden)
 	Delete a branch.
 branch:move
-branch:move:force
+branch:move:force (hidden)
 	Rename a branch.
 branch:new
 	Create a new branch
@@ -459,19 +1590,24 @@ branch:set-upstream-to
 branch:unset-upstream
 	Unset upstream of the branch
 
-					*gina-action-browse*
+					*gina-actions-browse*
 browse
 	Open a system browser of the url of remote of the content.
-browse:exact
+browse:exact (hidden)
 	Open a system browser of the url of remote of the content.
 	A hashref is used to construct the url rather than branch.
 browse:yank
 	Yank the url of remote of the content.
-browse:exact:yank
+browse:exact:yank (hidden)
 	Yank the url of remote of the content.
 	A hashref is used to construct the url rather than branch.
 
-					*gina-action-changes*
+					*gina-actions-chaperon*
+chaperon
+chaperon:above/below/left/right/tab (hidden)
+	Open 3-way diff to solve conflict
+
+					*gina-actions-changes*
 changes:of
 	Show changes of the commit.
 changes:between
@@ -479,76 +1615,62 @@ changes:between
 changes:from
 	Show changes from a common ancestor of the commit and HEAD.
 
-					*gina-action-commit*
+					*gina-actions-commit*
 commit:merge
-commit:merge:ff-only
-commit:merge:no-ff
-commit:merge:squash
+commit:merge:ff-only (hidden)
+commit:merge:no-ff (hidden)
+commit:merge:squash (hidden)
 	Merge the commit into HEAD
 commit:rebase
 	Rebase HEAD from the commit
-commit:rebase:merge
+commit:rebase:merge (hidden)
 	Rebase HEAD by merging the commit
 commit:revert
-commit:revert:1
-commit:revert:2
+commit:revert:1 (hidden)
+commit:revert:2 (hidden)
 	Revert the commit (-m1/-m2)
 commit:cherry-pick
-commit:cherry-pick:1
-commit:cherry-pick:2
+commit:cherry-pick:1 (hidden)
+commit:cherry-pick:2 (hidden)
 	Cherry pick the commit (-m1/-m2)
 
-					*gina-action-compare*
+					*gina-actions-compare*
 compare
-compare:above
-compare:below
-compare:left
-compare:right
-compare:tab
-	Open two buffer to compare
+compare:above/below/left/right/tab (hidden)
+	Open two buffers to compare
 
-					*gina-action-diff*
+					*gina-actions-diff*
 diff
-diff:above
-diff:below
-diff:left
-diff:right
-diff:tab
-diff:preview
-	Open a diff content.
+diff:above/below/left/right/tab/preview (hidden)
+	Open an unified-diff content.
 
-					*gina-action-edit*
+					*gina-actions-edit*
 edit
-edit:above
-edit:below
-edit:left
-edit:right
-edit:tab
-edit:preview
+edit:above/below/left/right/tab/preview (hidden)
 	Edit a content in the working tree.
 
-					*gina-action-export*
+					*gina-actions-export*
 export:quickfix
-	Replace quickfix list with the selected candidates.
-export:quickfix:add
+	Create a new quickfix list with the selected candidates.
+export:quickfix:add (hidden)
 	Add selected candidates to the quickfix list.
+export:quickfix:replace (hidden)
+	Replace quickfix list with the selected candidates.
 
-					*gina-action-index*
-index:add
-index:add:force
-index:add:intent-to-add
+					*gina-actions-index*
+index:add (hidden)
+index:add:force (hidden)
+index:add:intent-to-add (hidden)
 	Add changes to the index.
-	Note that this is a hidden action.
-index:rm
-index:rm:force
-index:rm:cached
+index:rm (hidden)
+index:rm:force (hidden)
+index:rm:cached (hidden)
 	Remove the content from the index and working tree.
-	Note that this is a hidden action.
-index:reset
+index:reset (hidden)
 	Remove changes from the index
 	Note that this is a hidden action.
 index:stage
-index:stage:force
+index:stage:force (hidden)
 	Stage changes to the index.
 	It uses "index:add" and "index:rm" internally.
 index:unstage
@@ -558,136 +1680,144 @@ index:toggle
 	Toggle stage/unstage of changes.
 	It uses "index:stage" and "index:unstage" internally.
 index:checkout
-index:checkout:force
+index:checkout:force (hidden)
 	Checkout the content.
-index:checkout:ours
+index:checkout:ours (hidden)
 	Checkout our content during merge.
-index:checkout:theirs
+index:checkout:theirs (hidden)
 	Checkout their content during merge.
-index:checkout:HEAD
-index:checkout:HEAD:force
+index:checkout:HEAD (hidden)
+index:checkout:HEAD:force (hidden)
 	Checkout the content in HEAD
-index:checkout:origin/HEAD
-index:checkout:origin/HEAD:force
+index:checkout:origin/HEAD (hidden)
+index:checkout:origin/HEAD:force (hidden)
 	Checkout the content in origin/HEAD
 index:discard
-index:discard:force
+index:discard:force (hidden)
 	Discard the changes in working tree.
 	If the file is tracked, the content is overwritten via the content in
 	HEAD. If the file is untracked, the file is removed ()
 
-					*gina-action-patch*
+					*gina-actions-patch*
 patch
-patch:above
-patch:below
-patch:left
-patch:right
-patch:tab
-	Open three buffers to patch changes to the index.
-	Not implemented yet.
+patch:above/below/left/right/tab (hidden)
+	Open 3-way diff to patch changes to the index.
 
-					*gina-action-show*
+					*gina-actions-show*
 show
-show:above
-show:below
-show:left
-show:right
-show:tab
-show:preview
-	Show a content in the index or the commit.
+show:above/below/left/right/tab/preview (hidden)
+	Show a commit or a content in the revision/index
 
-
------------------------------------------------------------------------------
-EVENTS						*gina-events*
-
-Gina will emit an event when something has happend.
-The following events are used internally.
-
-modified
-	Emitted when a status of a git repository seems to be modified.
-	This event is used to update the buffer content and caches internally.
-	Users should NOT emit this event directly, use "modified:delay"
-	instead.
-
-modified:delay
-	Used to squash sequential modified event into a single "modified"
-	event.
-	It emits "modified" event few milliseconds after the event emitted and
-	ignore all previous "modified:delay" events emitted within that time.
-	Users should NOT subscribe this event directly, use "modifihed"
-	instead.
-
-command:called {scheme}
-	Emitted when a gina's command (|:Gina|) has called and the initial
-	process has terminated.
-	A listener will be called with {scheme} which indicate what command
-	has called.
-	Note that a command which requires an additional step (e.g. commit,
-	patch) will emit this event when the command get ready and will emit
-	"command:called:complete" after the actual command has terminated
-	(e.g. A commit message was comitted. A patch was saved into an index)
-
-command:called:raw {scheme}
-	Emitted when a raw git command (|:Gina!|) has called and the process
-	has terminated.
-	A listener will be called with {scheme} which indicate what command
-	has called.
-	Note that it is NOT called for an internal process. It is called only
-	for a command invoked by |:Gina!| or |:Gina| with missing command.
-
-command:called:complete {scheme}
-	Emitted when a gina's command which requires additional steps has
-	complete (e.g. commit, patch).
-
-For example, if users want to do something when a commit message has comitted,
-use a combination of "command:called:raw" and "command:called:complete" like
->
-	function! s:on_commit(scheme) abort
-	  if a:scheme !=# 'commit'
-            return
-          endif
-          " Do more useful thing
-          echomsg "Committed!"
-	endfunction
-
-	" Subscribe 'command:called:raw' event for :Gina commit -m{message}
-	" which invoke a git raw command internally
-	call gina#core#emitter#subscribe(
-	      \ 'command:called:raw',
-	      \ function('s:on_commit')
-	      \)
-	" Subscribe 'command:called:complete' event for an actual commit
-	" event which may invoked by closing gina-commit window
-	call gina#core#emitter#subscribe(
-	      \ 'command:called:complete',
-	      \ function('s:on_commit')
-	      \)
-<
-Another for example is already used in ftplugin/gina-grep.vim. If user want to
-update a quickfix candidates with gina-grep candidates automatically, use
-"command:called" event like:
->
-	" NOTE: Already written in ftplugin/gina-grep.vim
-	function! s:on_grep(scheme) abort
-	  if a:scheme !=# 'grep'
-	    return 
-	  endif
-	  " Find a corresponding buffer and focus
-	  let focus = gina#core#buffer#focus(bufnr('gina://*:grep*'))
-	  if empty(focus)
-	    return
-	  endif
-	  " Export entire candidates into a quickfic and restore the focus
-	  try
-	    call gina#action#call('export:quickfix')
-	  finally
-	    call focus.restore()
-	  endtry
-	endfunction
-<
 
 =============================================================================
-ASKPASS						*gina-askpass*
+MISC						*gina-misc*
+
+-----------------------------------------------------------------------------
+SHORT FORMAT					*gina-misc-short-format*
+
+gina use a short format in |gina-buffer-status|.
+The following is a cheatsheet of that format.
+
+	X          Y     Meaning ~
+	          [MD]   not updated
+	M        [ MD]   updated in index
+	A        [ MD]   added to index
+	D         [ M]   deleted from index
+	R        [ MD]   renamed in index
+	C        [ MD]   copied in index
+	[MARC]           index and work tree matches
+	[ MARC]     M    work tree changed since index
+	[ MARC]     D    deleted in work tree
+
+	D           D    unmerged, both deleted
+	A           U    unmerged, added by us
+	U           D    unmerged, deleted by them
+	U           A    unmerged, added by them
+	D           U    unmerged, deleted by us
+	A           A    unmerged, both added
+	U           U    unmerged, both modified
+
+	?           ?    untracked
+	!           !    ignored
+
+See :!man git-status for more detail.
+
+-----------------------------------------------------------------------------
+TREEISH						*gina-misc-treeish*
+
+gina use {treeish} in command which may requires {rev} and/or {path}.
+The syntax of {treeish} is {rev}:{path} which is commonly used in "git show"
+command. In gina, this {treeish} would be
+
+{rev}:{path}	used to specify {rev} and {path} to the command.
+		If {rev} or {path} is an empty string, a corresponding value
+		of the current buffer is used.
+
+:0:{path}	used to specify {path} and omit {rev} so that command would
+		refer to the index.
+
+{rev}		used to specify {rev} and omit {path} so that command would
+		show a repository-wide result.
+
+For example
+>
+	:Gina show develop:autoload/gina.vim
+	" --> Open autoload/gina.vim in develop branch
+
+	:Gina show develop:
+	" --> Open a corresponding file of the current buffer in develop
+
+	:Gina show :autoload/gina.vim
+	" --> Open autoload/gina.vim in a revision of the current buffer
+
+	:Gina show :
+	" --> Open a corresponding file in a revision of the current buffer
+
+	:Gina show :0:autoload/gina.vim
+	" --> Open autoload/gina.vim in the index (forced)
+
+	:Gina show HEAD
+	" --> Open a HEAD commit rather than a particular file
+
+	:Gina show
+	" --> Open a commit rather than a particular file
+<
+Note that if {rev} and/or {path} are empty rather than omit, the value will
+refer the current buffer so the result of the command depends on the buffer.
+
+-----------------------------------------------------------------------------
+STRING FORMAT					*gina-misc-string-format*
+
+gina uses lambdalisue/vital-Data-String-Formatter which was originally built
+in lambdalisue/vim-gita to perform complex string format.
+
+The format would be performed with the following steps
+
+1. If a format string is leaded by %, the "%" and the format string will be
+   translated into a corresponding informations.  E.g: "%rb" -> "master" or ""
+
+2. If a format string is leaded by %{left|}, the "%{left|}" and the format
+   string will be translated into a corresponding informations and "left" will
+   be inserted at left side of the translation if the translation is not an
+   empty string.  E.g: "%{#}rb" -> "#master" or ""
+
+3. If a format string is leaded by %{|right}, the "%{|right}" and the format
+   string will be translated into a corresponding informations and "right"
+   will be inserted at right side of the translation if the translation is not
+   an empty string.  E.g: "%{|$}rb" -> "master$" or ""
+
+4. If a format string is leaded by %{left|right}, the "%{left|right}" and the
+   format string will be translated into a corresponding informations and
+   "left" and "right" will be inserted at left and right side of the
+   translation respectively if the translation is not an empty string.  E.g:
+   "%{#|$}rb" -> "#master$" or ""
+
+See also~
+https://github.com/lambdalisue/vim-gita
+https://github.com/lambdalisue/vital-Data-String-Formatter
+
+-----------------------------------------------------------------------------
+ASKPASS						*gina-misc-askpass*
 
 When git requires username or password (e.g. git pull on a repository linked
 with https://), it use a program called "askpass".
@@ -695,9 +1825,7 @@ While gina.vim execute a git command through a job feature, a terminal based
 askpass program which git provides cannot be used.
 To solve this issue, gina.vim try to use a GUI based askpass program instead.
 
------------------------------------------------------------------------------
-LINUX						*gina-askpass-linux*
-
+LINUX						*gina-misc-askpass-linux*
 There is a well known GUI based askpass program called "ssh-askpass-gnome".
 Users should install the program and set the executable path to one of these
 
@@ -718,9 +1846,7 @@ To enable username and/or password interactive input.
 
 See "scripts/askpass.zenity" if you would like to check what the script does.
 
------------------------------------------------------------------------------
-MAC						*gina-askpass-mac*
-
+MAC						*gina-misc-askpass-mac*
 gina.vim provides an internal askpass script based on an AppleScript.
 The script should be available on any Unix based Mac.
 
@@ -729,9 +1855,7 @@ interactive input.
 
 See "scripts/askpass.mac" if you would like to check what the script does.
 
------------------------------------------------------------------------------
-WINDOWS						*gina-askpass-windows*
-
+WINDOWS						*gina-misc-askpass-windows*
 Git has a built-in credential helper called "wincred" for Windows.
 This credential helper use a GUI-based prompt so Windows user do not need to
 worry about this unless they disabled that by configuration.
