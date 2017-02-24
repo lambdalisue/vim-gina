@@ -75,7 +75,6 @@ function! s:init(args) abort
   call gina#action#include('diff')
   call gina#action#include('edit')
   call gina#action#include('export')
-  call gina#action#include('patch')
   call gina#action#include('show')
 
   augroup gina_command_grep_internal

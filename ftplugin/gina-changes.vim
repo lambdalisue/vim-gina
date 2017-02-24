@@ -4,7 +4,6 @@ endif
 let b:did_ftplugin = 1
 
 setlocal nobuflisted
-setlocal winfixheight
 setlocal nolist nospell
 setlocal nowrap nofoldenable
 setlocal nonumber norelativenumber

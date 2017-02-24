@@ -1,10 +1,20 @@
-*gina-api.txt*			API document of gina.vim for developer
+*gina-develop.txt*			A document of gina.vim for developer
 
 Author:  Alisue <lambdalisue@hashnote.net>
 License: MIT license
 
 =============================================================================
-API-CORE					*gina-api-core*
+CONTENTS					*gina-dev-contents*     
+
+FUNCTIONS		|gina-dev-functions|
+EVENTS			|gina-dev-events|
+
+Note:
+This document is mainly for memo and not complete.
+You should check source code for the correct information.
+
+=============================================================================
+FUNCTIONS					*gina-dev-functions*
 
 				*gina#core#get()*
 gina#core#get([{options}])
@@ -45,8 +55,8 @@ gina#core#get_or_fail({options})
 	operation, a default value of "cache" attribute of {options} is
 	"truth" instead of "always".
 
-				*gina#core#buffer#params()*
-gina#core#buffer#params({expr})
+				*gina#core#buffer#parse()*
+gina#core#buffer#parse({expr})
 	Parse a pseudo buffer name and return a parameter dictionary.
 	It returns an empty dictionary if the {expr} does not starts from
 	"gina:".
@@ -56,23 +66,26 @@ gina#core#buffer#params({expr})
 	"repo"		A git repository name
 	"scheme"	A command scheme (e.g. "show")
 	"params"	A parameter list separated by ":"
-	"rev"	A rev string of the object
-	"path"		A relative path of the object 
+	"treeish"	A treeish string
+	"rev"		A rev string of the "treeish"
+	"path"		A relative path of the "treeish"
 >
-	echo gina#core#buffer#params('gina:foobar:log')
+	echo gina#core#buffer#parse('gina://foobar:log')
 	" {
         " 'repo': 'foo',
         " 'scheme': 'log',
         " 'params': [],
+        " 'treeish': '',
         " 'rev': '',
         " 'path': '',
 	" }
 
-	echo gina#core#buffer#params('gina:foobar:commit:amend')
+	echo gina#core#buffer#parse('gina://foobar:commit:amend')
 	" {
         " 'repo': 'foo',
         " 'scheme': 'commit',
         " 'params': ['amend'],
+        " 'treeish': '',
         " 'rev': '',
         " 'path': '',
 	" }
@@ -82,6 +95,7 @@ gina#core#buffer#params({expr})
         " 'repo': 'foo',
         " 'scheme': 'show',
         " 'params': [],
+        " 'treeish': 'HEAD:README.md',
         " 'rev': 'HEAD',
         " 'path': 'README.md',
 	" }
@@ -263,25 +277,10 @@ gina#process#call({git}, {args} [, {options}])
 	"stderr"	A stderr content list
 	"content"	A mixture of stdout/stderr list
 
-				*gina#process#exec()*
-gina#process#exec({git}, {args})
-	A high-level API to execute a process.
-
-	With {args.params.async} = 0 (Default):
-	It starts a process and wait until the process has terminate.
-	After that, it assign a content into the current buffer and emit
-	"command:called" event with the first positional argument (e.g.
-	"show").
-	It throws an errormsg message by |gina#process#errormsg()| when an exit
-	status of the process is not 0.
-
-	With {args.params.async} = 1:
-	It starts a process and start update timer and return a job process.
-	The update timer will be called every |g:gina#process#updatetime|
-	milliseconds and update a buffer content with updated stdout of the
-	process.
-	It emit "command:called" with the first positional argument when the
-	process has terminated.
+				*gina#process#call_or_fail()*
+gina#process#call_or_fail({git}, {args} [, {options}])
+	Similar to |gina#process#call()| but it throws an exception when the
+	process fail.
 
 				*gina#process#inform()*
 gina#process#inform({result})
@@ -305,35 +304,95 @@ gina#core#repo#expand({expr})
 	echo gina#core#repo#expand('%')
 	" -> README.md
 <
-				*gina#core#repo#abspath()*
-gina#core#repo#abspath({git}, {path})
-	It returns an absolute path of {path} of a git working-tree of {git}.
-	If {git} is an empty dictionary, it returns an absolute path of a
-	current working directory.
+=============================================================================
+EVENTS						*gina-dev-events*
 
-				*gina#core#repo#relpath()*
-gina#core#repo#relpath({git}, {path})
-	It returns a relative path of {path} from a git working-tree of {git}.
-	If {git} is an empty dictionary, it returns a relative path from a
-	current working directory.
+Gina will emit an event when something has happend.
+The following events are used internally.
 
-				*gina#core#repo#path()*
-gina#core#repo#path({git}, {path})
-	It returns an expanded unix-style relative path of {path} from a git
-	working-tree of {git} which is mainly used for "object" params in
-	"git show" or other related command.
+modified
+	Emitted when a status of a git repository seems to be modified.
+	This event is used to update the buffer content and caches internally.
+	Users should NOT emit this event directly, use "modified:delay"
+	instead.
 
-	This function is equivalent to
+modified:delay
+	Used to squash sequential modified event into a single "modified"
+	event.
+	It emits "modified" event few milliseconds after the event emitted and
+	ignore all previous "modified:delay" events emitted within that time.
+	Users should NOT subscribe this event directly, use "modifihed"
+	instead.
+
+command:called {scheme}
+	Emitted when a gina's command (|:Gina|) has called and the initial
+	process has terminated.
+	A listener will be called with {scheme} which indicate what command
+	has called.
+	Note that a command which requires an additional step (e.g. commit,
+	patch) will emit this event when the command get ready and will emit
+	"command:called:complete" after the actual command has terminated
+	(e.g. A commit message was comitted. A patch was saved into an index)
+
+command:called:raw {scheme}
+	Emitted when a raw git command (|:Gina!|) has called and the process
+	has terminated.
+	A listener will be called with {scheme} which indicate what command
+	has called.
+	Note that it is NOT called for an internal process. It is called only
+	for a command invoked by |:Gina!| or |:Gina| with missing command.
+
+command:called:commit
+	Emitted when an actual commit has performed.
+
+command:called:patch
+	Emitted when an actual patch has performed.
+
+For example, if users want to do something when a commit message has comitted,
+use a combination of "command:called:raw" and "command:called:commit" like
 >
-	let s:Path = vital#gina#import('System.Filepath')
-	let path = gina#core#repo#expand(path)
-	let path = gina#core#repo#relpath(git, path)
-	let path = s:Path.unixpath(path)
-<
-				*gina#core#repo#config()*
-gina#core#repo#config({git})
-	It returns a dictionary which represent a result of "git config" on a
-	git working-tree of {git}.
+	function! s:on_commit(...) abort
+	  if get(a:000, 0, 'commit') !=# 'commit'
+            return
+          endif
+          " Do more useful thing
+          echomsg "Committed!"
+	endfunction
 
+	" Subscribe 'command:called:raw' event for :Gina commit -m{message}
+	" which invoke a git raw command internally
+	call gina#core#emitter#subscribe(
+	      \ 'command:called:raw',
+	      \ function('s:on_commit')
+	      \)
+	" Subscribe 'command:called:commit' event for an actual commit
+	" event which may invoked by closing gina-commit window
+	call gina#core#emitter#subscribe(
+	      \ 'command:called:commit',
+	      \ function('s:on_commit')
+	      \)
+<
+Another for example is already used in ftplugin/gina-grep.vim. If user want to
+update a quickfix candidates with gina-grep candidates automatically, use
+"command:called" event like:
+>
+	" NOTE: Already written in ftplugin/gina-grep.vim
+	function! s:on_grep(scheme) abort
+	  if a:scheme !=# 'grep'
+	    return 
+	  endif
+	  " Find a corresponding buffer and focus
+	  let focus = gina#core#buffer#focus(bufnr('gina://*:grep*'))
+	  if empty(focus)
+	    return
+	  endif
+	  " Export entire candidates into a quickfic and restore the focus
+	  try
+	    call gina#action#call('export:quickfix')
+	  finally
+	    call focus.restore()
+	  endtry
+	endfunction
+<
 =============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

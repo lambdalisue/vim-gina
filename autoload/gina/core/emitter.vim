@@ -26,6 +26,10 @@ endfunction
 " Subscribe ------------------------------------------------------------------
 if has('nvim')
   function! s:on_modified(...) abort
+    if !empty(gina#process#runnings())
+      " DO NOT update if there are some running process
+      return
+    endif
     let winid_saved = win_getid()
     for winnr in range(1, winnr('$'))
       let bufnr = winbufnr(winnr)
@@ -76,6 +80,10 @@ else
   " for Neovim does not work properly in Vim.
   "
   function! s:on_modified(...) abort
+    if !empty(gina#process#runnings())
+      " DO NOT update if there are some running process
+      return
+    endif
     let winid_saved = win_getid()
     for winnr in range(1, winnr('$'))
       let bufnr = winbufnr(winnr)
