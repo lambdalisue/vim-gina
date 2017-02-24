@@ -6,22 +6,23 @@ endfunction
 
 function! gina#core#args#new(rargs) abort
   let args = gina#core#args#raw(a:rargs)
-  let preference = gina#custom#command#preference(args.get(0))
-  " Assign default options
-  for [query, value, remover] in preference.options
-    if !empty(remover) && args.has(remover)
-      call args.pop(remover)
-      call args.pop(query)
-    elseif !args.has(query)
-      call args.set(query, value)
+  for preference in gina#custom#preferences(args.get(0))
+    " Assign default options
+    for [query, value, remover] in preference.command.options
+      if !empty(remover) && args.has(remover)
+        call args.pop(remover)
+        call args.pop(query)
+      elseif !args.has(query)
+        call args.set(query, value)
+      endif
+    endfor
+    " Assign alias
+    if preference.command.raw
+      call args.set(0, ['_raw', preference.command.origin])
+    else
+      call args.set(0, preference.command.origin)
     endif
   endfor
-  " Assign alias
-  if preference.raw
-    call args.set(0, ['_raw', preference.origin])
-  else
-    call args.set(0, preference.origin)
-  endif
   " Expand residuals to allow '%'
   let pathlist = args.residual()
   if !empty(pathlist)

@@ -35,7 +35,7 @@ endfunction
 function! gina#util#map(lhs, rhs, ...) abort
   let options = extend({
         \ 'mode': '',
-        \ 'noremap': 1,
+        \ 'noremap': 0,
         \ 'buffer': 1,
         \ 'nowait': 0,
         \ 'silent': 0,

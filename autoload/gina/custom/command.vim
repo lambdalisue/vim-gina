@@ -1,17 +1,4 @@
-let s:preferences = {}
 let s:t_number = type(0)
-
-function! gina#custom#command#preference(scheme, ...) abort
-  let readonly = a:0 ? a:1 : 1
-  let s:preferences[a:scheme] = get(s:preferences, a:scheme, {})
-  let preference = extend(s:preferences[a:scheme], {
-        \ 'options': [],
-        \ 'origin': a:scheme,
-        \ 'raw': 0,
-        \}, 'keep'
-        \)
-  return readonly ? deepcopy(preference) : preference
-endfunction
 
 function! gina#custom#command#option(scheme, query, ...) abort
   if a:query !~# '^--\?\S\+\%(|--\?\S\+\)*$'
@@ -21,14 +8,19 @@ function! gina#custom#command#option(scheme, query, ...) abort
   endif
   let value = get(a:000, 0, 1)
   let remover = type(value) == s:t_number ? s:build_remover(a:query) : ''
-  let preference = gina#custom#command#preference(a:scheme, 0)
-  call add(preference.options, [a:query, value, remover])
+  let preference = gina#custom#preference(a:scheme, 0)
+  call add(preference.command.options, [a:query, value, remover])
 endfunction
 
 function! gina#custom#command#alias(scheme, alias, ...) abort
-  let preference = gina#custom#command#preference(a:alias, 0)
-  let preference.origin = a:scheme
-  let preference.raw = get(a:000, 0, 0)
+  if a:scheme =~# '^/'
+    throw gina#core#exception#error(
+          \ '/{pattern} cannot be used to define a command alias'
+          \)
+  endif
+  let preference = gina#custom#preference(a:alias, 0)
+  let preference.command.origin = a:scheme
+  let preference.command.raw = get(a:000, 0, 0)
 endfunction
 
 
