@@ -5,12 +5,12 @@ function! gina#command#diff#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
-  let bufname = gina#core#buffer#bufname(git, 'diff', {
-        \ 'revision': args.params.revision,
-        \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
+        \ 'treeish': args.params.treeish,
         \ 'params': [
         \   args.params.cached ? 'cached' : '',
         \   args.params.R ? 'R' : '',
+        \   args.params.partial ? '--' : '',
         \ ],
         \})
   call gina#core#buffer#open(bufname, {
@@ -33,24 +33,13 @@ function! s:build_args(git, args) abort
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
+  let args.params.partial = !empty(args.residual())
 
-  let pathlist = copy(args.residual())
-  if empty(pathlist)
-    let args.params.revision = args.get(1, gina#core#buffer#param('%', 'revision'))
-    let args.params.abspath = gina#core#path#abspath('%')
-    let pathlist = [args.params.abspath]
-  elseif len(pathlist) == 1
-    let args.params.revision = args.get(1, gina#core#buffer#param(pathlist[0], 'revision'))
-    let args.params.abspath = gina#core#path#abspath(pathlist[0])
-    let pathlist = [args.params.abspath]
-  else
-    let args.params.revision = args.get(1, '')
-    let args.params.abspath = ''
-    let pathlist = map(pathlist, 'gina#core#path#abspath(v:val)')
+  call gina#core#args#extend_treeish(a:git, args, args.pop(1))
+  call args.set(1, args.params.rev)
+  if args.params.path isnot# v:null
+    call args.residual([args.params.path] + args.residual())
   endif
-
-  call args.set(1, args.params.revision)
-  call args.residual(pathlist)
   return args.lock()
 endfunction
 
@@ -63,11 +52,15 @@ function! s:init(args) abort
   let b:gina_initialized = 1
 
   setlocal buftype=nowrite
-  setlocal bufhidden&
   setlocal noswapfile
   setlocal nomodifiable
+  if a:args.params.partial
+    setlocal bufhidden=wipe
+  else
+    setlocal bufhidden&
+  endif
 
-  augroup gina_internal_command
+  augroup gina_command_diff_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
     autocmd BufWinEnter <buffer> setlocal buflisted
@@ -90,10 +83,9 @@ endfunction
 
 
 " Writer ---------------------------------------------------------------------
-let s:writer_super = gina#process#pipe#stream_writer()
-let s:writer = {}
+let s:writer = gina#util#inherit(gina#process#pipe#stream_writer())
 
 function! s:writer.on_stop() abort
-  call call(s:writer_super.on_stop, [], self)
+  call self.super(s:writer, 'on_stop')
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction

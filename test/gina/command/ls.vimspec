@@ -74,5 +74,14 @@ Describe gina#command#ls
             \ 'B/foo.txt',
             \])
     End
+
+    It might be called with -- A/*.txt
+      GinaSync ls -- A/*.txt
+      Assert Equals(winnr('$'), 2)
+      Assert Equals(bufname('%'), printf('gina://%s:ls:--', slit1.refname))
+      Assert Equals(getline(1, '$'), [
+            \ 'A/foo.txt',
+            \])
+    End
   End
 End

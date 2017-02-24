@@ -9,9 +9,9 @@ function! gina#command#tag#call(range, args, mods) abort
     return gina#command#_raw#call(a:range, a:args, a:mods)
   endif
 
-  let bufname = gina#core#buffer#bufname(git, 'tag')
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
-        \ 'mods': a:mods,
+        \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -65,9 +65,9 @@ function! s:init(args) abort
   call gina#action#include('browse')
   call gina#action#include('changes')
   call gina#action#include('commit')
-  call gina#action#include('info')
+  call gina#action#include('show')
 
-  augroup gina_internal_command
+  augroup gina_command_tag_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
   augroup END
@@ -87,34 +87,33 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let git = gina#core#get_or_fail()
-  let content = getline(a:fline, a:lline)
   let candidates = map(
-        \ filter(content, '!empty(v:val)'),
-        \ 's:parse_record(v:val)'
+        \ getline(a:fline, a:lline),
+        \ 's:parse_record(a:fline + v:key, v:val)'
         \)
-  return candidates
+  return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(record) abort
+function! s:parse_record(lnum, record) abort
   return {
+        \ 'lnum': a:lnum,
         \ 'word': a:record,
         \ 'branch': a:record,
-        \ 'revision': a:record,
+        \ 'rev': a:record,
         \}
 endfunction
 
 
 " Writer ---------------------------------------------------------------------
-let s:writer_super = gina#process#pipe#stream_writer()
-let s:writer = {}
+let s:writer = gina#util#inherit(gina#process#pipe#stream_writer())
 
 function! s:writer.on_stop() abort
-  call call(s:writer_super.on_stop, [], self)
+  call self.super(s:writer, 'on_stop')
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,

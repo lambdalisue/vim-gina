@@ -48,22 +48,24 @@ Describe gina#command#branch
             \])
       Assert Equals(gina#action#candidates(), [
             \ {
+            \   'lnum': 1,
             \   'abbr': '  develop[m',
             \   'word': '  develop',
             \   'sign': ' ',
             \   'alias': '',
             \   'remote': '',
             \   'branch': 'develop',
-            \   'revision': 'develop',
+            \   'rev': 'develop',
             \ },
             \ {
+            \   'lnum': 2,
             \   'abbr': '* [32mmaster[m',
             \   'word': '* master',
             \   'sign': '*',
             \   'alias': '',
             \   'remote': '',
             \   'branch': 'master',
-            \   'revision': 'master',
+            \   'rev': 'master',
             \ },
             \])
     End
@@ -77,13 +79,14 @@ Describe gina#command#branch
             \])
       Assert Equals(gina#action#candidates(), [
             \ {
+            \   'lnum': 1,
             \   'abbr': '  [31mext/master[m',
             \   'word': '  ext/master',
             \   'sign': ' ',
             \   'alias': '',
             \   'remote': '',
             \   'branch': 'ext/master',
-            \   'revision': 'ext/master',
+            \   'rev': 'ext/master',
             \ },
             \])
     End
@@ -99,31 +102,34 @@ Describe gina#command#branch
             \])
       Assert Equals(gina#action#candidates(), [
             \ {
+            \   'lnum': 1,
             \   'abbr': '  develop[m',
             \   'word': '  develop',
             \   'sign': ' ',
             \   'alias': '',
             \   'remote': '',
             \   'branch': 'develop',
-            \   'revision': 'develop',
+            \   'rev': 'develop',
             \ },
             \ {
+            \   'lnum': 2,
             \   'abbr': '* [32mmaster[m',
             \   'word': '* master',
             \   'sign': '*',
             \   'alias': '',
             \   'remote': '',
             \   'branch': 'master',
-            \   'revision': 'master',
+            \   'rev': 'master',
             \ },
             \ {
+            \   'lnum': 3,
             \   'abbr': '  [31mremotes/ext/master[m',
             \   'word': '  remotes/ext/master',
             \   'sign': ' ',
             \   'alias': '',
             \   'remote': 'ext',
             \   'branch': 'master',
-            \   'revision': 'ext/master',
+            \   'rev': 'ext/master',
             \ },
             \])
     End

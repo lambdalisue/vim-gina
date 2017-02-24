@@ -78,7 +78,6 @@ function! gina#action#index#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('index:checkout', function('s:on_checkout'), {
-        \ 'hidden': 1,
         \ 'description': 'Checkout a contents',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
@@ -92,12 +91,14 @@ function! gina#action#index#define(binder) abort
         \ 'options': { 'force': 1 },
         \})
   call a:binder.define('index:checkout:ours', function('s:on_checkout'), {
+        \ 'hidden': 1,
         \ 'description': 'Checkout a contents',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'ours': 1 },
         \})
   call a:binder.define('index:checkout:theirs', function('s:on_checkout'), {
+        \ 'hidden': 1,
         \ 'description': 'Checkout a contents',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
@@ -108,27 +109,28 @@ function! gina#action#index#define(binder) abort
         \ 'description': 'Checkout a contents from HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'revision': 'HEAD' },
+        \ 'options': { 'rev': 'HEAD' },
         \})
   call a:binder.define('index:checkout:HEAD:force', function('s:on_checkout'), {
         \ 'hidden': 1,
         \ 'description': 'Checkout a contents from HEAD (force)',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'revision': 'HEAD', 'force': 1 },
+        \ 'options': { 'rev': 'HEAD', 'force': 1 },
         \})
   call a:binder.define('index:checkout:origin', function('s:on_checkout'), {
+        \ 'hidden': 1,
         \ 'description': 'Checkout a contents from origin/HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'revision': 'origin/HEAD' },
+        \ 'options': { 'rev': 'origin/HEAD' },
         \})
   call a:binder.define('index:checkout:origin:force', function('s:on_checkout'), {
         \ 'hidden': 1,
         \ 'description': 'Checkout a contents from origin/HEAD (force)',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
-        \ 'options': { 'revision': 'origin/HEAD', 'force': 1 },
+        \ 'options': { 'rev': 'origin/HEAD', 'force': 1 },
         \})
   call a:binder.define('index:discard', function('s:on_discard'), {
         \ 'description': 'Discard changes on the working tree',
@@ -200,7 +202,7 @@ function! s:on_checkout(candidates, options) abort
         \ 'force': 0,
         \ 'ours': 0,
         \ 'theirs': 0,
-        \ 'revision': '',
+        \ 'rev': '',
         \}, a:options)
   let pathlist = map(copy(a:candidates), 'v:val.path')
   execute printf(
@@ -208,7 +210,7 @@ function! s:on_checkout(candidates, options) abort
         \ options.force ? '--force' : '',
         \ options.ours ? '--ours' : '',
         \ options.theirs ? '--theirs' : '',
-        \ gina#util#shellescape(options.revision),
+        \ gina#util#shellescape(options.rev),
         \ gina#util#shellescape(pathlist),
         \)
 endfunction
@@ -231,11 +233,15 @@ function! s:on_stage(candidates, options) abort dict
   endfor
   if options.force
     call self.call('index:add:force', add_candidates)
-    call gina#process#wait()
+    if !empty(rm_candidates)
+      call gina#process#wait()
+    endif
     call self.call('index:rm:force', rm_candidates)
   else
     call self.call('index:add', add_candidates)
-    call gina#process#wait()
+    if !empty(rm_candidates)
+      call gina#process#wait()
+    endif
     call self.call('index:rm', rm_candidates)
   endif
 endfunction
@@ -258,7 +264,9 @@ function! s:on_toggle(candidates, options) abort dict
     endif
   endfor
   call self.call('index:stage', stage_candidates)
-  call gina#process#wait()
+  if !empty(unstage_candidates)
+    call gina#process#wait()
+  endif
   call self.call('index:unstage', unstage_candidates)
 endfunction
 
@@ -266,6 +274,7 @@ function! s:on_discard(candidates, options) abort dict
   if empty(a:candidates)
     return
   endif
+  let git = gina#core#get_or_fail()
   let options = extend({
         \ 'force': 0,
         \}, a:options)
@@ -296,7 +305,7 @@ function! s:on_discard(candidates, options) abort dict
   endif
   " delete untracked files
   for candidate in delete_candidates
-    let abspath = s:Path.realpath(candidate.path)
+    let abspath = s:Path.realpath(gina#core#repo#abspath(git, candidate.path))
     if isdirectory(abspath)
       call s:File.rmdir(abspath, 'r')
     elseif filewritable(abspath)

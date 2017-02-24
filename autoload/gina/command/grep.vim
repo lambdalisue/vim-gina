@@ -1,15 +1,19 @@
 let s:String = vital#gina#import('Data.String')
+
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#grep#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = gina#core#buffer#bufname(git, 'grep', {
-        \ 'revision': args.params.revision,
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
+        \ 'rev': args.params.rev,
+        \ 'params': [
+        \   args.params.partial ? '--' : '',
+        \ ],
         \})
   call gina#core#buffer#open(bufname, {
-        \ 'mods': a:mods,
+        \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -20,8 +24,8 @@ function! gina#command#grep#call(range, args, mods) abort
         \})
 endfunction
 
-function! gina#command#grep#parse_record(git, revision, record) abort
-  return s:parse_record(a:git, a:revision, a:record)
+function! gina#command#grep#parse_record(...) abort
+  return call('s:parse_record', a:000)
 endfunction
 
 
@@ -31,7 +35,8 @@ function! s:build_args(git, args) abort
   let args.params.group = args.pop('--group', 'quick')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.pattern = args.pop(1, '')
-  let args.params.revision = args.pop(1, gina#core#buffer#param('%', 'revision'))
+  let args.params.partial = !empty(args.residual())
+  let args.params.rev = args.pop(1, gina#core#buffer#param('%', 'rev'))
 
   " Check if available grep patterns has specified and ask if not
   if empty(args.params.pattern) && !(args.has('-e') || args.has('-f'))
@@ -45,7 +50,7 @@ function! s:build_args(git, args) abort
   call args.set('--line-number', 1)
   call args.set('--color', 'always')
   call args.set(1, args.params.pattern)
-  call args.set(2, args.params.revision)
+  call args.set(2, args.params.rev)
   return args.lock()
 endfunction
 
@@ -73,7 +78,7 @@ function! s:init(args) abort
   call gina#action#include('patch')
   call gina#action#include('show')
 
-  augroup gina_internal_command
+  augroup gina_command_grep_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
   augroup END
@@ -93,16 +98,17 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let git = gina#core#get_or_fail()
-  let revision = gina#core#buffer#param('%', 'revision')
+  let args = gina#core#meta#get_or_fail('args')
+  let rev = args.params.rev
+  let residual = args.residual()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(git, revision, v:val)'
+        \ 's:parse_record(a:fline + v:key, v:val, rev, residual)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(git, revision, record) abort
+function! s:parse_record(lnum, record, rev, residual) abort
   let record = s:String.remove_ansi_sequences(a:record)
   let m = matchlist(record, '^\%([^:]\+:\)\?\(.*\):\(\d\+\):\(.*\)$')
   if empty(m)
@@ -112,27 +118,29 @@ function! s:parse_record(git, revision, record) abort
   let line = str2nr(m[2])
   let col = stridx(m[3], matched) + 1
   let candidate = {
+        \ 'lnum': a:lnum,
         \ 'word': m[3],
         \ 'abbr': a:record,
         \ 'line': line,
         \ 'col': col,
-        \ 'path': gina#core#repo#abspath(a:git, m[1]),
-        \ 'revision': a:revision,
+        \ 'path': m[1],
+        \ 'rev': a:rev,
+        \ 'residual': a:residual,
         \}
   return candidate
 endfunction
 
 
 " Writer ---------------------------------------------------------------------
-let s:writer_super = gina#process#pipe#stream_writer()
-let s:writer = {}
+let s:writer = gina#util#inherit(gina#process#pipe#stream_writer())
 
 function! s:writer.on_stop() abort
-  call call(s:writer_super.on_stop, [], self)
+  call self.super(s:writer, 'on_stop')
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'send_to_quickfix': 1,
       \ 'use_default_aliases': 1,

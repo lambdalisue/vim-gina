@@ -1,46 +1,36 @@
 function! gina#action#edit#define(binder) abort
-  call a:binder.define('edit', function('s:on_edit'), {
-        \ 'description': 'Open and edit a content',
+  let params = {
+        \ 'description': 'Open and edit a content in the working tree',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['path'],
+        \}
+  call a:binder.define('edit', function('s:on_edit'), extend({
         \ 'options': {},
-        \})
-  call a:binder.define('edit:above', function('s:on_edit'), {
-        \ 'description': 'Open and edit a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove new' },
-        \})
-  call a:binder.define('edit:below', function('s:on_edit'), {
-        \ 'description': 'Open and edit a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright new' },
-        \})
-  call a:binder.define('edit:left', function('s:on_edit'), {
-        \ 'description': 'Open and edit a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove vnew' },
-        \})
-  call a:binder.define('edit:right', function('s:on_edit'), {
-        \ 'description': 'Open and edit a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright vnew' },
-        \})
-  call a:binder.define('edit:tab', function('s:on_edit'), {
-        \ 'description': 'Open and edit a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'tabedit' },
-        \})
-  call a:binder.define('edit:preview', function('s:on_edit'), {
-        \ 'description': 'Open and edit a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'pedit' },
-        \})
+        \}, params))
+  call a:binder.define('edit:above', function('s:on_edit'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove new'},
+        \}, params))
+  call a:binder.define('edit:below', function('s:on_edit'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright new'},
+        \}, params))
+  call a:binder.define('edit:left', function('s:on_edit'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove vnew'},
+        \}, params))
+  call a:binder.define('edit:right', function('s:on_edit'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright vnew'},
+        \}, params))
+  call a:binder.define('edit:tab', function('s:on_edit'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'tabedit'},
+        \}, params))
+  call a:binder.define('edit:preview', function('s:on_edit'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'pedit'},
+        \}, params))
 endfunction
 
 
@@ -54,7 +44,7 @@ function! s:on_edit(candidates, options) abort
         \}, a:options)
   for candidate in a:candidates
     execute printf(
-          \ 'Gina edit %s %s %s -- %s',
+          \ 'Gina edit %s %s %s %s',
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),

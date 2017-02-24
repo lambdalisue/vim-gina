@@ -1,6 +1,3 @@
-let s:t_number = type(0)
-
-
 function! s:_vital_loaded(V) abort
   let s:Guard = a:V.import('Vim.Guard')
   let s:Queue = a:V.import('Data.Queue')
@@ -251,18 +248,14 @@ endfunction
 
 " Writer instance ------------------------------------------------------------
 let s:timers = {}
-let s:writer = {'_timer': v:null}
+let s:writers = {}
+let s:writer = {'_timer': v:null, '_running': 0}
 
 function! s:_timer_callback(timer) abort
-  let writer = get(s:timers, a:timer, 0)
-  if type(writer) == s:t_number
-    if writer > 1000
-      " Somehow a timer is running without a proper writer
-      call timer_stop(a:timer)
-      unlet s:timers[a:timer]
-    else
-      let s:timers[a:timer] += 1
-    endif
+  let writer = get(s:timers, a:timer, v:null)
+  if writer is# v:null
+    call timer_stop(a:timer)
+    unlet s:timers[a:timer]
     return
   endif
   call writer.flush()
@@ -274,6 +267,13 @@ function! s:writer.start() abort
   endif
   lockvar! self.bufnr
   lockvar! self.updatetime
+  " Kill previous writer which target a same buffer before start
+  if has_key(s:writers, self.bufnr)
+    call s:writers[self.bufnr].kill()
+    call self.clear()
+  endif
+  let s:writers[self.bufnr] = self
+  let self._running = 1
   let self._timer = timer_start(
         \ self.updatetime,
         \ function('s:_timer_callback'),
@@ -284,18 +284,16 @@ function! s:writer.start() abort
 endfunction
 
 function! s:writer.stop() abort
-  silent! unlet s:timers[self._timer]
+  " Now writer is going to stop
+  let self._running = 0
+endfunction
+
+function! s:writer.kill() abort
   silent! call timer_stop(self._timer)
+  silent! unlet s:timers[self._timer]
+  let self._running = 0
   unlockvar! self.bufnr
   unlockvar! self.updatetime
-  " Flush all
-  let msg = self._queue.get()
-  while msg isnot# v:null
-    if !self._module.extend_content(self.bufnr, msg)
-      break
-    endif
-    let msg = self._queue.get()
-  endwhile
   call self.on_stop()
 endfunction
 
@@ -311,14 +309,14 @@ endfunction
 
 function! s:writer.flush() abort
   let msg = self._queue.get()
-  if msg is# v:null
-    if !self.on_check()
-      call self.stop()
-    endif
-    return
+  if msg is# v:null && !self._running
+    " No left over content and the writer is going to stop
+    " so kill the writer to stop
+    return self.kill()
   endif
   if !self._module.extend_content(self.bufnr, msg)
-    return self.stop()
+    " The target buffer is missing so stop the writer immediately
+    return self.kill()
   endif
   call self.on_flush(msg)
 endfunction
@@ -337,11 +335,6 @@ endfunction
 
 function! s:writer.on_flush(msg) abort
   " User can override this method
-endfunction
-
-function! s:writer.on_check() abort
-  " User can override this method
-  return 1
 endfunction
 
 function! s:writer.on_stop() abort

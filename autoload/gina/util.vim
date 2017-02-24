@@ -11,6 +11,8 @@ let s:DIRECTION_PATTERN = printf('\<\%%(%s\)\>', join([
       \], '\|')
       \)
 let s:t_list = type([])
+let s:timer_syncbind = v:null
+let s:timer_diffupdate = v:null
 
 
 function! gina#util#contain_direction(mods) abort
@@ -23,6 +25,11 @@ function! gina#util#extend_content(content, msg) abort
     call remove(a:content, -1)
   endif
   call extend(a:content, [leading . get(a:msg, 0, '')] + a:msg[1:])
+endfunction
+
+function! gina#util#get(obj, key, ...) abort
+  let val = get(a:obj, a:key, v:null)
+  return val is# v:null ? get(a:000, 0, '') : val
 endfunction
 
 function! gina#util#map(lhs, rhs, ...) abort
@@ -126,11 +133,20 @@ function! gina#util#doautocmd(name, ...) abort
   endtry
 endfunction
 
+function! gina#util#inherit(super, ...) abort
+  let prototype = a:0 ? a:1 : {}
+  let instance = extend(copy(a:super), prototype)
+  let instance.super = function('s:call_super')
+  let instance.__super = s:Dict.omit(a:super, ['super', '__super'])
+  return instance
+endfunction
+
 function! gina#util#syncbind() abort
   " NOTE:
   " 'syncbind' does not work just after a buffer has opened
   " so use timer to delay the command.
-  call timer_start(100, function('s:syncbind'))
+  silent! call timer_stop(s:timer_syncbind)
+  let s:timer_syncbind = timer_start(50, function('s:syncbind'))
 endfunction
 
 function! gina#util#diffthis() abort
@@ -141,30 +157,26 @@ function! gina#util#diffthis() abort
     autocmd BufUnload <buffer> call s:diffoff()
     autocmd BufDelete <buffer> call s:diffoff()
     autocmd BufWipeout <buffer> call s:diffoff()
+    autocmd BufWritePost <buffer> call s:diffupdate()
   augroup END
+  call gina#util#diffupdate()
 endfunction
 
 function! gina#util#diffupdate() abort
   " NOTE:
   " 'diffupdate' does not work just after a buffer has opened
   " so use timer to delay the command.
-  call timer_start(100, function('s:diffupdate'))
+  silent! call timer_stop(s:timer_diffupdate)
+  let s:timer_diffupdate = timer_start(100, function('s:diffupdate'))
 endfunction
 
+
+
+" Private --------------------------------------------------------------------
 function! s:syncbind(...) abort
   syncbind
 endfunction
 
-function! gina#util#inherit(super, ...) abort
-  let prototype = a:0 ? a:1 : {}
-  let instance = extend(copy(a:super), prototype)
-  let instance.super = function('s:call_super')
-  let instance.__super = s:Dict.omit(a:super, ['super', '__super'])
-  return instance
-endfunction
-
-
-" Private --------------------------------------------------------------------
 function! s:diffoff() abort
   augroup gina_internal_util_diffthis
     autocmd! * <buffer>

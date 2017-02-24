@@ -1,40 +1,32 @@
 function! gina#action#compare#define(binder) abort
-  call a:binder.define('compare', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
+  let params = {
+        \ 'description': 'Open 2-way diff for comparing the difference',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['path'],
+        \}
+  call a:binder.define('compare', function('s:on_compare'), extend({
         \ 'options': {},
-        \})
-  call a:binder.define('compare:above', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove new' },
-        \})
-  call a:binder.define('compare:below', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright new' },
-        \})
-  call a:binder.define('compare:left', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'leftabove vnew' },
-        \})
-  call a:binder.define('compare:right', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'belowright vnew' },
-        \})
-  call a:binder.define('compare:tab', function('s:on_compare'), {
-        \ 'description': 'Compare a content',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['path'],
-        \ 'options': { 'opener': 'tabedit' },
-        \})
+        \}, params))
+  call a:binder.define('compare:above', function('s:on_compare'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove new'},
+        \}, params))
+  call a:binder.define('compare:below', function('s:on_compare'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright new'},
+        \}, params))
+  call a:binder.define('compare:left', function('s:on_compare'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'leftabove vnew'},
+        \}, params))
+  call a:binder.define('compare:right', function('s:on_compare'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'belowright vnew'},
+        \}, params))
+  call a:binder.define('compare:tab', function('s:on_compare'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'tabedit'},
+        \}, params))
 endfunction
 
 
@@ -47,17 +39,18 @@ function! s:on_compare(candidates, options) abort
         \ 'opener': '',
         \}, a:options)
   for candidate in a:candidates
-    let line = get(candidate, 'line', '')
-    let col = get(candidate, 'col', '')
-    let cached = get(candidate, 'sign', '!!') !~# '^\%(??\|!!\|.\w\)$'
+    let cached = gina#util#get(candidate, 'sign', '!!') !~# '^\%(??\|!!\|.\w\)$'
+    let treeish = gina#core#treeish#build(
+          \ gina#util#get(candidate, 'rev'),
+          \ candidate.path,
+          \)
     execute printf(
-          \ 'Gina compare %s %s %s %s %s -- %s',
+          \ 'Gina compare %s %s %s %s %s',
           \ cached ? '--cached' : '',
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),
-          \ gina#util#shellescape(get(candidate, 'revision', '')),
-          \ gina#util#shellescape(candidate.path),
+          \ gina#util#shellescape(treeish),
           \)
   endfor
 endfunction

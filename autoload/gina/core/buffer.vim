@@ -1,53 +1,57 @@
-
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:Path = vital#gina#import('System.Filepath')
 let s:Window = vital#gina#import('Vim.Window')
+
 let s:DEFAULT_PARAMS_ATTRIBUTES = {
       \ 'repo': '',
       \ 'scheme': '',
       \ 'params': [],
-      \ 'revision': '',
-      \ 'relpath': '',
+      \ 'rev': '',
+      \ 'path': '',
+      \ 'treeish': '',
       \}
 
 
 function! gina#core#buffer#bufname(git, scheme, ...) abort
-  let options = extend({
-        \ 'params': [],
-        \ 'revision': '',
-        \ 'relpath': '',
-        \}, get(a:000, 0, {})
-        \)
-  let params = filter(copy(options.params), '!empty(v:val)')
-  let revision = substitute(options.revision, '^:0$', '', '')
+  let options = get(a:000, 0, {})
+  let params = filter(gina#util#get(options, 'params', []), '!empty(v:val)')
+  let treeish = gina#util#get(options, 'treeish', printf('%s:%s',
+        \ gina#util#get(options, 'rev'),
+        \ gina#util#get(options, 'path'),
+        \))
   return s:normalize_bufname(printf(
-        \ 'gina://%s:%s%s/%s:%s',
+        \ 'gina://%s:%s%s/%s',
         \ a:git.refname,
         \ a:scheme,
         \ empty(params) ? '' : ':' . join(params, ':'),
-        \ revision,
-        \ s:Path.unixpath(options.relpath),
+        \ s:Path.unixpath(substitute(treeish, '^:0', '', '')),
         \))
 endfunction
 
 function! gina#core#buffer#parse(expr) abort
   let path = expand(a:expr)
   let m = matchlist(
-        \ path,'\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?(:[0-3]|[^:]*):?(.*)$',
+        \ path,'\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?(:[0-3]|[^:]*%(:.*)?)$',
         \)
   if empty(m)
     return {}
   endif
-  return {
+  let treeish = m[4]
+  let [rev, path] = gina#core#treeish#parse(treeish)
+  let params = {
         \ 'repo': m[1],
         \ 'scheme': m[2],
         \ 'params': filter(split(m[3], ':'), '!empty(v:val)'),
-        \ 'revision': substitute(m[4], '^:0$', '', ''),
-        \ 'relpath': m[5],
+        \ 'rev': rev,
+        \ 'treeish': treeish,
         \}
+  if path isnot# v:null
+    let params.path = path
+  endif
+  return params
 endfunction
 
 function! gina#core#buffer#param(expr, attr, ...) abort
@@ -59,7 +63,7 @@ function! gina#core#buffer#param(expr, attr, ...) abort
   endif
   let default = get(a:000, 0, s:DEFAULT_PARAMS_ATTRIBUTES[a:attr])
   let params = gina#core#buffer#parse(a:expr)
-  return get(params, a:attr, default)
+  return gina#util#get(params, a:attr, default)
 endfunction
 
 function! gina#core#buffer#open(bufname, ...) abort

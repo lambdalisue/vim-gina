@@ -12,6 +12,7 @@ function! gina#action#branch#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('branch:checkout:track', function('s:on_checkout'), {
+        \ 'hidden': 1,
         \ 'description': 'Checkout a branch and create a local branch',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['branch', 'remote'],
@@ -24,6 +25,7 @@ function! gina#action#branch#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('branch:delete:force', function('s:on_delete'), {
+        \ 'hidden': 1,
         \ 'description': 'Delete a branch',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['branch', 'remote'],
@@ -36,6 +38,7 @@ function! gina#action#branch#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('branch:move:force', function('s:on_move'), {
+        \ 'hidden': 1,
         \ 'description': 'Rename a branch',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['branch', 'remote'],
@@ -78,16 +81,16 @@ function! s:on_checkout(candidates, options) abort
     if options.track
       let branch = candidate.remote ==# 'origin'
             \ ? candidate.branch
-            \ : candidate.revision
+            \ : candidate.rev
       execute printf(
             \ 'Gina checkout -b %s %s',
             \ gina#util#shellescape(branch),
-            \ gina#util#shellescape(candidate.revision),
+            \ gina#util#shellescape(candidate.rev),
             \)
     else
       execute printf(
             \ 'Gina checkout %s',
-            \ gina#util#shellescape(candidate.revision),
+            \ gina#util#shellescape(candidate.rev),
             \)
     endif
   endfor
@@ -103,7 +106,7 @@ function! s:on_new(candidates, options) abort
           \ 'Name: ', '',
           \)
     let from = gina#core#console#ask(
-          \ 'From: ', candidate.revision,
+          \ 'From: ', candidate.rev,
           \ 'customlist,gina#complete#commit#branch',
           \)
     execute printf(

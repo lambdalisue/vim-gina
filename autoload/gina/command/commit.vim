@@ -1,7 +1,7 @@
 let s:String = vital#gina#import('Data.String')
 let s:Git = vital#gina#import('Git')
-let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
+let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 let s:messages = {}
 
 
@@ -13,7 +13,7 @@ function! gina#command#commit#call(range, args, mods) abort
     return gina#command#_raw#call(a:range, a:args, a:mods)
   endif
 
-  let bufname = gina#core#buffer#bufname(git, 'commit')
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -73,7 +73,7 @@ function! s:init(args) abort
   setlocal noswapfile
   setlocal modifiable
 
-  augroup gina_internal_command
+  augroup gina_command_commit_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
     autocmd BufWriteCmd <buffer> call s:BufWriteCmd()
@@ -254,7 +254,7 @@ function! s:commit_commitmsg(git, args) abort
     let result = gina#process#call(a:git, args)
     call gina#process#inform(result)
     call s:remove_cached_commitmsg(a:git)
-    call gina#core#emitter#emit('command:called:complete', s:SCHEME)
+    call gina#core#emitter#emit('command:called:commit')
   finally
     call delete(tempfile)
   endtry
@@ -288,6 +288,21 @@ function! s:remove_cached_commitmsg(git) abort
 endfunction
 
 
+" Event ----------------------------------------------------------------------
+function! s:on_command_called_commit(...) abort
+  call gina#core#emitter#emit('modified:delay')
+endfunction
+
+if !exists('s:subscribed')
+  let s:subscribed = 1
+  call gina#core#emitter#subscribe(
+        \ 'command:called:commit',
+        \ function('s:on_command_called_commit')
+        \)
+endif
+
+
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'use_default_mappings': 1,
       \})

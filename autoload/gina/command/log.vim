@@ -1,15 +1,19 @@
 let s:String = vital#gina#import('Data.String')
+
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#log#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = gina#core#buffer#bufname(git, 'log', {
-        \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
+        \ 'path': args.params.path,
+        \ 'params': [
+        \   args.params.partial ? '--' : '',
+        \ ],
         \})
   call gina#core#buffer#open(bufname, {
-        \ 'mods': a:mods,
+        \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -26,18 +30,15 @@ function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
-
-  let pathlist = map(copy(args.residual()), 'gina#core#path#abspath(v:val)')
-  if len(pathlist) == 1
-    let args.params.abspath = pathlist[0]
-  else
-    let args.params.abspath = ''
-  endif
+  let args.params.partial = !empty(args.residual())
 
   call args.set('--color', 'always')
   call args.set('--graph', 1)
   call args.set('--pretty', "format:\e[32m%h\e[m - %s \e[33;1m%cr\e[m \e[35;1m<%an>\e[m\e[36;1m%d\e[m")
-  call args.residual(pathlist)
+  call gina#core#args#extend_path(a:git, args, args.pop(1, v:null))
+  if args.params.path isnot# v:null
+    call args.residual([args.params.path] + args.residual())
+  endif
   return args.lock()
 endfunction
 
@@ -63,10 +64,9 @@ function! s:init(args) abort
   call gina#action#include('compare')
   call gina#action#include('diff')
   call gina#action#include('edit')
-  call gina#action#include('info')
   call gina#action#include('show')
 
-  augroup gina_internal_command
+  augroup gina_command_log_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
   augroup END
@@ -86,39 +86,40 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let git = gina#core#get_or_fail()
-  let relpath = gina#core#buffer#param('%', 'relpath')
-  let abspath = gina#core#repo#abspath(git, relpath)
+  let args = gina#core#meta#get_or_fail('args')
+  let path = args.params.path
+  let residual = args.residual()
   let candidates = map(
-        \ filter(getline(a:fline, a:lline), '!empty(v:val)'),
-        \ 's:parse_record(abspath, v:val)'
+        \ getline(a:fline, a:lline),
+        \ 's:parse_record(a:fline + v:key, v:val, path, residual)'
         \)
-  return candidates
+  return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(abspath, record) abort
+function! s:parse_record(lnum, record, path, residual) abort
   let record = s:String.remove_ansi_sequences(a:record)
-  let revision = matchstr(record, '[a-z0-9]\+')
-  let candidate = {
+  let rev = matchstr(record, '^[|/\* ]\+\s\+\zs[a-z0-9]\+')
+  return empty(rev) ? {} : {
+        \ 'lnum': a:lnum,
         \ 'word': record,
         \ 'abbr': a:record,
-        \ 'path': a:abspath,
-        \ 'revision': revision,
+        \ 'path': a:path,
+        \ 'rev': rev,
+        \ 'residual': a:residual,
         \}
-  return candidate
 endfunction
 
 
 " Writer ---------------------------------------------------------------------
-let s:writer_super = gina#process#pipe#stream_writer()
-let s:writer = {}
+let s:writer = gina#util#inherit(gina#process#pipe#stream_writer())
 
 function! s:writer.on_stop() abort
-  call call(s:writer_super.on_stop, [], self)
+  call self.super(s:writer, 'on_stop')
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,

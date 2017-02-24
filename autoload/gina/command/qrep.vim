@@ -1,5 +1,6 @@
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Path = vital#gina#import('System.Filepath')
+
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
@@ -14,14 +15,15 @@ function! gina#command#qrep#call(range, args, mods) abort
     set nomore
     call gina#process#inform(result)
 
-    " XXX: Support revision
+    " XXX: Support rev
     " 1. Globally enable BufReadCmd for gina://xxx:show/...
-    " 2. Use gina://xxx:show/... to open a content in a revision
-    let revision = ''
+    " 2. Use gina://xxx:show/... to open a content in a rev
+    let rev = ''
+    let residual = args.residual()
 
     let items = map(
           \ result.content,
-          \ 's:parse_record(git, revision, v:val)',
+          \ 's:parse_record(git, 1 + v:key, v:val, rev, residual)',
           \)
     call setqflist(
           \ filter(items, '!empty(v:val)'),
@@ -61,14 +63,18 @@ function! s:build_args(git, args) abort
   return args.lock()
 endfunction
 
-function! s:parse_record(git, revision, record) abort
+function! s:parse_record(git, lnum, record, rev, residual) abort
   " Parse record to make a gina candidate and translate it to a quickfix item
-  let candidate = gina#command#grep#parse_record(a:git, a:revision, a:record)
+  let candidate = gina#command#grep#parse_record(
+        \ a:lnum, a:record, a:rev, a:residual,
+        \)
   if empty(candidate)
     return {}
   endif
   return {
-        \ 'filename': s:Path.realpath(candidate.path),
+        \ 'filename': s:Path.realpath(
+        \   gina#core#repo#abspath(a:git, candidate.path)
+        \ ),
         \ 'text': candidate.word,
         \ 'lnum': candidate.line,
         \ 'col': candidate.col,

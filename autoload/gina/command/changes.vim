@@ -5,14 +5,15 @@ function! gina#command#changes#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
-  let bufname = gina#core#buffer#bufname(git, 'changes', {
-        \ 'revision': args.params.revision,
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
+        \ 'rev': args.params.rev,
         \ 'params': [
         \   args.params.cached ? 'cached' : '',
+        \   args.params.partial ? '--' : '',
         \ ],
         \})
   call gina#core#buffer#open(bufname, {
-        \ 'mods': a:mods,
+        \ 'mods': 'keepalt ' . a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -30,11 +31,12 @@ function! s:build_args(git, args) abort
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.cached = args.get('--cached')
-  let args.params.revision = args.get(1, gina#core#buffer#param('%', 'revision', ''))
+  let args.params.partial = !empty(args.residual())
+  let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev'))
 
   call args.set('--numstat', 1)
   call args.set(0, 'diff')
-  call args.set(1, args.params.revision)
+  call args.set(1, args.params.rev)
   return args.lock()
 endfunction
 
@@ -60,7 +62,7 @@ function! s:init(args) abort
   call gina#action#include('edit')
   call gina#action#include('show')
 
-  augroup gina_internal_command
+  augroup gina_command_changes_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
   augroup END
@@ -80,44 +82,43 @@ function! s:BufReadCmd() abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let git = gina#core#get_or_fail()
-  let revision = gina#core#buffer#param('%', 'revision')
+  let args = gina#core#meta#get_or_fail('args')
+  let rev = args.params.rev
+  let residual = args.residual()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(git, revision, v:val)'
+        \ 's:parse_record(a:fline + v:key, v:val, rev, residual)'
         \)
-  call filter(candidates, '!empty(v:val)')
-  return candidates
+  return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(git, revision, record) abort
+function! s:parse_record(lnum, record, rev, residual) abort
   let m = matchlist(
         \ a:record,
         \ '^\(\d\+\)\s\+\(\d\+\)\s\+\(.\+\)$'
         \)
-  if empty(m)
-    return {}
-  endif
-  return {
+  return empty(m) ? {} : {
+        \ 'lnum': a:lnum,
         \ 'word': a:record,
         \ 'added': m[1],
         \ 'removed': m[2],
-        \ 'path': gina#core#repo#abspath(a:git, m[3]),
-        \ 'revision': a:revision,
+        \ 'path': m[3],
+        \ 'rev': a:rev,
+        \ 'residual': a:residual,
         \}
 endfunction
 
 
 " Writer ---------------------------------------------------------------------
-let s:writer_super = gina#process#pipe#stream_writer()
-let s:writer = {}
+let s:writer = gina#util#inherit(gina#process#pipe#stream_writer())
 
 function! s:writer.on_stop() abort
-  call call(s:writer_super.on_stop, [], self)
+  call self.super(s:writer, 'on_stop')
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
 
+" Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,

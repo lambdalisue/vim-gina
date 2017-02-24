@@ -6,6 +6,7 @@ function! gina#action#browse#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('browse:exact', function('s:on_browse'), {
+        \ 'hidden': 1,
         \ 'description': 'Open a system browser and show a content in remote',
         \ 'mapping_mode': 'n',
         \ 'requirements': [],
@@ -18,6 +19,7 @@ function! gina#action#browse#define(binder) abort
         \ 'options': { 'yank': 1 },
         \})
   call a:binder.define('browse:yank:exact', function('s:on_browse'), {
+        \ 'hidden': 1,
         \ 'description': 'Copy a URL of a content in remote',
         \ 'mapping_mode': 'n',
         \ 'requirements': [],
@@ -36,12 +38,15 @@ function! s:on_browse(candidates, options) abort
         \ 'yank': 0,
         \}, a:options)
   for candidate in a:candidates
+    let treeish = gina#core#treeish#build(
+          \ gina#util#get(candidate, 'rev'),
+          \ gina#util#get(candidate, 'path', v:null),
+          \)
     execute printf(
-          \ 'Gina browse %s %s %s -- %s',
+          \ 'Gina browse %s %s %s',
           \ options.exact ? '--exact' : '',
           \ options.yank ? '--yank' : '',
-          \ gina#util#shellescape(get(candidate, 'revision', '')),
-          \ gina#util#shellescape(get(candidate, 'path', '')),
+          \ gina#util#shellescape(treeish),
           \)
   endfor
 endfunction

@@ -13,6 +13,10 @@ Describe gina#core#path
   End
 
   Describe #expand({expr})
+    It returns a empty string when {expr} is an empty string
+      Assert Equals(gina#core#path#expand(''), '')
+    End
+
     It returns a Unix-like path of {expr} when {expr} starts from ':'
       let expr = Path.realpath(':/foo/bar.txt')
       Assert Equals(gina#core#path#expand(expr), ':/foo/bar.txt')
@@ -45,9 +49,12 @@ Describe gina#core#path
             \))
     End
 
-    It returns an expanded Unix-like path of {expr}
+    It does not expand pathspec such as $HOME or *.vim
+      let expr = 'autoload/gina/*.vim'
+      Assert Equals(gina#core#path#expand(expr), expr)
+
       let expr = '$HOME'
-      Assert Equals(gina#core#path#expand(expr), Path.unixpath(expand('$HOME')))
+      Assert Equals(gina#core#path#expand(expr), '$HOME')
 
       let expr = 'master'
       Assert Equals(gina#core#path#expand(expr), 'master')

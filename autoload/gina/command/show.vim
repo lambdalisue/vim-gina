@@ -1,14 +1,17 @@
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:Path = vital#gina#import('System.Filepath')
+
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#show#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = gina#core#buffer#bufname(git, 'show', {
-        \ 'revision': args.params.revision,
-        \ 'relpath': gina#core#repo#relpath(git, args.params.abspath),
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
+        \ 'treeish': args.params.treeish,
+        \ 'params': [
+        \   args.params.partial ? '--' : '',
+        \ ],
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -32,19 +35,8 @@ function! s:build_args(git, args) abort
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
-
-  let args.params.abspath = gina#core#path#abspath(get(args.residual(), 0, '%'))
-  let args.params.revision = args.pop(1, gina#core#buffer#param('%', 'revision'))
-
-  if empty(args.params.abspath)
-    call args.set(1, args.params.revision)
-  else
-    call args.set(1, printf('%s:%s',
-          \ args.params.revision,
-          \ gina#core#repo#relpath(a:git, args.params.abspath)
-          \))
-  endif
-  call args.residual([])
+  let args.params.partial = !empty(args.residual())
+  call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   return args.lock()
 endfunction
 
@@ -57,11 +49,15 @@ function! s:init(args) abort
   let b:gina_initialized = 1
 
   setlocal buftype=nowrite
-  setlocal bufhidden&
   setlocal noswapfile
   setlocal nomodifiable
+  if a:args.params.partial
+    setlocal bufhidden=wipe
+  else
+    setlocal bufhidden&
+  endif
 
-  augroup gina_internal_command
+  augroup gina_command_show_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
     autocmd BufWinEnter <buffer> setlocal buflisted
@@ -69,15 +65,24 @@ function! s:init(args) abort
   augroup END
 endfunction
 
+function! s:reassign_rev(git, args) abort
+  let rev = gina#core#treeish#resolve(a:git, a:args.params.rev)
+  let treeish = gina#core#treeish#build(rev, a:args.params.path)
+  call a:args.set(1, substitute(treeish, '^:0', '', ''))
+  return a:args
+endfunction
+
 function! s:BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
-  let result = gina#process#call(git, args)
-  if result.status
-    throw gina#process#errormsg(result)
-  endif
+  let args = s:reassign_rev(git, args.clone())
+  let result = gina#process#call_or_fail(git, args)
   call gina#core#buffer#assign_cmdarg()
   call gina#core#writer#assign_content(bufnr('%'), result.content)
   call gina#core#emitter#emit('command:called', s:SCHEME)
-  call gina#util#doautocmd('BufRead')
+  if args.params.path is# v:null
+    setfiletype git
+  else
+    call gina#util#doautocmd('BufRead')
+  endif
 endfunction

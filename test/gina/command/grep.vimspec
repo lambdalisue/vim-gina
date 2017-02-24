@@ -28,6 +28,28 @@ Describe gina#command#grep
             \ 'A/foo.txt[36m:[m1[36m:[m[1;31ma[m',
             \ 'C/foo.txt[36m:[m1[36m:[m[1;31ma[m[1;31ma[m',
             \])
+      Assert Equals(gina#action#candidates(), [
+            \ {
+            \   'lnum': 1,
+            \   'word': 'a',
+            \   'col': 1,
+            \   'residual': [],
+            \   'path': 'A/foo.txt',
+            \   'rev': '',
+            \   'line': 1,
+            \   'abbr': 'A/foo.txt[36m:[m1[36m:[m[1;31ma[m'
+            \ },
+            \ {
+            \   'lnum': 2,
+            \   'word': 'aa',
+            \   'col': 1,
+            \   'residual': [],
+            \   'path': 'C/foo.txt',
+            \   'rev': '',
+            \   'line': 1,
+            \   'abbr': 'C/foo.txt[36m:[m1[36m:[m[1;31ma[m[1;31ma[m',
+            \ },
+            \])
     End
 
     It might be called with -e{pattern} --or -e{pattern}
@@ -41,6 +63,71 @@ Describe gina#command#grep
             \ 'A/foo.txt[36m:[m2[36m:[m[1;31mb[m',
             \ 'C/foo.txt[36m:[m1[36m:[m[1;31ma[m[1;31ma[m',
             \ 'C/foo.txt[36m:[m2[36m:[m[1;31mb[m[1;31mb[m',
+            \])
+      Assert Equals(gina#action#candidates(), [
+            \ {
+            \   'lnum': 1,
+            \   'word': 'a',
+            \   'col': 1,
+            \   'residual': [],
+            \   'path': 'A/foo.txt',
+            \   'rev': '',
+            \   'line': 1,
+            \   'abbr': 'A/foo.txt[36m:[m1[36m:[m[1;31ma[m'
+            \ },
+            \ {
+            \   'lnum': 2,
+            \   'word': 'b',
+            \   'col': 1,
+            \   'residual': [],
+            \   'path': 'A/foo.txt',
+            \   'rev': '',
+            \   'line': 2,
+            \   'abbr': 'A/foo.txt[36m:[m2[36m:[m[1;31mb[m'
+            \ },
+            \ {
+            \   'lnum': 3,
+            \   'word': 'aa',
+            \   'col': 1,
+            \   'residual': [],
+            \   'path': 'C/foo.txt',
+            \   'rev': '',
+            \   'line': 1,
+            \   'abbr': 'C/foo.txt[36m:[m1[36m:[m[1;31ma[m[1;31ma[m'
+            \ },
+            \ {
+            \   'lnum': 4,
+            \   'word': 'bb',
+            \   'col': 1,
+            \   'residual': [],
+            \   'path': 'C/foo.txt',
+            \   'rev': '',
+            \   'line': 2,
+            \   'abbr': 'C/foo.txt[36m:[m2[36m:[m[1;31mb[m[1;31mb[m'
+            \ },
+            \])
+    End
+
+    It might be called with {pattern} -- A/*.txt
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync grep a -- A/*.txt
+      Assert Equals(winnr('$'), 2)
+      " Focused buffer
+      Assert Equals(bufname('%'), printf('gina://%s:grep:--', slit1.refname))
+      Assert Equals(getline(1, '$'), [
+            \ 'A/foo.txt[36m:[m1[36m:[m[1;31ma[m',
+            \])
+      Assert Equals(gina#action#candidates(), [
+            \ {
+            \   'lnum': 1,
+            \   'word': 'a',
+            \   'col': 1,
+            \   'residual': ['A/*.txt'],
+            \   'path': 'A/foo.txt',
+            \   'rev': '',
+            \   'line': 1,
+            \   'abbr': 'A/foo.txt[36m:[m1[36m:[m[1;31ma[m'
+            \ },
             \])
     End
   End
