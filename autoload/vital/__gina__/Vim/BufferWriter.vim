@@ -248,6 +248,7 @@ endfunction
 
 " Writer instance ------------------------------------------------------------
 let s:timers = {}
+let s:writers = {}
 let s:writer = {'_timer': v:null, '_running': 0}
 
 function! s:_timer_callback(timer) abort
@@ -266,8 +267,12 @@ function! s:writer.start() abort
   endif
   lockvar! self.bufnr
   lockvar! self.updatetime
-  " Make sure the content is cleared
-  call self.clear()
+  " Kill previous writer which target a same buffer before start
+  if has_key(s:writers, self.bufnr)
+    call s:writers[self.bufnr].kill()
+    call self.clear()
+  endif
+  let s:writers[self.bufnr] = self
   let self._running = 1
   let self._timer = timer_start(
         \ self.updatetime,
