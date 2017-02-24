@@ -1,4 +1,6 @@
+let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
+let s:Store = vital#gina#import('System.Store')
 
 
 function! gina#core#repo#abspath(git, expr) abort
@@ -18,6 +20,12 @@ function! gina#core#repo#relpath(git, expr) abort
 endfunction
 
 function! gina#core#repo#config(git) abort
+  let slug = eval(s:Store.get_slug_expr())
+  let store = s:Store.of(s:Git.resolve(a:git, 'config'))
+  let config = store.get(slug, {})
+  if !empty(config)
+    return config
+  endif
   let result = gina#process#call(a:git, ['config', '--list'])
   if result.status
     throw gina#process#errormsg(result)
@@ -26,6 +34,7 @@ function! gina#core#repo#config(git) abort
   for record in filter(result.content, '!empty(v:val)')
     call s:extend_config(config, record)
   endfor
+  call store.set(slug, config)
   return config
 endfunction
 
