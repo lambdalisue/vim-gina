@@ -43,6 +43,12 @@ function! gina#process#wait(...) abort
       call gina#core#emitter#emit('wait:end')
       return
     endif
+    if g:gina#test && 3.0 < reltimefloat(reltime(start_time))
+      for running in gina#process#runnings()
+        call themis#log(running)
+      endfor
+      throw 'TIMEOUT'
+    endif
     execute 'sleep' updatetime
   endwhile
   call gina#core#emitter#emit('wait:timeout')

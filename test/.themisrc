@@ -33,6 +33,7 @@ for s:runtimepath in split(&runtimepath, ',')
 endfor
 call themis#log('-----------------------------------------------------------')
 
+let g:gina#test = 1
 
 " Synchronous Gina command for test
 command! -nargs=* -range=% -bang
