@@ -1710,6 +1710,9 @@ patch:above/below/left/right/tab (hidden)
 show
 show:above/below/left/right/tab/preview (hidden)
 	Show a commit or a content in the revision/index
+show:commit
+show:commit:above/below/left/right/tab/preview (hidden)
+	Show a commit forcedly
 
 
 =============================================================================
