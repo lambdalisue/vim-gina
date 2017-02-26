@@ -193,6 +193,7 @@ action on all candidates listed in the buffer.
 
 You may want to repeat a previous action. In that case, use a "builtin:repeat"
 action which is mapped to "." in default.
+Note that actions executed from "builtin:choice" action become repeatable.
 Note that some actions are not repeatable. While most of actions are
 repeatable, there is no way to confirm if an action is repeatable or not for
 now.
@@ -1566,9 +1567,10 @@ builtin:help:all (hidden/unrepeatable)
 builtin:choice (hiddden/unrepeatable)
 	Select an action to perform.
 	The action is mapped to "<Tab>" in normal, visual, and insert mode.
-	Note that this is not a repeatalbe action.
+	Note that actions executed from this action become repeatable.
 builtin:repeat (hidden)
-	Repeat a previous repeatable action.
+	Repeat a previous repeatable action which was executed from
+	"builtin:choice" action.
 	The action is mapped to "." in normal, visual, and insert mode.
 
 					*gina-actions-branch*
