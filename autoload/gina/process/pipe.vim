@@ -141,10 +141,6 @@ function! s:stream_pipe_writer.on_stop() abort
   endtry
 endfunction
 
-function! s:stream_pipe_writer.on_check() abort
-  return self._job.status() ==# 'run'
-endfunction
-
 
 " Automatically update b:gina_winview with cursor move while no buffer content
 " is available in BufReadCmd and winsaveview() always returns unwilling value
