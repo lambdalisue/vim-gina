@@ -31,18 +31,28 @@ endfunction
 
 " Utility functions ----------------------------------------------------------
 function! s:assign_content(bufnr, content) abort dict
-  if bufwinnr(a:bufnr) < 1
+  if a:bufnr isnot# v:null && bufwinnr(a:bufnr) < 1
     return 0
   endif
   let content = s:_iconv(a:bufnr, a:content)
-  if has('python3') && self.use_python3 && s:_ready_python3()
+  if a:bufnr is# v:null || a:bufnr == bufnr('%')
+    call s:_assign_content(content)
+    return 1
+  elseif has('python3') && self.use_python3 && s:_ready_python3()
     call s:_assign_content_python3(a:bufnr, content)
+    return 1
   elseif has('python') && self.use_python && s:_ready_python()
     call s:_assign_content_python(a:bufnr, content)
-  else
-    call s:_assign_content_vim(a:bufnr, content)
+    return 1
   endif
-  return 1
+  let focus = s:Window.focus_buffer(a:bufnr)
+  try
+    call s:_assign_content(content)
+    return 1
+  finally
+    call focus.restore()
+  endtry
+  return 0
 endfunction
 
 if has('nvim')
@@ -99,8 +109,7 @@ _vital_vim_bufferwriter_assign_content()
 EOC
 endfunction
 
-function! s:_assign_content_vim(bufnr, content) abort
-  let focus = s:Window.focus_buffer(a:bufnr)
+function! s:_assign_content(content) abort
   let guard = s:Guard.store(['&l:modifiable'])
   try
     setlocal modifiable
@@ -108,26 +117,35 @@ function! s:_assign_content_vim(bufnr, content) abort
     call setline(1, a:content)
   finally
     call guard.restore()
-    call focus.restore()
   endtry
 endfunction
 
 
 function! s:extend_content(bufnr, content) abort dict
-  if bufwinnr(a:bufnr) < 1
+  if a:bufnr isnot# v:null && bufwinnr(a:bufnr) < 1
     return 0
   elseif empty(a:content)
     return 1
   endif
   let content = s:_iconv(a:bufnr, a:content)
-  if has('python3') && self.use_python3 && s:_ready_python3()
+  if a:bufnr is# v:null || a:bufnr == bufnr('%')
+    call s:_extend_content(content)
+    return 1
+  elseif has('python3') && self.use_python3 && s:_ready_python3()
     call s:_extend_content_python3(a:bufnr, content)
+    return 1
   elseif has('python') && self.use_python && s:_ready_python()
     call s:_extend_content_python(a:bufnr, content)
-  else
-    call s:_extend_content_vim(a:bufnr, content)
+    return 1
   endif
-  return 1
+  let focus = s:Window.focus_buffer(a:bufnr)
+  try
+    call s:_extend_content(content)
+    return 1
+  finally
+    call focus.restore()
+  endtry
+  return 0
 endfunction
 
 if has('nvim')
@@ -193,8 +211,7 @@ _vital_vim_bufferwriter_extend_content()
 EOC
 endfunction
 
-function! s:_extend_content_vim(bufnr, content) abort
-  let focus = s:Window.focus_buffer(a:bufnr)
+function! s:_extend_content(content) abort
   let guard = s:Guard.store(['&l:modifiable'])
   try
     setlocal modifiable
@@ -202,7 +219,6 @@ function! s:_extend_content_vim(bufnr, content) abort
     call setline(line('$'), [leading] + a:content[1:])
   finally
     call guard.restore()
-    call focus.restore()
   endtry
 endfunction
 
@@ -236,7 +252,9 @@ function! s:_ready_python3() abort
 endfunction
 
 function! s:_iconv(bufnr, content) abort
-  let fileencoding = getbufvar(a:bufnr, '&fileencoding')
+  let fileencoding = a:bufnr is# v:null
+        \ ? &fileencoding
+        \ : getbufvar(a:bufnr, '&fileencoding')
   if fileencoding ==# ''
     return a:content
   endif
