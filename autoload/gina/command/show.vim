@@ -40,6 +40,8 @@ function! s:build_args(git, args) abort
     let args.params.line = args.pop('--line', v:null)
     let args.params.col = args.pop('--col', v:null)
   else
+    call args.pop('--line')
+    call args.pop('--col')
     let args.params.line = v:null
     let args.params.col = v:null
   endif
