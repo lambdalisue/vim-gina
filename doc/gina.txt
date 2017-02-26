@@ -1247,9 +1247,9 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
 	--line={line}
-		An initial line number
+		An initial line number if {path} is not omitted.
 	--col={col}
-		An initial column number
+		An initial column number if {path} is not omitted.
 
 	See also~
 	|gina-buffer-show|
