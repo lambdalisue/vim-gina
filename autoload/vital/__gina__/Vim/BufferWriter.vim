@@ -325,8 +325,12 @@ function! s:writer.write(msg) abort
   call self.on_write(a:msg)
 endfunction
 
+function! s:writer.read() abort
+  return self.on_read(self._queue.get())
+endfunction
+
 function! s:writer.flush() abort
-  let msg = self._queue.get()
+  let msg = self.read()
   if msg is# v:null && !self._running
     " No left over content and the writer is going to stop
     " so kill the writer to stop
@@ -349,6 +353,10 @@ endfunction
 
 function! s:writer.on_write(msg) abort
   " User can override this method
+endfunction
+
+function! s:writer.on_read(msg) abort
+  return a:msg
 endfunction
 
 function! s:writer.on_flush(msg) abort
