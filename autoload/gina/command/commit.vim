@@ -173,7 +173,9 @@ endfunction
 function! s:get_commitmsg_template(git, args) abort
   let args = a:args.clone()
   let filename = s:Git.resolve(a:git, 'COMMIT_EDITMSG')
-  let previous_content = readfile(filename)
+  let previous_content = filereadable(filename)
+        \ ? readfile(filename)
+        \ : []
   try
     " Build a new commit message template
     call args.pop('--no-edit')
