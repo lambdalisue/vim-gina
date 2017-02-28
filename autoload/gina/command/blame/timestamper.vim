@@ -49,11 +49,11 @@ function! s:timestamper.format(epoch, timezone) abort
   if timedelta.duration().months() < 3
     let timestamp = timedelta.about()
   elseif datetime.year() == self._now.year()
-    let timestamp = 'on ' . datetime.strftime(
+    let timestamp = datetime.strftime(
           \ g:gina#command#blame#timestamper#format1
           \)
   else
-    let timestamp = 'on ' . datetime.strftime(
+    let timestamp = datetime.strftime(
           \ g:gina#command#blame#timestamper#format2
           \)
   endif

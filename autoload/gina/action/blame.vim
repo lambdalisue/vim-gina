@@ -20,11 +20,11 @@ function! gina#action#blame#define(binder) abort
           \ 'description': 'Echo the chunk info',
           \ 'mapping_mode': 'n',
           \ 'requirements': [
-          \   'rev',
           \   'summary',
           \   'author',
           \   'author_time',
           \   'author_tz',
+          \   'revision',
           \ ],
           \ 'options': {},
           \})
@@ -38,21 +38,7 @@ function! s:on_echo(candidates, options) abort dict
     return
   endif
   let chunk = a:candidates[0]
-  let timestamp = gina#command#blame#timestamper#new().format(
-        \ chunk.author_time,
-        \ chunk.author_tz,
-        \)
-  let revision = chunk.rev
-  if has_key(chunk, 'previous')
-    let revision = printf('%s <- %s', revision, chunk.previous)
-  endif
-  redraw | call gina#core#console#info(printf(
-        \ '%s by %s %s (%s)',
-        \ chunk.summary,
-        \ chunk.author,
-        \ timestamp,
-        \ revision,
-        \))
+  call gina#command#blame#echo(chunk)
 endfunction
 
 function! s:on_open(candidates, options) abort dict

@@ -12,10 +12,8 @@ setlocal foldcolumn=0 colorcolumn=0
 if g:gina#command#blame#use_default_aliases
   call gina#action#shorten('blame')
 endif
-"
+
 if g:gina#command#blame#use_default_mappings
   nmap <buffer> <Return>    <Plug>(gina-blame-open)
   nmap <buffer> <Backspace> <Plug>(gina-blame-back)
-  nmap <buffer> j           j<Plug>(gina-blame-echo)
-  nmap <buffer> k           k<Plug>(gina-blame-echo)
 endif

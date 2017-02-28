@@ -14,6 +14,20 @@ function! gina#command#blame#call(range, args, mods) abort
   endtry
 endfunction
 
+function! gina#command#blame#echo(chunk) abort
+  let timestamp = gina#command#blame#timestamper#new().format(
+        \ a:chunk.author_time,
+        \ a:chunk.author_tz,
+        \)
+  redraw | call gina#core#console#info(printf(
+        \ '%s: %s authored on %s [%s]',
+        \ a:chunk.summary,
+        \ a:chunk.author,
+        \ timestamp,
+        \ a:chunk.revision,
+        \))
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
@@ -25,7 +39,7 @@ function! s:build_args(git, args) abort
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.line = args.pop('--line', v:null)
   let args.params.col = args.pop('--col', v:null)
-  let args.params.width = args.pop('--width', 30)
+  let args.params.width = args.pop('--width', 35)
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   if empty(args.params.path)
@@ -125,11 +139,6 @@ function! s:init(args) abort
   call gina#action#include('compare')
   call gina#action#include('diff')
   call gina#action#include('show')
-
-  augroup gina_command_blame_internal
-    autocmd! * <buffer>
-    autocmd BufReadCmd <buffer> call s:BufReadCmd()
-    autocmd VimResized <buffer> call s:VimResized()
 
   augroup gina_command_blame_internal
     autocmd! * <buffer>
