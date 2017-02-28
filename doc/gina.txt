@@ -993,6 +993,14 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 :Gina chaperon [+cmd] [++opt] [{options}] [{path}]
 	Open 3-way diff to solve conflict.
 	If {path} is missing, it is guessed from the current buffer.
+
+	The followings are allowed in {options}
+	
+	--line={line}
+		An initial line number
+	--col={col}
+		An initial column number
+
 	It opens the follwoing buffers by |:Gina-edit| and |:Gina-show| command.
 
 	REMOTE:		gina://{refname}:show/:3:{path}
@@ -1079,10 +1087,6 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
-	--line={line}
-		An initial line number
-	--col={col}
-		An initial column number
 
 	See also~
 	|gina-buffer-diff|
