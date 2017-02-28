@@ -162,9 +162,7 @@ function! s:binder.call(name_or_alias, candidates) abort range
     endif
   endif
   call s:Exception.call(action.callback, [candidates, action.options], self)
-  if action.repeatable
-    let self.previous_action = action
-  endif
+  return action
 endfunction
 
 function! s:binder.smart_map(mode, lhs, rhs, ...) abort
@@ -249,7 +247,10 @@ function! s:_action_choice(candidates, options) abort dict
   if empty(aname)
     return
   endif
-  call self.call(aname, a:candidates)
+  let action = self.call(aname, a:candidates)
+  if action.repeatable
+    let self.previous_action = action
+  endif
 endfunction
 
 function! s:_action_repeat(candidates, options) abort dict
