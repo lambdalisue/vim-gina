@@ -220,6 +220,14 @@ Each columns in the message indicates
 
 If you would like to define custom aliases or mappings, see the next section.
 
+						*gina-usage-action-mods*
+Most of actions support command modifiers. For example, if you would like to
+see a debug message on the action, prepend |verbose| modifier like
+>
+	action: verbose show
+<
+When you hit <CR>, the "show" action will be executed with |verbose| modifier.
+
 
 =============================================================================
 CUSTOM						*gina-custom*
