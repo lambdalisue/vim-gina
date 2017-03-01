@@ -83,13 +83,15 @@ function! s:on_checkout(candidates, options) abort
             \ ? candidate.branch
             \ : candidate.rev
       execute printf(
-            \ 'Gina checkout -b %s %s',
+            \ '%s Gina checkout -b %s %s',
+            \ options.mods,
             \ gina#util#shellescape(branch),
             \ gina#util#shellescape(candidate.rev),
             \)
     else
       execute printf(
-            \ 'Gina checkout %s',
+            \ '%s Gina checkout %s',
+            \ options.mods,
             \ gina#util#shellescape(candidate.rev),
             \)
     endif
@@ -110,7 +112,8 @@ function! s:on_new(candidates, options) abort
           \ 'customlist,gina#complete#commit#branch',
           \)
     execute printf(
-          \ 'Gina checkout -b %s %s',
+          \ '%s Gina checkout -b %s %s',
+          \ options.mods,
           \ gina#util#shellescape(name),
           \ gina#util#shellescape(from),
           \)
@@ -131,7 +134,8 @@ function! s:on_move(candidates, options) abort
           \ candidate.branch,
           \)
     execute printf(
-          \ 'Gina branch --move %s %s %s',
+          \ '%s Gina branch --move %s %s %s',
+          \ options.mods,
           \ options.force ? '--force' : '',
           \ gina#util#shellescape(candidate.branch),
           \ gina#util#shellescape(name),
@@ -150,14 +154,16 @@ function! s:on_delete(candidates, options) abort
     let is_remote = !empty(candidate.remote)
     if is_remote
       execute printf(
-            \ 'Gina push --delete %s %s %s',
+            \ '%s Gina push --delete %s %s %s',
+            \ options.mods,
             \ options.force ? '--force' : '',
             \ gina#util#shellescape(candidate.remote),
             \ gina#util#shellescape(candidate.branch),
             \)
     else
       execute printf(
-            \ 'Gina branch --delete %s %s',
+            \ '%s Gina branch --delete %s %s',
+            \ options.mods,
             \ options.force ? '--force' : '',
             \ gina#util#shellescape(candidate.branch),
             \)
@@ -181,7 +187,8 @@ function! s:on_set_upstream_to(candidates, options) abort
           \ upstream, printf('^%s/', candidate.remote), '', ''
           \)
     execute printf(
-          \ 'Gina branch --set-upstream-to=%s %s',
+          \ '%s Gina branch --set-upstream-to=%s %s',
+          \ options.mods,
           \ gina#util#shellescape(upstream),
           \ gina#util#shellescape(candidate.branch),
           \)
@@ -196,7 +203,8 @@ function! s:on_unset_upstream(candidates, options) abort
   let options = extend({}, a:options)
   for candidate in candidates
     execute printf(
-          \ 'Gina branch --unset-upstream %s',
+          \ '%s Gina branch --unset-upstream %s',
+          \ options.mods,
           \ gina#util#shellescape(candidate.branch),
           \)
   endfor

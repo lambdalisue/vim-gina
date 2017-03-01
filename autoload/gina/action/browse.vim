@@ -43,7 +43,8 @@ function! s:on_browse(candidates, options) abort
           \ gina#util#get(candidate, 'path', v:null),
           \)
     execute printf(
-          \ 'Gina browse %s %s %s',
+          \ '%s Gina browse %s %s %s',
+          \ options.mods,
           \ options.exact ? '--exact' : '',
           \ options.yank ? '--yank' : '',
           \ gina#util#shellescape(treeish),

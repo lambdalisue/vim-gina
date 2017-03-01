@@ -73,7 +73,8 @@ function! s:on_show(candidates, options) abort
           \ gina#util#get(candidate, 'path', v:null),
           \)
     execute printf(
-          \ 'Gina show %s %s %s %s -- %s',
+          \ '%s Gina show %s %s %s %s -- %s',
+          \ options.mods,
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),
@@ -96,7 +97,8 @@ function! s:on_commit(candidates, options) abort
           \ v:null
           \)
     execute printf(
-          \ 'Gina show %s %s %s %s -- %s',
+          \ '%s Gina show %s %s %s %s -- %s',
+          \ options.mods,
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),
