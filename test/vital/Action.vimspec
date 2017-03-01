@@ -7,20 +7,18 @@ Describe Action
     %bwipeout!
   End
 
-  Describe .attach({name}[, {candidates}])
+  Describe .attach([{candidates}])
     It returns an instance of Action
-      let binder = Action.attach('action')
-      Assert KeyExists(binder, 'get_alias')
-      Assert KeyExists(binder, 'get_action')
-      Assert KeyExists(binder, 'get_candidates')
+      let binder = Action.attach()
+      Assert KeyExists(binder, 'candidates')
       Assert KeyExists(binder, 'define')
       Assert KeyExists(binder, 'alias')
+      Assert KeyExists(binder, 'action')
       Assert KeyExists(binder, 'call')
-      Assert KeyExists(binder, 'smart_map')
     End
 
     It defines builtin actions
-      let binder = Action.attach('action')
+      let binder = Action.attach()
       Assert Equals(sort(keys(binder.actions)), sort([
             \ 'builtin:echo',
             \ 'builtin:help',
@@ -31,7 +29,7 @@ Describe Action
     End
 
     It defines default aliases
-      let binder = Action.attach('action')
+      let binder = Action.attach()
       Assert Equals(sort(keys(binder.aliases)), sort([
             \ 'echo',
             \ 'help',
@@ -40,7 +38,7 @@ Describe Action
     End
 
     It defines default mappings
-      call Action.attach('action')
+      call Action.attach()
       Assert Equals(mapcheck('?', 'n'), '<Plug>(action-builtin-help)')
       Assert Equals(mapcheck('<Tab>', 'n'), '<Plug>(action-builtin-choice)')
       Assert Equals(mapcheck('<Tab>', 'v'), '<Plug>(action-builtin-choice)')
@@ -51,29 +49,12 @@ Describe Action
     End
   End
 
-  Describe .get({name})
+  Describe .get()
     It returns an attached Action instance
-      let binder1 = Action.attach('action')
-      let binder2 = Action.get('action')
+      let binder1 = Action.attach()
+      let binder2 = Action.get()
       Assert Same(binder1, binder2)
     End
   End
 
-  Describe Instance
-    Before
-      let binder = Action.attach('action')
-    End
-
-    Describe .get_alias({name})
-      It returns an alias name of an action
-        let result = binder.get_alias('builtin:echo')
-        Assert Equals(result, 'echo')
-      End
-
-      It returns {name} if no alias is found
-        let result = binder.get_alias('foobar')
-        Assert Equals(result, 'foobar')
-      End
-    End
-  End
 End

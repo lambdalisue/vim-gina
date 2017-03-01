@@ -19,27 +19,28 @@ Describe gina#custom#action
       call gina#custom#action#alias(scheme, 'doc', 'builtin:help')
       GinaSync status
       let result = execute('call gina#action#call(''doc'')')
-      Assert Match(result, 'builtin:help \[help\]')
+      Assert Match(result, 'builtin:help \[doc\]')
       Assert Match(result, 'builtin:help:all \[help:all\]')
       GinaSync branch
       let result = execute('call gina#action#call(''doc'')')
-      Assert Match(result, 'No action "doc" is found')
+      Assert Match(result, 'No corresponding action')
       GinaSync tag
       let result = execute('call gina#action#call(''doc'')')
-      Assert Match(result, 'No action "doc" is found')
+      Assert Match(result, 'No corresponding action')
     End
 
     It define an alias of {origin} to {alias} in buffers which match with /{pattern}
       call gina#custom#action#alias(pattern, 'doc', 'builtin:help')
       GinaSync status
       let result = execute('call gina#action#call(''doc'')')
+      Assert Match(result, 'No corresponding action')
       GinaSync branch
       let result = execute('call gina#action#call(''doc'')')
-      Assert Match(result, 'builtin:help \[help\]')
+      Assert Match(result, 'builtin:help \[doc\]')
       Assert Match(result, 'builtin:help:all \[help:all\]')
       GinaSync tag
       let result = execute('call gina#action#call(''doc'')')
-      Assert Match(result, 'builtin:help \[help\]')
+      Assert Match(result, 'builtin:help \[doc\]')
       Assert Match(result, 'builtin:help:all \[help:all\]')
     End
   End

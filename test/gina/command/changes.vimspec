@@ -42,7 +42,7 @@ Describe gina#command#changes
       Assert Equals(getline(1, '$'), [
             \ "1\t0\tA/foo.txt",
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
             \   'lnum': 1,
             \   'residual': [],
@@ -62,7 +62,7 @@ Describe gina#command#changes
       Assert Equals(getline(1, '$'), [
             \ "0\t0\tC/foo.txt",
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
             \   'lnum': 1,
             \   'residual': [],
@@ -83,7 +83,7 @@ Describe gina#command#changes
       Assert Equals(getline(1, '$'), [
             \ "0\t0\tC/foo.txt",
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
             \   'lnum': 1,
             \   'residual': [],
@@ -103,7 +103,7 @@ Describe gina#command#changes
       Assert Equals(getline(1, '$'), [
             \ "1\t0\tA/foo.txt",
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
             \   'lnum': 1,
             \   'residual': ['A/*.txt'],

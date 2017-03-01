@@ -1,13 +1,18 @@
 let s:Action = vital#gina#import('Action')
+let s:Action.name = 'gina'
 
+function! gina#action#get(...) abort
+  return call(s:Action.get, a:000, s:Action)
+endfunction
 
 function! gina#action#attach(...) abort
-  return call(s:Action.attach, ['gina'] + a:000, s:Action)
+  return call(s:Action.attach, a:000, s:Action)
 endfunction
 
 function! gina#action#include(scheme) abort
-  let binder = s:get()
+  let binder = s:Action.get()
   if binder is# v:null
+    " TODO: raise an exception
     return
   endif
   let scheme = substitute(a:scheme, '-', '_', 'g')
@@ -27,17 +32,19 @@ function! gina#action#include(scheme) abort
 endfunction
 
 function! gina#action#alias(...) abort
-  let binder = s:get()
+  let binder = s:Action.get()
   if binder is# v:null
+    " TODO: raise an exception
     return
   endif
-  return call(binder.alias, a:000, binder)
+  return gina#core#exception#call(binder.alias, a:000, binder)
 endfunction
 
 function! gina#action#shorten(action_scheme, ...) abort
   let excludes = get(a:000, 0, [])
-  let binder = s:get()
+  let binder = s:Action.get()
   if binder is# v:null
+    " TODO: raise an exception
     return
   endif
   let action_scheme = substitute(a:action_scheme, '-', '_', 'g')
@@ -50,36 +57,19 @@ function! gina#action#shorten(action_scheme, ...) abort
   endfor
 endfunction
 
-function! gina#action#call(name_or_alias, ...) abort
-  let binder = s:get()
+function! gina#action#call(...) abort
+  let binder = s:Action.get()
   if binder is# v:null
+    " TODO: raise an exception
     return
   endif
-  let candidates = a:0 > 0 ? a:1 : binder.get_candidates(1, line('$'))
-  return gina#core#exception#call(
-        \ binder.call,
-        \ [a:name_or_alias, candidates],
-        \ binder
-        \)
+  return gina#core#exception#call(binder.call, a:000, binder)
 endfunction
 
 function! gina#action#candidates(...) abort
-  let binder = s:get()
+  let binder = s:Action.get()
   if binder is# v:null
     return
   endif
-  if a:0 == 0
-    let fline = 1
-    let lline = line('$')
-  else
-    let fline = get(a:000, 0, 1)
-    let lline = get(a:000, 1, fline)
-  endif
-  return binder.get_candidates(fline, lline)
-endfunction
-
-
-" Private --------------------------------------------------------------------
-function! s:get(...) abort
-  return call(s:Action.get, ['gina'] + a:000, s:Action)
+  return gina#core#exception#call(binder.candidates, a:000, binder)
 endfunction

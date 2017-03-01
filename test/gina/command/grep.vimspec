@@ -28,7 +28,7 @@ Describe gina#command#grep
             \ 'A/foo.txt[36m:[m1[36m:[m[1;31ma[m',
             \ 'C/foo.txt[36m:[m1[36m:[m[1;31ma[m[1;31ma[m',
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
             \   'lnum': 1,
             \   'word': 'a',
@@ -64,7 +64,7 @@ Describe gina#command#grep
             \ 'C/foo.txt[36m:[m1[36m:[m[1;31ma[m[1;31ma[m',
             \ 'C/foo.txt[36m:[m2[36m:[m[1;31mb[m[1;31mb[m',
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
             \   'lnum': 1,
             \   'word': 'a',
@@ -117,7 +117,7 @@ Describe gina#command#grep
       Assert Equals(getline(1, '$'), [
             \ 'A/foo.txt[36m:[m1[36m:[m[1;31ma[m',
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
             \   'lnum': 1,
             \   'word': 'a',

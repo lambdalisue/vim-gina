@@ -46,7 +46,7 @@ Describe gina#command#branch
             \ '  develop[m',
             \ '* [32mmaster[m',
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
             \   'lnum': 1,
             \   'abbr': '  develop[m',
@@ -77,7 +77,7 @@ Describe gina#command#branch
       Assert Equals(getline(1, '$'), [
             \ '  [31mext/master[m',
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
             \   'lnum': 1,
             \   'abbr': '  [31mext/master[m',
@@ -100,7 +100,7 @@ Describe gina#command#branch
             \ '* [32mmaster[m',
             \ '  [31mremotes/ext/master[m',
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
             \   'lnum': 1,
             \   'abbr': '  develop[m',

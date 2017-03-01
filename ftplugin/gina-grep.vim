@@ -38,7 +38,8 @@ if g:gina#command#grep#send_to_quickfix
       return
     endif
     try
-      call gina#action#call('export:quickfix')
+      let candidates = gina#action#candidates(1, line('$'))
+      call gina#action#call('export:quickfix', candidates)
     finally
       call focus.restore()
     endtry

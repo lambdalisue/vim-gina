@@ -388,7 +388,11 @@ update a quickfix candidates with gina-grep candidates automatically, use
 	  endif
 	  " Export entire candidates into a quickfic and restore the focus
 	  try
-	    call gina#action#call('export:quickfix')
+	    let candidates = gina#action#candidates(1, line('$'))
+	    call gina#action#call(
+	          \ 'export:quickfix',
+	          \ candidates,
+	          \)
 	  finally
 	    call focus.restore()
 	  endtry
