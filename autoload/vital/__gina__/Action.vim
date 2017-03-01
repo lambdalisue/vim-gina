@@ -345,7 +345,7 @@ endfunction
 function! s:_call_for_mapping(name) abort range
   let binder = s:get()
   let candidates = binder.candidates(a:firstline, a:lastline)
-  return binder.call(a:name, candidates)
+  return s:Exception.call(binder.call, [a:name, candidates], binder)
 endfunction
 
 
