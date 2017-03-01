@@ -115,7 +115,6 @@ function! s:binder.define(name, callback, ...) abort
         \ 'mapping_mode': '',
         \ 'requirements': [],
         \ 'options': {},
-        \ 'default': 0,
         \ 'hidden': 0,
         \ 'priority': 0,
         \ 'repeatable': 1,
