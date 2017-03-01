@@ -43,8 +43,6 @@ function! s:attach(name, ...) abort
   call binder.alias('echo', 'builtin:echo')
   call binder.alias('help', 'builtin:help')
   call binder.alias('help:all', 'builtin:help:all')
-  call binder.alias('choice', 'builtin:choice')
-  call binder.alias('repeat', 'builtin:repeat')
   let name = substitute(a:name, ':', '-', 'g')
   execute printf('nmap <buffer> ?     <Plug>(%s-builtin-help)', name)
   execute printf('nmap <buffer> <Tab> <Plug>(%s-builtin-choice)', name)
