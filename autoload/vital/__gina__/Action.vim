@@ -49,7 +49,7 @@ function! s:attach(name, ...) abort
   execute printf('vmap <buffer> <Tab> <Plug>(%s-builtin-choice)', name)
   execute printf('imap <buffer> <Tab> <Plug>(%s-builtin-choice)', name)
   execute printf('nmap <buffer> . <Plug>(%s-builtin-repeat)', name)
-  execute printf('vmap <buffer> . <Plug>(%s-builtin-repeat)gv', name)
+  execute printf('vmap <buffer> . <Plug>(%s-builtin-repeat)', name)
   execute printf('imap <buffer> . <Plug>(%s-builtin-repeat)', name)
   let b:{s:PREFIX . a:name} = binder
   return binder
