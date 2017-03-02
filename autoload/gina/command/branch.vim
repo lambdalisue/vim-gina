@@ -69,7 +69,9 @@ function! s:init(args) abort
 
   " Attach modules
   call gina#core#anchor#attach()
-  call gina#action#attach(function('s:get_candidates'))
+  call gina#action#attach(function('s:get_candidates'), {
+        \ 'markable': 1,
+        \})
   call gina#action#include('branch')
   call gina#action#include('browse')
   call gina#action#include('changes')

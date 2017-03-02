@@ -10,7 +10,6 @@ Describe Action
   Describe .attach([{candidates}])
     It returns an instance of Action
       let binder = Action.attach()
-      Assert KeyExists(binder, 'candidates')
       Assert KeyExists(binder, 'define')
       Assert KeyExists(binder, 'alias')
       Assert KeyExists(binder, 'action')
