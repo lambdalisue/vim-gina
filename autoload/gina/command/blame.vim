@@ -37,11 +37,10 @@ function! s:build_args(git, args) abort
         \ args.pop('--group2', 'blame-navi'),
         \]
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.line = args.pop('--line', v:null)
-  let args.params.col = args.pop('--col', v:null)
   let args.params.width = args.pop('--width', 35)
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
+  call gina#core#args#extend_line(a:git, args, args.pop('--line'))
   if empty(args.params.path)
     throw gina#core#exception#warn(printf(
           \ 'No filename is specified. Did you mean "Gina blame %s:"?',

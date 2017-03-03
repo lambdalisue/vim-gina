@@ -23,12 +23,12 @@ function! s:build_args(git, args) abort
         \ args.pop('--group2', 'compare-r'),
         \]
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.line = args.pop('--line')
-  let args.params.col = args.pop('--col')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
+  call gina#core#args#extend_line(a:git, args, args.pop('--line'))
+  call gina#core#args#extend_col(a:git, args, args.pop('--col'))
   if empty(args.params.path)
     throw gina#core#exception#warn(printf(
           \ 'No filename is specified. Did you mean "Gina compare %s:"?',

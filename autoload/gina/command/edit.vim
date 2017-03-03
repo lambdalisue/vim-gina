@@ -18,10 +18,9 @@ function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.line = args.pop('--line', v:null)
-  let args.params.col = args.pop('--col', v:null)
-
   call gina#core#args#extend_path(a:git, args, args.pop(1))
+  call gina#core#args#extend_line(a:git, args, args.pop('--line'))
+  call gina#core#args#extend_col(a:git, args, args.pop('--col'))
   return args.lock()
 endfunction
 
