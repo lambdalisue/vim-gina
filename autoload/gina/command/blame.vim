@@ -140,12 +140,20 @@ function! s:init(args) abort
   call gina#action#include('diff')
   call gina#action#include('show')
 
+  " Mapping
+  nnoremap <buffer><silent> <Plug>(gina-blame-redraw)
+        \ :<C-u>call <SID>redraw_content()<CR>
+  nnoremap <buffer><silent> <Plug>(gina-blame-C-L)
+        \ :<C-u>call <SID>redraw_content()<CR>:execute "normal! \<C-L>"<CR>
+
   augroup gina_command_blame_internal
     autocmd! * <buffer>
-    autocmd BufReadCmd <buffer> call s:BufReadCmd()
-    autocmd VimResized <buffer> call s:VimResized()
+    autocmd WinLeave <buffer> call s:redraw_content_if_necessary()
+    autocmd WinEnter <buffer> call s:redraw_content_if_necessary()
+    autocmd VimResized <buffer> call s:redraw_content_if_necessary()
     autocmd WinLeave <buffer> call s:WinLeave()
     autocmd WinEnter <buffer> call s:WinEnter()
+    autocmd BufReadCmd <buffer> call s:BufReadCmd()
   augroup END
 endfunction
 
@@ -191,11 +199,6 @@ function! s:BufReadCmd() abort
   setlocal filetype=gina-blame
 endfunction
 
-function! s:VimResized() abort
-  call s:redraw_content()
-  call gina#util#syncbind()
-endfunction
-
 function! s:redraw_content() abort
   let args = gina#core#meta#get_or_fail('args')
   let chunks = gina#core#meta#get_or_fail('chunks')
@@ -220,6 +223,14 @@ function! s:redraw_content() abort
     call map(copy(chunks), 'writer.write(v:val)')
     call writer.stop()
     let b:gina_blame_writer = writer
+  endif
+  let b:gina_previous_winwidth = winwidth(0)
+endfunction
+
+function! s:redraw_content_if_necessary() abort
+  if exists('b:gina_previous_winwidth') && b:gina_previous_winwidth != winwidth(0)
+    call s:redraw_content()
+    call gina#util#syncbind()
   endif
 endfunction
 

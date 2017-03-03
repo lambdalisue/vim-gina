@@ -16,4 +16,5 @@ endif
 if g:gina#command#blame#use_default_mappings
   nmap <buffer> <Return>    <Plug>(gina-blame-open)
   nmap <buffer> <Backspace> <Plug>(gina-blame-back)
+  nmap <buffer> <C-L>       <Plug>(gina-blame-C-L)
 endif
