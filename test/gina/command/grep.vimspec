@@ -28,9 +28,9 @@ Describe gina#command#grep
             \ 'A/foo.txt[36m:[m1[36m:[m[1;31ma[m',
             \ 'C/foo.txt[36m:[m1[36m:[m[1;31ma[m[1;31ma[m',
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
-            \   'lnum': 1,
+            \   '__lnum': 1,
             \   'word': 'a',
             \   'col': 1,
             \   'residual': [],
@@ -40,7 +40,7 @@ Describe gina#command#grep
             \   'abbr': 'A/foo.txt[36m:[m1[36m:[m[1;31ma[m'
             \ },
             \ {
-            \   'lnum': 2,
+            \   '__lnum': 2,
             \   'word': 'aa',
             \   'col': 1,
             \   'residual': [],
@@ -64,9 +64,9 @@ Describe gina#command#grep
             \ 'C/foo.txt[36m:[m1[36m:[m[1;31ma[m[1;31ma[m',
             \ 'C/foo.txt[36m:[m2[36m:[m[1;31mb[m[1;31mb[m',
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
-            \   'lnum': 1,
+            \   '__lnum': 1,
             \   'word': 'a',
             \   'col': 1,
             \   'residual': [],
@@ -76,7 +76,7 @@ Describe gina#command#grep
             \   'abbr': 'A/foo.txt[36m:[m1[36m:[m[1;31ma[m'
             \ },
             \ {
-            \   'lnum': 2,
+            \   '__lnum': 2,
             \   'word': 'b',
             \   'col': 1,
             \   'residual': [],
@@ -86,7 +86,7 @@ Describe gina#command#grep
             \   'abbr': 'A/foo.txt[36m:[m2[36m:[m[1;31mb[m'
             \ },
             \ {
-            \   'lnum': 3,
+            \   '__lnum': 3,
             \   'word': 'aa',
             \   'col': 1,
             \   'residual': [],
@@ -96,7 +96,7 @@ Describe gina#command#grep
             \   'abbr': 'C/foo.txt[36m:[m1[36m:[m[1;31ma[m[1;31ma[m'
             \ },
             \ {
-            \   'lnum': 4,
+            \   '__lnum': 4,
             \   'word': 'bb',
             \   'col': 1,
             \   'residual': [],
@@ -117,9 +117,9 @@ Describe gina#command#grep
       Assert Equals(getline(1, '$'), [
             \ 'A/foo.txt[36m:[m1[36m:[m[1;31ma[m',
             \])
-      Assert Equals(gina#action#candidates(), [
+      Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
-            \   'lnum': 1,
+            \   '__lnum': 1,
             \   'word': 'a',
             \   'col': 1,
             \   'residual': ['A/*.txt'],

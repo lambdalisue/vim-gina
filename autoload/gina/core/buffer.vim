@@ -71,6 +71,7 @@ function! gina#core#buffer#open(bufname, ...) abort
         \ 'mods': '',
         \ 'group': '',
         \ 'opener': '',
+        \ 'range': 'tabpage',
         \ 'cmdarg': '',
         \ 'line': v:null,
         \ 'col': v:null,
@@ -147,6 +148,7 @@ function! s:open_without_callback(bufname, options) abort
         \ 'cmdarg': a:options.cmdarg,
         \ 'group':  a:options.group,
         \ 'opener': a:options.opener,
+        \ 'range': a:options.range,
         \})
   return context
 endfunction
@@ -160,6 +162,7 @@ function! s:open_with_callback(bufname, options) abort
           \ 'mods': a:options.mods,
           \ 'group':  a:options.group,
           \ 'opener': a:options.opener,
+          \ 'range': a:options.range,
           \})
   finally
     call guard.restore()

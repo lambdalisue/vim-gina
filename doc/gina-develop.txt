@@ -388,7 +388,10 @@ update a quickfix candidates with gina-grep candidates automatically, use
 	  endif
 	  " Export entire candidates into a quickfic and restore the focus
 	  try
-	    call gina#action#call('export:quickfix')
+	    call gina#action#call(
+	          \ 'export:quickfix',
+	          \ 1, line('$')
+	          \)
 	  finally
 	    call focus.restore()
 	  endtry

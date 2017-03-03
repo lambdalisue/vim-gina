@@ -102,12 +102,12 @@ function! s:get_candidates(fline, lline) abort
   let residual = args.residual()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(a:fline + v:key, v:val, rev, residual)'
+        \ 's:parse_record(v:val, rev, residual)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(lnum, record, rev, residual) abort
+function! s:parse_record(record, rev, residual) abort
   let record = s:String.remove_ansi_sequences(a:record)
   let m = matchlist(record, '^\%([^:]\+:\)\?\(.*\):\(\d\+\):\(.*\)$')
   if empty(m)
@@ -117,7 +117,6 @@ function! s:parse_record(lnum, record, rev, residual) abort
   let line = str2nr(m[2])
   let col = stridx(m[3], matched) + 1
   let candidate = {
-        \ 'lnum': a:lnum,
         \ 'word': m[3],
         \ 'abbr': a:record,
         \ 'line': line,

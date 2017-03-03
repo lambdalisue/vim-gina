@@ -3,6 +3,7 @@ if exists('b:did_ftplugin')
 endif
 let b:did_ftplugin = 1
 
+setlocal nomodeline
 setlocal nobuflisted
 setlocal nolist nospell
 setlocal nowrap nofoldenable
@@ -38,7 +39,7 @@ if g:gina#command#grep#send_to_quickfix
       return
     endif
     try
-      call gina#action#call('export:quickfix')
+      call gina#action#call('export:quickfix', 1, line('$'))
     finally
       call focus.restore()
     endtry

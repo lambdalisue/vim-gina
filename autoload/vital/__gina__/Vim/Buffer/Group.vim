@@ -7,7 +7,7 @@ function! s:new() abort
   let hash = sha256(reltimestr(reltime()))
   let s:groups[hash] = copy(s:group)
   let s:groups[hash].__hash = hash
-  let s:groups[hash].__tabnr = tabpagenr()
+  let s:groups[hash].__tabnr = v:null
   let s:groups[hash].__members = []
   return s:groups[hash]
 endfunction
@@ -18,12 +18,15 @@ let s:group = {}
 function! s:group.add(...) abort
   let options = extend({
         \ 'keep': 0,
+        \ 'expr': '%',
         \}, get(a:000, 0, {})
         \)
-  let bufnr = bufnr('%')
-  let winid = bufwinid('%')
+  let bufnr = bufnr(options.expr)
+  let winid = bufwinid(options.expr)
   let tabnr = tabpagenr()
-  if tabnr != self.__tabnr
+  if self.__tabnr is# v:null
+    let self.__tabnr = tabnr
+  elseif tabnr != self.__tabnr
     throw printf(
           \ 'vital: Vim.Buffer.Group: %s',
           \ 'A buffer on a different tabpage cannot be added.'

@@ -51,6 +51,7 @@ function! s:init(args) abort
   endif
   let b:gina_initialized = 1
 
+  setlocal nomodeline
   setlocal buftype=nowrite
   setlocal noswapfile
   setlocal nomodifiable

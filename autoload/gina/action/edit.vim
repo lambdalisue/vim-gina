@@ -44,7 +44,8 @@ function! s:on_edit(candidates, options) abort
         \}, a:options)
   for candidate in a:candidates
     execute printf(
-          \ 'Gina edit %s %s %s %s',
+          \ '%s Gina edit %s %s %s %s',
+          \ options.mods,
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),
           \ gina#util#shellescape(get(candidate, 'col'), '--col='),

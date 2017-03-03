@@ -91,16 +91,15 @@ function! s:get_candidates(fline, lline) abort
   let residual = args.residual()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(a:fline + v:key, v:val, path, residual)'
+        \ 's:parse_record(v:val, path, residual)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(lnum, record, path, residual) abort
+function! s:parse_record(record, path, residual) abort
   let record = s:String.remove_ansi_sequences(a:record)
   let rev = matchstr(record, '^[|/\* ]\+\s\+\zs[a-z0-9]\+')
   return empty(rev) ? {} : {
-        \ 'lnum': a:lnum,
         \ 'word': record,
         \ 'abbr': a:record,
         \ 'path': a:path,

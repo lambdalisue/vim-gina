@@ -50,7 +50,7 @@ function! s:_parse_attrs(attrs) abort
   return attrs
 endfunction
 
-if !has('nvim') || has('nvim-0.2.0')
+if !has('nvim')
   function! s:_highlight(name) abort
     return execute(printf('highlight %s', a:name))
   endfunction
@@ -60,7 +60,7 @@ else
   function! s:_highlight(name) abort
     redir => content
     try
-      execute 'highlight' a:name
+      silent execute 'highlight' a:name
     finally
       redir END
     endtry

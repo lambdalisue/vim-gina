@@ -23,7 +23,7 @@ function! gina#command#qrep#call(range, args, mods) abort
 
     let items = map(
           \ result.content,
-          \ 's:parse_record(git, 1 + v:key, v:val, rev, residual)',
+          \ 's:parse_record(git, v:val, rev, residual)',
           \)
     call setqflist(
           \ filter(items, '!empty(v:val)'),
@@ -63,10 +63,10 @@ function! s:build_args(git, args) abort
   return args.lock()
 endfunction
 
-function! s:parse_record(git, lnum, record, rev, residual) abort
+function! s:parse_record(git, record, rev, residual) abort
   " Parse record to make a gina candidate and translate it to a quickfix item
   let candidate = gina#command#grep#parse_record(
-        \ a:lnum, a:record, a:rev, a:residual,
+        \ a:record, a:rev, a:residual,
         \)
   if empty(candidate)
     return {}

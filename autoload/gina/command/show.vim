@@ -33,10 +33,18 @@ function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.line = args.pop('--line', v:null)
-  let args.params.col = args.pop('--col', v:null)
   let args.params.partial = !empty(args.residual())
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
+  " Enable --line/--col only when a path has specified
+  if args.params.path isnot# v:null
+    call gina#core#args#extend_line(a:git, args, args.pop('--line'))
+    call gina#core#args#extend_col(a:git, args, args.pop('--col'))
+  else
+    call args.pop('--line')
+    call args.pop('--col')
+    let args.params.line = v:null
+    let args.params.col = v:null
+  endif
   return args.lock()
 endfunction
 
@@ -78,9 +86,10 @@ function! s:BufReadCmd() abort
   let args = s:reassign_rev(git, args.clone())
   let result = gina#process#call_or_fail(git, args)
   call gina#core#buffer#assign_cmdarg()
-  call gina#core#writer#assign_content(bufnr('%'), result.content)
+  call gina#core#writer#assign_content(v:null, result.content)
   call gina#core#emitter#emit('command:called', s:SCHEME)
   if args.params.path is# v:null
+    setlocal nomodeline
     setfiletype git
   else
     call gina#util#doautocmd('BufRead')

@@ -6,7 +6,7 @@ gina
 ![Support Vim 8.0.0027 or above](https://img.shields.io/badge/support-Vim%208.0.0027%20or%20above-yellowgreen.svg?style=flat-square)
 ![Support Neovim 0.1.7 or above](https://img.shields.io/badge/support-Neovim%200.1.7%20or%20above-yellowgreen.svg?style=flat-square)
 ![Support Git 1.8.5.6 or above](https://img.shields.io/badge/support-Git%201.8.5.6%20or%20above-green.svg?style=flat-square)
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE.md)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Doc](https://img.shields.io/badge/doc-%3Ah%20gina-orange.svg?style=flat-square)](doc/gina.txt)
 [![Powered by vital.vim](https://img.shields.io/badge/powered%20by-vital.vim-80273f.svg?style=flat-square)](https://github.com/vim-jp/vital.vim)
 
@@ -15,7 +15,7 @@ gina.vim (gina) is a plugin to asynchrnously control git repositories.
 The plugin was developed based on the success of [lambdalisue/vim-gita][].
 So gina.vim has most of the outstanding features of vim-gita and drops some unwilling points.
 
-**gina.vim is in beta-phase, mean that the features were not comepleted yet and the features may be modified without backward compatibility**
+**gina.vim is in beta-phase, mean that the features were not completed yet and the features may be modified without backward compatibility**
 
 
 Supports
@@ -62,11 +62,10 @@ Missings
 
 The following features are planned but missing for now
 
-- [ ] Command completions
-- [ ] Component system for statusline/tabline like vim-gita has
-- [ ] Blame interface like `:Gita blame` of vim-gita
-- [ ] Interface for `git stash`
-- [ ] Actions for `reflog` and `tag`
+- Command completions
+- Component system for statusline/tabline like vim-gita has
+- Interface for `git stash`
+- Actions for `reflog` and `tag`
 
 Pros.
 -------------------------------------------------------------------------------
@@ -111,5 +110,5 @@ PRs which does not pass tests won't be accepted.
 
 License
 -------------------------------------------------------------------------------
-The code in gina.vim follows MIT license texted in [LICENSE.md](./LICENSE.md).
+The code in gina.vim follows MIT license texted in [LICENSE](./LICENSE).
 Contributors need to agree that any modifications sent in this repository follow the license.

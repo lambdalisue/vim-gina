@@ -94,7 +94,7 @@ function! s:BufReadCmd() abort
         \ [git, args]
         \)
   call gina#core#buffer#assign_cmdarg()
-  call gina#core#writer#assign_content(bufnr('%'), content)
+  call gina#core#writer#assign_content(v:null, content)
   call gina#core#emitter#emit('command:called', s:SCHEME)
   setlocal filetype=gina-commit
 endfunction
@@ -163,9 +163,9 @@ endfunction
 function! s:get_commitmsg(git, args) abort
   let args = a:args.clone()
   let filename = s:Git.resolve(a:git, 'COMMIT_EDITMSG')
-  if filereadable(filename)
-    let previous_content = readfile(filename)
-  endif
+  let previous_content = filereadable(filename)
+        \ ? readfile(filename)
+        \ : []
   try
     " Build a new commit message template
     call args.pop('--no-edit')

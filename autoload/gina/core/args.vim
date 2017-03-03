@@ -76,3 +76,53 @@ function! gina#core#args#extend_treeish(git, args, treeish) abort
         \ 'treeish': gina#core#treeish#build(rev, path),
         \})
 endfunction
+
+function! gina#core#args#extend_line(git, args, line) abort
+  if a:line is# v:null || !empty(a:line)
+    let a:args.params.line = a:line
+    return
+  endif
+  let scheme = gina#core#buffer#param('%', 'scheme')
+  if scheme !~# '^\%(\|show\|blame\)$'
+    let a:args.params.line = v:null
+    return
+  elseif empty(scheme)
+    let treeish1 = gina#core#repo#relpath(a:git, expand('%'))
+    let treeish1 = ':' . treeish1
+  else
+    let treeish1 = gina#core#buffer#param('%', 'treeish')
+    let treeish1 = substitute(treeish1, '^:0', '', '')
+  endif
+  let treeish2 = gina#core#treeish#build(
+        \ gina#util#get(a:args.params, 'rev', v:null),
+        \ gina#util#get(a:args.params, 'path', v:null),
+        \)
+  let a:args.params.line = treeish1 ==# treeish2
+        \ ? line('.')
+        \ : v:null
+endfunction
+
+function! gina#core#args#extend_col(git, args, col) abort
+  if a:col is# v:null || !empty(a:col)
+    let a:args.params.col = a:col
+    return
+  endif
+  let scheme = gina#core#buffer#param('%', 'scheme')
+  if scheme !~# '^\%(\|show\|blame\)$'
+    let a:args.params.col = v:null
+    return
+  elseif empty(scheme)
+    let treeish1 = gina#core#repo#relpath(a:git, expand('%'))
+    let treeish1 = ':' . treeish1
+  else
+    let treeish1 = gina#core#buffer#param('%', 'treeish')
+    let treeish1 = substitute(treeish1, '^:0', '', '')
+  endif
+  let treeish2 = gina#core#treeish#build(
+        \ gina#util#get(a:args.params, 'rev', v:null),
+        \ gina#util#get(a:args.params, 'path', v:null),
+        \)
+  let a:args.params.col = treeish1 ==# treeish2
+        \ ? col('.')
+        \ : v:null
+endfunction
