@@ -43,22 +43,28 @@ function! s:attach(...) abort dict
   call binder.define('builtin:echo', function('s:_action_echo'), {
         \ 'hidden': 1,
         \ 'description': 'Echo the candidates',
+        \ 'clear_mark': 0,
         \})
   call binder.define('builtin:help', function('s:_action_help'), {
         \ 'description': 'Show help of actions',
         \ 'mapping_mode': 'n',
         \ 'repeatable': 0,
+        \ 'use_mark': 0,
+        \ 'clear_mark': 0,
         \})
   call binder.define('builtin:help:all', function('s:_action_help'), {
         \ 'description': 'Show help of actions including hidden actions',
         \ 'mapping_mode': 'n',
         \ 'options': { 'all': 1 },
         \ 'repeatable': 0,
+        \ 'use_mark': 0,
+        \ 'clear_mark': 0,
         \})
   call binder.define('builtin:choice', function('s:_action_choice'), {
         \ 'description': 'Select action to perform',
         \ 'mapping_mode': 'inv',
         \ 'repeatable': 0,
+        \ 'clear_mark': 0,
         \})
   call binder.define('builtin:repeat', function('s:_action_repeat'), {
         \ 'description': 'Repeat previous repeatable action',
@@ -87,6 +93,7 @@ function! s:attach(...) abort dict
           \ 'mapping_mode': 'nv',
           \ 'requirements': ['lnum'],
           \ 'use_mark': 0,
+          \ 'clear_mark': 0,
           \})
     call binder.define('builtin:mark:set', function('s:_action_mark_set'), {
           \ 'hidden': 1,
@@ -94,6 +101,7 @@ function! s:attach(...) abort dict
           \ 'mapping_mode': 'nv',
           \ 'requirements': ['lnum'],
           \ 'use_mark': 0,
+          \ 'clear_mark': 0,
           \})
     call binder.define('builtin:mark:unset', function('s:_action_mark_unset'), {
           \ 'hidden': 1,
@@ -101,12 +109,14 @@ function! s:attach(...) abort dict
           \ 'mapping_mode': 'nv',
           \ 'requirements': ['lnum'],
           \ 'use_mark': 0,
+          \ 'clear_mark': 0,
           \})
     call binder.define('builtin:mark:unall', function('s:_action_mark_unall'), {
           \ 'hidden': 1,
           \ 'description': 'Unmark all candidate',
           \ 'mapping_mode': 'n',
           \ 'use_mark': 0,
+          \ 'clear_mark': 0,
           \})
     call binder.alias('mark', 'builtin:mark')
     call binder.alias('mark:set', 'builtin:mark:set')
@@ -162,6 +172,7 @@ function! s:binder.define(name, callback, ...) abort
         \ 'hidden': 0,
         \ 'repeatable': 1,
         \ 'use_mark': 1,
+        \ 'clear_mark': 1,
         \}, get(a:000, 0, {}),
         \)
   if empty(action.mapping)
@@ -251,7 +262,7 @@ function! s:binder.call(expr, ...) abort range
         \ 'mods': mods,
         \}, action.options
         \)
-  if self.markable && action.use_mark
+  if self.markable && action.clear_mark
     call self.call('builtin:mark:unall')
   endif
   call call(action.callback, [candidates, options], self)
