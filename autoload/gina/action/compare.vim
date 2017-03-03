@@ -45,7 +45,8 @@ function! s:on_compare(candidates, options) abort
           \ candidate.path,
           \)
     execute printf(
-          \ 'Gina compare %s %s %s %s %s',
+          \ '%s Gina compare %s %s %s %s %s',
+          \ options.mods,
           \ cached ? '--cached' : '',
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(get(candidate, 'line'), '--line='),

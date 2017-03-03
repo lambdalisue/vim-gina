@@ -72,16 +72,15 @@ endfunction
 function! s:get_candidates(fline, lline) abort
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(a:fline + v:key, v:val)'
+        \ 's:parse_record(v:val)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(lnum, record) abort
+function! s:parse_record(record) abort
   let record = s:String.remove_ansi_sequences(a:record)
   let rev = matchstr(record, '^[a-z0-9]\+')
   return {
-        \ 'lnum': a:lnum,
         \ 'word': record,
         \ 'abbr': a:record,
         \ 'rev': rev,

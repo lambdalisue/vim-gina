@@ -94,7 +94,8 @@ function! s:on_merge(candidates, options) abort
         \}, a:options)
   for candidate in a:candidates
     execute printf(
-          \ 'Gina merge --no-edit %s %s %s -- %s',
+          \ '%s Gina merge --no-edit %s %s %s -- %s',
+          \ options.mods,
           \ options['no-ff'] ? '--no-ff' : '',
           \ options['ff-only'] ? '--ff-only' : '',
           \ options.squash ? '--squash' : '',
@@ -112,7 +113,8 @@ function! s:on_rebase(candidates, options) abort
         \}, a:options)
   for candidate in a:candidates
     execute printf(
-          \ 'Gina rebase %s -- %s',
+          \ '%s Gina rebase %s -- %s',
+          \ options.mods,
           \ options.merge ? '--merge' : '',
           \ gina#util#shellescape(candidate.rev),
           \)
@@ -128,7 +130,8 @@ function! s:on_revert(candidates, options) abort
         \}, a:options)
   for candidate in a:candidates
     execute printf(
-          \ 'Gina revert %s %s',
+          \ '%s Gina revert %s %s',
+          \ options.mods,
           \ gina#util#shellescape(options.mainline, '--mainline'),
           \ gina#util#shellescape(candidate.rev),
           \)
@@ -144,7 +147,8 @@ function! s:on_cherry_pick(candidates, options) abort
         \}, a:options)
   for candidate in a:candidates
     execute printf(
-          \ 'Gina cherry-pick %s %s',
+          \ '%s Gina cherry-pick %s %s',
+          \ options.mods,
           \ gina#util#shellescape(options.mainline, '--mainline'),
           \ gina#util#shellescape(candidate.rev),
           \)

@@ -69,7 +69,9 @@ function! s:init(args) abort
 
   " Attach modules
   call gina#core#anchor#attach()
-  call gina#action#attach(function('s:get_candidates'))
+  call gina#action#attach(function('s:get_candidates'), {
+        \ 'markable': 1,
+        \})
   call gina#action#include('branch')
   call gina#action#include('browse')
   call gina#action#include('changes')
@@ -98,19 +100,18 @@ endfunction
 function! s:get_candidates(fline, lline) abort
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(a:fline + v:key, v:val)'
+        \ 's:parse_record(v:val)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(lnum, record) abort
+function! s:parse_record(record) abort
   let record = s:String.remove_ansi_sequences(a:record)
   let m = matchlist(record, '\(\*\|\s\) \([^ ]\+\)\%( -> \([^ ]\+\)\)\?')
   let remote = matchstr(m[2], '^remotes/\zs[^ /]\+')
   let rev = matchstr(m[2], '^\%(remotes/\)\?\zs[^ ]\+')
   let branch = matchstr(rev, printf('^\%%(%s/\)\?\zs[^ ]\+', remote))
   return {
-        \ 'lnum': a:lnum,
         \ 'word': record,
         \ 'abbr': a:record,
         \ 'sign': m[1],

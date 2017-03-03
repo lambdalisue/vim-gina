@@ -36,6 +36,7 @@ INTERFACE			|gina-interface|
   COMMANDS			  |gina-commands|
   FUNCTIONS			  |gina-functions|
   VARIABLES			  |gina-variables|
+  HIGHLIGHTS			  |gina-highlights|
   OPTIONS			  |gina-options|
   ACTIONS			  |gina-actions|
 MISC				|gina-misc|
@@ -219,6 +220,26 @@ Each columns in the message indicates
 6. A mapping mode which the <Plug> mapping supports (e.g. [n])
 
 If you would like to define custom aliases or mappings, see the next section.
+
+						*gina-usage-action-mods*
+Most of actions support command modifiers. For example, if you would like to
+see a debug message on the action, prepend |verbose| modifier like
+>
+	action: verbose show
+<
+When you hit <CR>, the "show" action will be executed with |verbose| modifier.
+
+						*gina-usage-action-mark*
+Actions in some buffer are defined as "markable", mean that users can mark
+candidates by "builtin:mark" action and all further actions are applied to the
+selected candidates.
+In default, the "builtin:mark" action is mapped to "*" if the buffer allowed
+mark. Note that marks are removed after users call any actions.
+
+To customize the mark, users can use the followings
+
+|g:gina#action#mark_sign_text|
+|hl-GinaActionMarkSelected|
 
 
 =============================================================================
@@ -633,6 +654,9 @@ Users can disable the default aliases (shorten) and/or mappings by
 
 Set 0 to these value disable default settings.
 
+Note that actions are defined as "markable" in this buffer.
+See |gina-usage-action-mark| for the detail.
+
 -----------------------------------------------------------------------------
 CHANGES						*gina-buffer-changes*
 					{scheme}:	changes
@@ -866,6 +890,9 @@ Users can disable the default aliases (shorten) and/or mappings by
 	|g:gina#command#status#use_default_mappings|
 
 Set 0 to these value disable default settings.
+
+Note that actions are defined as "markable" in this buffer.
+See |gina-usage-action-mark| for the detail.
 
 -----------------------------------------------------------------------------
 TAG						*gina-buffer-tag*
@@ -1386,6 +1413,12 @@ gina#custom#mapping#imap({scheme}, {lhs}, {rhs} [, {options}])
 -----------------------------------------------------------------------------
 VARIABLES					*gina-variables*
 
+		*g:gina#action#mark_sign_text*
+g:gina#action#mark_sign_text
+	One or two characters used for a mark |sign|.
+	See |gina-usage-action-mark| for what the mark is.
+	Default: "|"
+
 		*g:gina#command#branch#use_default_aliases*
 		*g:gina#command#changes#use_default_aliases*
 		*g:gina#command#grep#use_default_aliases*
@@ -1524,6 +1557,14 @@ g:gina#core#writer#use_python
 g:gina#core#writer#use_python3
 	Use |python3| to update the buffer content if available.
 	Default: 1
+
+-----------------------------------------------------------------------------
+HIGHLIGHTS					*gina-highlights*
+
+						*hl-GinaActionMarkSelected*
+GinaActionMarkSelected
+	A highlight used for a mark sign text.
+	See |gina-usage-action-mark| for what the mark is.
 
 -----------------------------------------------------------------------------
 OPTIONS						*gina-options*
