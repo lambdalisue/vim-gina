@@ -93,14 +93,13 @@ function! s:get_candidates(fline, lline) abort
   let residual = args.residual()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(a:fline + v:key, v:val, rev, residual)'
+        \ 's:parse_record(v:val, rev, residual)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(lnum, record, rev, residual) abort
+function! s:parse_record(record, rev, residual) abort
   return {
-        \ 'lnum': a:lnum,
         \ 'word': a:record,
         \ 'path': a:record,
         \ 'rev': a:rev,

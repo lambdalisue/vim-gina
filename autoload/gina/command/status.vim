@@ -50,7 +50,9 @@ function! s:init(args) abort
 
   " Attach modules
   call gina#core#anchor#attach()
-  call gina#action#attach(function('s:get_candidates'))
+  call gina#action#attach(function('s:get_candidates'), {
+        \ 'markable': 1,
+        \})
   call gina#action#include('browse')
   call gina#action#include('chaperon')
   call gina#action#include('compare')
@@ -91,12 +93,12 @@ function! s:get_candidates(fline, lline) abort
   let residual = args.residual()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(a:fline + v:key, v:val, residual)'
+        \ 's:parse_record(v:val, residual)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(lnum, record, residual) abort
+function! s:parse_record(record, residual) abort
   let m = matchlist(
         \ a:record,
         \ '^\(..\) \("[^"]\{-}"\|.\{-}\)\%( -> \("[^"]\{-}"\|[^ ]\+\)\)\?$'
@@ -105,7 +107,6 @@ function! s:parse_record(lnum, record, residual) abort
     return {}
   endif
   let candidate = {
-        \ 'lnum': a:lnum,
         \ 'word': a:record,
         \ 'sign': m[1],
         \ 'residual': a:residual,

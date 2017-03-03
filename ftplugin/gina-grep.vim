@@ -38,7 +38,7 @@ if g:gina#command#grep#send_to_quickfix
       return
     endif
     try
-      call gina#action#call('export:quickfix')
+      call gina#action#call('export:quickfix', 1, line('$'))
     finally
       call focus.restore()
     endtry

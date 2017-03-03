@@ -30,7 +30,8 @@ function! s:on_changes(candidates, options) abort
         \}, a:options)
   for candidate in a:candidates
     execute printf(
-          \ 'Gina changes %s -- %s',
+          \ '%s Gina changes %s -- %s',
+          \ options.mods,
           \ gina#util#shellescape(printf(options.format, candidate.rev)),
           \ gina#util#shellescape(gina#util#get(candidate, 'residual')),
           \)

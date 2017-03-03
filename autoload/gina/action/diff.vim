@@ -49,7 +49,8 @@ function! s:on_diff(candidates, options) abort
           \ gina#util#get(candidate, 'path', v:null),
           \)
     execute printf(
-          \ 'Gina diff %s %s %s -- %s',
+          \ '%s Gina diff %s %s %s -- %s',
+          \ options.mods,
           \ cached ? '--cached' : '',
           \ gina#util#shellescape(options.opener, '--opener='),
           \ gina#util#shellescape(treeish),

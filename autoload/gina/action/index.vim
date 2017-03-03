@@ -175,7 +175,8 @@ function! s:on_rm(candidates, options) abort
         \}, a:options)
   let pathlist = map(copy(a:candidates), 'v:val.path')
   execute printf(
-        \ 'Gina rm --quiet --ignore-unmatch %s %s -- %s',
+        \ '%s Gina rm --quiet --ignore-unmatch %s %s -- %s',
+        \ options.mods,
         \ options.force ? '--force' : '',
         \ options.cached ? '--cached' : '',
         \ gina#util#shellescape(pathlist),
@@ -189,7 +190,8 @@ function! s:on_reset(candidates, options) abort
   let options = extend({}, a:options)
   let pathlist = map(copy(a:candidates), 'v:val.path')
   execute printf(
-        \ 'Gina reset --quiet -- %s',
+        \ '%s Gina reset --quiet -- %s',
+        \ options.mods,
         \ gina#util#shellescape(pathlist),
         \)
 endfunction
@@ -206,7 +208,8 @@ function! s:on_checkout(candidates, options) abort
         \}, a:options)
   let pathlist = map(copy(a:candidates), 'v:val.path')
   execute printf(
-        \ 'Gina! checkout --quiet %s %s %s %s -- %s',
+        \ '%s Gina! checkout --quiet %s %s %s %s -- %s',
+        \ options.mods,
         \ options.force ? '--force' : '',
         \ options.ours ? '--ours' : '',
         \ options.theirs ? '--theirs' : '',
@@ -232,28 +235,30 @@ function! s:on_stage(candidates, options) abort dict
     endif
   endfor
   if options.force
-    call self.call('index:add:force', add_candidates)
+    call self.call(options.mods . 'index:add:force', add_candidates)
     if !empty(rm_candidates)
       call gina#process#wait()
     endif
-    call self.call('index:rm:force', rm_candidates)
+    call self.call(options.mods . 'index:rm:force', rm_candidates)
   else
-    call self.call('index:add', add_candidates)
+    call self.call(options.mods . 'index:add', add_candidates)
     if !empty(rm_candidates)
       call gina#process#wait()
     endif
-    call self.call('index:rm', rm_candidates)
+    call self.call(options.mods . 'index:rm', rm_candidates)
   endif
 endfunction
 
 function! s:on_unstage(candidates, options) abort dict
-  call self.call('index:reset', a:candidates)
+  let options = extend({}, a:options)
+  call self.call(options.mods . 'index:reset', a:candidates)
 endfunction
 
 function! s:on_toggle(candidates, options) abort dict
   if empty(a:candidates)
     return
   endif
+  let options = extend({}, a:options)
   let stage_candidates = []
   let unstage_candidates = []
   for candidate in a:candidates
@@ -263,11 +268,11 @@ function! s:on_toggle(candidates, options) abort dict
       call add(unstage_candidates, candidate)
     endif
   endfor
-  call self.call('index:stage', stage_candidates)
+  call self.call(options.mods . 'index:stage', stage_candidates)
   if !empty(unstage_candidates)
     call gina#process#wait()
   endif
-  call self.call('index:unstage', unstage_candidates)
+  call self.call(options.mods . 'index:unstage', unstage_candidates)
 endfunction
 
 function! s:on_discard(candidates, options) abort dict
@@ -312,7 +317,7 @@ function! s:on_discard(candidates, options) abort dict
       call delete(abspath)
     endif
   endfor
-  call self.call('index:checkout:HEAD:force', checkout_candidates)
+  call self.call(options.mods . 'index:checkout:HEAD:force', checkout_candidates)
   if !empty(delete_candidates) && empty(checkout_candidates)
     call gina#core#emitter#emit('modified:delay')
   endif
