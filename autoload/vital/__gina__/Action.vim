@@ -3,6 +3,25 @@ let s:t_list = type([])
 
 let s:PREFIX = '_vital_action_binder_'
 let s:UNIQUE = sha256(expand('<sfile>:p'))
+let s:MODIFIERS = [
+      \ 'aboveleft',
+      \ 'belowright',
+      \ 'botright',
+      \ 'browse',
+      \ 'confirm',
+      \ 'hide',
+      \ 'keepalt',
+      \ 'keepjumps',
+      \ 'keepmarks',
+      \ 'keeppatterns',
+      \ 'lockmarks',
+      \ 'noswapfile',
+      \ 'silent',
+      \ 'tab',
+      \ 'topleft',
+      \ 'verbose',
+      \ 'vertical',
+      \]
 
 
 function! s:_vital_loaded(V) abort
@@ -461,16 +480,27 @@ function! s:_find_alias(binder, action) abort
 endfunction
 
 function! s:_complete_action_aliases(arglead, cmdline, cursorpos) abort
+  let terms = split(a:arglead, ' ', 1)
+  " Build modifier candidates
+  let modifiers = terms[:-2]
+  let candidates = map(
+        \ filter(copy(s:MODIFIERS), 'index(modifiers, v:val) == -1'),
+        \ 'v:val . '' '''
+        \)
+  " Build action/alias candidates
+  let arglead = terms[-1]
   let binder = s:_binder
   let actions = values(binder.actions)
-  if empty(a:arglead)
+  if empty(arglead)
     call filter(actions, '!v:val.hidden')
   endif
-  let candidates = sort(extend(
+  call extend(candidates, sort(extend(
         \ map(actions, 'v:val.name'),
         \ keys(binder.aliases),
-        \))
-  return filter(candidates, 'v:val =~# ''^'' . a:arglead')
+        \)), 0)
+  call filter(uniq(candidates), 'v:val =~# ''^'' . arglead')
+  call map(candidates, 'join(modifiers + [v:val])')
+  return candidates
 endfunction
 
 function! s:_call_for_mapping(name) abort range
