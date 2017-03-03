@@ -384,35 +384,6 @@ Describe Action
                 \ [
                 \   {'word': 'a', '__lnum': 1},
                 \   {'word': 'b', '__lnum': 2},
-                \
-                \   {'word': 'c', '__lnum': 3},
-                \ ],
-                \ {'mods': ''},
-                \])
-        End
-
-        It calls an action/alias of {expr} with marked candidates and returns [{mods}, {action}]
-          " https://github.com/thinca/vim-themis/pull/46
-          Skip vim-themis currently does not support 'sign place' in tests. See #46 on vim-themis
-          let binder = Action.attach([
-                \ {'word': 'a'},
-                \ {'word': 'b'},
-                \ {'word': 'c'},
-                \], {
-                \ 'markable': 1,
-                \})
-          call binder.define('test', Funcref)
-          call setline(1, ['a', 'b', 'c'])
-          call setpos('.', [0, 2, 1, 0])
-          call binder.call('builtin:mark:set', 1)
-          call binder.call('builtin:mark:set', 3)
-
-          let [mods, action] = binder.call('test')
-          Assert Equals(mods, '')
-          Assert Equals(action.name, 'test')
-          Assert Equals(b:_vital_action_test_called_with, [
-                \ [
-                \   {'word': 'a', '__lnum': 1},
                 \   {'word': 'c', '__lnum': 3},
                 \ ],
                 \ {'mods': ''},
