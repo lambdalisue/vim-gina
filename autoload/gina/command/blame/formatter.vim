@@ -1,7 +1,5 @@
-scriptencoding utf-8
 let s:String = vital#gina#import('Data.String')
 
-let s:CURRENT_MARK = '▌'
 let s:N_COLORS = 16
 
 
@@ -60,7 +58,9 @@ function! s:formatter._format_line(chunk, revision, revinfo) abort
   if has_key(self._cache, a:revision)
     return self._cache[a:revision]
   endif
-  let mark = a:revision =~# '^' . self._current ? s:CURRENT_MARK : ' '
+  let mark = a:revision =~# '^' . self._current
+        \ ? g:gina#command#blame#formatter#current_mark
+        \ : repeat(' ', len(g:gina#command#blame#formatter#current_mark))
   let timestamp = 'on ' . self._timestamper.format(
         \ a:revinfo.author_time,
         \ a:revinfo.author_tz
@@ -79,5 +79,6 @@ endfunction
 
 " Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
-      \ 'separator': '⋯',
+      \ 'separator': '...',
+      \ 'current_mark': '|',
       \})

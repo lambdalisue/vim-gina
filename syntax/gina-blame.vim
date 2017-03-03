@@ -19,7 +19,15 @@ let s:TERM_COLORS = [
 syntax match GinaBlameBase /.*/ display
 syntax match GinaBlameSummary /^.*\zeon .\{-}/ containedin=GinaBlameBase
 
-syntax match GinaBlameRev /[ ▌][0-9A-F]\+$/ containedin=GinaBlameBase
+execute printf(
+      \ 'syn match GinaBlameRev /\%%(%s\|%s\)[0-9A-F]\+$/ containedin=GinaBlameBase',
+      \ g:gina#command#blame#formatter#current_mark,
+      \ repeat(' ', len(g:gina#command#blame#formatter#current_mark))
+      \)
+execute printf(
+      \ 'syn match GinaBlameIndicator /%s/ containedin=GinaBlameRev',
+      \ g:gina#command#blame#formatter#current_mark,
+      \)
 syntax match GinaBlameRevColor0  /0/ contained containedin=GinaBlameRev
 syntax match GinaBlameRevColor1  /1/ contained containedin=GinaBlameRev
 syntax match GinaBlameRevColor2  /2/ contained containedin=GinaBlameRev
@@ -36,7 +44,6 @@ syntax match GinaBlameRevColor12 /C/ contained containedin=GinaBlameRev
 syntax match GinaBlameRevColor13 /D/ contained containedin=GinaBlameRev
 syntax match GinaBlameRevColor14 /E/ contained containedin=GinaBlameRev
 syntax match GinaBlameRevColor15 /F/ contained containedin=GinaBlameRev
-syntax match GinaBlameIndicator  /▌/ contained containedin=GinaBlameRev
 
 function! s:define_highlights() abort
   highlight default link GinaBlameBase Comment
