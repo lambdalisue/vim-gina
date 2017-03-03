@@ -51,17 +51,32 @@ function! s:on_open(candidates, options) abort dict
   let args = gina#core#meta#get_or_fail('args')
   let chunk = a:candidates[0]
   if !empty(args.params.rev) && chunk.rev =~# '^' . args.params.rev
-    throw gina#core#exception#info(printf(
-          \ 'No related parent commit exists and "%s" is already shown',
-          \ chunk.rev,
-          \))
+    if !has_key(chunk, 'previous')
+      throw gina#core#exception#info(printf(
+            \ 'No related parent commit exists and "%s" is already shown',
+            \ chunk.rev,
+            \))
+    endif
+    if !gina#core#console#confirm(printf(
+          \ 'A related parent commit "%s" exist. Do you want to move on?',
+          \ chunk.previous,
+          \), 'y')
+      throw gina#core#exception#info('Cancel')
+    endif
+    let rev = matchstr(chunk.previous, '^\S\+')
+    let path = matchstr(chunk.previous, '^\S\+\s\zs.*')
+    let line = v:null
+  else
+    let rev = chunk.rev
+    let path = chunk.path
+    let line = gina#util#get(chunk, 'line')
   endif
   call s:add_history()
-  let treeish = gina#core#treeish#build(chunk.rev, chunk.path)
+  let treeish = gina#core#treeish#build(rev, path)
   execute printf(
         \ 'Gina blame %s %s %s',
         \ gina#util#shellescape(options.opener, '--opener='),
-        \ gina#util#shellescape(gina#util#get(chunk, 'line'), '--line='),
+        \ gina#util#shellescape(line, '--line='),
         \ gina#util#shellescape(treeish),
         \)
 endfunction

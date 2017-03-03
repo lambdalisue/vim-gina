@@ -267,15 +267,9 @@ function! s:translate_candidate(rev, chunk, revisions) abort
   call extend(chunk, s:Dict.omit(a:revisions[chunk.revision], [
         \ 'lnum_from', 'lnum', 'nlines',
         \]))
-  if chunk.revision =~# '^' . a:rev && has_key(chunk, 'previous')
-    let rev = matchstr(chunk.previous, '^\S\+')
-    let path = matchstr(chunk.previous, '^\S\+ \zs.*')
-    let line = v:null
-  else
-    let rev = chunk.revision
-    let path = chunk.filename
-    let line = chunk.lnum_from
-  endif
+  let rev = chunk.revision
+  let path = chunk.filename
+  let line = chunk.lnum_from
   return extend(chunk, {
         \ 'rev': rev,
         \ 'path': path,
