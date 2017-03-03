@@ -15,7 +15,7 @@ gina.vim (gina) is a plugin to asynchrnously control git repositories.
 The plugin was developed based on the success of [lambdalisue/vim-gita][].
 So gina.vim has most of the outstanding features of vim-gita and drops some unwilling points.
 
-**gina.vim is in beta-phase, mean that the features were not comepleted yet and the features may be modified without backward compatibility**
+**gina.vim is in beta-phase, mean that the features were not completed yet and the features may be modified without backward compatibility**
 
 
 Supports
