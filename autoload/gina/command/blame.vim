@@ -212,9 +212,12 @@ function! s:redraw_content() abort
     call b:gina_blame_writer.kill()
   endif
   if len(chunks) < g:gina#command#blame#writer_threshold
+    let winview_saved = winsaveview()
     let content = []
     call map(copy(chunks), 'extend(content, formatter.format(v:val))')
     call gina#core#writer#assign_content(v:null, content)
+    call winrestview(winview_saved)
+    call gina#util#syncbind()
   else
     " To improve UX, use writer for chunks over 1000 (e.g. vim/src/eval.c)
     let writer = gina#core#writer#new(s:writer)
@@ -230,7 +233,6 @@ endfunction
 function! s:redraw_content_if_necessary() abort
   if exists('b:gina_previous_winwidth') && b:gina_previous_winwidth != winwidth(0)
     call s:redraw_content()
-    call gina#util#syncbind()
   endif
 endfunction
 
