@@ -89,6 +89,7 @@ function! s:BufReadCmd() abort
   call gina#core#writer#assign_content(v:null, result.content)
   call gina#core#emitter#emit('command:called', s:SCHEME)
   if args.params.path is# v:null
+    setlocal nomodeline
     setfiletype git
   else
     call gina#util#doautocmd('BufRead')
