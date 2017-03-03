@@ -74,7 +74,8 @@ function! s:on_open(candidates, options) abort dict
   call s:add_history()
   let treeish = gina#core#treeish#build(rev, path)
   execute printf(
-        \ 'Gina blame %s %s %s',
+        \ '%s Gina blame %s %s %s',
+        \ options.mods,
         \ gina#util#shellescape(options.opener, '--opener='),
         \ gina#util#shellescape(line, '--line='),
         \ gina#util#shellescape(treeish),
@@ -88,7 +89,8 @@ function! s:on_back(candidates, options) abort dict
   let history = s:pop_history()
   let treeish = gina#core#treeish#build(history.rev, history.path)
   execute printf(
-        \ 'Gina blame %s %s %s',
+        \ '%s Gina blame %s %s %s',
+        \ options.mods,
         \ gina#util#shellescape(options.opener, '--opener='),
         \ gina#util#shellescape(history.line, '--line='),
         \ gina#util#shellescape(treeish),
