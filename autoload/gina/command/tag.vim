@@ -89,14 +89,13 @@ endfunction
 function! s:get_candidates(fline, lline) abort
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(a:fline + v:key, v:val)'
+        \ 's:parse_record(v:val)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(lnum, record) abort
+function! s:parse_record(record) abort
   return {
-        \ 'lnum': a:lnum,
         \ 'word': a:record,
         \ 'branch': a:record,
         \ 'rev': a:record,

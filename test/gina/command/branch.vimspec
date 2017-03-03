@@ -48,7 +48,7 @@ Describe gina#command#branch
             \])
       Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
-            \   'lnum': 1,
+            \   '__lnum': 1,
             \   'abbr': '  develop[m',
             \   'word': '  develop',
             \   'sign': ' ',
@@ -58,7 +58,7 @@ Describe gina#command#branch
             \   'rev': 'develop',
             \ },
             \ {
-            \   'lnum': 2,
+            \   '__lnum': 2,
             \   'abbr': '* [32mmaster[m',
             \   'word': '* master',
             \   'sign': '*',
@@ -79,7 +79,7 @@ Describe gina#command#branch
             \])
       Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
-            \   'lnum': 1,
+            \   '__lnum': 1,
             \   'abbr': '  [31mext/master[m',
             \   'word': '  ext/master',
             \   'sign': ' ',
@@ -102,7 +102,7 @@ Describe gina#command#branch
             \])
       Assert Equals(gina#action#candidates(1, line('$')), [
             \ {
-            \   'lnum': 1,
+            \   '__lnum': 1,
             \   'abbr': '  develop[m',
             \   'word': '  develop',
             \   'sign': ' ',
@@ -112,7 +112,7 @@ Describe gina#command#branch
             \   'rev': 'develop',
             \ },
             \ {
-            \   'lnum': 2,
+            \   '__lnum': 2,
             \   'abbr': '* [32mmaster[m',
             \   'word': '* master',
             \   'sign': '*',
@@ -122,7 +122,7 @@ Describe gina#command#branch
             \   'rev': 'master',
             \ },
             \ {
-            \   'lnum': 3,
+            \   '__lnum': 3,
             \   'abbr': '  [31mremotes/ext/master[m',
             \   'word': '  remotes/ext/master',
             \   'sign': ' ',

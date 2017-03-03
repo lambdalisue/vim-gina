@@ -42,15 +42,16 @@ function! s:get() abort
   return get(b:, s:PREFIX . s:UNIQUE, v:null)
 endfunction
 
-function! s:attach(...) abort dict
-  let binder = extend(copy(s:binder), {
+function! s:attach(candidates, ...) abort dict
+  let binder = copy(s:binder)
+  call extend(binder, {
         \ 'name': substitute(self.name, '\W', '-', 'g'),
-        \ '_candidates': get(a:000, 0, v:null),
+        \ '_candidates': a:candidates,
         \ 'actions': {},
         \ 'aliases': {},
         \ 'markable': 0,
         \})
-  let binder = extend(binder, get(a:000, 1, {}))
+  call extend(binder, get(a:000, 0, {}))
   " Lock methods
   lockvar binder._get_candidates
   lockvar binder._get_marked_candidates
@@ -61,32 +62,32 @@ function! s:attach(...) abort dict
   " Define builtin actions
   call binder.define('builtin:echo', function('s:_action_echo'), {
         \ 'hidden': 1,
-        \ 'description': 'Echo the candidates',
-        \ 'clear_mark': 0,
+        \ 'description': 'Echo candidates',
+        \ 'clear_marks': 0,
         \})
   call binder.define('builtin:help', function('s:_action_help'), {
-        \ 'description': 'Show help of actions',
+        \ 'description': 'Show a help of actions',
         \ 'mapping_mode': 'n',
         \ 'repeatable': 0,
-        \ 'use_mark': 0,
-        \ 'clear_mark': 0,
+        \ 'use_marks': 0,
+        \ 'clear_marks': 0,
         \})
   call binder.define('builtin:help:all', function('s:_action_help'), {
-        \ 'description': 'Show help of actions including hidden actions',
+        \ 'description': 'Show a help of actions including hidden actions',
         \ 'mapping_mode': 'n',
         \ 'options': { 'all': 1 },
         \ 'repeatable': 0,
-        \ 'use_mark': 0,
-        \ 'clear_mark': 0,
+        \ 'use_marks': 0,
+        \ 'clear_marks': 0,
         \})
   call binder.define('builtin:choice', function('s:_action_choice'), {
-        \ 'description': 'Select action to perform',
+        \ 'description': 'Select an action to perform',
         \ 'mapping_mode': 'inv',
         \ 'repeatable': 0,
-        \ 'clear_mark': 0,
+        \ 'clear_marks': 0,
         \})
   call binder.define('builtin:repeat', function('s:_action_repeat'), {
-        \ 'description': 'Repeat previous repeatable action',
+        \ 'description': 'Repeat a previous repeatable action',
         \ 'mapping_mode': 'inv',
         \ 'repeatable': 0,
         \})
@@ -108,38 +109,36 @@ function! s:attach(...) abort dict
           \ self.mark_sign_text,
           \)
     call binder.define('builtin:mark', function('s:_action_mark'), {
-          \ 'description': 'Mark/Unmark a selected candidate',
+          \ 'description': 'Mark/Unmark selected candidates',
           \ 'mapping_mode': 'nv',
-          \ 'requirements': ['lnum'],
-          \ 'use_mark': 0,
-          \ 'clear_mark': 0,
+          \ 'requirements': ['__lnum'],
+          \ 'use_marks': 0,
+          \ 'clear_marks': 0,
           \})
     call binder.define('builtin:mark:set', function('s:_action_mark_set'), {
           \ 'hidden': 1,
-          \ 'description': 'Mark a selected candidate',
+          \ 'description': 'Mark selected candidates',
           \ 'mapping_mode': 'nv',
-          \ 'requirements': ['lnum'],
-          \ 'use_mark': 0,
-          \ 'clear_mark': 0,
+          \ 'requirements': ['__lnum'],
+          \ 'use_marks': 0,
+          \ 'clear_marks': 0,
           \})
     call binder.define('builtin:mark:unset', function('s:_action_mark_unset'), {
           \ 'hidden': 1,
-          \ 'description': 'Unmark a selected candidate',
+          \ 'description': 'Unmark selected candidates',
           \ 'mapping_mode': 'nv',
-          \ 'requirements': ['lnum'],
-          \ 'use_mark': 0,
-          \ 'clear_mark': 0,
+          \ 'requirements': ['__lnum'],
+          \ 'use_marks': 0,
+          \ 'clear_marks': 0,
           \})
     call binder.define('builtin:mark:unall', function('s:_action_mark_unall'), {
           \ 'hidden': 1,
-          \ 'description': 'Unmark all candidate',
+          \ 'description': 'Unmark all candidates',
           \ 'mapping_mode': 'n',
-          \ 'use_mark': 0,
-          \ 'clear_mark': 0,
+          \ 'use_marks': 0,
+          \ 'clear_marks': 0,
           \})
     call binder.alias('mark', 'builtin:mark')
-    call binder.alias('mark:set', 'builtin:mark:set')
-    call binder.alias('mark:unset', 'builtin:mark:unset')
     call binder.alias('mark:unall', 'builtin:mark:unall')
     execute printf('nmap <buffer> * <Plug>(%s-builtin-mark)', binder.name)
     execute printf('vmap <buffer> * <Plug>(%s-builtin-mark)', binder.name)
@@ -155,16 +154,14 @@ let s:binder = {}
 function! s:binder._get_candidates(...) abort
   let fline = get(a:000, 0, line('.'))
   let lline = get(a:000, 1, fline)
-  if self._candidates is v:null
-    let candidates = getline(fline, lline)
-  elseif type(self._candidates) == s:t_funcref
+  if type(self._candidates) == s:t_funcref
     let candidates = self._candidates(fline, lline)
   else
-    let candidates = self._candidates[fline : lline]
+    let candidates = self._candidates[fline-1 : lline-1]
   endif
   return map(
         \ deepcopy(candidates),
-        \ 'extend(v:val, {''lnum'': fline + v:key})'
+        \ 'extend(v:val, {''__lnum'': fline + v:key})'
         \)
 endfunction
 
@@ -190,8 +187,8 @@ function! s:binder.define(name, callback, ...) abort
         \ 'options': {},
         \ 'hidden': 0,
         \ 'repeatable': 1,
-        \ 'use_mark': 1,
-        \ 'clear_mark': 1,
+        \ 'use_marks': 1,
+        \ 'clear_marks': 1,
         \}, get(a:000, 0, {}),
         \)
   if empty(action.mapping)
@@ -219,7 +216,6 @@ function! s:binder.alias(alias, expr, ...) abort
         \ 'name': matchstr(a:expr, '\S\+$'),
         \ 'expr': a:expr,
         \ 'alias': a:alias,
-        \ 'mapping_mode': '',
         \}, get(a:000, 0, {}),
         \)
   let self.aliases[a:alias] = alias
@@ -260,7 +256,7 @@ function! s:binder.call(expr, ...) abort range
   let [mods, action] = self.action(a:expr)
   if a:0 == 1 && type(a:1) == s:t_list
     let candidates = a:1
-  elseif self.markable && action.use_mark
+  elseif self.markable && action.use_marks
     let candidates = self._get_marked_candidates()
     let candidates = empty(candidates)
           \ ? call(self._get_candidates, a:000, self)
@@ -273,19 +269,16 @@ function! s:binder.call(expr, ...) abort range
           \ candidates,
           \ 's:_is_satisfied(v:val, action.requirements)',
           \)
-    if empty(candidates)
-      return
-    endif
   endif
   let options = extend({
         \ 'mods': mods,
         \}, action.options
         \)
-  if self.markable && action.clear_mark
+  if self.markable && action.clear_marks
     call self.call('builtin:mark:unall')
   endif
   call call(action.callback, [candidates, options], self)
-  return action
+  return [mods, action]
 endfunction
 
 
@@ -360,18 +353,18 @@ function! s:_action_choice(candidates, options) abort dict
   if empty(aname)
     return
   endif
-  let action = self.call(aname, a:candidates)
+  let [mods, action] = self.call(aname, a:candidates)
   if action.repeatable
-    let self.previous_action = action
+    let self._previous_action = [mods, action]
   endif
 endfunction
 
 function! s:_action_repeat(candidates, options) abort dict
-  let action = get(self, 'previous_action', {})
+  let [mods, action] = get(self, '_previous_action', [])
   if empty(action)
     return
   endif
-  return self.call(action.name, a:candidates)
+  return self.call(join([mods, action.name]), a:candidates)
 endfunction
 
 function! s:_action_mark(candidates, options) abort dict
@@ -379,19 +372,19 @@ function! s:_action_mark(candidates, options) abort dict
   let unset_candidates = []
   let signmap = s:_get_signmap()
   for candidate in a:candidates
-    if has_key(signmap, string(candidate.lnum))
+    if has_key(signmap, string(candidate.__lnum))
       call add(unset_candidates, candidate)
     else
       call add(set_candidates, candidate)
     endif
   endfor
-  call self.call('mark:set', set_candidates)
-  call self.call('mark:unset', unset_candidates)
+  call self.call('builtin:mark:set', set_candidates)
+  call self.call('builtin:mark:unset', unset_candidates)
 endfunction
 
 function! s:_action_mark_set(candidates, options) abort dict
   let options = extend({}, a:options)
-  let lnums = map(a:candidates, 'v:val.lnum')
+  let lnums = map(a:candidates, 'v:val.__lnum')
   let bufnr = bufnr('%')
   for lnum in lnums
     execute printf(
@@ -405,7 +398,7 @@ endfunction
 
 function! s:_action_mark_unset(candidates, options) abort dict
   let options = extend({}, a:options)
-  let lnums = map(a:candidates, 'v:val.lnum')
+  let lnums = map(a:candidates, 'v:val.__lnum')
   let bufnr = bufnr('%')
   for lnum in lnums
     execute printf(
@@ -535,6 +528,7 @@ function! s:_parse_sign(sign) abort
   return sign
 endfunction
 
+
 " Compatibility --------------------------------------------------------------
 if has('patch-7.4.1842')
   function! s:_get_function_name(fn) abort
@@ -566,7 +560,7 @@ function! s:_define_mark_highlights() abort
   highlight default link VitalActionMarkSelected SignColumn
 endfunction
 
-augroup vital_action_mark_internal
+augroup vital_action_internal
   autocmd! *
   autocmd ColorScheme * call s:_define_mark_highlights()
 augroup END
