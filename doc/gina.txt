@@ -21,6 +21,7 @@ CUSTOM				|gina-custom|
   EXECUTE			  |gina-custom-execute|
   EXAMPLE			  |gina-custom-example|
 BUFFER				|gina-buffer|
+  BLAME				  |gina-buffer-blame|
   BRANCH			  |gina-buffer-branch|
   CHANGES			  |gina-buffer-changes|
   COMMIT			  |gina-buffer-commit|
@@ -629,6 +630,102 @@ Note that automatical detection by 'fileencodings' or 'fileformats' are not
 supported. Upvote https://github.com/lambdalisue/gina.vim/issues/24 if need.
 
 -----------------------------------------------------------------------------
+BLAME						*gina-buffer-blame*
+					{scheme}:	blame
+					'filetype':	gina-blame
+
+This is a "non file-like" buffer which is shown by |:Gina-blame| command.
+It shows a content of the file with a blame navigator looks like (note that
+SHA1 indicators are represented as a shade block but it is colored columns in
+real world)
+>
+	Navigation buffer                 Content buffer
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   ~~~~~~~~~~~~~~~~
+	Add badges o... on yesterday  ░ | ![...](...)
+	Add badges o... on yesterday  ░ | ![...](...)
+	...
+	Initial commit    on 14, Feb    | FOOBAR HOGEHOGE
+	Some refactoring    on today |█ | ![...](...)
+
+               │              │      ││
+               │              │      │└ SHA1 indicator column(s) (N chars)
+               │              │      └ Current revision mark
+               │              └ Timestamp (relative or absolute)
+               └ Commit summary
+<
+Continuous lines with a same revision (commit) is called a "chunk". Not like
+a git raw blame command, gina does not show a revision of each chunks/lines.
+Instead, gina uses SHA1 indicator column(s) to distinguish revisions.
+
+SHA1 indicator column(s) is a colored column or combinations of colored
+columns which indicate an unique revision in a blame content. The number of
+columns used to indicate a single revision is determined from the total
+numbers of revisions shown in a blame content. Namely, same colored column or
+same colored columns combination indicate a same revision so that users can
+easily distinguish which lines are continuous or which chunks are equal.
+
+When a revision of a chunk is equal to a revision of a blame content, a
+current revision mark (default is "|") is shown just next to the SHA1
+indicator. In this case, "blame:open" action would open a related parent
+commit if exists rather than the commit itself.
+
+The navigation content is width dependent. When the window width of the 
+"gina-blame" buffer has changed, the content will be redrawn when
+	
+	- Users hit <C-L> (<Plug>(gina-blame-C-L))
+	- Focus is moved from/to the buffer (|WinLeave| or |WinEnter|)
+	- Vim's window is resized (|VimResized|)
+
+In this buffer, users can use the following action groups.
+
+	|gina-action-blame|	(shorten)
+	|gina-action-browse| 
+	|gina-action-changes|
+	|gina-action-compare|
+	|gina-action-diff|
+	|gina-action-show|
+
+And the following <Plug> mappings
+	
+	<Plug>(gina-blame-redraw)	Redraw content with the current width
+	<Plug>(gina-blame-C-L)		Redraw content and <C-L> to refresh
+
+And the following default keymappings
+	
+	<Return>	Open a blame with the selected chunk
+	<Backspace>	Back to navigationally historical previous blame
+	<C-L>		Redraw content and <C-L> to refresh
+
+Users can disable the default aliases (shorten) and/or mappings by
+
+	|g:gina#command#blame#use_default_aliases|
+	|g:gina#command#blame#use_default_mappings|
+
+Set 0 to these value disable default settings.
+
+Additionally, users can customize the content via the following variables.
+
+	|g:gina#command#blame#formatter#separator|
+	|g:gina#command#blame#formatter#current_mark|
+	|g:gina#command#blame#timestamper#format1|
+	|g:gina#command#blame#timestamper#format2|
+>
+The following is a recommended customization while gina does not show exact
+SHA1 of the revision of the chunk.
+>
+	" Echo chunk info with j/k
+	call gina#custom#mapping#nmap(
+	      \ 'blame', 'j',
+	      \ 'j<Plug>(gina-blame-echo)'
+	      \)
+	call gina#custom#mapping#nmap(
+	      \ 'blame', 'k',
+	      \ 'k<Plug>(gina-blame-echo)'
+	      \)
+<
+The above may influence the performance so it is not defined in default.
+
+-----------------------------------------------------------------------------
 BRANCH						*gina-buffer-branch*
 					{scheme}:	branch
 					'filetype':	gina-branch
@@ -942,6 +1039,34 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 	Otherwise it calls a raw {command} ("git {command} {options}") and
 	echo the result.
 	Users can force to call a raw cammand by a |bang| modifier.
+
+						*:Gina-blame*
+:Gina blame [+cmd] [++opt] [{options}] {treeish}
+	Open a "gina-blame" buffer to blame changes of the content.
+	If {treeish} is missing, {rev} part of the {treeish} is guessed from a
+	current buffer and {path} part will be omitted. Use ":" instead if you
+	would like to guess {path} part as well (|gina-misc-treeish|).
+	If {path} part of the {treeish} is omitted, it warn and fail.
+
+	The followings are allowed in {options}
+
+	--group1={group}
+		A window group name used for the navigation buffer
+		(|gina-options-group|)
+	--group2={group}
+		A window group name used for the content buffer
+		(|gina-options-group|)
+	--opener={opener}
+		An opener command for the 1st buffer (|gina-options-opener|)
+	--line={line}
+		An initial line number
+	--col={col}
+		An initial column number
+	--width={width}
+		Width used for the navigation buffer
+
+	See also~
+	|gina-buffer-blame|
 
 						*:Gina-branch*
 :Gina branch [+cmd] [++opt] [{options}]
@@ -1419,6 +1544,7 @@ g:gina#action#mark_sign_text
 	See |gina-usage-action-mark| for what the mark is.
 	Default: "|"
 
+		*g:gina#command#blame#use_default_aliases*
 		*g:gina#command#branch#use_default_aliases*
 		*g:gina#command#changes#use_default_aliases*
 		*g:gina#command#grep#use_default_aliases*
@@ -1432,6 +1558,7 @@ g:gina#command#{scheme}#use_default_aliases
 	Assign 0 if you would like to disable the default action aliases.
 	Default: 1
 
+		*g:gina#command#blame#use_default_mappings*
 		*g:gina#command#branch#use_default_mappings*
 		*g:gina#command#changes#use_default_mappings*
 		*g:gina#command#chaperon#use_default_mappings*
@@ -1448,10 +1575,28 @@ g:gina#command#{scheme}#use_default_mappings
 	Assign 0 if you would like to disable the default mappings.
 	Default: 1
 
-		*g:gina#command#grep#send_to_quickfix*
-g:gina#command#grep#send_to_quickfix
-	Send all candidates to quickfix after command execution.
-	Default: 1
+		*g:gina#command#blame#formatter#separator*
+g:gina#command#blame#formatter#separator
+	A separator text used to indicate that the content is squashed.
+	Default: "..."
+
+		*g:gina#command#blame#formatter#current_mark*
+g:gina#command#blame#formatter#current_mark 
+	A current mark text used to indicate that the revision of the chunk is
+	equal to the revision of the blame content.
+	Default: "|"
+
+		*g:gina#command#blame#timestamper#format1*
+g:gina#command#blame#timestamper#format1
+	A |strftime()| format used for an absolute timestamp which year is
+	equal to the year of the current time.
+	Default: "%d %b"
+
+		*g:gina#command#blame#timestamper#format2*
+g:gina#command#blame#timestamper#format2
+	A |strftime()| format used for an absolute timestamp which year is
+	NOT equal to the year of the current time.
+	Default: "%d %b, %Y"
 
 		*g:gina#command#browse#translation_patterns*
 g:gina#command#browse#translation_patterns
@@ -1511,6 +1656,11 @@ g:gina#command#browse#translation_patterns
 	    \ ],
 	    \})
 <
+		*g:gina#command#grep#send_to_quickfix*
+g:gina#command#grep#send_to_quickfix
+	Send all candidates to quickfix after command execution.
+	Default: 1
+
 		*g:gina#process#command*
 g:gina#process#command
 	A command string used to execute a git process.
@@ -1617,6 +1767,20 @@ builtin:repeat (hidden)
 	Repeat a previous repeatable action which was executed from
 	"builtin:choice" action.
 	The action is mapped to "." in normal, visual, and insert mode.
+
+					*gina-actions-blame*
+blame:echo
+	Echo the chunk info. It is only available on a "gina-blame" buffer.
+	The following customization is recommended if your PC is fast enough.
+blame:open
+	Open a blame with the selected candidate.
+	It opens a blame with a related parent (previous) commit if the
+	revision of the chunk and the revision of the blame is equal and a
+	related parent commit exist.
+	Note that this action is recorded in an internal blame history used
+	for "blame:back" action.
+blame:back
+	Back to a navigational previous blame recorded by "blame:open" action.
 
 					*gina-actions-branch*
 branch:checkout
