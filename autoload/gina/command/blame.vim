@@ -69,7 +69,7 @@ function! s:call(range, args, mods) abort
   call s:open(mods, args.params.opener, args.params)
   call group.add()
   windo setlocal noscrollbind
-  setlocal scrollbind nowrap
+  setlocal scrollbind nowrap nofoldenable
   augroup gina_command_blame_internal
     autocmd! * <buffer>
     autocmd WinLeave <buffer> call s:WinLeave()
