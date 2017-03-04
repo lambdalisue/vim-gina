@@ -2097,6 +2097,26 @@ show:commit:above/below/left/right (alias)
 show:commit:top/bottom/leftest/rightest (alias)
 	Show a commit.
 
+					*gina-actions-stash*
+stash:show
+stash:show:split/vsplit/tab/preview (hidden)
+stash:show:above/below/left/right (alias)
+stash:show:top/bottom/leftest/rightest (alias)
+	Show changes in a stash.
+stash:drop
+stash:drop:force
+	Remove a stashed state.
+stash:pop
+stash:pop:index
+	Remove a stashed state and apply to a working tree.
+stash:apply
+stash:apply:index
+	Apply a stashed state to a working tree.
+stash:branch
+	Create a new branch with a stashed state.
+stash:clear
+stash:clear:force
+	Remove all stashed states.
 
 =============================================================================
 MISC						*gina-misc*
