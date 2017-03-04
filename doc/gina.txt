@@ -1008,7 +1008,10 @@ In this buffer, users can use the following action groups.
 	|gina-action-browse|
 	|gina-action-changes|
 	|gina-action-commit|
+		"commit:checkout" is aliased to "checkout"
+		"commit:checkout:track" is aliased to "checkout:track"
 	|gina-action-show|	(shorten)
+	|gina-action-tag|	(shorten)
 
 And the following default keymappings are defined
 	
@@ -1488,6 +1491,15 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
 
+	Note that it open a tag message edit buffer when "-a/--annotate",
+	"-s/--sign", or "-u{keyid}/--local-user={keyid}" has specified and
+	actual tag creation will be performed when the buffer has closed like
+	"gina-commit" buffer.
+
+	Note that it execute a raw git command when "-d/--delete",
+	"-v/--verify", or a positional argument without "-l/--list" has
+	specified.
+
 	See also~
 	|gina-buffer-tag|
 	:!man git-tag
@@ -1931,6 +1943,15 @@ commit:revert:1/2 (hidden)
 commit:cherry-pick
 commit:cherry-pick:1/2 (hidden)
 	Apply changes of a commit.
+commit:tag (alias)
+	Aliased to "commit:tag:annotate" in default.
+	Users can overrule it by |gina#custom#action#alias()|.
+commit:tag:lightweight
+	Create a lightweight tag of a commit.
+commit:tag:annotate
+	Create an unsigned, annotated tag of a commit.
+commit:tag:sign
+	Create a GPG-signed tag of a commit.
 
 					*gina-actions-compare*
 compare
@@ -2022,6 +2043,20 @@ show:commit:above/below/left/right (alias)
 show:commit:top/bottom/leftest/rightest (alias)
 	Show a commit.
 
+					*gina-actions-tag*
+tag:new (alias)
+	Aliased to "tag:new:annotate" in default.
+	Users can overrule it by |gina#custom#action#alias()|.
+tag:new:lightweight
+	Create a lightweight tag of a HEAD.
+tag:new:annotate
+	Create an unsigned, annotated tag of a HEAD.
+tag:new:sign
+	Create a GPG-signed tag of a HEAD.
+tag:delete
+	Delete a tag.
+tag:verify
+	Verify a tag.
 
 =============================================================================
 MISC						*gina-misc*

@@ -3,12 +3,14 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 function! gina#command#tag#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:args)
 
-  if s:is_raw_command(args)
+  if s:is_edit_command(a:args)
+    return gina#command#tag#edit#call(a:range, a:args, a:mods)
+  elseif s:is_raw_command(a:args)
     return gina#command#_raw#call(a:range, a:args, a:mods)
   endif
-
+  " list
+  let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -24,25 +26,43 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:is_edit_command(args) abort
+  if a:args.get('-a|--annotate')
+    return 1
+  elseif a:args.get('-s|--sign')
+    return 1
+  elseif !empty(a:args.get('-u|--local-user'))
+    return 1
+  endif
+  return 0
+endfunction
+
+function! s:is_raw_command(args) abort
+  if a:args.get('-l|--list')
+    return 0
+  elseif a:args.get('-d|--delete')
+    return 1
+  elseif a:args.get('-v|--verify')
+    return 1
+  elseif a:args.get('-m|--message')
+    " -a/--annotate is implied
+    return 1
+  elseif a:args.get('-f|--file')
+    " -a/--annotate is implied
+    return 1
+  elseif !empty(a:args.get(1))
+    " lightweight tag
+    return 1
+  endif
+  return 0
+endfunction
+
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
 
   return args.lock()
-endfunction
-
-function! s:is_raw_command(args) abort
-  if a:args.get('-l|--list')
-    return 0
-  elseif a:args.get('-a|--annotate|-s|--sign|-u|--local-user')
-    return 1
-  elseif a:args.get('-d|--delete')
-    return 1
-  elseif a:args.get('-v|--verify')
-    return 1
-  endif
-  return 0
 endfunction
 
 function! s:init(args) abort
@@ -62,7 +82,7 @@ function! s:init(args) abort
   call gina#core#anchor#attach()
   call gina#action#attach(function('s:get_candidates'))
 
-  augroup gina_command_tag_internal
+  augroup gina_command_tag_list_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer> call s:BufReadCmd()
   augroup END
@@ -94,6 +114,7 @@ function! s:parse_record(record) abort
         \ 'word': a:record,
         \ 'branch': a:record,
         \ 'rev': a:record,
+        \ 'tag': a:record,
         \}
 endfunction
 
@@ -105,7 +126,6 @@ function! s:writer.on_stop() abort
   call self.super(s:writer, 'on_stop')
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
-
 
 " Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {

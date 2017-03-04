@@ -132,6 +132,26 @@ function! gina#action#commit#define(binder) abort
         \ 'requirements': ['rev'],
         \ 'options': { 'mainline': '2' },
         \})
+  call a:binder.define('commit:tag:lightweight', function('s:on_tag'), {
+        \ 'description': 'Create a lightweight tag',
+        \ 'mapping_mode': 'nv',
+        \ 'requirements': ['rev'],
+        \ 'options': {},
+        \})
+  call a:binder.define('commit:tag:annotate', function('s:on_tag'), {
+        \ 'description': 'Create an unsigned, annotated tag',
+        \ 'mapping_mode': 'nv',
+        \ 'requirements': ['rev'],
+        \ 'options': {'annotate': 1},
+        \})
+  call a:binder.define('commit:tag:sign', function('s:on_tag'), {
+        \ 'description': 'Create a GPG-signed tag',
+        \ 'mapping_mode': 'nv',
+        \ 'requirements': ['rev'],
+        \ 'options': {'sign': 1},
+        \})
+  " Alias
+  call a:binder.alias('commit:tag', 'commit:tag:annotate')
 endfunction
 
 
@@ -260,6 +280,29 @@ function! s:on_cherry_pick(candidates, options) abort
           \ '%s Gina cherry-pick %s %s',
           \ options.mods,
           \ gina#util#shellescape(options.mainline, '--mainline'),
+          \ gina#util#shellescape(candidate.rev),
+          \)
+  endfor
+endfunction
+
+function! s:on_tag(candidates, options) abort
+  if empty(a:candidates)
+    return
+  endif
+  let options = extend({
+        \ 'annotate': 0,
+        \ 'sign': 0,
+        \}, a:options)
+  for candidate in a:candidates
+    let name = gina#core#console#ask_or_cancel(
+          \ 'Name: ', '',
+          \)
+    execute printf(
+          \ '%s Gina tag %s %s %s %s',
+          \ options.mods,
+          \ options.annotate ? '--annotate' : '',
+          \ options.sign ? '--sign' : '',
+          \ gina#util#shellescape(name),
           \ gina#util#shellescape(candidate.rev),
           \)
   endfor
