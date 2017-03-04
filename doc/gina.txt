@@ -576,7 +576,7 @@ non file-like ("?" in the table indicates the default value)
 
 	option			file-like	non file-like~
 	'buftype'		nowrite		nofile
-	'bufhidden'		?		wipe
+	'bufhidden'		?		hide
 	'swapfile'		?		0
 	'modifiable'		0		0
 	

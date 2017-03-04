@@ -45,7 +45,7 @@ function! s:init(args) abort
   setlocal winfixwidth
   setlocal winfixheight
   setlocal buftype=nofile
-  setlocal bufhidden=wipe
+  setlocal bufhidden&
   setlocal noswapfile
   setlocal nomodifiable
   setlocal noautoread

@@ -13,7 +13,7 @@ function! gina#command#changes#call(range, args, mods) abort
         \ ],
         \})
   call gina#core#buffer#open(bufname, {
-        \ 'mods': 'keepalt ' . a:mods,
+        \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -28,8 +28,8 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = a:args.clone()
-  let args.params.group = args.pop('--group', '')
-  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.group = args.pop('--group', 'short')
+  let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.cached = args.get('--cached')
   let args.params.partial = !empty(args.residual())
   let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev'))
@@ -49,7 +49,7 @@ function! s:init(args) abort
   let b:gina_initialized = 1
 
   setlocal buftype=nofile
-  setlocal bufhidden=wipe
+  setlocal bufhidden=hide
   setlocal noswapfile
   setlocal nomodifiable
 

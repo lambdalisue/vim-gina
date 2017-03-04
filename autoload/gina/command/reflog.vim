@@ -8,7 +8,7 @@ function! gina#command#reflog#call(range, args, mods) abort
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
-        \ 'mods': 'keepalt ' . a:mods,
+        \ 'mods': a:mods,
         \ 'group': args.params.group,
         \ 'opener': args.params.opener,
         \ 'cmdarg': args.params.cmdarg,
@@ -39,7 +39,7 @@ function! s:init(args) abort
   let b:gina_initialized = 1
 
   setlocal buftype=nofile
-  setlocal bufhidden=wipe
+  setlocal bufhidden=hide
   setlocal noswapfile
   setlocal nomodifiable
 

@@ -62,7 +62,7 @@ function! s:init(args) abort
   let b:gina_initialized = 1
 
   setlocal buftype=nofile
-  setlocal bufhidden=wipe
+  setlocal bufhidden=hide
   setlocal noswapfile
   setlocal nomodifiable
   setlocal autoread
