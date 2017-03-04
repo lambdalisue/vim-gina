@@ -30,14 +30,14 @@ Describe gina#command#changes
   Describe Use cases
     It might be called without arguments
       GinaSync changes
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:changes', slit1.refname))
       Assert Equals(getline(1, '$'), [''])
     End
 
     It might be called with --cached
       GinaSync changes --cached
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:changes:cached', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ "1\t0\tA/foo.txt",
@@ -57,7 +57,7 @@ Describe gina#command#changes
 
     It might be called with develop...
       GinaSync changes develop...
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:changes/develop...', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ "0\t0\tC/foo.txt",
@@ -78,7 +78,7 @@ Describe gina#command#changes
     It might be called on gina://valid1:show/develop...:A/foo.txt
       GinaSync show develop...:A/foo.txt
       GinaSync changes
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:changes/develop...', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ "0\t0\tC/foo.txt",
@@ -98,7 +98,7 @@ Describe gina#command#changes
 
     It might be called with --cached -- A/*.txt
       GinaSync changes --cached -- A/*.txt
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:changes:cached:--', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ "1\t0\tA/foo.txt",
@@ -118,7 +118,7 @@ Describe gina#command#changes
 
     It might be called with --cached -- A/*.vim
       GinaSync changes --cached -- A/*.vim
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:changes:cached:--', slit1.refname))
       Assert Equals(getline(1, '$'), [''])
     End
