@@ -31,6 +31,8 @@ BUFFER				|gina-buffer|
   LS				  |gina-buffer-ls|
   REFLOG			  |gina-buffer-reflog|
   SHOW				  |gina-buffer-show|
+  STASH				  |gina-buffer-stash|
+  STASH	SHOW			  |gina-buffer-stash-show|
   STATUS			  |gina-buffer-status|
   TAG				  |gina-buffer-tag|
 INTERFACE			|gina-interface|
@@ -956,6 +958,55 @@ The following commands also opens this buffer to compare the content.
 Note that no actions or default mappings are available on this buffer.
 
 -----------------------------------------------------------------------------
+STASH						*gina-buffer-stash*
+					{scheme}:	stash
+					'filetype':	gina-stash
+
+This is a "non file-like" buffer which is shown by |:Gina-stash| command.
+In this buffer, users can use the following action groups.
+
+	|gina-action-diff|
+	|gina-action-stash|	(shorten)
+
+And the following default keymappings are defined
+	
+	<Return>	Show changes on a stash
+
+Users can disable the default aliases (shorten) and/or mappings by
+
+	|g:gina#command#stash#use_default_aliases|
+	|g:gina#command#stash#use_default_mappings|
+
+Note that actions are defined as "markable" in this buffer.
+See |gina-usage-action-mark| for the detail.
+
+-----------------------------------------------------------------------------
+STASH SHOW					*gina-buffer-stash-show*
+					{scheme}:	stash
+					'filetype':	gina-stash-show
+
+This is a "non file-like" buffer which is shown by |:Gina-stash| command.
+In this buffer, users can use the following action groups.
+
+	|gina-action-compare|
+	|gina-action-diff|
+	|gina-action-edit|
+	|gina-action-show|	(shorten)
+
+And the following default keymappings are defined
+	
+	<Return>	Show a content in a stash
+	dd		Show an unified-diff in a stash
+	DD		Show an unified-diff in a stash (vsplit)
+	cc		Compare a content in a stash
+	CC		Compare a content in a stash (tab)
+
+Users can disable the default aliases (shorten) and/or mappings by
+
+	|g:gina#command#stash#show#use_default_aliases|
+	|g:gina#command#stash#show#use_default_mappings|
+
+-----------------------------------------------------------------------------
 STATUS						*gina-buffer-status*
 					{scheme}:	status
 					'filetype':	gina-status
@@ -1465,6 +1516,26 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 	|gina-buffer-show|
 	:!man git-show
 
+						*:Gina-stash*
+:Gina stash [+cmd] [++opt] [{options}]
+:Gina stash [+cmd] [++opt] list [{options}]
+:Gina stash [+cmd] [++opt] show [{options}]
+	Execute a git raw command or open a "gina-stash" buffer to list
+	stashes or open a "gina-stash-show" buffer to show changes.
+
+	The followings are allowed in {options} additional to options for
+	a corresponding git command.
+
+	--group={group}
+		A window group name used for the buffer (|gina-options-group|)
+	--opener={opener}
+		An opener command for the new buffer (|gina-options-opener|)
+
+	See also~
+	|gina-buffer-stash|
+	|gina-buffer-stash-show|
+	:!man git-status
+
 						*:Gina-status*
 :Gina status [+cmd] [++opt] [{options}] [-- {pathspec}...]
 	Open a "gina-status" buffer to show status of the repository.
@@ -1637,6 +1708,8 @@ g:gina#action#mark_sign_text
 		*g:gina#command#log#use_default_aliases*
 		*g:gina#command#ls#use_default_aliases*
 		*g:gina#command#reflog#use_default_aliases*
+		*g:gina#command#stash#use_default_aliases*
+		*g:gina#command#stash#show#use_default_aliases*
 		*g:gina#command#status#use_default_aliases*
 		*g:gina#command#tag#use_default_aliases*
 g:gina#command#{scheme}#use_default_aliases
@@ -1654,6 +1727,8 @@ g:gina#command#{scheme}#use_default_aliases
 		*g:gina#command#ls#use_default_mappings*
 		*g:gina#command#patch#use_default_mappings*
 		*g:gina#command#reflog#use_default_mappings*
+		*g:gina#command#stash#use_default_mappings*
+		*g:gina#command#stash#show#use_default_mappings*
 		*g:gina#command#status#use_default_mappings*
 		*g:gina#command#tag#use_default_mappings*
 g:gina#command#{scheme}#use_default_mappings
@@ -2044,6 +2119,27 @@ show:commit:split/vsplit/tab/preview (hidden)
 show:commit:above/below/left/right (alias)
 show:commit:top/bottom/leftest/rightest (alias)
 	Show a commit.
+
+					*gina-actions-stash*
+stash:show
+stash:show:split/vsplit/tab/preview (hidden)
+stash:show:above/below/left/right (alias)
+stash:show:top/bottom/leftest/rightest (alias)
+	Show changes in a stash.
+stash:drop
+stash:drop:force
+	Remove a stashed state.
+stash:pop
+stash:pop:index
+	Remove a stashed state and apply to a working tree.
+stash:apply
+stash:apply:index
+	Apply a stashed state to a working tree.
+stash:branch
+	Create a new branch with a stashed state.
+stash:clear
+stash:clear:force
+	Remove all stashed states.
 
 					*gina-actions-tag*
 tag:new (alias)

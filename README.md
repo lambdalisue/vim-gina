@@ -64,7 +64,6 @@ The following features are planned but missing for now
 
 - Command completions
 - Component system for statusline/tabline like vim-gita has
-- Interface for `git stash`
 
 Pros.
 -------------------------------------------------------------------------------
