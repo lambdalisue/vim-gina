@@ -961,6 +961,7 @@ Note that no actions or default mappings are available on this buffer.
 STASH						*gina-buffer-stash*
 					{scheme}:	stash
 					'filetype':	gina-stash
+					'autoread':	1
 
 This is a "non file-like" buffer which is shown by |:Gina-stash| command.
 In this buffer, users can use the following action groups.
@@ -1052,6 +1053,7 @@ See |gina-usage-action-mark| for the detail.
 TAG						*gina-buffer-tag*
 					{scheme}:	tag
 					'filetype':	gina-tag
+					'autoread':	1
 
 This is a "non file-like" buffer which is shown by |:Gina-tag| command.
 In this buffer, users can use the following action groups.

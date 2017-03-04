@@ -77,6 +77,7 @@ function! s:init(args) abort
   setlocal bufhidden=hide
   setlocal noswapfile
   setlocal nomodifiable
+  setlocal autoread
 
   " Attach modules
   call gina#core#anchor#attach()
