@@ -1,6 +1,6 @@
 *gina.txt*		Asynchronously control git repositories from Vim
 
-Version: 0.1.0
+Version: 0.2.0
 Author:  Alisue <lambdalisue@hashnote.net>
 Support: Vim 8.0.0027 and above
 Support: Neovim 0.1.7 and above
@@ -2183,7 +2183,30 @@ CHANGELOG					*gina-changelog*
 
 2017.02.25 (v0.1.0)
 	Release first beta version.
+2017.03.05 (v0.2.0)
+	Release second beta version.
 
+	- Bug fixes
+	  - Fix commit issue on a newly checked out repository
+	  - Fix tabpage issue of Vim.Buffer.Group module
+	  - Fix 'modeline' issue on several commands
+	  - Fix colorscheme issue for highlights
+	  - Fix no action error
+	- Improve actions
+	  - Add mods support
+	  - Add mark features to mark candidates prior to the actions
+	  - Add "show:commit" action to show a commit rather than a content
+	  - Add "xxx:split/vsplit"
+	  - Move "xxx:above/below/..." to aliases
+	  - Do NOT repeat action by mappings
+	  - Do NOT restore selections after repeat
+	  - Do NOT alias choice/repeat
+	- Fix Gina show
+	  - Enable --line/--col only when {path} has specified
+	- Fix Gina log
+	  - Allow "Gina log v0.1.0..." to show log from v0.1.0 to HEAD
+	- Guess --line/--col from the current buffer if possible
+	- Add Gina blame
 
 =============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
