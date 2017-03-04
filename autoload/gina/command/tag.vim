@@ -61,11 +61,6 @@ function! s:init(args) abort
   " Attach modules
   call gina#core#anchor#attach()
   call gina#action#attach(function('s:get_candidates'))
-  call gina#action#include('branch')
-  call gina#action#include('browse')
-  call gina#action#include('changes')
-  call gina#action#include('commit')
-  call gina#action#include('show')
 
   augroup gina_command_tag_internal
     autocmd! * <buffer>

@@ -72,11 +72,6 @@ function! s:init(args) abort
   call gina#action#attach(function('s:get_candidates'), {
         \ 'markable': 1,
         \})
-  call gina#action#include('branch')
-  call gina#action#include('browse')
-  call gina#action#include('changes')
-  call gina#action#include('commit')
-  call gina#action#include('show')
 
   augroup gina_command_branch_internal
     autocmd! * <buffer>

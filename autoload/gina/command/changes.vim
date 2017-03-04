@@ -28,8 +28,8 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = a:args.clone()
-  let args.params.group = args.pop('--group', 'short')
-  let args.params.opener = args.pop('--opener', &previewheight . 'split')
+  let args.params.group = args.pop('--group', '')
+  let args.params.opener = args.pop('--opener', 'edit')
   let args.params.cached = args.get('--cached')
   let args.params.partial = !empty(args.residual())
   let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev'))
@@ -56,11 +56,6 @@ function! s:init(args) abort
   " Attach modules
   call gina#core#anchor#attach()
   call gina#action#attach(function('s:get_candidates'))
-  call gina#action#include('browse')
-  call gina#action#include('compare')
-  call gina#action#include('diff')
-  call gina#action#include('edit')
-  call gina#action#include('show')
 
   augroup gina_command_changes_internal
     autocmd! * <buffer>

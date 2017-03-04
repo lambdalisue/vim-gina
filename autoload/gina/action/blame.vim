@@ -1,23 +1,7 @@
-let s:DateTime = vital#gina#import('DateTime')
-
-
 function! gina#action#blame#define(binder) abort
-  call a:binder.define('blame:open', function('s:on_open'), {
-        \ 'description': 'Blame a content or enter the blame chunk',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['rev', 'path'],
-        \ 'options': {},
-        \})
-
   if gina#core#buffer#param('%', 'scheme') ==# 'blame'
-    call a:binder.define('blame:back', function('s:on_back'), {
-          \ 'description': 'Back to a navigational previous blame',
-          \ 'mapping_mode': 'n',
-          \ 'requirements': [],
-          \ 'options': {},
-          \})
     call a:binder.define('blame:echo', function('s:on_echo'), {
-          \ 'description': 'Echo the chunk info',
+          \ 'description': 'Echo a chunk info',
           \ 'mapping_mode': 'n',
           \ 'requirements': [
           \   'summary',
@@ -27,6 +11,24 @@ function! gina#action#blame#define(binder) abort
           \   'revision',
           \ ],
           \ 'options': {},
+          \ 'use_marks': 0,
+          \ 'clear_marks': 0,
+          \})
+    call a:binder.define('blame:open', function('s:on_open'), {
+          \ 'description': 'Blame a content on a commit of a chunk',
+          \ 'mapping_mode': 'n',
+          \ 'requirements': ['rev', 'path'],
+          \ 'options': {},
+          \ 'use_marks': 0,
+          \ 'clear_marks': 0,
+          \})
+    call a:binder.define('blame:back', function('s:on_back'), {
+          \ 'description': 'Back to a navigational previous blame',
+          \ 'mapping_mode': 'n',
+          \ 'requirements': [],
+          \ 'options': {},
+          \ 'use_marks': 0,
+          \ 'clear_marks': 0,
           \})
   endif
 endfunction
@@ -38,7 +40,17 @@ function! s:on_echo(candidates, options) abort dict
     return
   endif
   let chunk = a:candidates[0]
-  call gina#command#blame#echo(chunk)
+  let timestamp = gina#command#blame#timestamper#new().format(
+        \ chunk.author_time,
+        \ chunk.author_tz,
+        \)
+  redraw | call gina#core#console#info(printf(
+        \ '%s: %s authored on %s [%s]',
+        \ chunk.summary,
+        \ chunk.author,
+        \ timestamp,
+        \ chunk.revision,
+        \))
 endfunction
 
 function! s:on_open(candidates, options) abort dict

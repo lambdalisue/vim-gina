@@ -1,27 +1,19 @@
 function! gina#action#diff#define(binder) abort
   let params = {
-        \ 'description': 'Open a diff content',
-        \ 'mapping_mode': 'n',
+        \ 'description': 'Open an unified-diff',
+        \ 'mapping_mode': 'nv',
         \ 'requirements': [],
         \}
   call a:binder.define('diff', function('s:on_diff'), extend({
         \ 'options': {},
         \}, params))
-  call a:binder.define('diff:above', function('s:on_diff'), extend({
+  call a:binder.define('diff:split', function('s:on_diff'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove new'},
+        \ 'options': {'opener': 'new'},
         \}, params))
-  call a:binder.define('diff:below', function('s:on_diff'), extend({
+  call a:binder.define('diff:vsplit', function('s:on_diff'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright new'},
-        \}, params))
-  call a:binder.define('diff:left', function('s:on_diff'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove vnew'},
-        \}, params))
-  call a:binder.define('diff:right', function('s:on_diff'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright vnew'},
+        \ 'options': {'opener': 'vnew'},
         \}, params))
   call a:binder.define('diff:tab', function('s:on_diff'), extend({
         \ 'hidden': 1,
@@ -31,6 +23,15 @@ function! gina#action#diff#define(binder) abort
         \ 'hidden': 1,
         \ 'options': {'opener': 'pedit'},
         \}, params))
+  " Alias
+  call a:binder.alias('diff:above', 'leftabove diff:split')
+  call a:binder.alias('diff:below', 'belowright diff:split')
+  call a:binder.alias('diff:left', 'leftabove diff:vsplit')
+  call a:binder.alias('diff:right', 'belowright diff:vsplit')
+  call a:binder.alias('diff:top', 'topleft diff:split')
+  call a:binder.alias('diff:bottom', 'botright diff:split')
+  call a:binder.alias('diff:leftest', 'topleft diff:vsplit')
+  call a:binder.alias('diff:rightest', 'botright diff:vsplit')
 endfunction
 
 

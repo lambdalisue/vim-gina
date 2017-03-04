@@ -1,61 +1,70 @@
 function! gina#action#show#define(binder) abort
   let params = {
-        \ 'description': 'Show the commit or a content at the commit',
-        \ 'mapping_mode': 'n',
+        \ 'description': 'Show a commit or a content at a commit',
+        \ 'mapping_mode': 'nv',
         \ 'requirements': [],
         \}
   call a:binder.define('show', function('s:on_show'), extend({
         \ 'options': {},
         \}, params))
-  call a:binder.define('show:above', function('s:on_show'), extend({
+  call a:binder.define('show:split', function('s:on_show'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove new'},
+        \ 'options': {'opener': 'new'},
         \}, params))
-  call a:binder.define('show:below', function('s:on_show'), extend({
+  call a:binder.define('show:vsplit', function('s:on_show'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright new'},
-        \}, params))
-  call a:binder.define('show:left', function('s:on_show'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove vnew'},
-        \}, params))
-  call a:binder.define('show:right', function('s:on_show'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright vnew'},
+        \ 'options': {'opener': 'vnew'},
         \}, params))
   call a:binder.define('show:tab', function('s:on_show'), extend({
         \ 'hidden': 1,
         \ 'options': {'opener': 'tabedit'},
         \}, params))
+  call a:binder.define('show:preview', function('s:on_show'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'pedit'},
+        \}, params))
 
   let params = {
-        \ 'description': 'Show the commit',
-        \ 'mapping_mode': 'n',
+        \ 'description': 'Show a commit',
+        \ 'mapping_mode': 'nv',
         \ 'requirements': [],
         \}
   call a:binder.define('show:commit', function('s:on_commit'), extend({
         \ 'options': {},
         \}, params))
-  call a:binder.define('show:commit:above', function('s:on_commit'), extend({
+  call a:binder.define('show:commit:split', function('s:on_commit'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove new'},
+        \ 'options': {'opener': 'new'},
         \}, params))
-  call a:binder.define('show:commit:below', function('s:on_commit'), extend({
+  call a:binder.define('show:commit:vsplit', function('s:on_commit'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright new'},
-        \}, params))
-  call a:binder.define('show:commit:left', function('s:on_commit'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove vnew'},
-        \}, params))
-  call a:binder.define('show:commit:right', function('s:on_commit'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright vnew'},
+        \ 'options': {'opener': 'vnew'},
         \}, params))
   call a:binder.define('show:commit:tab', function('s:on_commit'), extend({
         \ 'hidden': 1,
         \ 'options': {'opener': 'tabedit'},
         \}, params))
+  call a:binder.define('show:commit:preview', function('s:on_commit'), extend({
+        \ 'hidden': 1,
+        \ 'options': {'opener': 'pedit'},
+        \}, params))
+  " Alias
+  call a:binder.alias('show:above', 'leftabove show:split')
+  call a:binder.alias('show:below', 'belowright show:split')
+  call a:binder.alias('show:left', 'leftabove show:vsplit')
+  call a:binder.alias('show:right', 'belowright show:vsplit')
+  call a:binder.alias('show:top', 'topleft show:split')
+  call a:binder.alias('show:bottom', 'botright show:split')
+  call a:binder.alias('show:leftest', 'topleft show:vsplit')
+  call a:binder.alias('show:rightest', 'botright show:vsplit')
+  call a:binder.alias('show:commit:above', 'leftabove show:commit:split')
+  call a:binder.alias('show:commit:below', 'belowright show:commit:split')
+  call a:binder.alias('show:commit:left', 'leftabove show:commit:vsplit')
+  call a:binder.alias('show:commit:right', 'belowright show:commit:vsplit')
+  call a:binder.alias('show:commit:top', 'topleft show:commit:split')
+  call a:binder.alias('show:commit:bottom', 'botright show:commit:split')
+  call a:binder.alias('show:commit:leftest', 'topleft show:commit:vsplit')
+  call a:binder.alias('show:commit:rightest', 'botright show:commit:vsplit')
 endfunction
 
 
@@ -97,11 +106,9 @@ function! s:on_commit(candidates, options) abort
           \ v:null
           \)
     execute printf(
-          \ '%s Gina show %s %s %s %s -- %s',
+          \ '%s Gina show %s %s -- %s',
           \ options.mods,
           \ gina#util#shellescape(options.opener, '--opener='),
-          \ gina#util#shellescape(get(candidate, 'line'), '--line='),
-          \ gina#util#shellescape(get(candidate, 'col'), '--col='),
           \ gina#util#shellescape(treeish),
           \ gina#util#shellescape(gina#util#get(candidate, 'residual')),
           \)

@@ -70,3 +70,11 @@ endfunction
 function! gina#core#console#confirm(...) abort
   return call(s:Console.confirm, a:000, s:Console)
 endfunction
+
+function! gina#core#console#ask_or_cancel(...) abort
+  let result = call(s:Console.ask, a:000, s:Console)
+  if empty(result)
+    throw gina#core#exception#info('Canceled')
+  endif
+  return result
+endfunction

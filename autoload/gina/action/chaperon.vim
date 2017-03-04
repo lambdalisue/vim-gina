@@ -1,32 +1,33 @@
 function! gina#action#chaperon#define(binder) abort
   let params = {
-        \ 'description': 'Open 3-way diff for solving conflicts',
-        \ 'mapping_mode': 'n',
+        \ 'description': 'Open three buffers to solve conflict',
+        \ 'mapping_mode': 'nv',
         \ 'requirements': ['path', 'sign'],
         \}
   call a:binder.define('chaperon', function('s:on_chaperon'), extend({
         \ 'options': {},
         \}, params))
-  call a:binder.define('chaperon:above', function('s:on_chaperon'), extend({
+  call a:binder.define('chaperon:split', function('s:on_chaperon'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove new'},
+        \ 'options': {'opener': 'new'},
         \}, params))
-  call a:binder.define('chaperon:below', function('s:on_chaperon'), extend({
+  call a:binder.define('chaperon:vsplit', function('s:on_chaperon'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright new'},
-        \}, params))
-  call a:binder.define('chaperon:left', function('s:on_chaperon'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove vnew'},
-        \}, params))
-  call a:binder.define('chaperon:right', function('s:on_chaperon'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright vnew'},
+        \ 'options': {'opener': 'vnew'},
         \}, params))
   call a:binder.define('chaperon:tab', function('s:on_chaperon'), extend({
         \ 'hidden': 1,
         \ 'options': {'opener': 'tabedit'},
         \}, params))
+  " Alias
+  call a:binder.alias('chaperon:above', 'leftabove chaperon:split')
+  call a:binder.alias('chaperon:below', 'belowright chaperon:split')
+  call a:binder.alias('chaperon:left', 'leftabove chaperon:vsplit')
+  call a:binder.alias('chaperon:right', 'belowright chaperon:vsplit')
+  call a:binder.alias('chaperon:top', 'topleft chaperon:split')
+  call a:binder.alias('chaperon:bottom', 'botright chaperon:split')
+  call a:binder.alias('chaperon:leftest', 'topleft chaperon:vsplit')
+  call a:binder.alias('chaperon:rightest', 'botright chaperon:vsplit')
 endfunction
 
 

@@ -1,27 +1,19 @@
 function! gina#action#edit#define(binder) abort
   let params = {
-        \ 'description': 'Open and edit a content in the working tree',
-        \ 'mapping_mode': 'n',
+        \ 'description': 'Edit a content in a working tree',
+        \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \}
   call a:binder.define('edit', function('s:on_edit'), extend({
         \ 'options': {},
         \}, params))
-  call a:binder.define('edit:above', function('s:on_edit'), extend({
+  call a:binder.define('edit:split', function('s:on_edit'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove new'},
+        \ 'options': {'opener': 'new'},
         \}, params))
-  call a:binder.define('edit:below', function('s:on_edit'), extend({
+  call a:binder.define('edit:vsplit', function('s:on_edit'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright new'},
-        \}, params))
-  call a:binder.define('edit:left', function('s:on_edit'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove vnew'},
-        \}, params))
-  call a:binder.define('edit:right', function('s:on_edit'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright vnew'},
+        \ 'options': {'opener': 'vnew'},
         \}, params))
   call a:binder.define('edit:tab', function('s:on_edit'), extend({
         \ 'hidden': 1,
@@ -31,6 +23,15 @@ function! gina#action#edit#define(binder) abort
         \ 'hidden': 1,
         \ 'options': {'opener': 'pedit'},
         \}, params))
+  " Alias
+  call a:binder.alias('edit:above', 'leftabove edit:split')
+  call a:binder.alias('edit:below', 'belowright edit:split')
+  call a:binder.alias('edit:left', 'leftabove edit:vsplit')
+  call a:binder.alias('edit:right', 'belowright edit:vsplit')
+  call a:binder.alias('edit:top', 'topleft edit:split')
+  call a:binder.alias('edit:bottom', 'botright edit:split')
+  call a:binder.alias('edit:leftest', 'topleft edit:vsplit')
+  call a:binder.alias('edit:rightest', 'botright edit:vsplit')
 endfunction
 
 

@@ -1,32 +1,33 @@
 function! gina#action#compare#define(binder) abort
   let params = {
-        \ 'description': 'Open 2-way diff for comparing the difference',
-        \ 'mapping_mode': 'n',
+        \ 'description': 'Open two buffers to compare differences',
+        \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \}
   call a:binder.define('compare', function('s:on_compare'), extend({
         \ 'options': {},
         \}, params))
-  call a:binder.define('compare:above', function('s:on_compare'), extend({
+  call a:binder.define('compare:split', function('s:on_compare'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove new'},
+        \ 'options': {'opener': 'new'},
         \}, params))
-  call a:binder.define('compare:below', function('s:on_compare'), extend({
+  call a:binder.define('compare:vsplit', function('s:on_compare'), extend({
         \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright new'},
-        \}, params))
-  call a:binder.define('compare:left', function('s:on_compare'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'leftabove vnew'},
-        \}, params))
-  call a:binder.define('compare:right', function('s:on_compare'), extend({
-        \ 'hidden': 1,
-        \ 'options': {'opener': 'belowright vnew'},
+        \ 'options': {'opener': 'vnew'},
         \}, params))
   call a:binder.define('compare:tab', function('s:on_compare'), extend({
         \ 'hidden': 1,
         \ 'options': {'opener': 'tabedit'},
         \}, params))
+  " Alias
+  call a:binder.alias('compare:above', 'leftabove compare:split')
+  call a:binder.alias('compare:below', 'belowright compare:split')
+  call a:binder.alias('compare:left', 'leftabove compare:vsplit')
+  call a:binder.alias('compare:right', 'belowright compare:vsplit')
+  call a:binder.alias('compare:top', 'topleft compare:split')
+  call a:binder.alias('compare:bottom', 'botright compare:split')
+  call a:binder.alias('compare:leftest', 'topleft compare:vsplit')
+  call a:binder.alias('compare:rightest', 'botright compare:vsplit')
 endfunction
 
 

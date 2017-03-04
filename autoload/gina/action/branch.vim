@@ -1,35 +1,17 @@
 function! gina#action#branch#define(binder) abort
   call a:binder.define('branch:refresh', function('s:on_refresh'), {
         \ 'description': 'Refresh remote branches',
-        \ 'mapping_mode': 'nv',
+        \ 'mapping_mode': 'n',
         \ 'requirements': [],
         \ 'options': {},
+        \ 'use_marks': 0,
+        \ 'clear_marks': 0,
         \})
-  call a:binder.define('branch:checkout', function('s:on_checkout'), {
-        \ 'description': 'Checkout a branch',
+  call a:binder.define('branch:new', function('s:on_new'), {
+        \ 'description': 'Create a new branch',
         \ 'mapping_mode': 'n',
         \ 'requirements': ['branch', 'remote'],
         \ 'options': {},
-        \})
-  call a:binder.define('branch:checkout:track', function('s:on_checkout'), {
-        \ 'hidden': 1,
-        \ 'description': 'Checkout a branch and create a local branch',
-        \ 'mapping_mode': 'n',
-        \ 'requirements': ['branch', 'remote'],
-        \ 'options': {'track': 1},
-        \})
-  call a:binder.define('branch:delete', function('s:on_delete'), {
-        \ 'description': 'Delete a branch',
-        \ 'mapping_mode': 'nv',
-        \ 'requirements': ['branch', 'remote'],
-        \ 'options': {},
-        \})
-  call a:binder.define('branch:delete:force', function('s:on_delete'), {
-        \ 'hidden': 1,
-        \ 'description': 'Delete a branch',
-        \ 'mapping_mode': 'nv',
-        \ 'requirements': ['branch', 'remote'],
-        \ 'options': { 'force': 1 },
         \})
   call a:binder.define('branch:move', function('s:on_move'), {
         \ 'description': 'Rename a branch',
@@ -44,20 +26,27 @@ function! gina#action#branch#define(binder) abort
         \ 'requirements': ['branch', 'remote'],
         \ 'options': { 'force': 1 },
         \})
-  call a:binder.define('branch:new', function('s:on_new'), {
-        \ 'description': 'Create a new branch',
-        \ 'mapping_mode': 'n',
+  call a:binder.define('branch:delete', function('s:on_delete'), {
+        \ 'description': 'Delete a branch',
+        \ 'mapping_mode': 'nv',
         \ 'requirements': ['branch', 'remote'],
         \ 'options': {},
         \})
+  call a:binder.define('branch:delete:force', function('s:on_delete'), {
+        \ 'hidden': 1,
+        \ 'description': 'Delete a branch',
+        \ 'mapping_mode': 'nv',
+        \ 'requirements': ['branch', 'remote'],
+        \ 'options': { 'force': 1 },
+        \})
   call a:binder.define('branch:set-upstream-to', function('s:on_set_upstream_to'), {
-        \ 'description': 'Set upstream of a branch',
+        \ 'description': 'Set an upstream of a branch',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['branch', 'remote'],
         \ 'options': {},
         \})
   call a:binder.define('branch:unset-upstream', function('s:on_unset_upstream'), {
-        \ 'description': 'Unset upstream of a branch',
+        \ 'description': 'Unset an upstream of a branch',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['branch', 'remote'],
         \ 'options': {},
@@ -67,35 +56,11 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:on_refresh(candidates, options) abort
-  execute 'Gina remote update --prune'
-endfunction
-
-function! s:on_checkout(candidates, options) abort
-  if empty(a:candidates)
-    return
-  endif
-  let options = extend({
-        \ 'track': 0,
-        \}, a:options)
-  for candidate in a:candidates
-    if options.track
-      let branch = candidate.remote ==# 'origin'
-            \ ? candidate.branch
-            \ : candidate.rev
-      execute printf(
-            \ '%s Gina checkout -b %s %s',
-            \ options.mods,
-            \ gina#util#shellescape(branch),
-            \ gina#util#shellescape(candidate.rev),
-            \)
-    else
-      execute printf(
-            \ '%s Gina checkout %s',
-            \ options.mods,
-            \ gina#util#shellescape(candidate.rev),
-            \)
-    endif
-  endfor
+  let options = extend({}, a:options)
+  execute printf(
+        \ '%s Gina remote update --prune',
+        \ options.mods,
+        \)
 endfunction
 
 function! s:on_new(candidates, options) abort
@@ -104,12 +69,12 @@ function! s:on_new(candidates, options) abort
   endif
   let options = extend({}, a:options)
   for candidate in a:candidates
-    let name = gina#core#console#ask(
+    let name = gina#core#console#ask_or_cancel(
           \ 'Name: ', '',
           \)
-    let from = gina#core#console#ask(
+    let from = gina#core#console#ask_or_cancel(
           \ 'From: ', candidate.rev,
-          \ 'customlist,gina#complete#commit#branch',
+          \ function('gina#complete#commit#branch')
           \)
     execute printf(
           \ '%s Gina checkout -b %s %s',
@@ -129,7 +94,7 @@ function! s:on_move(candidates, options) abort
         \ 'force': 0,
         \}, a:options)
   for candidate in candidates
-    let name = gina#core#console#ask(
+    let name = gina#core#console#ask_or_cancel(
           \ 'Rename: ',
           \ candidate.branch,
           \)
@@ -178,9 +143,8 @@ function! s:on_set_upstream_to(candidates, options) abort
   endif
   let options = extend({}, a:options)
   for candidate in candidates
-    let upstream = gina#core#console#ask(
-          \ 'Upstream: ',
-          \ candidate.branch,
+    let upstream = gina#core#console#ask_or_cancel(
+          \ 'Upstream: ', candidate.branch,
           \ function('gina#complete#commit#remote_branch'),
           \)
     let upstream = substitute(

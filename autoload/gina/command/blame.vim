@@ -14,20 +14,6 @@ function! gina#command#blame#call(range, args, mods) abort
   endtry
 endfunction
 
-function! gina#command#blame#echo(chunk) abort
-  let timestamp = gina#command#blame#timestamper#new().format(
-        \ a:chunk.author_time,
-        \ a:chunk.author_tz,
-        \)
-  redraw | call gina#core#console#info(printf(
-        \ '%s: %s authored on %s [%s]',
-        \ a:chunk.summary,
-        \ a:chunk.author,
-        \ timestamp,
-        \ a:chunk.revision,
-        \))
-endfunction
-
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
@@ -132,12 +118,6 @@ function! s:init(args) abort
 
   " Attach modules
   call gina#action#attach(function('s:get_candidates'))
-  call gina#action#include('blame')
-  call gina#action#include('browse')
-  call gina#action#include('changes')
-  call gina#action#include('compare')
-  call gina#action#include('diff')
-  call gina#action#include('show')
 
   " Mapping
   nnoremap <buffer><silent> <Plug>(gina-blame-redraw)

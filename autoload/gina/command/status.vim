@@ -53,15 +53,6 @@ function! s:init(args) abort
   call gina#action#attach(function('s:get_candidates'), {
         \ 'markable': 1,
         \})
-  call gina#action#include('browse')
-  call gina#action#include('chaperon')
-  call gina#action#include('compare')
-  call gina#action#include('diff')
-  call gina#action#include('edit')
-  call gina#action#include('export')
-  call gina#action#include('index')
-  call gina#action#include('patch')
-  call gina#action#include('show')
 
   augroup gina_command_status_internal
     autocmd! * <buffer>

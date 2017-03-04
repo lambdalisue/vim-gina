@@ -10,6 +10,13 @@ setlocal nowrap nofoldenable
 setlocal nonumber norelativenumber
 setlocal foldcolumn=0 colorcolumn=0
 
+call gina#action#include('blame')
+call gina#action#include('browse')
+call gina#action#include('changes')
+call gina#action#include('compare')
+call gina#action#include('diff')
+call gina#action#include('show')
+
 if g:gina#command#blame#use_default_aliases
   call gina#action#shorten('blame')
 endif

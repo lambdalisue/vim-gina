@@ -10,6 +10,13 @@ setlocal nowrap nofoldenable
 setlocal nonumber norelativenumber
 setlocal foldcolumn=0 colorcolumn=0
 
+call gina#action#include('browse')
+call gina#action#include('compare')
+call gina#action#include('diff')
+call gina#action#include('edit')
+call gina#action#include('export')
+call gina#action#include('show')
+
 " Does this buffer points files on working-tree or index/commit?
 let s:is_worktree = empty(gina#core#buffer#param('%', 'rev'))
 

@@ -5,142 +5,142 @@ let s:Path = vital#gina#import('System.Filepath')
 function! gina#action#index#define(binder) abort
   call a:binder.define('index:add', function('s:on_add'), {
         \ 'hidden': 1,
-        \ 'description': 'Add a change to the status',
+        \ 'description': 'Add changes to an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': {},
         \})
   call a:binder.define('index:add:force', function('s:on_add'), {
         \ 'hidden': 1,
-        \ 'description': 'Add a change to the status',
+        \ 'description': 'Add changes to an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'force': 1 },
         \})
   call a:binder.define('index:add:intent-to-add', function('s:on_add'), {
         \ 'hidden': 1,
-        \ 'description': 'Intent to add a change to the status',
+        \ 'description': 'Intent to add changes to an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'intent-to-add': 1 },
         \})
   call a:binder.define('index:rm', function('s:on_rm'), {
         \ 'hidden': 1,
-        \ 'description': 'Remove files from the working tree and from the status',
+        \ 'description': 'Remove files from a working tree and from an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': {},
         \})
-  call a:binder.define('index:rm:cached', function('s:on_rm'), {
-        \ 'hidden': 1,
-        \ 'description': 'Remove files from the status but the working tree',
-        \ 'mapping_mode': 'nv',
-        \ 'requirements': ['path'],
-        \ 'options': { 'cached': 1 },
-        \})
   call a:binder.define('index:rm:force', function('s:on_rm'), {
         \ 'hidden': 1,
-        \ 'description': 'Remove files from the working tree and from the status (force)',
+        \ 'description': 'Remove files from a working tree and from an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'force': 1 },
         \})
+  call a:binder.define('index:rm:cached', function('s:on_rm'), {
+        \ 'hidden': 1,
+        \ 'description': 'Remove files from an index but a working tree',
+        \ 'mapping_mode': 'nv',
+        \ 'requirements': ['path'],
+        \ 'options': { 'cached': 1 },
+        \})
   call a:binder.define('index:reset', function('s:on_reset'), {
         \ 'hidden': 1,
-        \ 'description': 'Reset changes on the status',
+        \ 'description': 'Reset changes on an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': {},
         \})
   call a:binder.define('index:stage', function('s:on_stage'), {
-        \ 'description': 'Stage changes to the status',
+        \ 'description': 'Stage changes to an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path', 'sign'],
         \ 'options': {},
         \})
   call a:binder.define('index:stage:force', function('s:on_stage'), {
         \ 'hidden': 1,
-        \ 'description': 'Stage changes to the status',
+        \ 'description': 'Stage changes to an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path', 'sign'],
         \ 'options': { 'force': 1 },
         \})
   call a:binder.define('index:unstage', function('s:on_unstage'), {
-        \ 'description': 'Unstage changes from the status',
+        \ 'description': 'Unstage changes from an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path', 'sign'],
         \ 'options': {},
         \})
   call a:binder.define('index:toggle', function('s:on_toggle'), {
-        \ 'description': 'Toggle stage/unstage of changes in the status',
+        \ 'description': 'Toggle stage/unstage of changes in an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path', 'sign'],
         \ 'options': {},
         \})
   call a:binder.define('index:checkout', function('s:on_checkout'), {
-        \ 'description': 'Checkout a contents',
+        \ 'description': 'Checkout contents from an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': {},
         \})
   call a:binder.define('index:checkout:force', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout a contents (force)',
+        \ 'description': 'Checkout contents from an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'force': 1 },
         \})
-  call a:binder.define('index:checkout:ours', function('s:on_checkout'), {
-        \ 'hidden': 1,
-        \ 'description': 'Checkout a contents',
-        \ 'mapping_mode': 'nv',
-        \ 'requirements': ['path'],
-        \ 'options': { 'ours': 1 },
-        \})
-  call a:binder.define('index:checkout:theirs', function('s:on_checkout'), {
-        \ 'hidden': 1,
-        \ 'description': 'Checkout a contents',
-        \ 'mapping_mode': 'nv',
-        \ 'requirements': ['path'],
-        \ 'options': { 'theirs': 1 },
-        \})
   call a:binder.define('index:checkout:HEAD', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout a contents from HEAD',
+        \ 'description': 'Checkout contents from a HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'rev': 'HEAD' },
         \})
   call a:binder.define('index:checkout:HEAD:force', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout a contents from HEAD (force)',
+        \ 'description': 'Checkout contents from a HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'rev': 'HEAD', 'force': 1 },
         \})
   call a:binder.define('index:checkout:origin', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout a contents from origin/HEAD',
+        \ 'description': 'Checkout contents from an origin/HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'rev': 'origin/HEAD' },
         \})
   call a:binder.define('index:checkout:origin:force', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout a contents from origin/HEAD (force)',
+        \ 'description': 'Checkout contents from an origin/HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'rev': 'origin/HEAD', 'force': 1 },
         \})
+  call a:binder.define('index:checkout:ours', function('s:on_checkout'), {
+        \ 'hidden': 1,
+        \ 'description': 'Checkout contents from local (ours) during merge',
+        \ 'mapping_mode': 'nv',
+        \ 'requirements': ['path'],
+        \ 'options': { 'ours': 1 },
+        \})
+  call a:binder.define('index:checkout:theirs', function('s:on_checkout'), {
+        \ 'hidden': 1,
+        \ 'description': 'Checkout contents from remote (theirs) during merge',
+        \ 'mapping_mode': 'nv',
+        \ 'requirements': ['path'],
+        \ 'options': { 'theirs': 1 },
+        \})
   call a:binder.define('index:discard', function('s:on_discard'), {
-        \ 'description': 'Discard changes on the working tree',
+        \ 'description': 'Discard changes on a working tree',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path', 'sign'],
         \ 'options': {},
         \})
   call a:binder.define('index:discard:force', function('s:on_discard'), {
         \ 'hidden': 1,
-        \ 'description': 'Discard changes on the working tree',
+        \ 'description': 'Discard changes on a working tree',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path', 'sign'],
         \ 'options': { 'force': 1 },
@@ -158,7 +158,8 @@ function! s:on_add(candidates, options) abort
         \}, a:options)
   let pathlist = map(copy(a:candidates), 'v:val.path')
   execute printf(
-        \ 'Gina add --ignore-errors %s %s -- %s',
+        \ '%s Gina add --ignore-errors %s %s -- %s',
+        \ options.mods,
         \ options.force ? '--force' : '',
         \ options['intent-to-add'] ? '--intent-to-add' : '',
         \ gina#util#shellescape(pathlist),
@@ -192,28 +193,6 @@ function! s:on_reset(candidates, options) abort
   execute printf(
         \ '%s Gina reset --quiet -- %s',
         \ options.mods,
-        \ gina#util#shellescape(pathlist),
-        \)
-endfunction
-
-function! s:on_checkout(candidates, options) abort
-  if empty(a:candidates)
-    return
-  endif
-  let options = extend({
-        \ 'force': 0,
-        \ 'ours': 0,
-        \ 'theirs': 0,
-        \ 'rev': '',
-        \}, a:options)
-  let pathlist = map(copy(a:candidates), 'v:val.path')
-  execute printf(
-        \ '%s Gina! checkout --quiet %s %s %s %s -- %s',
-        \ options.mods,
-        \ options.force ? '--force' : '',
-        \ options.ours ? '--ours' : '',
-        \ options.theirs ? '--theirs' : '',
-        \ gina#util#shellescape(options.rev),
         \ gina#util#shellescape(pathlist),
         \)
 endfunction
@@ -273,6 +252,28 @@ function! s:on_toggle(candidates, options) abort dict
     call gina#process#wait()
   endif
   call self.call(options.mods . 'index:unstage', unstage_candidates)
+endfunction
+
+function! s:on_checkout(candidates, options) abort
+  if empty(a:candidates)
+    return
+  endif
+  let options = extend({
+        \ 'force': 0,
+        \ 'ours': 0,
+        \ 'theirs': 0,
+        \ 'rev': '',
+        \}, a:options)
+  let pathlist = map(copy(a:candidates), 'v:val.path')
+  execute printf(
+        \ '%s Gina! checkout --quiet %s %s %s %s -- %s',
+        \ options.mods,
+        \ options.force ? '--force' : '',
+        \ options.ours ? '--ours' : '',
+        \ options.theirs ? '--theirs' : '',
+        \ gina#util#shellescape(options.rev),
+        \ gina#util#shellescape(pathlist),
+        \)
 endfunction
 
 function! s:on_discard(candidates, options) abort dict

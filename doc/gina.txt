@@ -193,6 +193,14 @@ Additionally, some actions are allowed in |visual-mode|. For example, if you
 would like to stage all files, use "ggVG<<" to perform an "index:stage"
 action on all candidates listed in the buffer.
 
+						*gina-usage-action-mark*
+Actions in some buffer are defined as "markable", mean that users can mark
+candidates by "builtin:mark" action and all further actions are applied to the
+selected candidates (only when the action is defined to use marks).
+In default, the "builtin:mark" action is mapped to "*" if the buffer allowed
+mark. Note that marks are removed after users call any actions.
+
+
 You may want to repeat a previous action. In that case, use a "builtin:repeat"
 action which is mapped to "." in default.
 Note that actions executed from "builtin:choice" action become repeatable.
@@ -229,13 +237,6 @@ see a debug message on the action, prepend |verbose| modifier like
 	action: verbose show
 <
 When you hit <CR>, the "show" action will be executed with |verbose| modifier.
-
-						*gina-usage-action-mark*
-Actions in some buffer are defined as "markable", mean that users can mark
-candidates by "builtin:mark" action and all further actions are applied to the
-selected candidates.
-In default, the "builtin:mark" action is mapped to "*" if the buffer allowed
-mark. Note that marks are removed after users call any actions.
 
 To customize the mark, users can use the followings
 
@@ -310,7 +311,7 @@ as a |pattern| and the function is applied to all buffer with the {pattern}.
 
 					*gina-custom-action-shorten*
 gina provides an alternative function |gina#custom#action#shorten()| which is
-used to define "short-form aliases of actions. For example, the following
+used to define "short-form" aliases of actions. For example, the following
 will define short-form aliases of "show".
 >
 	call gina#custom#action#shorten('status', 'show')
@@ -319,10 +320,8 @@ The code above will define the following aliases
 
 	short-form alias	action~
 	"show"			"show"
-	"left"			"show:left"
-	"right"			"show:right"
-	"above"			"show:above"
-	"below"			"show:below"
+	"split"			"show:split"
+	"vsplit"		"show:vsplit"
 	"tab"			"show:tab"
 	"preview"		"show:preview"
 
@@ -371,13 +370,29 @@ a new tabpage by "g<CR>", add the following code in your |.vimrc|
 	" Use g<CR> to open a candidate on a new tabpage
 	call gina#custom#mapping#nmap(
 	      \ '/.*', 'g<CR>',
-	      \ '<Plug>(gina-action-edit-tab)'
+	      \ '<Plug>(gina-edit-tab)'
 	      \)
 <
 Note that the value of the {scheme} attribute starts from "/".
 If the {scheme} is "/{pattern}", the value without a leading "/" is assumed
 as a |pattern| and the function is applied to all buffer with the {pattern}.
 
+To map aliases or actions with <mods>, use |gina#action#call()| function like:
+>
+	" Use <Left> to open a candidate on a leftest
+	call gina#custom#mapping#nmap(
+	      \ 'status', '<Left>',
+	      \ ':call gina#action#call(''show:leftest'')<CR>',
+	      \ {'noremap': 1, 'silent': 1},
+	      \)
+
+	" Use g<Left> to open a candidate on a leftest with verbose
+	call gina#custom#mapping#nmap(
+	      \ 'status', 'g<Left>',
+	      \ ':call gina#action#call(''verbose show:leftest'')<CR>',
+	      \ {'noremap': 1, 'silent': 1},
+	      \)
+<
 -----------------------------------------------------------------------------
 COMMAND 					*gina-custom-command*
 
@@ -526,7 +541,7 @@ The following is what I use for now to customize gina.
 	
 	call gina#custom#mapping#nmap(
 	      \ 'branch', 'g<CR>',
-	      \ '<Plug>(gina-branch-checkout-track)'
+	      \ '<Plug>(gina-commit-checkout-track)'
 	      \)
 	call gina#custom#mapping#nmap(
 	      \ 'status', '<C-^>',
@@ -685,7 +700,8 @@ In this buffer, users can use the following action groups.
 	|gina-action-diff|
 	|gina-action-show|
 
-And the following <Plug> mappings
+And the following <Plug> mappings additional to the <Plug> mappings comes from
+actions above
 	
 	<Plug>(gina-blame-redraw)	Redraw content with the current width
 	<Plug>(gina-blame-C-L)		Redraw content and <C-L> to refresh
@@ -700,8 +716,6 @@ Users can disable the default aliases (shorten) and/or mappings by
 
 	|g:gina#command#blame#use_default_aliases|
 	|g:gina#command#blame#use_default_mappings|
-
-Set 0 to these value disable default settings.
 
 Additionally, users can customize the content via the following variables.
 
@@ -738,18 +752,18 @@ In this buffer, users can use the following action groups.
 	|gina-action-browse| 
 	|gina-action-changes|
 	|gina-action-commit|
+		"commit:checkout" is aliased to "checkout"
+		"commit:checkout:track" is aliased to "checkout:track"
 	|gina-action-show|
 
 And the following default keymappings
 	
-	<Return>	Checkout branch (detached head for remote)
+	<Return>	Checkout a branch (detached head for remote)
 
 Users can disable the default aliases (shorten) and/or mappings by
 
 	|g:gina#command#branch#use_default_aliases|
 	|g:gina#command#branch#use_default_mappings|
-
-Set 0 to these value disable default settings.
 
 Note that actions are defined as "markable" in this buffer.
 See |gina-usage-action-mark| for the detail.
@@ -772,7 +786,7 @@ And the following default keymappings are defined
 	
 	<Return>	Edit a file
 	dd		Open a unified-diff
-	DD		Open a unified-diff (right)
+	DD		Open a unified-diff (vsplit)
 	cc		Open two buffers to compare
 	CC		Open two buffers to compare (tab)
 
@@ -780,8 +794,6 @@ Users can disable the default aliases (shorten) and/or mappings by
 
 	|g:gina#command#changes#use_default_aliases|
 	|g:gina#command#changes#use_default_mappings|
-
-Set 0 to these value disable default settings.
 
 -----------------------------------------------------------------------------
 COMMIT						*gina-buffer-commit*
@@ -809,15 +821,18 @@ When users close the buffer with |:wq| command, no confirmation prompt will
 appear and the commit is immediately performed.
 
 Note that no actions are available on this buffer.
-And the following default keymappings are defined
+
+The following <Plug> mapping is available on this buffer
+	
+	<Plug>(gina-commit-amend)	Toggle "--amend" option
+
+And the following default keymapping is defined
 	
 	!		Switch --amend option
 
 Users can disable the default mappings by
 
 	|g:gina#command#commit#use_default_mappings|
-
-Set 0 to these value disable default settings.
 
 -----------------------------------------------------------------------------
 DIFF						*gina-buffer-diff*
@@ -853,8 +868,6 @@ Users can disable the default aliases (shorten) and/or mappings by
 	|g:gina#command#qrep#use_default_aliases|
 	|g:gina#command#qrep#use_default_mappings|
 
-Set 0 to these value disable default settings.
-
 -----------------------------------------------------------------------------
 LOG						*gina-buffer-log*
 					{scheme}:	log
@@ -879,8 +892,6 @@ Users can disable the default aliases (shorten) and/or mappings by
 
 	|g:gina#command#log#use_default_aliases|
 	|g:gina#command#log#use_default_mappings|
-
-Set 0 to these value disable default settings.
 
 -----------------------------------------------------------------------------
 LS						*gina-buffer-ls*
@@ -908,8 +919,6 @@ Users can disable the default aliases (shorten) and/or mappings by
 	|g:gina#command#ls#use_default_aliases|
 	|g:gina#command#ls#use_default_mappings|
 
-Set 0 to these value disable default settings.
-
 -----------------------------------------------------------------------------
 REFLOG						*gina-buffer-reflog*
 					{scheme}:	reflog
@@ -931,8 +940,6 @@ Users can disable the default aliases (shorten) and/or mappings by
 	|g:gina#command#reflog#use_default_aliases|
 	|g:gina#command#reflog#use_default_mappings|
 
-Set 0 to these value disable default settings.
-
 -----------------------------------------------------------------------------
 SHOW						*gina-buffer-show*
 					{scheme}:	show
@@ -941,6 +948,7 @@ SHOW						*gina-buffer-show*
 This is a "file-like" buffer which is shown by |:Gina-show| command.
 The following commands also opens this buffer to compare the content.
 
+	|:Gina-blame|
 	|:Gina-chaperon|
 	|:Gina-compare|
 	|:Gina-patch|
@@ -970,7 +978,7 @@ And the following default keymappings are defined
 	
 	<Return>	Edit a file
 	dd		Open a unified-diff
-	DD		Open a unified-diff (right)
+	DD		Open a unified-diff (vsplit)
 	cc		Open two buffers to compare
 	CC		Open two buffers to compare (tab)
 	pp		Open three buffers to patch
@@ -986,8 +994,6 @@ Users can disable the default aliases (shorten) and/or mappings by
 	|g:gina#command#status#use_default_aliases|
 	|g:gina#command#status#use_default_mappings|
 
-Set 0 to these value disable default settings.
-
 Note that actions are defined as "markable" in this buffer.
 See |gina-usage-action-mark| for the detail.
 
@@ -999,7 +1005,6 @@ TAG						*gina-buffer-tag*
 This is a "non file-like" buffer which is shown by |:Gina-tag| command.
 In this buffer, users can use the following action groups.
 
-	|gina-action-branch|
 	|gina-action-browse|
 	|gina-action-changes|
 	|gina-action-commit|
@@ -1013,8 +1018,6 @@ Users can disable the default aliases (shorten) and/or mappings by
 
 	|g:gina#command#tag#use_default_aliases|
 	|g:gina#command#tag#use_default_mappings|
-
-Set 0 to these value disable default settings.
 
 
 =============================================================================
@@ -1051,10 +1054,10 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 	The followings are allowed in {options}
 
 	--group1={group}
-		A window group name used for the navigation buffer
+		A window group name used for the 1st buffer
 		(|gina-options-group|)
 	--group2={group}
-		A window group name used for the content buffer
+		A window group name used for the 2nd buffer
 		(|gina-options-group|)
 	--opener={opener}
 		An opener command for the 1st buffer (|gina-options-opener|)
@@ -1148,6 +1151,17 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 
 	The followings are allowed in {options}
 	
+	--group1={group}
+		A window group name used for the 1st buffer
+		(|gina-options-group|)
+	--group2={group}
+		A window group name used for the 2nd buffer
+		(|gina-options-group|)
+	--group3={group}
+		A window group name used for the 3rd buffer
+		(|gina-options-group|)
+	--opener={opener}
+		An opener command for the new buffer (|gina-options-opener|)
 	--line={line}
 		An initial line number
 	--col={col}
@@ -1204,8 +1218,12 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 
 	The followings are allowed in {options}
 
-	--group={group}
-		A window group name used for the buffer (|gina-options-group|)
+	--group1={group}
+		A window group name used for the 1st buffer
+		(|gina-options-group|)
+	--group2={group}
+		A window group name used for the 2nd buffer
+		(|gina-options-group|)
 	--opener={opener}
 		An opener command for the 1st buffer (|gina-options-opener|)
 	--line={line}
@@ -1339,8 +1357,15 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 
 	The followings are allowed in {options}
 
-	--group={group}
-		A window group name used for the buffer (|gina-options-group|)
+	--group1={group}
+		A window group name used for the 1st buffer
+		(|gina-options-group|)
+	--group2={group}
+		A window group name used for the 2nd buffer
+		(|gina-options-group|)
+	--group3={group}
+		A window group name used for the 3rd buffer
+		(|gina-options-group|)
 	--opener={opener}
 		An opener command for the 1st buffer (|gina-options-opener|)
 	--line={line}
@@ -1350,6 +1375,29 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 
 	It respects 'diffopt' when opening the 2nd, 3rd buffer. Add "vertical"
 	to the option if you prefer to open the 2nd, 3rd buffer vertically.
+
+	It opens the follwoing buffers by |:Gina-edit| and |:Gina-show| command.
+
+	HEAD:		gina://{refname}:show/HEAD:{path}
+	INDEX:		gina://{refname}:show/:{path}
+	WORKTREE:	{path}
+
+	Users can use |:diffput| and |:diffget| to copy diff content.
+	Additionally, gina defines the following additional mappings.
+
+	HEAD/WORKTREE
+	<Plug>(gina-diffput)	Put a diff chunk to INDEX buffer.
+				Assigned to "dp" in default.
+
+	WORKTREE
+	<Plug>(gina-diffget)	Get a diff chunk from INDEX buffer.
+				Assigned to "do" in default.
+	
+	INDEX
+	<Plug>(gina-diffget-l)	Get a diff chunk from HEAD buffer.
+				Assigned to "dol" in default.
+	<Plug>(gina-diffget-r)	Get a diff chunk from WORKTREE buffer.
+				Assigned to "dor" in default.
 
 	See also~
 	|:Gina-chaperon|
@@ -1445,6 +1493,29 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 	
 -----------------------------------------------------------------------------
 FUNCTIONS					*gina-functions*
+
+					*gina#action#call()*
+gina#action#call({expr} [, {fline} [, {lline}]])
+gina#action#call({expr}, {candidates})
+	Call an action which is determined from {expr}.
+
+	If {expr} contains <mods>, the action will be called with the
+	specified command modifiers.
+	If {expr} ends with an action alias, an aliased action will be called.
+
+	Without extra arguments, the action will be called with
+
+	1. A candidate of the current line
+	2. Marked candidates if the action is defined to use marks
+
+	If {fline} is specified, a candidate at {fline} is used.
+	If {fline} and {lline} are specified, candidates between {fline} and
+	{lline} are used.
+	If {candidates} list is specified, the specified candidates will be
+	used.
+
+	Note that the API with {fline}, {lline}, and {candidates} has not
+	settled yet so users should not use it without understanding.
 
 					*gina#custom#action#alias()*
 gina#custom#action#alias({scheme}, {alias}, {name})
@@ -1752,28 +1823,35 @@ See also~
 
 					*gina-actions-builtin*
 builtin:echo (hidden)
-	Echo the selected candidates.
+	Echo candidates
 builtin:help (unrepeatable)
 builtin:help:all (hidden/unrepeatable)
-	Show available actions in the buffer.
+	Show a help of actions
 	When ":all" has specified, all available actions including hidden
 	actions are shown.
-	The action is mapped to "?" in normal mode.
 builtin:choice (hiddden/unrepeatable)
 	Select an action to perform.
-	The action is mapped to "<Tab>" in normal, visual, and insert mode.
-	Note that actions executed from this action become repeatable.
 builtin:repeat (hidden)
 	Repeat a previous repeatable action which was executed from
 	"builtin:choice" action.
-	The action is mapped to "." in normal, visual, and insert mode.
+builtin:mark (hidden)
+	Mark/Unmark selected candidates.
+	Only available when the action binder has defined with "markable"
+builtin:mark:set (hidden)
+	Mark selected candidates.
+	Only available when the action binder has defined with "markable"
+builtin:mark:unset (hidden)
+	Unmark selected candidates.
+	Only available when the action binder has defined with "markable"
+builtin:mark:unall (hidden)
+	Unmark all candidates.
+	Only available when the action binder has defined with "markable"
 
 					*gina-actions-blame*
 blame:echo
-	Echo the chunk info. It is only available on a "gina-blame" buffer.
-	The following customization is recommended if your PC is fast enough.
+	Echo a chunk info.
 blame:open
-	Open a blame with the selected candidate.
+	Blame a content on a commit of a chunk.
 	It opens a blame with a related parent (previous) commit if the
 	revision of the chunk and the revision of the blame is equal and a
 	related parent commit exist.
@@ -1783,145 +1861,165 @@ blame:back
 	Back to a navigational previous blame recorded by "blame:open" action.
 
 					*gina-actions-branch*
-branch:checkout
-	Checkout a branch. Detached head will be created for a remote branch.
-branch:checkout:track (hidden)
-	Checkout a branch. It create a local branch to track a remote branch.
-branch:delete
-branch:delete:force (hidden)
-	Delete a branch.
+branch:refresh
+	Refresh remote branches.
+	Internally, it calls "git remote update --prune".
+branch:new
+	Create a new branch.
 branch:move
 branch:move:force (hidden)
 	Rename a branch.
-branch:new
-	Create a new branch
-branch:refresh
-	Fetch remote branches and remove unexisting remote branches
+branch:delete
+branch:delete:force (hidden)
+	Delete a branch.
 branch:set-upstream-to
-	Set upstream of the branch
+	Set an upstream of a branch.
 branch:unset-upstream
-	Unset upstream of the branch
+	Unset an upstream of a branch.
 
 					*gina-actions-browse*
 browse
-	Open a system browser of the url of remote of the content.
 browse:exact (hidden)
-	Open a system browser of the url of remote of the content.
-	A hashref is used to construct the url rather than branch.
+	Open a remote url in a system browser.
 browse:yank
-	Yank the url of remote of the content.
-browse:exact:yank (hidden)
-	Yank the url of remote of the content.
-	A hashref is used to construct the url rather than branch.
-
-					*gina-actions-chaperon*
-chaperon
-chaperon:above/below/left/right/tab (hidden)
-	Open 3-way diff to solve conflict
+browse:yank:exact (hidden)
+	Copy a remote url.
 
 					*gina-actions-changes*
 changes:of
+changes:of:split/vsplit/tab/preview (hidden)
+changes:of:above/below/left/right (alias)
+changes:of:top/bottom/leftest/rightest (alias)
 	Show changes of the commit.
 changes:between
+changes:between:split/vsplit/tab/preview (hidden)
+changes:between:above/below/left/right (alias)
+changes:between:top/bottom/leftest/rightest (alias)
 	Show changes between the commit and HEAD.
 changes:from
+changes:from:split/vsplit/tab/preview (hidden)
+changes:from:above/below/left/right (alias)
+changes:from:top/bottom/leftest/rightest (alias)
 	Show changes from a common ancestor of the commit and HEAD.
 
+					*gina-actions-chaperon*
+chaperon
+chaperon:split/vsplit/tab (hidden)
+chaperon:above/below/left/right (alias)
+chaperon:top/bottom/leftest/rightest (alias)
+	Open three buffers to solve conflict.
+
 					*gina-actions-commit*
+commit:checkout
+	Checkout a commit.
+commit:checkout:track (hidden)
+	Checkout a commit with a tracking branch.
+commit:reset
+commit:reset:soft/hard/merge/keep (hidden)
+	Reset a HEAD to a commit.
 commit:merge
-commit:merge:ff-only (hidden)
-commit:merge:no-ff (hidden)
-commit:merge:squash (hidden)
-	Merge the commit into HEAD
+commit:merge:ff-only/no-ff/squash (hidden)
+	Merge a commit into a HEAD.
 commit:rebase
-	Rebase HEAD from the commit
+	Rebase a HEAD from the commit.
 commit:rebase:merge (hidden)
-	Rebase HEAD by merging the commit
+	Rebase a HEAD by merging the commit.
 commit:revert
-commit:revert:1 (hidden)
-commit:revert:2 (hidden)
-	Revert the commit (-m1/-m2)
+commit:revert:1/2 (hidden)
+	Revert a commit.
 commit:cherry-pick
-commit:cherry-pick:1 (hidden)
-commit:cherry-pick:2 (hidden)
-	Cherry pick the commit (-m1/-m2)
+commit:cherry-pick:1/2 (hidden)
+	Apply changes of a commit.
 
 					*gina-actions-compare*
 compare
-compare:above/below/left/right/tab (hidden)
-	Open two buffers to compare
+compare:split/vsplit/tab (hidden)
+compare:above/below/left/right (alias)
+compare:top/bottom/leftest/rightest (alias)
+	Open two buffers to compare differences.
 
 					*gina-actions-diff*
 diff
-diff:above/below/left/right/tab/preview (hidden)
-	Open an unified-diff content.
+diff:split/vsplit/tab/preview (hidden)
+diff:above/below/left/right (alias)
+diff:top/bottom/leftest/rightest (alias)
+	Open an unified-diff.
 
 					*gina-actions-edit*
 edit
-edit:above/below/left/right/tab/preview (hidden)
-	Edit a content in the working tree.
+edit:split/vsplit/tab/preview (hidden)
+edit:above/below/left/right (alias)
+edit:top/bottom/leftest/rightest (alias)
+	Edit a content in a working tree.
 
 					*gina-actions-export*
 export:quickfix
-	Create a new quickfix list with the selected candidates.
+	Create a new quickfix list with selected candidates.
 export:quickfix:add (hidden)
-	Add selected candidates to the quickfix list.
+	Add selected candidates to an existing quickfix list.
 export:quickfix:replace (hidden)
-	Replace quickfix list with the selected candidates.
+	Replace an existing quickfix list with selected candidates.
 
 					*gina-actions-index*
 index:add (hidden)
 index:add:force (hidden)
+	Add changes to an index.
 index:add:intent-to-add (hidden)
-	Add changes to the index.
+	Intent to add changes to an index.
 index:rm (hidden)
 index:rm:force (hidden)
+	Remove files from a working tree and from an index.
 index:rm:cached (hidden)
-	Remove the content from the index and working tree.
+	Remove files from an index but a working tree.
 index:reset (hidden)
-	Remove changes from the index
-	Note that this is a hidden action.
+	Reset changes on an index.
 index:stage
 index:stage:force (hidden)
-	Stage changes to the index.
+	Stage changes to an index.
 	It uses "index:add" and "index:rm" internally.
 index:unstage
-	Unstage changes to the index.
+	Unstage changes from an index.
 	It is an alias of "index:reset".
 index:toggle
-	Toggle stage/unstage of changes.
+	Toggle stage/unstage of changes in an index.
 	It uses "index:stage" and "index:unstage" internally.
 index:checkout
 index:checkout:force (hidden)
-	Checkout the content.
-index:checkout:ours (hidden)
-	Checkout our content during merge.
-index:checkout:theirs (hidden)
-	Checkout their content during merge.
+	Checkout contents from an index.
 index:checkout:HEAD (hidden)
 index:checkout:HEAD:force (hidden)
-	Checkout the content in HEAD
-index:checkout:origin/HEAD (hidden)
-index:checkout:origin/HEAD:force (hidden)
-	Checkout the content in origin/HEAD
+	Checkout contents from a HEAD.
+index:checkout:origin (hidden)
+index:checkout:origin:force (hidden)
+	Checkout contents from an origin/HEAD.
+index:checkout:ours (hidden)
+	Checkout contents from local (ours) during merge.
+index:checkout:theirs (hidden)
+	Checkout contents from remote (theirs) during merge.
 index:discard
 index:discard:force (hidden)
-	Discard the changes in working tree.
+	Discard changes on a working tree.
 	If the file is tracked, the content is overwritten via the content in
-	HEAD. If the file is untracked, the file is removed ()
+	HEAD. If the file is untracked, the file is removed
 
 					*gina-actions-patch*
 patch
-patch:above/below/left/right/tab (hidden)
-	Open 3-way diff to patch changes to the index.
+patch:split/vsplit/tab (hidden)
+patch:above/below/left/right (alias)
+patch:top/bottom/leftest/rightest (alias)
+	Open three buffers to patch changes to an index.
 
 					*gina-actions-show*
 show
-show:above/below/left/right/tab/preview (hidden)
-	Show a commit or a content in the revision/index
+show:split/vsplit/tab/preview (hidden)
+show:above/below/left/right (alias)
+show:top/bottom/leftest/rightest (alias)
+	Show a commit or a content at a commit.
 show:commit
-show:commit:above/below/left/right/tab/preview (hidden)
-	Show a commit forcedly
+show:commit:split/vsplit/tab/preview (hidden)
+show:commit:above/below/left/right (alias)
+show:commit:top/bottom/leftest/rightest (alias)
+	Show a commit.
 
 
 =============================================================================
