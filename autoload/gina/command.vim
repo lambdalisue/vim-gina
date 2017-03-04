@@ -52,12 +52,3 @@ function! gina#command#scheme(sfile) abort
   let scheme = substitute(name, '_', '-', 'g')
   return scheme
 endfunction
-
-
-" Obsolete -------------------------------------------------------------------
-function! gina#command#custom(scheme, query, ...) abort
-  call gina#core#console#warn(
-        \ 'gina#command#custom is obsolete. Use gina#custom#command#option'
-        \)
-  call gina#custom#command#option(a:scheme, a:query, get(a:000, 0, 1))
-endfunction
