@@ -29,7 +29,7 @@ if g:gina#command#status#use_default_mappings
   nmap <buffer> <Return> <Plug>(gina-edit)zv
 
   nmap <buffer> dd <Plug>(gina-diff)
-  nmap <buffer> DD <Plug>(gina-diff-vnew)
+  nmap <buffer> DD <Plug>(gina-diff-vsplit)
 
   nmap <buffer> cc <Plug>(gina-compare)
   nmap <buffer> CC <Plug>(gina-compare-tab)
