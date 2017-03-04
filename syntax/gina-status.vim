@@ -15,7 +15,7 @@ function! s:define_highlights() abort
   highlight default link GinaStatusStaged     Special
   highlight default link GinaStatusUnstaged   Comment
   highlight default link GinaStatusPatched    Constant
-  highlight default link GinaStatusUntracked  GinaUnstaged
+  highlight default link GinaStatusUntracked  GinaStatusUnstaged
   highlight default link GinaStatusIgnored    Identifier
 endfunction
 
