@@ -1022,6 +1022,8 @@ Users can disable the default aliases (shorten) and/or mappings by
 	|g:gina#command#tag#use_default_aliases|
 	|g:gina#command#tag#use_default_mappings|
 
+Note that actions are defined as "markable" in this buffer.
+See |gina-usage-action-mark| for the detail.
 
 =============================================================================
 INTERFACE					*gina-interface*
