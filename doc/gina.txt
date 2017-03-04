@@ -1311,10 +1311,11 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 	|:Gina-cd|
 
 						*:Gina-log*
-:Gina log [+cmd] [++opt] [{options}] [{path}] [-- {pathspec}...]
-	Open a "gina-log" buffer to show commits of the {paht} or the
+:Gina log [+cmd] [++opt] [{options}] [{treeish}] [-- {pathspec}...]
+	Open a "gina-log" buffer to show commits of the {treeish} or the
 	repository.
-	If {path} is missing, it shows a log of the repository.
+	If {path} part of the {treeish} is missing, it shows a log of the
+	repository.
 
 	The followings are allowed in {options} additional to options for
 	a corresponding git command.

@@ -35,9 +35,11 @@ function! s:build_args(git, args) abort
   call args.set('--color', 'always')
   call args.set('--graph', 1)
   call args.set('--pretty', "format:\e[32m%h\e[m - %s \e[33;1m%cr\e[m \e[35;1m<%an>\e[m\e[36;1m%d\e[m")
-  call gina#core#args#extend_path(a:git, args, args.pop(1, v:null))
+  call gina#core#args#extend_treeish(a:git, args, args.pop(1, v:null))
   if args.params.path isnot# v:null
     call args.residual([args.params.path] + args.residual())
+  elseif args.params.rev isnot# v:null
+    call args.set(1, args.params.rev)
   endif
   return args.lock()
 endfunction
