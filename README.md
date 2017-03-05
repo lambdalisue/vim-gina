@@ -75,8 +75,9 @@ Pros.
   - Users don't have to wait `:Gina push` (`git push`)
   - Asynchronous feature in Neovim is great. `:Gina log` (`git log`) on **Linux** repository won't freeze Neovim
 - Single command. Users do not need to remember tons of commands
-  - `:Gina {command}` will execute a gina command or a git command
-  - `:Gina! {command}` will a git command
+  - `:Gina {command}` will execute a gina command or a git raw command asynchrnously
+  - `:Gina! {command}` will execute a git raw command asynchrnously
+  - `:Gina!! {command}` will execute a git raw command in a shell (mainly for `:Gina!! add -p` or `:Gina!! rebase -i`)
 - Action based. Users do not need to remember tons of mappings
   - `?` to see the help
   - `<Tab>` to select an action to perform
