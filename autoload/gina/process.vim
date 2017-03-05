@@ -103,6 +103,9 @@ function! gina#process#errormsg(result) abort
         \))
 endfunction
 
+function! gina#process#build_raw_args(git, args) abort
+  return s:build_raw_args(a:git, a:args)
+endfunction
 
 
 " Private --------------------------------------------------------------------

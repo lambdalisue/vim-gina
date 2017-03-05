@@ -1093,13 +1093,25 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 |gina-buffer-++opt| for detail.
 
 						*:Gina*
-:Gina[!] {command} [{options}]
-	Call {command} with {options}.
+:Gina {command} [{options}]
+	Call a gina command of {command} or a git raw {command}.
 	It calls a gina command of {command} when {command} is found under
 	the namespace "gina#command#".
-	Otherwise it calls a raw {command} ("git {command} {options}") and
-	echo the result.
-	Users can force to call a raw cammand by a |bang| modifier.
+	Otherwise it fallbacks to |:Gina!| to call a git raw command.
+
+						*:Gina!*
+:Gina! {command} [{options}]
+	Call a git raw {command} asynchronously.
+	It calls a raw {command} ("git {command} {options}") and echo the
+	result.
+
+						*:Gina!!*
+:Gina!! {command} [{options}]
+	Call a git raw {command} under the shell.
+	It use |:!| or |:terminal| to call a git raw {command} to allow git's
+	interactive features such as "git add -p" or "git rebase -i".
+	Note that Vim users may need to hit <C-J> instead of <CR> to send
+	a newline to the shell.
 
 						*:Gina-blame*
 :Gina blame [+cmd] [++opt] [{options}] {treeish}

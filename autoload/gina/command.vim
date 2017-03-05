@@ -1,5 +1,7 @@
 function! gina#command#call(bang, range, rargs, mods) abort
-  if a:bang ==# '!'
+  if a:bang ==# '!' && a:rargs[0] ==# '!'
+    return gina#command#call('', a:range, '_shell ' . a:rargs[1:], a:mods)
+  elseif a:bang ==# '!'
     return gina#command#call('', a:range, '_raw ' . a:rargs, a:mods)
   endif
   let args = gina#core#args#new(a:rargs)
