@@ -102,9 +102,10 @@ COMMAND						*gina-usage-command*
 
 gina provides a single command |:Gina| which takes at least one argument.
 
-When |:Gina| is executed with a |bang| modifier, it executes a corresponding
-git command asynchronously and echo the result. For example, when users
-execute ":Gina! status", it echos the current status of a git repository like
+When |:Gina| is executed with a |bang| modifier (|:Gina!|), it executes a
+corresponding git command asynchronously and echo the result.
+For example, when users execute ":Gina! status", it echos the current status
+of a git repository like
 >
 	:Gina! status
 	[gina] On branch master
@@ -113,6 +114,11 @@ execute ":Gina! status", it echos the current status of a git repository like
 	[gina] 
 	[gina] no changes added to commit (use "git add" and/or "git ...
 <
+When |:Gina| is executed with a double |bang| modifier (|:Gina!!|), it
+executes a corresponding git command under the shell by |:!| or |:terminal|.
+It is mainly for supporting an interactive features, such as "git add -p" or
+"git rebase -i". Note that the command is not executed asynchronously.
+
 When |:Gina| is executed without a |bang| modifier, it tries to find a
 corresponding gina command from a "gina#command#..." namespace and execute.
 If no corresponding command is found, it fallbacks to the above behavior,
@@ -286,13 +292,13 @@ If you are not satisfied with the functions above, use |autocmd|, |ftplugin|, or
 ACTION 						*gina-custom-action*
 
 Assume that you want to add a custom action alias for checking out a remote
-branch with tracking state ("branch:checkout:track" action) by "track".
+branch with tracking state ("commit:checkout:track" action) by "track".
 In this case, use |gina#custom#action#alias()| function to define a custom
 action alias for "gina-branch" buffer by
 >
-	" Alias 'track' to 'branch:checkout:track'
+	" Alias 'track' to 'commit:checkout:track'
 	call gina#custom#action#alias(
-	      \ 'branch', 'track', 'branch:checkout:track',
+	      \ 'branch', 'track', 'commit:checkout:track',
 	      \)
 <
 The function above only affect actions for "gina-branch" buffer. If you would
