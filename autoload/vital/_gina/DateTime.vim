@@ -22,6 +22,7 @@ function! s:_vital_loaded(V) abort
   let s:V = a:V
   let s:Prelude = s:V.import('Prelude')
   let s:Process = s:V.import('Process')
+  let s:Bitwise = s:V.import('Bitwise')
 
   let s:NUM_SECONDS = 60
   let s:NUM_MINUTES = 60
@@ -44,7 +45,7 @@ function! s:_vital_loaded(V) abort
     let key = 'HKLM\System\CurrentControlSet\Control\TimeZoneInformation'
     let regs = s:Process.system(printf('reg query "%s" /v Bias', key))
     let time = matchstr(regs, 'REG_DWORD\s*\zs0x\x\+')
-    let s:win_tz = empty(time) ? 0 : time / -s:NUM_MINUTES
+    let s:win_tz = empty(time) ? 0 : s:Bitwise.sign_extension(time) / -s:NUM_MINUTES
   endif
 
   " default values
