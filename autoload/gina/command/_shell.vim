@@ -3,6 +3,7 @@ function! gina#command#_shell#call(range, args, mods) abort
   let args = gina#process#build_raw_args(git, s:build_args(git, a:args))
   let cmdline = join(map(args, 's:shellescape(v:val)'))
   if has('nvim')
+    tabnew
     execute ':terminal' cmdline
     augroup gina_command__shell_internal
       autocmd! * <buffer>
