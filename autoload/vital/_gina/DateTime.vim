@@ -66,7 +66,7 @@ function! s:_vital_loaded(V) abort
 endfunction
 
 function! s:_vital_depends() abort
-  return ['Prelude', 'Process']
+  return ['Prelude', 'Process', 'Bitwise']
 endfunction
 
 " Creates a DateTime object with current time from system.
