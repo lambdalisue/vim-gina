@@ -4,6 +4,8 @@ let s:Git = vital#gina#import('Git')
 let s:Path = vital#gina#import('System.Filepath')
 let s:Store = vital#gina#import('System.Store')
 
+let s:SLUG = eval(s:Store.get_slug_expr())
+
 
 function! gina#component#status#staged() abort
   let git = gina#core#get()
@@ -39,14 +41,18 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:status_count(git) abort
-  let slug = eval(s:Store.get_slug_expr())
+function! s:get_store(git) abort
   let ref = get(s:Git.ref(a:git, 'HEAD'), 'path', 'HEAD')
   let store = s:Store.of([
         \ s:Git.resolve(a:git, 'index'),
         \ s:Git.resolve(a:git, ref),
         \])
-  let status_count = store.get(slug, {})
+  return store
+endfunction
+
+function! s:status_count(git) abort
+  let store = s:get_store(a:git)
+  let status_count = store.get(s:SLUG, {})
   if !empty(status_count)
     return status_count
   endif
@@ -78,7 +84,7 @@ function! s:status_count(git) abort
       endif
     endif
   endfor
-  call store.set(slug, status_count)
+  call store.set(s:SLUG, status_count)
   return status_count
 endfunction
 
@@ -101,3 +107,23 @@ function! s:preset_fancy() abort
   let conflicted = empty(conflicted) ? '' : ('‶' . conflicted)
   return join([staged, unstaged, conflicted])
 endfunction
+
+" NOTE:
+" Tracked files might be changed (unstaged) so remove cache when 'modified'
+" event has called.
+function! s:on_modified(...) abort
+  let git = gina#core#get()
+  if empty(git)
+    return
+  endif
+  let store = s:get_store(git)
+  call store.remove(s:SLUG)
+endfunction
+
+if !exists('s:subscribed')
+  let s:subscribed = 1
+  call gina#core#emitter#subscribe(
+        \ 'modified',
+        \ function('s:on_modified')
+        \)
+endif
