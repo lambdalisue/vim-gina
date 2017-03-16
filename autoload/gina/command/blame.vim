@@ -3,6 +3,22 @@ let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
+let s:ALLOWED_OPTIONS = [
+      \ '--opener=',
+      \ '--group1=',
+      \ '--group2=',
+      \ '--line=',
+      \ '--col=',
+      \ '--width=',
+      \ '--root',
+      \ '-L',
+      \ '--reverse',
+      \ '--encoding=',
+      \ '--contents=',
+      \ '-M',
+      \ '-C',
+      \ '-w',
+      \]
 
 
 function! gina#command#blame#call(range, args, mods) abort
@@ -12,6 +28,16 @@ function! gina#command#blame#call(range, args, mods) abort
   finally
     call gina#process#unregister(s:SCHEME, 1)
   endtry
+endfunction
+
+function! gina#command#blame#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead =~# '^--opener='
+    return gina#complete#common#opener(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead[0] ==# '-' || !empty(args.get(1))
+    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+  endif
+  return gina#complete#common#treeish(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 

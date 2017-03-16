@@ -1,4 +1,66 @@
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
+let s:ALLOWED_OPTIONS = [
+      \ '--opener=',
+      \ '--group=',
+      \ '--cached',
+      \ '--no-index',
+      \ '-p', '-u', '--patch',
+      \ '-s', '--no-patch',
+      \ '-U', '--unified=',
+      \ '--raw',
+      \ '--patch-with-raw',
+      \ '--minimal',
+      \ '--patience',
+      \ '--histogram',
+      \ '--diff-algorithm=',
+      \ '--stat',
+      \ '--stat-width=',
+      \ '--stat-count=',
+      \ '--numstat',
+      \ '--shortstat',
+      \ '--dirstat',
+      \ '--summary',
+      \ '--patch-with-stat',
+      \ '--name-only',
+      \ '--name-status',
+      \ '--submodule',
+      \ '--word-diff-regex=',
+      \ '--no-renames',
+      \ '--check',
+      \ '--full-index',
+      \ '--binary',
+      \ '--abbrev',
+      \ '-B', '--break-rewrites',
+      \ '-M', '--find-renames',
+      \ '-C', '--find-copies',
+      \ '--find-copies-header',
+      \ '-D', '--irreversible-delete',
+      \ '-l',
+      \ '--diff-filter=',
+      \ '-S',
+      \ '-G',
+      \ '--pickaxe-all',
+      \ '--pickaxe-regex',
+      \ '-O',
+      \ '-R',
+      \ '--relative',
+      \ '-a', '--text',
+      \ '--ignore-space-at-eol',
+      \ '-b', '--ignore-space-change',
+      \ '-w', '--ignore-all-space',
+      \ '--ignore-blank-lines',
+      \ '--inter-hunk-context=',
+      \ '-W', '--function-context',
+      \ '--ext-diff',
+      \ '--no-ext-diff',
+      \ '--textconv', '--no-textconv',
+      \ '--ignore-submodules',
+      \ '--src-prefix=',
+      \ '--dst-prefix=',
+      \ '--no-prefix',
+      \ '--line-prefix=',
+      \ '--ita-invisible-in-index',
+      \]
 
 
 function! gina#command#diff#call(range, args, mods) abort
@@ -23,6 +85,52 @@ function! gina#command#diff#call(range, args, mods) abort
         \   'args': [args],
         \ }
         \})
+endfunction
+
+function! gina#command#diff#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead =~# '^--opener='
+    return gina#complete#common#opener(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead =~# '^\%(--diff-algorithm=\)'
+    let leading = matchstr(a:arglead, '^--diff-algorithm=')
+    return gina#util#filter(a:arglead, map(
+          \ ['patience', 'minimal', 'histogram', 'myers'],
+          \ 'leading . v:val'
+          \))
+  elseif a:arglead =~# '^\%(--dirstat=\)'
+    let leading = matchstr(a:arglead, '^--dirstat=')
+    let dirstat = matchstr(a:arglead, '^--dirstat=\zs\%([^,]\+,\)*[^,]*')
+    let candidates = filter(
+          \ ['changes', 'lines', 'files', 'cumulative'],
+          \ 'dirstat !~# ''\<'' . v:val . ''\>''',
+          \)
+    return gina#util#filter(a:arglead, map(
+          \ candidates, 'leading . dirstat . v:val'
+          \))
+  elseif a:arglead =~# '^\%(--submodule=\)'
+    let leading = matchstr(a:arglead, '^--submodule=')
+    return gina#util#filter(a:arglead, map(
+          \ ['short', 'log', 'diff'],
+          \ 'leading . v:val'
+          \))
+  elseif a:arglead =~# '^\%(--diff-filter=\)'
+    let leading = matchstr(a:arglead, '^--diff-filter=[ACDMRTUXB]*')
+    return gina#util#filter(a:arglead, map(
+          \ split('ACDMRTUXB', '\zs'),
+          \ 'leading . v:val'
+          \))
+  elseif a:arglead =~# '^\%(--ignore-submodules=\)'
+    let leading = matchstr(a:arglead, '^--ignore-submodules=')
+    return gina#util#filter(a:arglead, map(
+          \ ['none', 'untracked', 'dirty', 'all'],
+          \ 'leading . v:val'
+          \))
+  elseif a:cmdline =~# '\s--\s'
+    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead[0] ==# '-'
+    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+  endif
+  return gina#complete#common#treeish(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 

@@ -24,6 +24,15 @@ function! gina#command#changes#call(range, args, mods) abort
         \})
 endfunction
 
+function! gina#command#changes#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:cmdline !~# '\s--\s'
+    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  elseif empty(args.get(1))
+    return gina#complete#range#any(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return []
+endfunction
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort

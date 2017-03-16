@@ -1,6 +1,12 @@
 let s:Path = vital#gina#import('System.Filepath')
 
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
+let s:ALLOWED_OPTIONS = [
+      \ '--opener=',
+      \ '--group=',
+      \ '--line=',
+      \ '--col=',
+      \]
 
 
 function! gina#command#edit#call(range, args, mods) abort
@@ -10,6 +16,16 @@ function! gina#command#edit#call(range, args, mods) abort
   finally
     call gina#process#unregister(s:SCHEME, 1)
   endtry
+endfunction
+
+function! gina#command#edit#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead =~# '^--opener='
+    return gina#complete#common#opener(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead[0] ==# '-' || !empty(args.get(1))
+    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+  endif
+  return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 

@@ -17,6 +17,11 @@ let s:FORMAT_MAP = {
       \ 'r1': 'rev1',
       \ 'r2': 'rev2',
       \}
+let s:ALLOWED_OPTIONS = [
+      \ '--scheme=',
+      \ '--exact',
+      \ '--yank',
+      \]
 
 
 function! gina#command#browse#call(range, args, mods) abort
@@ -26,6 +31,19 @@ function! gina#command#browse#call(range, args, mods) abort
   finally
     call gina#process#unregister(s:SCHEME, 1)
   endtry
+endfunction
+
+function! gina#command#browse#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead =~# '^--scheme='
+    return gina#util#filter(
+          \ a:arglead,
+          \ map(['_', 'root', 'blame', 'compare'], '''--scheme='' . v:val'),
+          \)
+  elseif a:arglead[0] ==# '-' || !empty(args.get(1))
+    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+  endif
+  return gina#complete#common#treeish(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 

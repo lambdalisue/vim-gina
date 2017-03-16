@@ -2,6 +2,40 @@ let s:String = vital#gina#import('Data.String')
 let s:Git = vital#gina#import('Git')
 
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
+let s:ALLOWED_OPTIONS = [
+      \ '--opener=',
+      \ '--group=',
+      \ '-a', '--all',
+      \ '-p', '--patch',
+      \ '-C', '--reuse-message=',
+      \ '-c', '--reedit-message=',
+      \ '--fixup=',
+      \ '--squash=',
+      \ '--reset-author',
+      \ '-F', '--file=',
+      \ '--author=',
+      \ '--date=',
+      \ '-m', '--message=',
+      \ '-t', '--template=',
+      \ '-s', '--signoff',
+      \ '-n', '--no-verify',
+      \ '--allow-empty',
+      \ '--allow-empty-message',
+      \ '--cleanup=',
+      \ '-e', '--edit',
+      \ '--no-edit',
+      \ '--amend',
+      \ '-i', '--include',
+      \ '-o', '--only',
+      \ '-u', '--untracked-files',
+      \ '-v', '--verbose',
+      \ '-q', '--quiet',
+      \ '--dry-run',
+      \ '--status',
+      \ '--no-status',
+      \ '-S', '--gpg-sign',
+      \ '--no-gpg-sign',
+      \]
 let s:messages = {}
 
 
@@ -24,6 +58,50 @@ function! gina#command#commit#call(range, args, mods) abort
         \   'args': [args],
         \ }
         \})
+endfunction
+
+function! gina#command#commit#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead =~# '^--opener='
+    return gina#complete#common#opener(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead =~# '^\%(-C\|--reuse-message=\)'
+    let leading = matchstr(a:arglead, '^\%(-C\|--reuse-message=\)')
+    let candidates = gina#complete#commit#any(
+          \ matchstr(a:arglead, '^' . leading . '\zs.*'),
+          \ a:cmdline, a:cursorpos,
+          \)
+    return map(candidates, 'leading . v:val')
+  elseif a:arglead =~# '^\%(-c\|--reedit-message=\)'
+    let leading = matchstr(a:arglead, '^\%(-c\|--reedit-message=\)')
+    let candidates = gina#complete#commit#any(
+          \ matchstr(a:arglead, '^' . leading . '\zs.*'),
+          \ a:cmdline, a:cursorpos,
+          \)
+    return map(candidates, 'leading . v:val')
+  elseif a:arglead =~# '^\%(--fixup=\|--squash=\)'
+    let leading = matchstr(a:arglead, '^\%(--fixup=\|--squash=\)')
+    let candidates = gina#complete#commit#any(
+          \ matchstr(a:arglead, '^' . leading . '\zs.*'),
+          \ a:cmdline, a:cursorpos,
+          \)
+    return map(candidates, 'leading . v:val')
+  elseif a:arglead =~# '^--cleanup='
+    return gina#util#filter(a:arglead, map(
+          \ ['strip', 'whitespace', 'verbatim', 'scissors', 'default'],
+          \ '''--cleanup='' . v:val'
+          \))
+  elseif a:arglead =~# '^\%(-u\|--untracked-files=\)'
+    let leading = matchstr(a:arglead, '^\%(-u\|--untracked-files=\)')
+    return gina#util#filter(a:arglead, map(
+          \ ['no', 'normal', 'all'],
+          \ 'leading . v:val'
+          \))
+  elseif a:cmdline !~# '\s--\s'
+    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead[0] ==# '-'
+    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+  endif
+  return gina#complete#filename#tracked(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 

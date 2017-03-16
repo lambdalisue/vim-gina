@@ -7,6 +7,14 @@ let s:REGION_PATTERN = printf('%s.\{-}%s\r\?\n\?',
       \ printf('%s[^\n]\{-}\%%(\n\|$\)', repeat('<', 7)),
       \ printf('%s[^\n]\{-}\%%(\n\|$\)', repeat('>', 7))
       \)
+let s:ALLOWED_OPTIONS = [
+      \ '--opener=',
+      \ '--group1=',
+      \ '--group2=',
+      \ '--group3=',
+      \ '--line=',
+      \ '--col=',
+      \]
 
 
 function! gina#command#chaperon#call(range, args, mods) abort
@@ -16,6 +24,16 @@ function! gina#command#chaperon#call(range, args, mods) abort
   finally
     call gina#process#unregister(s:SCHEME, 1)
   endtry
+endfunction
+
+function! gina#command#chaperon#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead =~# '^--opener='
+    return gina#complete#common#opener(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead[0] ==# '-' || !empty(args.get(1))
+    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+  endif
+  return gina#complete#filename#conflicted(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 

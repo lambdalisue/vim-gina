@@ -1,6 +1,40 @@
 let s:String = vital#gina#import('Data.String')
 
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
+let s:ALLOWED_OPTIONS = [
+      \ '--opener=',
+      \ '--group=',
+      \ '--cached',
+      \ '--no-index',
+      \ '--untracked',
+      \ '--no-exclude-standard',
+      \ '--exclude-standard',
+      \ '--recurse-submodules',
+      \ '-a', '--text',
+      \ '--textconv',
+      \ '--no-textconv',
+      \ '-i', '--ignore-case',
+      \ '-I',
+      \ '--max-depth=',
+      \ '-w', '--word-regexp',
+      \ '-v', '--invert-match',
+      \ '-E', '--extended-regexp',
+      \ '-G', '--basic-regexp',
+      \ '-P', '--perl-regexp',
+      \ '-F', '--fixed-strings',
+      \ '--break',
+      \ '--heading',
+      \ '-p', '--show-function',
+      \ '-C', '--context=',
+      \ '-A', '--after-context=',
+      \ '-B', '--before-context=',
+      \ '-W', '--function-context',
+      \ '--threads=',
+      \ '-f',
+      \ '-e',
+      \ '--and', '--or', '--not',
+      \ '--all-match',
+      \]
 
 
 function! gina#command#grep#call(range, args, mods) abort
@@ -22,6 +56,19 @@ function! gina#command#grep#call(range, args, mods) abort
         \   'args': [args],
         \ }
         \})
+endfunction
+
+function! gina#command#grep#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  echomsg a:cmdline
+  if a:arglead =~# '^--opener='
+    return gina#complete#common#opener(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:cmdline =~# '\s--\s'
+    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead[0] ==# '-' || !empty(args.get(2))
+    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+  endif
+  return gina#complete#commit#any(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 function! gina#command#grep#parse_record(...) abort
@@ -47,7 +94,11 @@ function! s:build_args(git, args) abort
     let args.params.pattern = pattern
   endif
 
+  call args.pop('-h')
+  call args.set('-H', 1)
   call args.set('--line-number', 1)
+  call args.set('--full-name', 1)
+
   call args.set('--color', 'always')
   call args.set(1, args.params.pattern)
   call args.set(2, args.params.rev)

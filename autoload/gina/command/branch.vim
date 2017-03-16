@@ -2,6 +2,29 @@ let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
 
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
+let s:ALLOWED_OPTIONS = [
+      \ '--opener=',
+      \ '--group=',
+      \ '-D', '-d', '--delete',
+      \ '-l', '--create-reflog',
+      \ '-f', '--force',
+      \ '-M', '-m', '--move',
+      \ '-i', '--ignore-case',
+      \ '-r', '--remotes',
+      \ '-a', '--all',
+      \ '--list',
+      \ '-v', '-vv', '--verbose',
+      \ '-q', '--quiet',
+      \ '-t', '--track', '--no-track',
+      \ '--set-upstream',
+      \ '-u', '--set-upstream-to=',
+      \ '--unset-upstream',
+      \ '--contains=',
+      \ '--merged=',
+      \ '--no-merged=',
+      \ '--sort=',
+      \ '--points-at=',
+      \]
 
 
 function! gina#command#branch#call(range, args, mods) abort
@@ -23,6 +46,35 @@ function! gina#command#branch#call(range, args, mods) abort
         \   'args': [args],
         \ }
         \})
+endfunction
+
+function! gina#command#branch#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead =~# '^--opener='
+    return gina#complete#common#opener(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead =~# '^\%(-u\|--set-upstream-to=\)'
+    let leading = matchstr(a:arglead, '^\%(-u\|--set-upstream-to=\)')
+    let candidates = gina#complete#commit#branch(
+          \ matchstr(a:arglead, '^' . leading . '\zs.*'),
+          \ a:cmdline,
+          \ a:cursorpos
+          \)
+    return map(candidates, 'leading . v:val')
+  elseif a:arglead =~# '^\%(--contains\|--merged\|--no-merged\|--points-at\)='
+    let leading = matchstr(
+          \ a:arglead,
+          \ '^\%(--contains\|--merged\|--no-merged\|--points-at\)='
+          \)
+    let candidates = gina#complete#commit#any(
+          \ matchstr(a:arglead, '^' . leading . '\zs.*'),
+          \ a:cmdline,
+          \ a:cursorpos
+          \)
+    return map(candidates, 'leading . v:val')
+  elseif a:arglead[0] ==# '-'
+    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+  endif
+  return gina#complete#commit#branch(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 
@@ -47,10 +99,8 @@ function! s:is_raw_command(args) abort
     return 1
   elseif a:args.get('-d|--delete') || a:args.get('-D')
     return 1
-  elseif a:args.get('--edit-description')
-    return 1
   endif
-  return 0
+  return !empty(a:args.get(1))
 endfunction
 
 function! s:init(args) abort
