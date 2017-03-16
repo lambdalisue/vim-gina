@@ -34,6 +34,9 @@ function! s:build_args(git, args) abort
   let args.params.partial = !empty(args.residual())
   let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev'))
 
+  " NOTE:
+  " --stat is more human friendly but --stat with long filename truncate the
+  " filename so could not be used.
   call args.set('--numstat', 1)
   call args.set(0, 'diff')
   call args.set(1, args.params.rev)
