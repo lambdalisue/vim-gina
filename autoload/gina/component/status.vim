@@ -1,0 +1,103 @@
+scriptencoding utf-8
+
+let s:Git = vital#gina#import('Git')
+let s:Path = vital#gina#import('System.Filepath')
+let s:Store = vital#gina#import('System.Store')
+
+
+function! gina#component#status#staged() abort
+  let git = gina#core#get()
+  if empty(git)
+    return ''
+  endif
+  let c = get(s:status_count(git), 'staged', 0)
+  return c == 0 ? '' : (c . '')
+endfunction
+
+function! gina#component#status#unstaged() abort
+  let git = gina#core#get()
+  if empty(git)
+    return ''
+  endif
+  let c = get(s:status_count(git), 'unstaged', 0)
+  return c == 0 ? '' : (c . '')
+endfunction
+
+function! gina#component#status#conflicted() abort
+  let git = gina#core#get()
+  if empty(git)
+    return ''
+  endif
+  let c = get(s:status_count(git), 'conflicted', 0)
+  return c == 0 ? '' : (c . '')
+endfunction
+
+function! gina#component#status#preset(...) abort
+  let kind = get(a:000, 0, 'ascii')
+  return call('s:preset_' . kind, [])
+endfunction
+
+
+" Private --------------------------------------------------------------------
+function! s:status_count(git) abort
+  let slug = eval(s:Store.get_slug_expr())
+  let ref = get(s:Git.ref(a:git, 'HEAD'), 'path', 'HEAD')
+  let store = s:Store.of([
+        \ s:Git.resolve(a:git, 'index'),
+        \ s:Git.resolve(a:git, ref),
+        \])
+  let status_count = store.get(slug, {})
+  if !empty(status_count)
+    return status_count
+  endif
+  let result = gina#process#call(a:git, [
+        \ 'status',
+        \ '--porcelain',
+        \ '--ignore-submodules',
+        \])
+  if result.status
+    return {}
+  endif
+  let status_count = {
+        \ 'staged': 0,
+        \ 'unstaged': 0,
+        \ 'conflicted': 0,
+        \}
+  for record in result.stdout
+    let sign = record[:1]
+    if sign =~# '^\%(DD\|AU\|UD\|UA\|DU\|AA\|UU\)$'
+      let status_count.conflicted += 1
+    elseif sign ==# '??' || sign ==# '!!'
+      continue
+    else
+      if sign =~# '^\S.$'
+        let status_count.staged += 1
+      endif
+      if sign =~# '^.\S$'
+        let status_count.unstaged += 1
+      endif
+    endif
+  endfor
+  call store.set(slug, status_count)
+  return status_count
+endfunction
+
+function! s:preset_ascii() abort
+  let staged = gina#component#status#staged()
+  let unstaged = gina#component#status#unstaged()
+  let conflicted = gina#component#status#conflicted()
+  let staged = empty(staged) ? '' : ('+' . staged)
+  let unstaged = empty(unstaged) ? '' : ('-' . unstaged)
+  let conflicted = empty(conflicted) ? '' : ('"' . conflicted)
+  return join([staged, unstaged, conflicted])
+endfunction
+
+function! s:preset_fancy() abort
+  let staged = gina#component#status#staged()
+  let unstaged = gina#component#status#unstaged()
+  let conflicted = gina#component#status#conflicted()
+  let staged = empty(staged) ? '' : ('⁺' . staged)
+  let unstaged = empty(unstaged) ? '' : ('⁻' . unstaged)
+  let conflicted = empty(conflicted) ? '' : ('‶' . conflicted)
+  return join([staged, unstaged, conflicted])
+endfunction
