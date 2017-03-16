@@ -1,6 +1,6 @@
 gina
 ==============================================================================
-[![Gitter](https://img.shields.io/gitter/room/lambdalisue/gina-vim.svg)](https://gitter.im/gina-vim)
+[![Gitter](https://img.shields.io/gitter/room/lambdalisue/gina-vim.svg?style=flat-square)](https://gitter.im/gina-vim)
 [![Travis CI](https://img.shields.io/travis/lambdalisue/gina.vim/master.svg?style=flat-square&label=Travis%20CI)](https://travis-ci.org/lambdalisue/gina.vim)
 [![AppVeyor](https://img.shields.io/appveyor/ci/lambdalisue/gina-vim/master.svg?style=flat-square&label=AppVeyor)](https://ci.appveyor.com/project/lambdalisue/gina-vim/branch/master)
 ![Version 0.2.1](https://img.shields.io/badge/version-0.2.1-yellow.svg?style=flat-square)
