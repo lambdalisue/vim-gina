@@ -92,9 +92,9 @@ function! s:preset_ascii() abort
   let staged = gina#component#status#staged()
   let unstaged = gina#component#status#unstaged()
   let conflicted = gina#component#status#conflicted()
-  let staged = empty(staged) ? '' : ('+' . staged)
-  let unstaged = empty(unstaged) ? '' : ('-' . unstaged)
-  let conflicted = empty(conflicted) ? '' : ('"' . conflicted)
+  let staged = empty(staged) ? '' : ('<' . staged)
+  let unstaged = empty(unstaged) ? '' : ('>' . unstaged)
+  let conflicted = empty(conflicted) ? '' : ('x' . conflicted)
   return join([staged, unstaged, conflicted])
 endfunction
 
@@ -102,9 +102,9 @@ function! s:preset_fancy() abort
   let staged = gina#component#status#staged()
   let unstaged = gina#component#status#unstaged()
   let conflicted = gina#component#status#conflicted()
-  let staged = empty(staged) ? '' : ('⁺' . staged)
-  let unstaged = empty(unstaged) ? '' : ('⁻' . unstaged)
-  let conflicted = empty(conflicted) ? '' : ('‶' . conflicted)
+  let staged = empty(staged) ? '' : ('«' . staged)
+  let unstaged = empty(unstaged) ? '' : ('»' . unstaged)
+  let conflicted = empty(conflicted) ? '' : ('×' . conflicted)
   return join([staged, unstaged, conflicted])
 endfunction
 
