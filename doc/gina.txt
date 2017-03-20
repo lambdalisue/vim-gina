@@ -14,6 +14,7 @@ INTRODUCTION			|gina-introduction|
 USAGE				|gina-usage|
   COMMAND			  |gina-usage-command|
   ACTION			  |gina-usage-action|
+  COMPONENT			  |gina-usage-component|
 CUSTOM				|gina-custom|
   ACTION			  |gina-custom-action|
   MAPPING			  |gina-custom-mapping|
@@ -250,6 +251,66 @@ To customize the mark, users can use the followings
 
 |g:gina#action#mark_sign_text|
 |hl-GinaActionMarkSelected|
+
+-----------------------------------------------------------------------------
+COMPONENT					*gina-usage-component*
+
+Gina provides component functions which return a cached string for
+|statusline| and/or |tabline|.
+
+For example, if users want to show an information about the git repository, 
+they can use the following code to show it on a |statusline|.
+>
+	set statusline=...%{gina#component#repo#preset()}...
+<
+Or if users prefer to use non ASCII characters, specify "fancy" to the
+first attribute like:
+>
+	set statusline=...%{gina#component#repo#preset('fancy')}...
+<
+Gina provides the following preset component functions
+
+	function				description~
+	|gina#component#repo#preset()|		A general information.
+	|gina#component#status#preset()|	A current git status.
+	|gina#component#traffic#preset()|	A traffic information.
+
+If users want to control the looks of the component, they can use a raw
+component functions like
+>
+	set statusline=...%{MyGitStatus()}...
+
+	function MyGitStatus() abort
+	  let staged = gina#component#status#staged()
+	  let unstaged = gina#component#status#unstaged()
+	  let conflicted = gina#component#status#conflicted()
+	  return printf(
+	        \ 's: %s, u: %s, c: %s',
+	        \ staged,
+	        \ unstaged,
+	        \ conflicted,
+	        \)
+	endfunction
+<
+Gina provides the following raw component functions
+
+	function				description~
+	|gina#component#repo#name()|		A name of the current git
+						repository. Namely, this is a
+						directory name of the git
+						repository top.
+	|gina#component#repo#branch()|		A name of the current branch.
+	|gina#component#repo#track()|		A name of the current tracking
+						branch.
+	|gina#component#status#staged()|	A number of staged files.
+	|gina#component#status#unstaged()|	A number of unstaged files.
+	|gina#component#status#conflicted()|	A number of conflicted files.
+	|gina#component#traffic#ahead()|	A number of commits ahead of
+						the tracking branch.
+	|gina#component#traffic#behind()|	A number of commits behind of
+						the tracking branch.
+
+Note that the values are cached to improve the performance.
 
 
 =============================================================================
@@ -1698,6 +1759,95 @@ gina#custom#command#option({scheme}, {option} [, {value}])
 	See also~
 	|gina-custom-command|
 	|gina-custom-command-alias|
+
+					*gina#component#repo#preset()*
+gina#component#repo#preset([{kind}])
+	Return a cached repository information which includes a repository
+	name, a current branch name, and a tracking branch name.
+>
+	" With a tracking branch
+	echo gina#component#repo#preset()
+	" -> 'gina.vim [master -> origin/master]'
+
+	echo gina#component#repo#preset('fancy')
+	" -> 'gina.vim [master → origin/master]'
+
+	" Without a tracking branch
+	echo gina#component#repo#preset()
+	" -> 'gina.vim [master]'
+
+	echo gina#component#repo#preset('fancy')
+	" -> 'gina.vim [master]'
+<
+	It uses the following raw component functions internally.
+	|gina#component#repo#name()|
+	|gina#component#repo#branch()|
+	|gina#component#repo#track()|
+ 
+					*gina#component#repo#name()*
+gina#component#repo#name()
+	Return a name of the current repository, namely it is a directory name
+	of the repository.
+
+					*gina#component#repo#branch()*
+gina#component#repo#branch()
+	Return a cached name of the current branch.
+
+					*gina#component#repo#track()*
+gina#component#repo#track()
+	Return a cached name of the tracking branch of the current branch.
+
+					*gina#component#status#preset()*
+gina#component#status#preset([{kind}])
+	Return a cached repository status which includes a number of the
+	staged, unstaged, and conflicted files.
+>
+	echo gina#component#status#preset()
+	" -> '<2 >4 x3'
+
+	echo gina#component#status#preset('fancy')
+	" -> '«2 »4 ×3'
+<
+	It uses the following raw component functions internally.
+	|gina#component#status#staged()|
+	|gina#component#status#unstaged()|
+	|gina#component#status#conflicted()|
+
+					*gina#component#status#staged()*
+gina#component#status#staged()
+	Return a cached number of staged files.
+
+					*gina#component#status#unstaged()*
+gina#component#status#unstaged()
+	Return a cached number of unstaged files.
+
+					*gina#component#status#conflicted()*
+gina#component#status#conflicted()
+	Return a cached number of conflicted files.
+
+					*gina#component#traffic#preset()*
+gina#component#traffic#preset([{kind}])
+	Return a cached traffic information between a current branch and a
+	current tracking branch.
+>
+	echo gina#component#traffic#preset()
+	" -> '^2 v4'
+
+	echo gina#component#traffic#preset('fancy')
+	" -> '↑2 ↓4'
+<
+	It uses the following raw component functions internally.
+	|gina#component#traffic#ahead()|
+	|gina#component#traffic#behind()|
+
+					*gina#component#traffic#ahead()*
+gina#component#traffic#ahead()
+	Return a cached number of commits ahead of the current tracking
+	branch.
+					*gina#component#traffic#behind()*
+gina#component#traffic#behind()
+	Return a cached number of commits behind of the current tracking
+	branch.
 
 					*gina#custom#mapping#map()*
 					*gina#custom#mapping#nmap()*
