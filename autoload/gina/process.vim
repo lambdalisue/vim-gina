@@ -132,6 +132,6 @@ endfunction
 
 
 call gina#config(expand('<sfile>'), {
-      \ 'command': 'git --no-pager -c core.editor=false',
+      \ 'command': 'git --no-pager -c core.editor=false -c color.status=always',
       \ 'updatetime': 100,
       \})
