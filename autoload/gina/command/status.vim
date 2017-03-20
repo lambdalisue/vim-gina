@@ -1,6 +1,11 @@
 let s:Path = vital#gina#import('System.Filepath')
+let s:String = vital#gina#import('Data.String')
 
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
+let s:ALLOWED_OPTIONS = [
+      \ '--opener=',
+      \ '--group=',
+      \]
 
 
 function! gina#command#status#call(range, args, mods) abort
@@ -23,6 +28,16 @@ function! gina#command#status#call(range, args, mods) abort
         \})
 endfunction
 
+function! gina#command#status#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead =~# '^--opener='
+    return gina#complete#common#opener(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead[0] ==# '-' || !empty(args.get(1))
+    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+  endif
+  return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
@@ -30,7 +45,7 @@ function! s:build_args(git, args) abort
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.partial = !empty(args.residual())
-  call args.set('--porcelain', 1)
+  call args.set('--short', 1)
   return args.lock()
 endfunction
 
@@ -90,15 +105,17 @@ function! s:get_candidates(fline, lline) abort
 endfunction
 
 function! s:parse_record(record, residual) abort
+  let record = s:String.remove_ansi_sequences(a:record)
   let m = matchlist(
-        \ a:record,
+        \ record,
         \ '^\(..\) \("[^"]\{-}"\|.\{-}\)\%( -> \("[^"]\{-}"\|[^ ]\+\)\)\?$'
         \)
-  if empty(m)
+  if empty(m) || m[1] ==# '##'
     return {}
   endif
   let candidate = {
-        \ 'word': a:record,
+        \ 'word': record,
+        \ 'abbr': a:record,
         \ 'sign': m[1],
         \ 'residual': a:residual,
         \}
