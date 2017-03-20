@@ -5,7 +5,15 @@ let s:Path = vital#gina#import('System.Filepath')
 let s:Store = vital#gina#import('System.Store')
 
 
-function! gina#component#branch#local() abort
+function! gina#component#repo#name() abort
+  let git = gina#core#get()
+  if empty(git)
+    return ''
+  endif
+  return fnamemodify(git.worktree, ':t')
+endfunction
+
+function! gina#component#repo#branch() abort
   let git = gina#core#get()
   if empty(git)
     return ''
@@ -32,7 +40,7 @@ function! gina#component#branch#local() abort
   return branch
 endfunction
 
-function! gina#component#branch#track() abort
+function! gina#component#repo#track() abort
   let git = gina#core#get()
   if empty(git)
     return ''
@@ -60,7 +68,7 @@ function! gina#component#branch#track() abort
   return branch
 endfunction
 
-function! gina#component#branch#preset(...) abort
+function! gina#component#repo#preset(...) abort
   let kind = get(a:000, 0, 'ascii')
   return call('s:preset_' . kind, [])
 endfunction
@@ -68,19 +76,21 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:preset_ascii() abort
-  let local = gina#component#branch#local()
-  let track = gina#component#branch#track()
+  let name = gina#component#repo#name()
+  let branch = gina#component#repo#branch()
+  let track = gina#component#repo#track()
   if empty(track)
-    return local
+    return printf('%s [%s]', name, branch)
   endif
-  return printf('%s -> %s', local, track)
+  return printf('%s [%s -> %s]', name, branch, track)
 endfunction
 
 function! s:preset_fancy() abort
-  let local = gina#component#branch#local()
-  let track = gina#component#branch#track()
+  let name = gina#component#repo#name()
+  let branch = gina#component#repo#branch()
+  let track = gina#component#repo#track()
   if empty(track)
-    return local
+    return printf('%s [%s]', name, branch)
   endif
-  return printf('%s → %s', local, track)
+  return printf('%s [%s → %s]', name, branch, track)
 endfunction
