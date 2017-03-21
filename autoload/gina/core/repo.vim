@@ -45,12 +45,5 @@ function! s:extend_config(config, record) abort
   if empty(m)
     return
   endif
-  let keys = filter(split(m[1], '\.'), '!empty(v:val)')
-  let value = m[2]
-  let cursor = a:config
-  for key in keys[:-2]
-    let cursor[key] = get(cursor, key, {})
-    let cursor = cursor[key]
-  endfor
-  let cursor[keys[-1]] = value
+  let a:config[tolower(m[1])] = m[2]
 endfunction

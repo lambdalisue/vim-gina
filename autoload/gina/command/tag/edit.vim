@@ -108,7 +108,7 @@ endfunction
 
 function! s:get_tagmsg_template(git, args) abort
   let config = gina#core#repo#config(a:git)
-  let comment = get(get(config, 'core', {}), 'commentchar', '#')
+  let comment = get(config, 'core.commentchar', '#')
   let tagname = a:args.get(1)
   if a:args.get('--cleanup', 'strip') ==# 'strip'
     let template = [
@@ -136,7 +136,6 @@ function! s:get_tagmsg_template(git, args) abort
 endfunction
 
 function! s:apply_tagmsg(git, args) abort
-  let config = gina#core#repo#config(a:git)
   let args = a:args.clone()
   let content = getline(1, '$')
   let tempfile = s:Git.resolve(a:git, 'TAG_EDITMSG')
