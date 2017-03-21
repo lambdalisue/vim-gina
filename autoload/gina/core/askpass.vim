@@ -45,7 +45,7 @@ endif
 
 function! s:askpass(git) abort
   let config = gina#core#repo#config(a:git)
-  let askpass = get(get(config, 'core', {}), 'askpass')
+  let askpass = get(config, 'core.askpass', '')
   if !empty(g:gina#core#askpass#askpass_program)
     return g:gina#core#askpas#askpass_program
   elseif g:gina#core#askpass#force_internal

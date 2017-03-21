@@ -157,7 +157,7 @@ function! s:get_cleanup(git, args) abort
   if a:args.get('--cleanup')
     return a:args.get('--cleanup')
   endif
-  return get(get(config, 'commit', {}), 'cleanup', 'strip')
+  return get(config, 'commit.cleanup', 'strip')
 endfunction
 
 function! s:get_commitmsg(git, args) abort
@@ -241,7 +241,6 @@ function! s:set_commitmsg(git, args, content) abort
 endfunction
 
 function! s:commit_commitmsg(git, args) abort
-  let config = gina#core#repo#config(a:git)
   let args = a:args.clone()
   let content = s:get_cached_commitmsg(a:git, args)
   let tempfile = tempname()
