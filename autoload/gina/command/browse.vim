@@ -102,22 +102,15 @@ endfunction
 function! s:get_remote_url(git, commit1, commit2) abort
   let config = gina#core#repo#config(a:git)
   " Find a corresponding 'remote'
-  let candidates = [a:commit1, a:commit2, 'HEAD']
+  let candidates = [a:commit1, a:commit2, 'master']
   for candidate in candidates
-    let remote = get(
-          \ get(config, 'remote', {}),
-          \ get(get(get(config, 'branch', {}), candidate, {}), 'remote', ''),
-          \ {}
-          \)
-    if !empty(remote)
+    let remote_name = get(config, printf('branch.%s.remote', candidate), '')
+    if !empty(remote_name)
       break
     endif
   endfor
-  " Use a 'remote' of 'origin' if no 'remote' is found
-  let remote = empty(remote)
-        \ ? get(get(config, 'remote', {}), 'origin', {})
-        \ : remote
-  return get(remote, 'url', '')
+  let remote_name = empty(remote_name) ? 'origin' : remote_name
+  return get(config, printf('remote.%s.url', remote_name), '')
 endfunction
 
 function! s:build_base_url(remote_url, scheme) abort

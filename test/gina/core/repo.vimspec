@@ -19,9 +19,8 @@ Describe gina#core#repo
 
       let git = gina#core#get()
       let config = gina#core#repo#config(git)
-      Assert KeyExists(config, 'core')
-      Assert KeyExists(config.core, 'commentchar')
-      Assert Equals(config.core.commentchar, '$')
+      Assert KeyExists(config, 'core.commentchar')
+      Assert Equals(config['core.commentchar'], '$')
     End
   End
 End
