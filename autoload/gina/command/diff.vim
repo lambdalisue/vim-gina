@@ -63,7 +63,8 @@ function! s:init(args) abort
 
   augroup gina_command_diff_internal
     autocmd! * <buffer>
-    autocmd BufReadCmd <buffer> call s:BufReadCmd()
+    autocmd BufReadCmd <buffer>
+          \ call gina#core#exception#call(function('s:BufReadCmd'), [])
     autocmd BufWinEnter <buffer> setlocal buflisted
     autocmd BufWinLeave <buffer> setlocal nobuflisted
   augroup END

@@ -132,7 +132,8 @@ function! s:init(args) abort
     autocmd VimResized <buffer> call s:redraw_content_if_necessary()
     autocmd WinLeave <buffer> call s:WinLeave()
     autocmd WinEnter <buffer> call s:WinEnter()
-    autocmd BufReadCmd <buffer> call s:BufReadCmd()
+    autocmd BufReadCmd <buffer>
+          \ call gina#core#exception#call(function('s:BufReadCmd'), [])
   augroup END
 endfunction
 
