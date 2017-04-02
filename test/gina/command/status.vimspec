@@ -32,7 +32,7 @@ Describe gina#command#status
       Assert Equals(winnr('$'), 2)
       Assert Equals(bufname('%'), printf('gina://%s:status', slit1.refname))
       Assert Equals(getline(1, '$'), [
-            \ 'MM A/foo.txt'
+            \ '[32mM[m[31mM[m A/foo.txt'
             \])
     End
 
@@ -42,7 +42,7 @@ Describe gina#command#status
       Assert Equals(winnr('$'), 2)
       Assert Equals(bufname('%'), printf('gina://%s:status:--', slit1.refname))
       Assert Equals(getline(1, '$'), [
-            \ 'MM A/foo.txt'
+            \ '[32mM[m[31mM[m A/foo.txt'
             \])
     End
 

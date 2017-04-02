@@ -3,6 +3,7 @@ let s:String = vital#gina#import('Data.String')
 
 let s:t_dict = type({})
 let s:no_askpass_commands = [
+      \ 'init',
       \ 'config',
       \]
 let s:runnings = {}

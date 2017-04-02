@@ -1203,6 +1203,8 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 		An initial line number
 	--width={width}
 		Width used for the navigation buffer
+	--use-author-instead
+		Use an author name instead of a commit summary.
 
 	See also~
 	|gina-buffer-blame|
