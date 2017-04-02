@@ -3,7 +3,11 @@ let s:String = vital#gina#import('Data.String')
 let s:N_COLORS = 16
 
 
-function! gina#command#blame#formatter#new(width, current, revisions) abort
+function! gina#command#blame#formatter#new(width, current, revisions, ...) abort
+  let options = extend({
+        \ 'use_author_instead': 0,
+        \}, get(a:000, 0, {})
+        \)
   let formatter = deepcopy(s:formatter)
   let formatter._width = a:width
   let formatter._current = empty(a:current) ? 'X' : a:current
@@ -11,6 +15,7 @@ function! gina#command#blame#formatter#new(width, current, revisions) abort
   let formatter._previous = 1
   let formatter._timestamper = gina#command#blame#timestamper#new()
   let formatter._cache = {}
+  let formatter._use_author_instead = options.use_author_instead
   return formatter
 endfunction
 
@@ -67,10 +72,17 @@ function! s:formatter._format_line(chunk, revision, revinfo) abort
         \)
   let suffix = join([timestamp, mark . a:revinfo.index])
   let width = self._width - strwidth(suffix) - 1
-  let summary = s:String.truncate_skipping(
-        \ a:revinfo.summary, width, 3,
-        \ g:gina#command#blame#formatter#separator,
-        \)
+  if self._use_author_instead
+    let summary = s:String.truncate_skipping(
+          \ a:revinfo.author, width, 3,
+          \ g:gina#command#blame#formatter#separator,
+          \)
+  else
+    let summary = s:String.truncate_skipping(
+          \ a:revinfo.summary, width, 3,
+          \ g:gina#command#blame#formatter#separator,
+          \)
+  endif
   let summary = s:String.pad_right(summary, width)
   let self._cache[a:revision] = join([summary, suffix])
   return self._cache[a:revision]

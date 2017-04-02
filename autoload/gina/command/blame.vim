@@ -24,6 +24,7 @@ function! s:build_args(git, args) abort
         \]
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.width = args.pop('--width', 35)
+  let args.params.use_author_instead = args.pop('--use-author-instead', 0)
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
@@ -187,6 +188,9 @@ function! s:redraw_content() abort
         \ winwidth(0),
         \ args.params.rev,
         \ revisions,
+        \ {
+        \   'use_author_instead': args.params.use_author_instead,
+        \ }
         \)
   if exists('b:gina_blame_writer')
     call b:gina_blame_writer.kill()
