@@ -66,7 +66,7 @@ function! gina#core#args#extend_treeish(git, args, treeish) abort
     " Guess a path from the current buffer name if necessary
     " and make sure that the path is a relative path from rep root
     if path isnot# v:null
-      let path = empty(path) ? gina#core#path#expand('%') : path
+      let path = empty(path) ? gina#core#path#expand('%:p') : path
       let path = gina#core#repo#relpath(a:git, path)
     endif
   endif
