@@ -118,5 +118,25 @@ Describe gina#command#qrep
             \ },
             \])
     End
+
+    It might be called with ! (bang)
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      let orignal_cursor_position = getcurpos()
+      GinaSync qrep! a
+      Assert Equals(getcurpos(), orignal_cursor_position)
+    End
+
+    It might be called without ! (bang)
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync qrep a
+      let cursor_position = getcurpos()
+      let qf_entry = getqflist()[0]
+      call themis#log('Cursor position: '.string(cursor_position))
+      call themis#log('Quickfix entry: '.string(qf_entry))
+      call themis#log('Real bufnr: '.string(bufnr('%')))
+      Assert Equals(cursor_position[0], qf_entry['bufnr'])
+      Assert Equals(cursor_position[1], qf_entry['lnum'])
+      Assert Equals(cursor_position[2], qf_entry['col'])
+    End
   End
 End
