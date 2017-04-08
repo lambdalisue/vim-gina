@@ -30,7 +30,7 @@ function! gina#core#args#new(rargs) abort
   endif
   " Assig global params
   let args.params = {}
-  let args.params.scheme = args.get(0, '')
+  let args.params.scheme = substitute(args.get(0, ''), '!$', '', '')
   let cmd = args.pop('^+')
   let cmdarg = []
   while !empty(cmd)

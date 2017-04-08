@@ -118,5 +118,24 @@ Describe gina#command#qrep
             \ },
             \])
     End
+
+    It might be called with ! (bang)
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      let original_cursor_position = getcurpos()
+      let original_buffer = bufnr('%')
+      GinaSync qrep! a
+      Assert Equals(getcurpos(), original_cursor_position)
+      Assert Equals(bufnr('%'), original_buffer)
+    End
+
+    It might be called without ! (bang)
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync qrep a
+      let cursor_position = getcurpos()
+      let qf_entry = getqflist()[0]
+      Assert Equals(bufnr('%'), qf_entry['bufnr'])
+      Assert Equals(cursor_position[1], qf_entry['lnum'])
+      Assert Equals(cursor_position[2], qf_entry['col'])
+    End
   End
 End
