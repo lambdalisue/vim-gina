@@ -2,32 +2,10 @@ let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
 
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
-let s:ALLOWED_OPTIONS = [
-      \ '--opener=',
-      \ '--group=',
-      \ '-D', '-d', '--delete',
-      \ '-l', '--create-reflog',
-      \ '-f', '--force',
-      \ '-M', '-m', '--move',
-      \ '-i', '--ignore-case',
-      \ '-r', '--remotes',
-      \ '-a', '--all',
-      \ '--list',
-      \ '-v', '-vv', '--verbose',
-      \ '-q', '--quiet',
-      \ '-t', '--track', '--no-track',
-      \ '--set-upstream',
-      \ '-u', '--set-upstream-to=',
-      \ '--unset-upstream',
-      \ '--contains=',
-      \ '--merged=',
-      \ '--no-merged=',
-      \ '--sort=',
-      \ '--points-at=',
-      \]
 
 
 function! gina#command#branch#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
@@ -50,35 +28,120 @@ endfunction
 
 function! gina#command#branch#complete(arglead, cmdline, cursorpos) abort
   let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
-  if a:arglead =~# '^--opener='
-    return gina#complete#common#opener(a:arglead, a:cmdline, a:cursorpos)
-  elseif a:arglead =~# '^\%(-u\|--set-upstream-to=\)'
-    let leading = matchstr(a:arglead, '^\%(-u\|--set-upstream-to=\)')
-    let candidates = gina#complete#commit#branch(
-          \ matchstr(a:arglead, '^' . leading . '\zs.*'),
-          \ a:cmdline,
-          \ a:cursorpos
-          \)
-    return map(candidates, 'leading . v:val')
-  elseif a:arglead =~# '^\%(--contains\|--merged\|--no-merged\|--points-at\)='
-    let leading = matchstr(
-          \ a:arglead,
-          \ '^\%(--contains\|--merged\|--no-merged\|--points-at\)='
-          \)
-    let candidates = gina#complete#commit#any(
-          \ matchstr(a:arglead, '^' . leading . '\zs.*'),
-          \ a:cmdline,
-          \ a:cursorpos
-          \)
-    return map(candidates, 'leading . v:val')
-  elseif a:arglead[0] ==# '-'
-    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+  if a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
   endif
   return gina#complete#commit#branch(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  if exists('s:options') && !g:gina#develop
+    return s:options
+  endif
+  let s:options = gina#core#options#new()
+  call s:options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call s:options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call s:options.define(
+        \ '--group=',
+        \ 'A window group name.',
+        \)
+  call s:options.define(
+        \ '-d|--delete',
+        \ 'Delete a branch.',
+        \)
+  call s:options.define(
+        \ '-D',
+        \ 'Shortcut for --delete --force.',
+        \)
+  call s:options.define(
+        \ '-l|--create-reflog',
+        \ 'Create the branch''s reflog.',
+        \)
+  call s:options.define(
+        \ '-f|--force',
+        \ 'Operate forcedly.',
+        \)
+  call s:options.define(
+        \ '-m|--move',
+        \ 'Move/rename a branch and the corresponding reflog.',
+        \)
+  call s:options.define(
+        \ '-M',
+        \ 'Shortcut for --move --force.',
+        \)
+  call s:options.define(
+        \ '-i|--ignore-case',
+        \ 'Sorting and filtering branches are case insensitive.',
+        \)
+  call s:options.define(
+        \ '-r|--remotes',
+        \ 'List or delete (if used with -d) the remote-tracking branches.',
+        \)
+  call s:options.define(
+        \ '-a|--all',
+        \ 'List both remote-tracking branches and local branches.',
+        \)
+  call s:options.define(
+        \ '--list',
+        \ 'Activate the list mode. Mainly for <pattern> match.',
+        \)
+  call s:options.define(
+        \ '-v|--verbose',
+        \ 'Show sha1 and commit subject line for each head.'
+        \)
+  call s:options.define(
+        \ '-q|--quiet',
+        \ 'Be more quiet when creating or deleting a branch.',
+        \)
+  call s:options.define(
+        \ '-t|--track',
+        \ 'Set up a branch.<name>.remote and branch.<name>.merge config.',
+        \)
+  call s:options.define(
+        \ '--no-track',
+        \ 'Do not set up "upstream" config.',
+        \)
+  call s:options.define(
+        \ '--set-upstream',
+        \ 'Set up a "upstream" as like --track for non existing branch.',
+        \)
+  call s:options.define(
+        \ '-u|--set-upstream-to=',
+        \ 'Set up "upstream" to <upstream>.',
+        \ function('gina#complete#commit#branch'),
+        \)
+  call s:options.define(
+        \ '--unset-upstream',
+        \ 'Remove the upstream information.',
+        \)
+  call s:options.define(
+        \ '--contains=',
+        \ 'Only list branches which contain the specified commit.',
+        \ function('gina#complete#commit#any')
+        \)
+  call s:options.define(
+        \ '--merged=',
+        \ 'Only list branches whose tips are reachable from the specified commit.',
+        \ function('gina#complete#commit#any')
+        \)
+  call s:options.define(
+        \ '--no-merged=',
+        \ 'Only list branches whose tips are not reachable from the specified commit.',
+        \ function('gina#complete#commit#any')
+        \)
+  return s:options
+endfunction
+
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
