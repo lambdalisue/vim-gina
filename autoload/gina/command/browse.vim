@@ -17,14 +17,10 @@ let s:FORMAT_MAP = {
       \ 'r1': 'rev1',
       \ 'r2': 'rev2',
       \}
-let s:ALLOWED_OPTIONS = [
-      \ '--scheme=',
-      \ '--exact',
-      \ '--yank',
-      \]
 
 
 function! gina#command#browse#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   call gina#process#register(s:SCHEME, 1)
   try
     call s:call(a:range, a:args, a:mods)
@@ -35,19 +31,40 @@ endfunction
 
 function! gina#command#browse#complete(arglead, cmdline, cursorpos) abort
   let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
-  if a:arglead =~# '^--scheme='
-    return gina#util#filter(
-          \ a:arglead,
-          \ map(['_', 'root', 'blame', 'compare'], '''--scheme='' . v:val'),
-          \)
-  elseif a:arglead[0] ==# '-' || !empty(args.get(1))
-    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+  if a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
   endif
   return gina#complete#common#treeish(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  if exists('s:options') && !g:gina#develop
+    return s:options
+  endif
+  let s:options = gina#core#options#new()
+  call s:options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call s:options.define(
+        \ '--scheme=',
+        \ 'Specify a URL scheme to open.',
+        \ ['_', 'root', 'blame', 'compare'],
+        \)
+  call s:options.define(
+        \ '--exact',
+        \ 'Use a sha1 instead of a branch name.',
+        \)
+  call s:options.define(
+        \ '--yank',
+        \ 'Yank a URL instead of opening.',
+        \)
+  return s:options
+endfunction
+
 function! s:build_args(git, args, range) abort
   let args = a:args.clone()
   let args.params.yank = args.pop('--yank')
