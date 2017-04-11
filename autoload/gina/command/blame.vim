@@ -61,6 +61,8 @@ function! s:call(range, args, mods) abort
     autocmd WinLeave <buffer> call s:WinLeave()
     autocmd WinEnter <buffer> call s:WinEnter()
   augroup END
+  nnoremap <buffer><silent> <Plug>(gina-blame-exit)
+        \ :<C-u>call <SID>exit_from_entire_blame()<CR>
   " Navi
   let bufname = gina#core#buffer#bufname(git, 'blame', {
         \ 'treeish': args.params.treeish,
@@ -125,6 +127,8 @@ function! s:init(args) abort
         \ :<C-u>call <SID>redraw_content()<CR>
   nnoremap <buffer><silent> <Plug>(gina-blame-C-L)
         \ :<C-u>call <SID>redraw_content()<CR>:execute "normal! \<C-L>"<CR>
+  nnoremap <buffer><silent> <Plug>(gina-blame-exit)
+        \ :<C-u>call <SID>exit_from_entire_blame()<CR>
 
   augroup gina_command_blame_internal
     autocmd! * <buffer>
@@ -139,16 +143,9 @@ function! s:init(args) abort
 endfunction
 
 function! s:WinLeave() abort
-  let bufname = bufname('%')
-  let scheme = gina#core#buffer#param(bufname, 'scheme')
-  let alternate = substitute(
-        \ bufname,
-        \ ':' . scheme . '\>',
-        \ ':' . (scheme ==# 'blame' ? 'show' : 'blame'),
-        \ ''
-        \)
-  if bufwinnr(alternate) > 0
-    call setbufvar(alternate, 'gina_syncbind_line', line('.'))
+  let buffers = s:blame_buffer_names()
+  if bufwinnr(buffers.alternate) > 0
+    call setbufvar(buffers.alternate, 'gina_syncbind_line', line('.'))
   endif
 endfunction
 
@@ -178,6 +175,24 @@ function! s:BufReadCmd() abort
   call s:redraw_content()
   call gina#util#syncbind()
   setlocal filetype=gina-blame
+endfunction
+
+function! s:blame_buffer_names() abort
+  let bufname = bufname('%')
+  let scheme = gina#core#buffer#param(bufname, 'scheme')
+  let alternate = substitute(
+        \ bufname,
+        \ ':' . scheme . '\>',
+        \ ':' . (scheme ==# 'blame' ? 'show' : 'blame'),
+        \ ''
+        \)
+  return {'current': bufname, 'alternate': alternate}
+endfunction
+
+function! s:exit_from_entire_blame() abort
+  let buffers = s:blame_buffer_names()
+  exe 'silent bwipeout '.buffers.alternate
+  exe 'silent bwipeout '.buffers.current
 endfunction
 
 function! s:redraw_content() abort
