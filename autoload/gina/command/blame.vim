@@ -191,8 +191,8 @@ endfunction
 
 function! s:exit_from_entire_blame() abort
   let buffers = s:blame_buffer_names()
-  exe 'silent bwipeout '.buffers.alternate
-  exe 'silent bwipeout '.buffers.current
+  exe 'silent! bwipeout '.buffers.alternate
+  exe 'silent! bwipeout '.buffers.current
 endfunction
 
 function! s:redraw_content() abort
