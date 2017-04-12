@@ -143,9 +143,9 @@ function! s:init(args) abort
 endfunction
 
 function! s:WinLeave() abort
-  let buffers = s:blame_buffer_names()
-  if bufwinnr(buffers.alternate) > 0
-    call setbufvar(buffers.alternate, 'gina_syncbind_line', line('.'))
+  let bufinfo = s:get_blame_buffer_info()
+  if bufwinnr(bufinfo.alternative_name) > 0
+    call setbufvar(bufinfo.alternative_name, 'gina_syncbind_line', line('.'))
   endif
 endfunction
 
@@ -177,7 +177,7 @@ function! s:BufReadCmd() abort
   setlocal filetype=gina-blame
 endfunction
 
-function! s:blame_buffer_names() abort
+function! s:get_blame_buffer_info() abort
   let bufname = bufname('%')
   let scheme = gina#core#buffer#param(bufname, 'scheme')
   let alternate = substitute(
@@ -186,13 +186,13 @@ function! s:blame_buffer_names() abort
         \ ':' . (scheme ==# 'blame' ? 'show' : 'blame'),
         \ ''
         \)
-  return {'current': bufname, 'alternate': alternate}
+  return {'current_name': bufname, 'alternative_name': alternate}
 endfunction
 
 function! s:exit_from_entire_blame() abort
-  let buffers = s:blame_buffer_names()
-  exe 'silent! bwipeout '.buffers.alternate
-  exe 'silent! bwipeout '.buffers.current
+  let bufinfo = s:get_blame_buffer_info()
+  execute 'silent! bwipeout ' bufinfo.alternative_name
+  execute 'silent! bwipeout ' bufinfo.current_name
 endfunction
 
 function! s:redraw_content() abort
