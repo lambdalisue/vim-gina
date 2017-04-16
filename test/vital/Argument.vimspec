@@ -1,5 +1,6 @@
 Describe Argument
   Before all
+    let Guard = vital#gina#import('Vim.Guard')
     let Path = vital#gina#import('System.Filepath')
     let sf = themis#helper('scope').funcs(
           \ Path.realpath('autoload/vital/__gina__/Argument.vim')
@@ -8,6 +9,11 @@ Describe Argument
 
   Before
     let Argument = vital#gina#import('Argument')
+    let guard = Guard.store(['&iskeyword'])
+  End
+
+  After
+    call guard.restore()
   End
 
   Describe .parse({cmdline})
@@ -226,6 +232,23 @@ Describe Argument
         let args = Argument.new()
         Throws /requires to be positive/ args.index(-1)
       End
+
+      It returns an index of an optional term which match with a string {query} with custom 'iskeyword'
+        " Add '=' to 'iskeyword' which would affect \> pattern
+        setlocal iskeyword+==
+
+        let args = Argument.new('-f bar --foo BAR --hoge=hoge -- -hHOGE hoge')
+        Assert Equals(args.index('-f'), 0)
+        Assert Equals(args.index('--foo'), 2)
+        Assert Equals(args.index('-h|--hoge'), 4)
+        Assert Equals(args.index('-h'), -1)
+
+        let args = Argument.new('bar -f BAR --foo --hoge=hoge -- -hHOGE hoge')
+        Assert Equals(args.index('-f'), 1)
+        Assert Equals(args.index('--foo'), 3)
+        Assert Equals(args.index('-h|--hoge'), 4)
+        Assert Equals(args.index('-h'), -1)
+      End
     End
 
     Describe .has({query})
@@ -261,6 +284,12 @@ Describe Argument
         Assert Equals(args.get(1), 'BAR')
         Assert Equals(args.get(2), '')
         Assert Equals(args.get(2, 'default'), 'default')
+      End
+
+      It returns a correct value for '--opener'
+        let args = Argument.new('show --opener=split :')
+        Assert Equals(args.raw, ['show', '--opener=split', ':'])
+        Assert Equals(args.get('--opener'), 'split')
       End
     End
 

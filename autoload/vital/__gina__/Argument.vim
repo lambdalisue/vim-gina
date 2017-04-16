@@ -2,12 +2,13 @@ let s:t_number = type(0)
 let s:t_string = type('')
 
 function! s:_vital_loaded(V) abort
+  let s:Guard = a:V.import('Vim.Guard')
   let s:List = a:V.import('Data.List')
   let s:String = a:V.import('Data.String')
 endfunction
 
 function! s:_vital_depends() abort
-  return ['Data.List', 'Data.String']
+  return ['Vim.Guard', 'Data.List', 'Data.String']
 endfunction
 
 function! s:_vital_created(module) abort
@@ -86,16 +87,22 @@ endfunction
 let s:args = {}
 
 function! s:_index(pattern) abort dict
-  let indices = range(0, len(self.raw)-1)
-  for index in indices
-    let term = self.raw[index]
-    if term ==# '--'
-      return -1
-    elseif term =~# a:pattern
-      return index
-    endif
-  endfor
-  return -1
+  let guard = s:Guard.store(['&l:iskeyword'])
+  try
+    setlocal iskeyword&
+    let indices = range(0, len(self.raw)-1)
+    for index in indices
+      let term = self.raw[index]
+      if term ==# '--'
+        return -1
+      elseif term =~# a:pattern
+        return index
+      endif
+    endfor
+    return -1
+  finally
+    call guard.restore()
+  endtry
 endfunction
 
 function! s:_has(pattern) abort dict
