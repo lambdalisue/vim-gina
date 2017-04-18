@@ -185,7 +185,7 @@ function! s:redraw_content() abort
   let chunks = gina#core#meta#get_or_fail('chunks')
   let revisions = gina#core#meta#get_or_fail('revisions')
   let formatter = gina#command#blame#formatter#new(
-        \ winwidth(0),
+        \ winwidth(0) - (s:is_sign_visible() ? 2 : 0),
         \ args.params.rev,
         \ revisions,
         \ {
@@ -262,6 +262,15 @@ function! s:translate_candidate(rev, chunk, revisions) abort
         \ 'line': line,
         \})
 endfunction
+
+function! s:is_sign_visible() abort
+  if !exists('&signcolumn') || &signcolumn ==# 'auto'
+    return len(split(execute('sign place buffer=0'), '\r\?\n')) > 1
+  else
+    return &signcolumn ==# 'yes'
+  endif
+endfunction
+
 
 
 " Writer ---------------------------------------------------------------------
