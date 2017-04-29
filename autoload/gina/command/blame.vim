@@ -191,8 +191,15 @@ endfunction
 
 function! s:exit_from_entire_blame() abort
   let bufinfo = s:get_blame_buffer_info()
-  execute 'silent! bwipeout ' bufinfo.alternative_name
-  execute 'silent! bwipeout ' bufinfo.current_name
+  let original_buffer = gina#core#buffer#param(bufname('%'), 'path')
+  try
+    execute printf('%dclose', bufwinnr(bufinfo.alternative_name))
+  catch /^Vim\%((\a\+)\)\=:E444/
+    " E444: Cannot close last window may thrown but ignore that
+    " Vim.Buffer.Group should NOT close the last window so ignore
+    " this exception silently.
+  endtry
+  execute 'buffer ' original_buffer
 endfunction
 
 function! s:redraw_content() abort
