@@ -60,6 +60,7 @@ function! s:call(range, args, mods) abort
     autocmd! * <buffer>
     autocmd WinLeave <buffer> call s:WinLeave()
     autocmd WinEnter <buffer> call s:WinEnter()
+    autocmd QuitPre  <buffer> call s:QuitPre()
   augroup END
   nnoremap <buffer><silent> <Plug>(gina-blame-exit)
         \ :<C-u>call <SID>exit_from_entire_blame()<CR>
@@ -137,6 +138,7 @@ function! s:init(args) abort
     autocmd VimResized <buffer> call s:redraw_content_if_necessary()
     autocmd WinLeave <buffer> call s:WinLeave()
     autocmd WinEnter <buffer> call s:WinEnter()
+    autocmd QuitPre <buffer> call s:QuitPre()
     autocmd BufReadCmd <buffer>
           \ call gina#core#exception#call(function('s:BufReadCmd'), [])
   augroup END
@@ -155,6 +157,10 @@ function! s:WinEnter() abort
     unlet b:gina_syncbind_line
   endif
   syncbind
+endfunction
+
+function! s:QuitPre() abort
+  call s:exit_from_entire_blame()
 endfunction
 
 function! s:BufReadCmd() abort
