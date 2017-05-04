@@ -4,6 +4,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#cd#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   call gina#process#register(s:SCHEME, 1)
   try
     call s:call(a:range, a:args, a:mods)
@@ -14,13 +15,31 @@ endfunction
 
 function! gina#command#cd#complete(arglead, cmdline, cursorpos) abort
   let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
-  if empty(args.get(1))
-    return gina#complete#filename#directory(a:arglead, a:cmdline, a:cursorpos)
+  if a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
   endif
-  return []
+  return gina#complete#filename#directory(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
+
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  if exists('s:options') && !g:gina#develop
+    return s:options
+  endif
+  let s:options = gina#core#options#new()
+  call s:options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call s:options.define(
+        \ '--local',
+        \ 'Use "lcd" command instead of "cd" command.',
+        \)
+  return s:options
+endfunction
+
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.local = args.get('--local')
