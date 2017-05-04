@@ -40,6 +40,7 @@ let s:messages = {}
 
 
 function! gina#command#commit#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   let git = gina#core#get_or_fail()
   let args = s:build_args(a:args)
 
@@ -101,11 +102,155 @@ function! gina#command#commit#complete(arglead, cmdline, cursorpos) abort
   elseif a:arglead[0] ==# '-'
     return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
   endif
+  if a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
   return gina#complete#filename#tracked(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  if exists('s:options') && !g:gina#develop
+    return s:options
+  endif
+  let s:options = gina#core#options#new()
+  call s:options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call s:options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call s:options.define(
+        \ '--group=',
+        \ 'A window group name used for a buffer.',
+        \)
+  call s:options.define(
+        \ '-a|--all',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-p|--patch',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-C|--reuse-message=',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-c|--reedit-message=',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--fixup=',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--squash=',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--reset-author',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-F|--file=',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--author=',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--date=',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-m|--message=',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-t|--template=',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-s|--signoff',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-n|--noverify',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--allow-empty',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--allow-empty-message',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--cleanup=',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-e|--edit',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--no-edit',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--amend',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-i|--include',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-o|--only',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-u|--untracked-files',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-v|--verbose',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-q|--quiet',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--dry-run',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--status',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--no-status',
+        \ '',
+        \)
+  call s:options.define(
+        \ '-S|--gpg-sign',
+        \ '',
+        \)
+  call s:options.define(
+        \ '--no-gpg-sign',
+        \ '',
+        \)
+  return s:options
+endfunction
 function! s:build_args(args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
