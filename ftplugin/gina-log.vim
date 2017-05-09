@@ -12,6 +12,7 @@ call gina#action#include('compare')
 call gina#action#include('diff')
 call gina#action#include('edit')
 call gina#action#include('show')
+call gina#action#include('utils')
 
 if g:gina#command#log#use_default_aliases
   call gina#action#shorten('commit')

@@ -11,6 +11,7 @@ call gina#action#include('changes')
 call gina#action#include('compare')
 call gina#action#include('diff')
 call gina#action#include('show')
+call gina#action#include('utils')
 
 if g:gina#command#blame#use_default_aliases
   call gina#action#shorten('blame')
