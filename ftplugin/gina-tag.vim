@@ -10,6 +10,7 @@ call gina#action#include('changes')
 call gina#action#include('commit')
 call gina#action#include('show')
 call gina#action#include('tag')
+call gina#action#include('utils')
 
 if g:gina#command#tag#use_default_aliases
   call gina#action#shorten('show')
