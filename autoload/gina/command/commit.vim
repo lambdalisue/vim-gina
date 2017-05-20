@@ -131,11 +131,15 @@ function! s:WinLeave() abort
             \ [git, args]
             \)
     else
-      " User execute 'q' so confirm
-      call gina#core#exception#call(
-            \ function('s:commit_commitmsg_confirm'),
-            \ [git, args]
-            \)
+      " User execute 'q' so confirm if commit message is written
+      if !empty(s:get_cached_commitmsg(git, args))
+        call gina#core#exception#call(
+              \ function('s:commit_commitmsg_confirm'),
+              \ [git, args]
+              \)
+      else
+        redraw | echo ''
+      endif
     endif
   endif
 endfunction
