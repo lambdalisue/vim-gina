@@ -195,17 +195,25 @@ function! s:get_blame_buffer_info() abort
   return {'current_name': bufname, 'alternative_name': alternate}
 endfunction
 
+" TODO: If `--opener` exists, then close both window, otherwise close
+" alternative and switch to original buffer in current window.
 function! s:exit_from_entire_blame() abort
   let bufinfo = s:get_blame_buffer_info()
   let original_buffer = gina#core#buffer#param(bufname('%'), 'path')
+  let close_both = gina#core#meta#get_or_fail('args').params.opener !=? 'edit'
   try
     execute printf('%dclose', bufwinnr(bufinfo.alternative_name))
+    if close_both
+      execute printf('%dclose', bufwinnr(bufinfo.current_name))
+    endif
   catch /^Vim\%((\a\+)\)\=:E444/
     " E444: Cannot close last window may thrown but ignore that
     " Vim.Buffer.Group should NOT close the last window so ignore
     " this exception silently.
   endtry
-  execute 'buffer ' original_buffer
+  if !close_both
+    execute 'buffer ' original_buffer
+  endif
 endfunction
 
 function! s:redraw_content() abort
