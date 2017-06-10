@@ -72,7 +72,7 @@ function! s:options.help(...) abort
 endfunction
 
 function! s:options.complete(arglead, cmdline, cursorpos) abort
-  let leading = matchstr(a:arglead, '\%(-[^-]\|--\S\+=\)')
+  let leading = matchstr(a:arglead, '^\%(-[^-]\|--\S\+=\)')
   let candidates = []
   for option in values(self._options)
     if index(option.names, leading) != -1

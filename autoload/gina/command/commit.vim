@@ -2,40 +2,6 @@ let s:String = vital#gina#import('Data.String')
 let s:Git = vital#gina#import('Git')
 
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
-let s:ALLOWED_OPTIONS = [
-      \ '--opener=',
-      \ '--group=',
-      \ '-a', '--all',
-      \ '-p', '--patch',
-      \ '-C', '--reuse-message=',
-      \ '-c', '--reedit-message=',
-      \ '--fixup=',
-      \ '--squash=',
-      \ '--reset-author',
-      \ '-F', '--file=',
-      \ '--author=',
-      \ '--date=',
-      \ '-m', '--message=',
-      \ '-t', '--template=',
-      \ '-s', '--signoff',
-      \ '-n', '--no-verify',
-      \ '--allow-empty',
-      \ '--allow-empty-message',
-      \ '--cleanup=',
-      \ '-e', '--edit',
-      \ '--no-edit',
-      \ '--amend',
-      \ '-i', '--include',
-      \ '-o', '--only',
-      \ '-u', '--untracked-files',
-      \ '-v', '--verbose',
-      \ '-q', '--quiet',
-      \ '--dry-run',
-      \ '--status',
-      \ '--no-status',
-      \ '-S', '--gpg-sign',
-      \ '--no-gpg-sign',
-      \]
 let s:messages = {}
 
 
@@ -63,48 +29,21 @@ endfunction
 
 function! gina#command#commit#complete(arglead, cmdline, cursorpos) abort
   let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
-  if a:arglead =~# '^--opener='
-    return gina#complete#common#opener(a:arglead, a:cmdline, a:cursorpos)
-  elseif a:arglead =~# '^\%(-C\|--reuse-message=\)'
-    let leading = matchstr(a:arglead, '^\%(-C\|--reuse-message=\)')
+  if a:arglead =~# '^\%(-C\|--reuse-message=\|-c\|--reedit-message=\|--fixup=\|--squash=\)'
+    let leading = matchstr(
+          \ a:arglead,
+          \ '^\%(-C\|--reuse-message=\|-c\|--reedit-message\|--fixup=\|--squash=\)'
+          \)
     let candidates = gina#complete#commit#any(
           \ matchstr(a:arglead, '^' . leading . '\zs.*'),
           \ a:cmdline, a:cursorpos,
           \)
     return map(candidates, 'leading . v:val')
-  elseif a:arglead =~# '^\%(-c\|--reedit-message=\)'
-    let leading = matchstr(a:arglead, '^\%(-c\|--reedit-message=\)')
-    let candidates = gina#complete#commit#any(
-          \ matchstr(a:arglead, '^' . leading . '\zs.*'),
-          \ a:cmdline, a:cursorpos,
-          \)
-    return map(candidates, 'leading . v:val')
-  elseif a:arglead =~# '^\%(--fixup=\|--squash=\)'
-    let leading = matchstr(a:arglead, '^\%(--fixup=\|--squash=\)')
-    let candidates = gina#complete#commit#any(
-          \ matchstr(a:arglead, '^' . leading . '\zs.*'),
-          \ a:cmdline, a:cursorpos,
-          \)
-    return map(candidates, 'leading . v:val')
-  elseif a:arglead =~# '^--cleanup='
-    return gina#util#filter(a:arglead, map(
-          \ ['strip', 'whitespace', 'verbatim', 'scissors', 'default'],
-          \ '''--cleanup='' . v:val'
-          \))
-  elseif a:arglead =~# '^\%(-u\|--untracked-files=\)'
-    let leading = matchstr(a:arglead, '^\%(-u\|--untracked-files=\)')
-    return gina#util#filter(a:arglead, map(
-          \ ['no', 'normal', 'all'],
-          \ 'leading . v:val'
-          \))
-  elseif a:cmdline !~# '\s--\s'
-    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
-  elseif a:arglead[0] ==# '-'
-    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
-  endif
-  if a:arglead[0] ==# '-' || !empty(args.get(1))
+  elseif a:arglead[0] ==# '-' || !empty(args.get(1))
     let options = s:get_options()
     return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:cmdline !~# '\s--\s'
+    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
   endif
   return gina#complete#filename#tracked(a:arglead, a:cmdline, a:cursorpos)
 endfunction
@@ -131,126 +70,121 @@ function! s:get_options() abort
         \)
   call s:options.define(
         \ '-a|--all',
-        \ '',
-        \)
-  call s:options.define(
-        \ '-p|--patch',
-        \ '',
+        \ 'Commit all changed files',
         \)
   call s:options.define(
         \ '-C|--reuse-message=',
-        \ '',
+        \ 'Reuse message from specified commit',
         \)
   call s:options.define(
         \ '-c|--reedit-message=',
-        \ '',
+        \ 'Reuse and edit message from specified commit',
         \)
   call s:options.define(
         \ '--fixup=',
-        \ '',
+        \ 'Use autosquash formatted message to fixup specified commit',
         \)
   call s:options.define(
         \ '--squash=',
-        \ '',
+        \ 'Use autosquash formatted message to squash specified commit',
         \)
   call s:options.define(
         \ '--reset-author',
-        \ '',
+        \ 'The commit is authored by me now (used with -C/-c/--amend)',
         \)
   call s:options.define(
         \ '-F|--file=',
-        \ '',
+        \ 'Read message from file',
         \)
   call s:options.define(
         \ '--author=',
-        \ '',
+        \ 'Override the commit author',
         \)
   call s:options.define(
         \ '--date=',
-        \ '',
+        \ 'Override the author date used in the commit',
         \)
   call s:options.define(
         \ '-m|--message=',
-        \ '',
+        \ 'Use the given message as the commit message',
         \)
   call s:options.define(
         \ '-t|--template=',
-        \ '',
+        \ 'Read message from file and use it as a template',
         \)
   call s:options.define(
         \ '-s|--signoff',
-        \ '',
-        \)
-  call s:options.define(
-        \ '-n|--noverify',
-        \ '',
+        \ 'Add Signed-off-by:',
         \)
   call s:options.define(
         \ '--allow-empty',
-        \ '',
+        \ 'Allow empty commit',
         \)
   call s:options.define(
         \ '--allow-empty-message',
-        \ '',
+        \ 'Allow empty commit message',
         \)
   call s:options.define(
         \ '--cleanup=',
-        \ '',
+        \ 'How to strip spaces and #comments from message',
+        \ ['strip', 'whitespace', 'verbatim', 'scissors', 'default'],
         \)
   call s:options.define(
         \ '-e|--edit',
-        \ '',
+        \ 'Force edit of commit',
         \)
   call s:options.define(
         \ '--no-edit',
-        \ '',
+        \ 'Use the selected commit message without editing',
         \)
   call s:options.define(
         \ '--amend',
-        \ '',
+        \ 'Replace the tip of the current branch by creating a new commit',
         \)
   call s:options.define(
         \ '-i|--include',
-        \ '',
+        \ 'Add specified files to index for commit',
         \)
   call s:options.define(
         \ '-o|--only',
-        \ '',
+        \ 'Commit only specified files',
         \)
   call s:options.define(
-        \ '-u|--untracked-files',
-        \ '',
+        \ '-u|--untracked-files=',
+        \ 'Show untracked files, optional modes: all, normal, no (Default: all)',
+        \ ['no', 'normal', 'all'],
         \)
   call s:options.define(
         \ '-v|--verbose',
-        \ '',
+        \ 'Show unified diff between the HEAD commit and what would be committed',
         \)
   call s:options.define(
         \ '-q|--quiet',
-        \ '',
+        \ 'Suppress commit summary message',
         \)
   call s:options.define(
         \ '--dry-run',
-        \ '',
+        \ 'Do not create a commit, but show a list of paths that are to be committed',
         \)
   call s:options.define(
         \ '--status',
-        \ '',
+        \ 'Include status in commit message template',
         \)
   call s:options.define(
         \ '--no-status',
-        \ '',
+        \ 'Do not include status in commit message template',
         \)
   call s:options.define(
         \ '-S|--gpg-sign',
-        \ '',
+        \ 'GPG sign commit',
         \)
   call s:options.define(
         \ '--no-gpg-sign',
-        \ '',
+        \ 'Do not GPG sign commit',
         \)
   return s:options
 endfunction
+
 function! s:build_args(args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
