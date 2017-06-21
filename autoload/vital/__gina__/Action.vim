@@ -360,7 +360,7 @@ function! s:_action_choice(candidates, options) abort dict
 endfunction
 
 function! s:_action_repeat(candidates, options) abort dict
-  let [mods, action] = get(self, '_previous_action', [])
+  let [mods, action] = get(self, '_previous_action', ['', {}])
   if empty(action)
     return
   endif
