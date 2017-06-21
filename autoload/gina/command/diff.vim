@@ -64,6 +64,7 @@ let s:ALLOWED_OPTIONS = [
 
 
 function! gina#command#diff#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
@@ -128,13 +129,64 @@ function! gina#command#diff#complete(arglead, cmdline, cursorpos) abort
   elseif a:cmdline =~# '\s--\s'
     return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
   elseif a:arglead[0] ==# '-'
-    return gina#util#filter(a:arglead, s:ALLOWED_OPTIONS)
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
   endif
   return gina#complete#common#treeish(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  if exists('s:options') && !g:gina#develop
+    return s:options
+  endif
+  let s:options = gina#core#options#new()
+  call s:options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call s:options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call s:options.define(
+        \ '--cached',
+        \ 'Compare to the index rather than the working tree',
+        \)
+  call s:options.define(
+        \ '-U|--unified=',
+        \ 'Generate diffs with <n> lines of context',
+        \)
+  call s:options.define(
+        \ '--raw',
+        \ 'Generate the diff in raw format',
+        \)
+  call s:options.define(
+        \ '--patch-with-raw',
+        \ 'Synonym for -p --raw',
+        \)
+  call s:options.define(
+        \ '--minimal',
+        \ 'Spend extra time to make sure the smallest possible diff is produced',
+        \)
+  call s:options.define(
+        \ '--patience',
+        \ 'Generate a diff using the "patience diff" algorithm',
+        \)
+  call s:options.define(
+        \ '--histogram',
+        \ 'Generate a diff using the "histogram diff" algorithm',
+        \)
+  call s:options.define(
+        \ '--diff-algorithm',
+        \ 'Choose a diff algorithm',
+        \ ['default', 'myers', 'minimal', 'patience', 'histogram']
+        \)
+  return s:options
+endfunction
+
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
