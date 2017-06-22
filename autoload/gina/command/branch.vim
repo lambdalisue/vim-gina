@@ -5,13 +5,17 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#branch#call(range, args, mods) abort
-  let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:args)
-
-  if s:is_raw_command(args)
-    return gina#command#_raw#call(a:range, a:args, a:mods)
+  if s:is_raw_command(a:args)
+    " Remove non git options
+    let args = a:args.clone()
+    call args.pop('--group')
+    call args.pop('--opener')
+    " Call raw git command
+    return gina#command#_raw#call(a:range, args, a:mods)
   endif
 
+  let git = gina#core#get_or_fail()
+  let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,

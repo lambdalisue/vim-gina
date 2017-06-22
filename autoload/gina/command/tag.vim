@@ -2,14 +2,20 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#tag#call(range, args, mods) abort
-  let git = gina#core#get_or_fail()
 
   if s:is_edit_command(a:args)
     return gina#command#tag#edit#call(a:range, a:args, a:mods)
   elseif s:is_raw_command(a:args)
+    " Remove non git options
+    let args = a:args.clone()
+    call args.pop('--group')
+    call args.pop('--opener')
+    " Call raw git command
     return gina#command#_raw#call(a:range, a:args, a:mods)
   endif
+
   " list
+  let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
