@@ -7,13 +7,18 @@ let s:messages = {}
 
 function! gina#command#commit#call(range, args, mods) abort
   call gina#core#options#help_if_necessary(a:args, s:get_options())
-  let git = gina#core#get_or_fail()
-  let args = s:build_args(a:args)
 
-  if s:is_raw_command(args)
-    return gina#command#_raw#call(a:range, a:args, a:mods)
+  if s:is_raw_command(a:args)
+    " Remove non git options
+    let args = a:args.clone()
+    call args.pop('--group')
+    call args.pop('--opener')
+    " Call raw git command
+    return gina#command#_raw#call(a:range, args, a:mods)
   endif
 
+  let git = gina#core#get_or_fail()
+  let args = s:build_args(a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -288,11 +293,15 @@ function! s:WinLeave() abort
             \ [git, args]
             \)
     else
-      " User execute 'q' so confirm
-      call gina#core#exception#call(
-            \ function('s:commit_commitmsg_confirm'),
-            \ [git, args]
-            \)
+      " User execute 'q' so confirm if commit message is written
+      if !empty(s:get_cached_commitmsg(git, args))
+        call gina#core#exception#call(
+              \ function('s:commit_commitmsg_confirm'),
+              \ [git, args]
+              \)
+      else
+        redraw | echo ''
+      endif
     endif
   endif
 endfunction

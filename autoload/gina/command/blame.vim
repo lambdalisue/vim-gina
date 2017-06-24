@@ -353,7 +353,7 @@ endfunction
 
 function! s:is_sign_visible() abort
   if !exists('&signcolumn') || &signcolumn ==# 'auto'
-    return len(split(execute('sign place buffer=0'), '\r\?\n')) > 1
+    return len(split(execute('sign place buffer=' . bufnr('%')), '\r\?\n')) > 1
   else
     return &signcolumn ==# 'yes'
   endif

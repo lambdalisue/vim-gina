@@ -9,6 +9,7 @@ env:
   - VIM=vim  VIM_VERSION=HEAD
   - VIM=vim  VIM_VERSION=v8.0.0027
   - VIM=nvim VIM_VERSION=HEAD   THEMIS_ARGS="-e -s --headless"
+  - VIM=nvim VIM_VERSION=v0.2.0 THEMIS_ARGS="-e -s --headless"
   - VIM=nvim VIM_VERSION=v0.1.7 THEMIS_ARGS="-e -s --headless"
 
 cache:
@@ -22,7 +23,31 @@ before_cache:
 
 addons:
   apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-trusty-4.0
     packages:
+      - autoconf
+      - automake
+      - apport
+      - build-essential
+      - clang-4.0
+      - cmake
+      - cscope
+      - g++-5-multilib
+      - g++-multilib
+      - gcc-5-multilib
+      - gcc-multilib
+      - gdb
+      - language-pack-tr
+      - libc6-dev-i386
+      - libtool
+      - llvm-4.0-dev
+      - locales
+      - pkg-config
+      - unzip
+      - valgrind
+      - xclip
       - gettext
       - libncurses5-dev
       - libacl1-dev
