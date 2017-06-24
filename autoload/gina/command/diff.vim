@@ -1,66 +1,4 @@
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
-let s:ALLOWED_OPTIONS = [
-      \ '--opener=',
-      \ '--group=',
-      \ '--cached',
-      \ '--no-index',
-      \ '-p', '-u', '--patch',
-      \ '-s', '--no-patch',
-      \ '-U', '--unified=',
-      \ '--raw',
-      \ '--patch-with-raw',
-      \ '--minimal',
-      \ '--patience',
-      \ '--histogram',
-      \ '--diff-algorithm=',
-      \ '--stat',
-      \ '--stat-width=',
-      \ '--stat-count=',
-      \ '--numstat',
-      \ '--shortstat',
-      \ '--dirstat',
-      \ '--summary',
-      \ '--patch-with-stat',
-      \ '--name-only',
-      \ '--name-status',
-      \ '--submodule',
-      \ '--word-diff-regex=',
-      \ '--no-renames',
-      \ '--check',
-      \ '--full-index',
-      \ '--binary',
-      \ '--abbrev',
-      \ '-B', '--break-rewrites',
-      \ '-M', '--find-renames',
-      \ '-C', '--find-copies',
-      \ '--find-copies-header',
-      \ '-D', '--irreversible-delete',
-      \ '-l',
-      \ '--diff-filter=',
-      \ '-S',
-      \ '-G',
-      \ '--pickaxe-all',
-      \ '--pickaxe-regex',
-      \ '-O',
-      \ '-R',
-      \ '--relative',
-      \ '-a', '--text',
-      \ '--ignore-space-at-eol',
-      \ '-b', '--ignore-space-change',
-      \ '-w', '--ignore-all-space',
-      \ '--ignore-blank-lines',
-      \ '--inter-hunk-context=',
-      \ '-W', '--function-context',
-      \ '--ext-diff',
-      \ '--no-ext-diff',
-      \ '--textconv', '--no-textconv',
-      \ '--ignore-submodules',
-      \ '--src-prefix=',
-      \ '--dst-prefix=',
-      \ '--no-prefix',
-      \ '--line-prefix=',
-      \ '--ita-invisible-in-index',
-      \]
 
 
 function! gina#command#diff#call(range, args, mods) abort
@@ -182,7 +120,198 @@ function! s:get_options() abort
   call s:options.define(
         \ '--diff-algorithm',
         \ 'Choose a diff algorithm',
-        \ ['default', 'myers', 'minimal', 'patience', 'histogram']
+        \)
+  call s:options.define(
+        \ '--stat',
+        \ 'Generate a diffstat',
+        \)
+  call s:options.define(
+        \ '--numstat',
+        \ 'Similar to --stat, but with more machine friendly output',
+        \)
+  call s:options.define(
+        \ '--shortstat',
+        \ 'Output only the last line of the --stat format',
+        \)
+  call s:options.define(
+        \ '--dirstat',
+        \ 'Output the dirstat numbers',
+        \)
+  call s:options.define(
+        \ '--summary',
+        \ 'Output a condensed summary of extended header information',
+        \)
+  call s:options.define(
+        \ '--patch-with-stat',
+        \ 'Synonym for -p --stat',
+        \)
+  call s:options.define(
+        \ '--name-only',
+        \ 'Show only names of changed files',
+        \)
+  call s:options.define(
+        \ '--name-status',
+        \ 'Show only names and status of changed files',
+        \)
+  call s:options.define(
+        \ '--submodule',
+        \ 'Specify how differences in submodules are shown',
+        \)
+  call s:options.define(
+        \ '--submodule',
+        \ 'Specify how differences in submodules are shown',
+        \)
+  call s:options.define(
+        \ '--no-renames',
+        \ 'Turn off rename detection',
+        \)
+  call s:options.define(
+        \ '--check',
+        \ 'Warn if changes introduce conflict markers or whitespace errors',
+        \)
+  call s:options.define(
+        \ '--full-index',
+        \ 'Instead of the first handful of characters,show the full blob',
+        \)
+  call s:options.define(
+        \ '--binary',
+        \ 'In addition to --full-index, output a binary diff',
+        \)
+  call s:options.define(
+        \ '--abbrev',
+        \ 'Show only a particular prefix hexadecimal object name',
+        \)
+  call s:options.define(
+        \ '-B|--break-rewrites',
+        \ 'Break complete rewrite changes into pair of delete and create',
+        \)
+  call s:options.define(
+        \ '-M|--find-renames',
+        \ 'Detect renames. -M<n> to specify the threshold.',
+        \)
+  call s:options.define(
+        \ '-C|--find-copies',
+        \ 'Detect copies as well as renames. -C<n> to specify the threshold',
+        \)
+  call s:options.define(
+        \ '--find-copies-harder',
+        \ 'Detect copies more harder than -C/--find-copies',
+        \)
+  call s:options.define(
+        \ '-D|--irreversible-delete',
+        \ 'Omit the preimage for deletes',
+        \)
+  call s:options.define(
+        \ '-l',
+        \ 'Specify the threshold of -M or -C',
+        \)
+  call s:options.define(
+        \ '--diff-filter=', join([
+        \   'Specify the Select only files that are Added(A), Copied(C), ',
+        \   'Deleted (D), Modified (M), Renamed (R), ',
+        \   'have their type changed (T), are Unmerged (U), ',
+        \   'are Unknown (X), or have had their pairing Broken (B)',
+        \ ])
+        \)
+  call s:options.define(
+        \ '-S', join([
+        \   'Look for differences that change the number of occurrences of ',
+        \   'the specified string in a file.'
+        \ ])
+        \)
+  call s:options.define(
+        \ '-G', join([
+        \   'Look for differences whose patch text contains added/removed ',
+        \   'line that match <regex>'
+        \ ])
+        \)
+  call s:options.define(
+        \ '--pickaxe-all', join([
+        \   'Wnen -S or -G finds a change, show all the changes in that ',
+        \   'changeset, not just the files and contain the change'
+        \ ])
+        \)
+  call s:options.define(
+        \ '--pickaxe-regex', join([
+        \   'Treat the <string> given to -S as an extended POSIX regular ',
+        \   'expression to match'
+        \ ])
+        \)
+  call s:options.define(
+        \ '-O',
+        \ 'Output the patch in the order specified in the <orderfile>',
+        \)
+  call s:options.define(
+        \ '-R',
+        \ 'Swap two inputs',
+        \)
+  call s:options.define(
+        \ '--relative',
+        \ 'Show pathnames relative to',
+        \)
+  call s:options.define(
+        \ '-a|--text',
+        \ 'Treat all files as text',
+        \)
+  call s:options.define(
+        \ '--ignore-space-at-eol',
+        \ 'Ignore changes in whitespace at EOL',
+        \)
+  call s:options.define(
+        \ '-b|--ignore-space-change',
+        \ 'Ignore changes in amount of whitespace',
+        \)
+  call s:options.define(
+        \ '-w|--ignore-all-space',
+        \ 'Ignore whitespace when comparing lines',
+        \)
+  call s:options.define(
+        \ '--ignore-blank-lines',
+        \ 'Ignore changes whose line are all blank',
+        \)
+  call s:options.define(
+        \ '--inter-hunk-context=',
+        \ 'Show the context between diff hunks',
+        \)
+  call s:options.define(
+        \ '-W|--function-context',
+        \ 'Show whole surrounding functions of changes',
+        \)
+  call s:options.define(
+        \ '--ext-diff',
+        \ 'Allow an external diff helper to be executed',
+        \)
+  call s:options.define(
+        \ '--no-ext-diff',
+        \ 'Disallow external diff drivers',
+        \)
+  call s:options.define(
+        \ '--textconv',
+        \ 'Allow an external text conversion filters',
+        \)
+  call s:options.define(
+        \ '--no-textconv',
+        \ 'Disallow an external text conversion filters',
+        \)
+  call s:options.define(
+        \ '--ignore-submodules',
+        \ 'Ignore changes to submodules in the diff generation',
+        \)
+  call s:options.define(
+        \ '--src-prefix=',
+        \ 'Show the given source prefix instead of "a/"',
+        \)
+  call s:options.define(
+        \ '--dst-prefix=',
+        \ 'Show the given destination prefix instead of "a/"',
+        \)
+  call s:options.define(
+        \ '--no-prefix',
+        \ 'Do not show any source or destination prefix',
+        \)
+  call s:options.define(
+        \ '--line-prefix=',
+        \ 'Prepend an additional prefix to every line of output',
         \)
   return s:options
 endfunction
@@ -194,6 +323,15 @@ function! s:build_args(git, args) abort
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
   let args.params.partial = !empty(args.residual())
+
+  " Remove unsupported options
+  call args.pop('-z')
+  call args.pop('--color')
+  call args.pop('--no-color')
+  call args.pop('--word-diff')
+  call args.pop('--word-diff-regex')
+  call args.pop('--color-words')
+  call args.pop('--ws-error-highlight')
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   call args.set(1, args.params.rev)
