@@ -1,4 +1,7 @@
+dist: trusty
+sudo: false
 language: generic
+
 git:
   depth: 3
 
@@ -26,17 +29,14 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
       - llvm-toolchain-trusty-4.0
-      - george-edison55-precise-backports  # https://docs.travis-ci.com/user/languages/cpp/#CMake
     packages:
-      - cmake-data
-      - cmake
       - autoconf
       - automake
       - apport
       - build-essential
       - clang-4.0
+      - cmake
       - cscope
-      - g++
       - g++-5-multilib
       - g++-multilib
       - gcc-5-multilib
@@ -45,13 +45,13 @@ addons:
       - language-pack-tr
       - libc6-dev-i386
       - libtool
-      # - libtool-bin  # for Ubuntu 16.04/Debian Jessie and newer.
       - llvm-4.0-dev
       - locales
       - pkg-config
       - unzip
       - valgrind
       - xclip
+
       - gettext
       - libncurses5-dev
       - libacl1-dev
@@ -64,8 +64,8 @@ addons:
       - liblua5.2-dev
 
 install:
-  - git config --global user.name "ci"
-  - git config --global user.email ci@example.com
+  - git config --global user.name "Travis"
+  - git config --global user.email travis@example.com
   - export PYTHONUSERBASE="$HOME/.local"  # Override it for OS X
   - OS_NAME=${TRAVIS_OS_NAME} .ci/install.sh
   - export PATH="$HOME/vim/bin:$HOME/themis/bin:$PATH"
