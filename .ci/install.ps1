@@ -17,8 +17,7 @@
   [Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem') > $null
   [System.IO.Compression.ZipFile]::ExtractToDirectory($zip1, $Env:APPVEYOR_BUILD_FOLDER)
   [System.IO.Compression.ZipFile]::ExtractToDirectory($zip2, $Env:APPVEYOR_BUILD_FOLDER)
-  $vim  = $Env:APPVEYOR_BUILD_FOLDER + '\vim\vim80\vim.exe'
-  $Env:THEMIS_VIM = $vim
+  $Env:THEMIS_VIM = $Env:APPVEYOR_BUILD_FOLDER + '\vim\vim80\vim.exe'
 }
 
 function install_kaoriya_vim($url)
@@ -62,8 +61,7 @@ function install_nvim($name)
   (New-Object Net.WebClient).DownloadFile($url, $zip)
   [Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem') > $null
   [System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $Env:APPVEYOR_BUILD_FOLDER)
-  $vim  = $Env:APPVEYOR_BUILD_FOLDER + '\nvim\Neovim\bin\nvim.exe'
-  $Env:THEMIS_VIM = $vim
+  $Env:THEMIS_VIM = $Env:APPVEYOR_BUILD_FOLDER + '\nvim\Neovim\bin\nvim.exe'
   $Env:THEMIS_ARGS = '-e -s --headless'
 }
 
