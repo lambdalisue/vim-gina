@@ -26,13 +26,15 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
       - llvm-toolchain-trusty-4.0
+      - george-edison55-precise-backports  # https://docs.travis-ci.com/user/languages/cpp/#CMake
     packages:
+      - cmake-data
+      - cmake
       - autoconf
       - automake
       - apport
       - build-essential
       - clang-4.0
-      - cmake
       - cscope
       - g++
       - g++-5-multilib
