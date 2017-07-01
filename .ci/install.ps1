@@ -1,13 +1,13 @@
 ﻿function install_vim($name)
 {
   $ver = $name -replace "^Official\s*", ""
-  if ($ver -eq "latest")
+  if ($ver -eq "latest-32")
   {
     $url1 = 'ftp://ftp.vim.org/pub/vim/pc/vim80w32.zip'
   }
-  else
+  elseif ($ver -eq "8.0.0069-32")
   {
-    $url1 = 'ftp://ftp.vim.org/pub/vim/pc/vim80-' + $ver + 'w32.zip'
+    $url1 = 'ftp://ftp.vim.org/pub/vim/pc/vim80-069w32.zip'
   }
   $url2 = 'ftp://ftp.vim.org/pub/vim/pc/vim80rt.zip'
   $zip1 = $Env:APPVEYOR_BUILD_FOLDER + '\vim.zip'
@@ -20,8 +20,25 @@
   $Env:THEMIS_VIM = $Env:APPVEYOR_BUILD_FOLDER + '\vim\vim80\vim.exe'
 }
 
-function install_kaoriya_vim($url)
+function install_kaoriya_vim($name)
 {
+  $ver = $name -replace "^Kaoriya\s*", ""
+  if ($ver -eq "latest-32")
+  {
+    $url = 'http://vim-jp.org/redirects/koron/vim-kaoriya/latest/win32/'
+  }
+  elseif ($ver -eq "latest-64")
+  {
+    $url = 'http://vim-jp.org/redirects/koron/vim-kaoriya/latest/win64/'
+  }
+  elseif ($ver -eq "8.0.0082-32")
+  {
+    $url = 'https://github.com/koron/vim-kaoriya/releases/download/v8.0.0082-20161113/vim80-kaoriya-win32-8.0.0082-20161113.zip'
+  }
+  elseif ($ver -eq "8.0.0082-64")
+  {
+    $url = 'https://github.com/koron/vim-kaoriya/releases/download/v8.0.0082-20161113/vim80-kaoriya-win64-8.0.0082-20161113.zip'
+  }
   $zip = $Env:APPVEYOR_BUILD_FOLDER + '\kaoriya-vim.zip'
   $out = $Env:APPVEYOR_BUILD_FOLDER + '\kaoriya-vim\'
   if ($url.StartsWith('http://vim-jp.org/redirects/')) 
@@ -41,21 +58,21 @@ function install_kaoriya_vim($url)
 function install_nvim($name)
 {
   $ver = $name -replace "^Neovim\s*", ""
-  if ($ver -eq "0.2-32")
-  {
-    $url = 'https://github.com/neovim/neovim/releases/download/v0.2.0/nvim-win32.zip'
-  }
-  elseif ($ver -eq "0.2-64")
-  {
-    $url = 'https://github.com/neovim/neovim/releases/download/v0.2.0/nvim-win64.zip'
-  }
-  elseif ($ver -eq "development-32")
+  if ($ver -eq "latest-32")
   {
     $url = 'https://ci.appveyor.com/api/projects/neovim/neovim/artifacts/build/Neovim.zip?branch=master&job=Configuration%3A%20MINGW_32'
   }
-  elseif ($ver -eq "development-64")
+  elseif ($ver -eq "latest-64")
   {
     $url = 'https://ci.appveyor.com/api/projects/neovim/neovim/artifacts/build/Neovim.zip?branch=master&job=Configuration%3A%20MINGW_64'
+  }
+  elseif ($ver -eq "0.2.0-32")
+  {
+    $url = 'https://github.com/neovim/neovim/releases/download/v0.2.0/nvim-win32.zip'
+  }
+  elseif ($ver -eq "0.2.0-64")
+  {
+    $url = 'https://github.com/neovim/neovim/releases/download/v0.2.0/nvim-win64.zip'
   }
   $zip = $Env:APPVEYOR_BUILD_FOLDER + '\nvim.zip'
   (New-Object Net.WebClient).DownloadFile($url, $zip)
