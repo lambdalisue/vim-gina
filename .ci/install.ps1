@@ -40,7 +40,7 @@ function install_kaoriya_vim($url)
 
 function install_nvim($name)
 {
-  $ver = $name -replace "^Neovim*", ""
+  $ver = $name -replace "^Neovim\s*", ""
   if ($ver -eq "0.2-32")
   {
     $url = 'https://github.com/neovim/neovim/releases/download/v0.2.0/nvim-win32.zip'
