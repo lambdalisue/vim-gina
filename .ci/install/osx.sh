@@ -15,7 +15,6 @@ install_nvim() {
   brew install neovim/neovim/neovim $ext
   pip install --user neovim
   pip3 install --user neovim
-  export THEMIS_ARGS="-e -s --headless"
 }
 
 install() {

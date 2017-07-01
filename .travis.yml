@@ -71,6 +71,7 @@ install:
   - export PATH="$HOME/vim/bin:$HOME/themis/bin:$PATH"
   - export THEMIS_HOME=$HOME/themis
   - export THEMIS_VIM=$VIM
+  - if [ ${THEMIS_VIM} = "nvim" ]; then export THEMIS_ARGS="-e -s --headless"; fi
 
 before_script:
   - echo $PATH

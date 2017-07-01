@@ -35,7 +35,6 @@ install_nvim() {
   pip install --user neovim
   easy_install3 --user neovim
   ln -sf $out $HOME/vim
-  export THEMIS_ARGS="-e -s --headless"
 }
 
 install() {
