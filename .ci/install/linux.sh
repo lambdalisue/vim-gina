@@ -27,6 +27,7 @@ install_nvim() {
   local ncpu=$(awk '/^processor/{n+=1}END{print n}' /proc/cpuinfo)
   git clone --depth 1 --single-branch $ext $URL $tmp
   cd $tmp
+  make deps
   make -j$ncpu \
     CMAKE_BUILD_TYPE=Release \
     CMAKE_EXTRA_FLAGS="-DTRAVIS_CI_BUILD=ON -DCMAKE_INSTALL_PREFIX:PATH=$out"
