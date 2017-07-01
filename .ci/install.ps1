@@ -40,7 +40,7 @@ function install_kaoriya_vim($url)
 
 function install_nvim($name)
 {
-  $ver = $name -replace "^Neovims*", ""
+  $ver = $name -replace "^Neovim*", ""
   if ($ver -eq "0.2-32")
   {
     $url = 'https://github.com/neovim/neovim/releases/download/v0.2.0/nvim-win32.zip'
@@ -61,7 +61,7 @@ function install_nvim($name)
   (New-Object Net.WebClient).DownloadFile($url, $zip)
   [Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem') > $null
   [System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $Env:APPVEYOR_BUILD_FOLDER)
-  $Env:THEMIS_VIM = $Env:APPVEYOR_BUILD_FOLDER + '\nvim\Neovim\bin\nvim.exe'
+  $Env:THEMIS_VIM = $Env:APPVEYOR_BUILD_FOLDER + '\Neovim\bin\nvim.exe'
   $Env:THEMIS_ARGS = '-e -s --headless'
 }
 
