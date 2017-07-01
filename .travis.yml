@@ -34,6 +34,7 @@ addons:
       - clang-4.0
       - cmake
       - cscope
+      - g++
       - g++-5-multilib
       - g++-multilib
       - gcc-5-multilib
@@ -42,6 +43,7 @@ addons:
       - language-pack-tr
       - libc6-dev-i386
       - libtool
+      - libtool-bin
       - llvm-4.0-dev
       - locales
       - pkg-config
@@ -55,6 +57,7 @@ addons:
       - python-dev
       - python3-dev
       - python3-setuptools
+      - pkg-config
       - lua5.2
       - liblua5.2-dev
 
