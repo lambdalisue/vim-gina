@@ -8,15 +8,26 @@ environment:
     - CONDITION: http://vim-jp.org/redirects/koron/vim-kaoriya/latest/win64/
     - CONDITION: https://github.com/koron/vim-kaoriya/releases/download/v8.0.0082-20161113/vim80-kaoriya-win32-8.0.0082-20161113.zip
     - CONDITION: https://github.com/koron/vim-kaoriya/releases/download/v8.0.0082-20161113/vim80-kaoriya-win64-8.0.0082-20161113.zip
+    - CONDITION: Neovim 0.2-32
+    - CONDITION: Neovim 0.2-64
+    - CONDITION: Neovim development-32
+    - CONDITION: Neovim development-64
 install:
   - 'reg copy HKLM\SOFTWARE\Python\PythonCore\2.7 HKLM\SOFTWARE\Python\PythonCore\2.7-32 /s /reg:32'
   - 'reg copy HKLM\SOFTWARE\Python\PythonCore\2.7 HKLM\SOFTWARE\Python\PythonCore\2.7-32 /s /reg:64'
   - 'git config --global user.name "Appveyor"'
   - 'git config --global user.email appveyor@example.com'
   - 'git clone -q --depth 1 --single-branch https://github.com/thinca/vim-themis %TEMP%\vim-themis'
+  - ps: $Env:THEMIS_HOME = '%TEMP%\vim-themis'
+  - ps: $Env:PATH = '%THEMIS_HOME%\bin;%PATH%'
   - ps: .ci/install.ps1
 test_script:
+  - 'echo %PATH%'
+  - 'echo %THEMIS_HOME%'
+  - 'echo %THEMIS_VIM%'
+  - 'echo %THEMIS_ARGS%'
   - '%THEMIS_VIM% --version'
-  - '%TEMP%\vim-themis\bin\themis.bat --reporter dot'
+  - 'themis --version'
+  - 'themis --reporter dot'
 build: off
 deploy: off

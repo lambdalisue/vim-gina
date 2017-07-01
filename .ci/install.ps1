@@ -1,4 +1,4 @@
-function install_vim($name)
+﻿function install_vim($name)
 {
   $ver = $name -replace "^Official\s*", ""
   if ($ver -eq "latest")
@@ -39,7 +39,39 @@ function install_kaoriya_vim($url)
   $Env:THEMIS_VIM = $out + (Get-ChildItem $out).Name + '\vim.exe'
 }
 
-if ($Env:CONDITION.StartsWith("Official"))
+function install_nvim($name)
+{
+  $ver = $name -replace "^Neovims*", ""
+  if ($ver -eq "0.2-32")
+  {
+    $url = 'https://github.com/neovim/neovim/releases/download/v0.2.0/nvim-win32.zip'
+  }
+  elseif ($ver -eq "0.2-64")
+  {
+    $url = 'https://github.com/neovim/neovim/releases/download/v0.2.0/nvim-win64.zip'
+  }
+  elseif ($ver -eq "development-32")
+  {
+    $url = 'https://ci.appveyor.com/api/projects/neovim/neovim/artifacts/build/Neovim.zip?branch=master&job=Configuration%3A%20MINGW_32'
+  }
+  elseif ($ver -eq "development-64")
+  {
+    $url = 'https://ci.appveyor.com/api/projects/neovim/neovim/artifacts/build/Neovim.zip?branch=master&job=Configuration%3A%20MINGW_64'
+  }
+  $zip = $Env:APPVEYOR_BUILD_FOLDER + '\nvim.zip'
+  (New-Object Net.WebClient).DownloadFile($url, $zip)
+  [Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem') > $null
+  [System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $Env:APPVEYOR_BUILD_FOLDER)
+  $vim  = $Env:APPVEYOR_BUILD_FOLDER + '\nvim\Neovim\bin\nvim.exe'
+  $Env:THEMIS_VIM = $vim
+  $Env:THEMIS_ARGS = '-e -s --headless'
+}
+
+if ($Env:CONDITION.StartsWith("Neovim"))
+{
+  install_nvim $Env:CONDITION
+}
+elseif ($Env:CONDITION.StartsWith("Official"))
 {
   install_vim $Env:CONDITION
 }
