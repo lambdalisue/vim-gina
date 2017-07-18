@@ -5,6 +5,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#qrep#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
@@ -39,8 +40,148 @@ function! gina#command#qrep#call(range, args, mods) abort
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
 
+function! gina#command#qrep#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:cmdline =~# '\s--\s'
+    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead[0] ==# '-' || !empty(args.get(2))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#commit#any(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  if exists('s:options') && !g:gina#develop
+    return s:options
+  endif
+  let s:options = gina#core#options#new()
+  call s:options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call s:options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call s:options.define(
+        \ '--group=',
+        \ 'A window group name used for the buffer.',
+        \)
+  call s:options.define(
+        \ '--cached',
+        \ 'Search in index instead of in the work tree',
+        \)
+  call s:options.define(
+        \ '--no-index',
+        \ 'Find in contents not managed by git',
+        \)
+  call s:options.define(
+        \ '--untracked',
+        \ 'Search in both tracked and untracked files',
+        \)
+  call s:options.define(
+        \ '--exclude-standard',
+        \ 'Ignore files specified via .gitignore',
+        \)
+  call s:options.define(
+        \ '-v|--invert-match',
+        \ 'Show non-matching lines',
+        \)
+  call s:options.define(
+        \ '-i|--ignore-case',
+        \ 'Case insensitive matching',
+        \)
+  call s:options.define(
+        \ '-w|--word-regexp',
+        \ 'Match patterns only at word boundaries',
+        \)
+  call s:options.define(
+        \ '-a|--text',
+        \ 'Process binary files as text',
+        \)
+  call s:options.define(
+        \ '-I',
+        \ 'Don''t match patterns in binary files',
+        \)
+  call s:options.define(
+        \ '--textconv',
+        \ 'Process binary files with textconv filters',
+        \)
+  call s:options.define(
+        \ '--max-depth=',
+        \ 'Descend at most <depth> levels',
+        \)
+  call s:options.define(
+        \ '-E|--extended-regexp',
+        \ 'Use extended POSIC regular expression',
+        \)
+  call s:options.define(
+        \ '-G|--basic-regexp',
+        \ 'Use basic POSIX regular expression',
+        \)
+  call s:options.define(
+        \ '-F|--fixed-string',
+        \ 'Interpret patterns as fixed strings',
+        \)
+  call s:options.define(
+        \ '-P|--perl-regexp',
+        \ 'Use Perl-compatible regular expression',
+        \)
+  call s:options.define(
+        \ '--break',
+        \ 'Print empty line between matches from different files',
+        \)
+  call s:options.define(
+        \ '-C|--context=',
+        \ 'Show <n> context lines before and after matches',
+        \)
+  call s:options.define(
+        \ '-B|--before-context=',
+        \ 'Show <n> context lines before matches',
+        \)
+  call s:options.define(
+        \ '-A|--after-context=',
+        \ 'Show <n> context lines after matches',
+        \)
+  call s:options.define(
+        \ '--threads=',
+        \ 'Use <n> worker threads',
+        \)
+  call s:options.define(
+        \ '-p|--show-function',
+        \ 'Show a line with the function name before matches',
+        \)
+  call s:options.define(
+        \ '-W|--function-context',
+        \ 'Show the surrounding function',
+        \)
+  call s:options.define(
+        \ '-f',
+        \ 'Read patterns from file',
+        \)
+  call s:options.define(
+        \ '-e',
+        \ 'Match <pattern>',
+        \)
+  call s:options.define(
+        \ '--and|--or|--not',
+        \ 'Combine patterns specified with -e',
+        \)
+  call s:options.define(
+        \ '--all-match',
+        \ 'Show only matches from files that match all patterns',
+        \)
+  call s:options.define(
+        \ '--action',
+        \ 'An action which is specified to setqflist()',
+        \)
+  return s:options
+endfunction
+
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.bang = args.get(0) =~# '!$'
