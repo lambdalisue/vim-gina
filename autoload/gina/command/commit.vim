@@ -88,6 +88,18 @@ function! s:init(args) abort
 
   nnoremap <silent><buffer> <Plug>(gina-commit-amend)
         \ :<C-u>call <SID>toggle_amend()<CR>
+
+  if a:args.get('-v|--verbose')
+    nnoremap <buffer><silent> <Plug>(gina-diff-jump)
+          \ :<C-u>call gina#core#diff#jump()<CR>
+    nnoremap <buffer><silent> <Plug>(gina-diff-jump-split)
+          \ :<C-u>call gina#core#diff#jump('split')<CR>
+    nnoremap <buffer><silent> <Plug>(gina-diff-jump-vsplit)
+          \ :<C-u>call gina#core#diff#jump('vsplit')<CR>
+    if g:gina#command#commit#use_default_mappings
+      nmap <buffer> <CR> <Plug>(gina-diff-jump)
+    endif
+  endif
 endfunction
 
 function! s:BufReadCmd() abort
