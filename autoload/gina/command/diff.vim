@@ -68,6 +68,16 @@ function! s:init(args) abort
     autocmd BufWinEnter <buffer> setlocal buflisted
     autocmd BufWinLeave <buffer> setlocal nobuflisted
   augroup END
+
+  nnoremap <buffer><silent> <Plug>(gina-diff-jump)
+        \ :<C-u>call gina#core#diff#jump()<CR>
+  nnoremap <buffer><silent> <Plug>(gina-diff-jump-split)
+        \ :<C-u>call gina#core#diff#jump('split')<CR>
+  nnoremap <buffer><silent> <Plug>(gina-diff-jump-vsplit)
+        \ :<C-u>call gina#core#diff#jump('vsplit')<CR>
+  if g:gina#command#diff#use_default_mappings
+    nmap <buffer> <CR> <Plug>(gina-diff-jump)
+  endif
 endfunction
 
 function! s:BufReadCmd() abort
@@ -91,3 +101,9 @@ function! s:writer.on_stop() abort
   call self.super(s:writer, 'on_stop')
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
+
+
+" Config ---------------------------------------------------------------------
+call gina#config(expand('<sfile>'), {
+      \ 'use_default_mappings': 1,
+      \})
