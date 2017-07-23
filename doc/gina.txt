@@ -894,10 +894,22 @@ Note that no actions are available on this buffer.
 The following <Plug> mapping is available on this buffer
 	
 	<Plug>(gina-commit-amend)	Toggle "--amend" option
+	<Plug>(gina-diff-jump)		Jump to a corresponding file with a
+					corresponding line number.
+					If jumps to the source file when the
+					cursor is on removed line (the line
+					starts from '-') or destination file
+					when the cursor is on non modified or
+					added line (the line starts from ' '
+					or '+').
+					Works only on diff content visibled
+					when '-v' or '--verbose' option is
+					specified.
 
 And the following default keymapping is defined
 	
 	!		Switch --amend option
+	<Return>	Jump to a corresponding file
 
 Users can disable the default mappings by
 
@@ -909,7 +921,27 @@ DIFF						*gina-buffer-diff*
 					'filetype':	diff
 
 This is a "file-like" buffer which is shown by |:Gina-diff| command.
-Note that no actions or default mappings are available on this buffer.
+
+The following <Plug> mapping is available on this buffer
+	
+	<Plug>(gina-diff-jump)		Jump to a corresponding file with a
+					corresponding line number.
+					If jumps to the source file when the
+					cursor is on removed line (the line
+					starts from '-') or destination file
+					when the cursor is on non modified or
+					added line (the line starts from ' '
+					or '+')
+
+And the following default keymapping is defined
+	
+	<Return>	Jump to a corresponding file
+
+Users can disable the default mappings by
+
+	|g:gina#command#diff#use_default_mappings|
+
+Note that no actions are available on this buffer.
 
 -----------------------------------------------------------------------------
 GREP						*gina-buffer-grep*
