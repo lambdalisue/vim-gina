@@ -119,6 +119,7 @@ function! s:build_base_url(remote_url, scheme) abort
       let pattern = substitute(pattern, '\C' . '%domain', domain, 'g')
       if a:remote_url =~# pattern
         let repl = get(info[1], a:scheme, a:remote_url)
+        let repl = escape(repl, '&')
         return substitute(a:remote_url, '\C' . pattern, repl, 'g')
       endif
     endfor

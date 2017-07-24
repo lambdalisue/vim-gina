@@ -3,8 +3,10 @@ let s:repository_root = expand('<sfile>:p:h:h:h')
 Describe gina#command#browse
   Before all
     let Path = vital#gina#import('System.Filepath')
+    let Guard = vital#gina#import('Vim.Guard')
     let Scope = themis#helper('scope')
-    let sfile = Path.realpath('autoload/gina/util.vim')
+    let sfile = Path.realpath('autoload/gina/command/browse.vim')
+    let sfile_util = Path.realpath('autoload/gina/util.vim')
     execute 'source' fnameescape(sfile)
   End
 
@@ -13,7 +15,8 @@ Describe gina#command#browse
   End
 
   Before
-    let vars = Scope.vars(sfile)
+    let funcs = Scope.funcs(sfile)
+    let vars = Scope.vars(sfile_util)
     let vars.File._called_with = ''
     function! vars.File.open(uri) abort
       let self._called_with = a:uri
@@ -124,6 +127,44 @@ Describe gina#command#browse
       Assert Equals(
             \ getreg(),
             \ 'https://github.com/lambdalisue/gina.vim/blob/master/autoload/gina.vim'
+            \)
+    End
+  End
+
+  Describe s:build_base_url({remote_url}, {scheme})
+    Before
+      let _build_base_url_guard = Guard.store([
+            \ g:gina#command#browse#translation_patterns,
+            \])
+      let g:gina#command#browse#translation_patterns = {
+            \ 'bitbucket.org': [
+            \   [
+            \     '\vhttps?://(%domain)/(.{-})/(.{-})%(\.git)?$',
+            \     '\vgit://(%domain)/(.{-})/(.{-})%(\.git)?$',
+            \     '\vgit\@(%domain):(.{-})/(.{-})%(\.git)?$',
+            \     '\vssh://git\@(%domain)/(.{-})/(.{-})%(\.git)?$',
+            \   ], {
+            \     '_': 'https://\1/\2/\3/src/%r0/%pt%{#cl-|}ls',
+            \     'root': 'https://\1/\2/\3/branch/%r0',
+            \     'blame': 'https://\1/\2/\3/annotate/%r0/%pt',
+            \     'compare': 'https://\1/\2/\3/diff/%pt?diff1=%h1&diff2=%h2',
+            \   },
+            \ ],
+            \}
+    End
+
+    After
+      call _build_base_url_guard.restore()
+    End
+
+    It should not substitute '&' in {pattern}
+      let base_url = funcs.build_base_url(
+            \ 'ssh://git@bitbucket.org/foo/bar',
+            \ 'compare',
+            \)
+      Assert Equals(
+            \ base_url,
+            \ 'https://bitbucket.org/foo/bar/diff/%pt?diff1=%h1&diff2=%h2'
             \)
     End
   End
