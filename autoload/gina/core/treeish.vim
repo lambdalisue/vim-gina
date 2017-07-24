@@ -45,7 +45,8 @@ function! gina#core#treeish#sha1(git, rev) abort
   return get(result.stdout, 0, '')
 endfunction
 
-function! gina#core#treeish#resolve(git, rev) abort
+function! gina#core#treeish#resolve(git, rev, ...) abort
+  let aggressive = a:0 ? a:1 : 0
   if a:rev =~# '^.\{-}\.\.\..*$'
     let [lhs, rhs] = matchlist(a:rev, '^\(.\{-}\)\.\.\.\(.*\)$')[1 : 2]
     let lhs = empty(lhs) ? 'HEAD' : lhs
@@ -54,7 +55,15 @@ function! gina#core#treeish#resolve(git, rev) abort
   elseif a:rev =~# '^.\{-}\.\..*$'
     let [lhs, _] = matchlist(a:rev, '^\(.\{-}\)\.\.\(.*\)$')[1 : 2]
     let lhs = empty(lhs) ? 'HEAD' : lhs
-    return lhs
+    if aggressive
+      let ref = s:Git.ref(a:git, lhs)
+      return ref.name
+    else
+      return lhs
+    endif
+  elseif aggressive
+    let ref = s:Git.ref(a:git, a:rev)
+    return ref.name
   else
     return a:rev
   endif

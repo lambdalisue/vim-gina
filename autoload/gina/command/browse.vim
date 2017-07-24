@@ -90,9 +90,9 @@ function! s:parse_rev(git, rev) abort
   let hash1 = gina#core#treeish#sha1(a:git, commit1)
   let hash2 = gina#core#treeish#sha1(a:git, commit2)
   return {
-        \ 'commit0': gina#core#treeish#resolve(a:git, commit0),
-        \ 'commit1': gina#core#treeish#resolve(a:git, commit1),
-        \ 'commit2': gina#core#treeish#resolve(a:git, commit2),
+        \ 'commit0': gina#core#treeish#resolve(a:git, commit0, 1),
+        \ 'commit1': gina#core#treeish#resolve(a:git, commit1, 1),
+        \ 'commit2': gina#core#treeish#resolve(a:git, commit2, 1),
         \ 'hash0': hash0,
         \ 'hash1': hash1,
         \ 'hash2': hash2,
