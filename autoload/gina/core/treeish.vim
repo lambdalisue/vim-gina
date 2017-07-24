@@ -57,13 +57,13 @@ function! gina#core#treeish#resolve(git, rev, ...) abort
     let lhs = empty(lhs) ? 'HEAD' : lhs
     if aggressive
       let ref = s:Git.ref(a:git, lhs)
-      return ref.name
+      return get(ref, 'name', lhs)
     else
       return lhs
     endif
   elseif aggressive
     let ref = s:Git.ref(a:git, a:rev)
-    return ref.name
+    return get(ref, 'name', a:rev)
   else
     return a:rev
   endif

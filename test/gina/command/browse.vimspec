@@ -28,7 +28,7 @@ Describe gina#command#browse
       GinaSync browse
       Assert Equals(
             \ vars.File._called_with,
-            \ 'https://github.com/lambdalisue/gina.vim/tree/HEAD/'
+            \ 'https://github.com/lambdalisue/gina.vim/tree/master/'
             \)
     End
 
@@ -36,7 +36,7 @@ Describe gina#command#browse
       GinaSync browse :
       Assert Equals(
             \ vars.File._called_with,
-            \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/autoload/gina.vim'
+            \ 'https://github.com/lambdalisue/gina.vim/blob/master/autoload/gina.vim'
             \)
     End
 
@@ -90,7 +90,7 @@ Describe gina#command#browse
       GinaSync browse --scheme=blame :
       Assert Equals(
             \ vars.File._called_with,
-            \ 'https://github.com/lambdalisue/gina.vim/blame/HEAD/autoload/gina.vim'
+            \ 'https://github.com/lambdalisue/gina.vim/blame/master/autoload/gina.vim'
             \)
     End
 
@@ -98,7 +98,7 @@ Describe gina#command#browse
       3,3GinaSync browse :
       Assert Equals(
             \ vars.File._called_with,
-            \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/autoload/gina.vim#L3-L3'
+            \ 'https://github.com/lambdalisue/gina.vim/blob/master/autoload/gina.vim#L3-L3'
             \)
     End
 
@@ -106,7 +106,7 @@ Describe gina#command#browse
       3,5GinaSync browse :
       Assert Equals(
             \ vars.File._called_with,
-            \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/autoload/gina.vim#L3-L5'
+            \ 'https://github.com/lambdalisue/gina.vim/blob/master/autoload/gina.vim#L3-L5'
             \)
     End
 
@@ -114,7 +114,7 @@ Describe gina#command#browse
       GinaSync browse :README.md
       Assert Equals(
             \ vars.File._called_with,
-            \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/README.md'
+            \ 'https://github.com/lambdalisue/gina.vim/blob/master/README.md'
             \)
     End
 
@@ -123,7 +123,7 @@ Describe gina#command#browse
       Assert Equals(vars.File._called_with, '')
       Assert Equals(
             \ getreg(),
-            \ 'https://github.com/lambdalisue/gina.vim/blob/HEAD/autoload/gina.vim'
+            \ 'https://github.com/lambdalisue/gina.vim/blob/master/autoload/gina.vim'
             \)
     End
   End
