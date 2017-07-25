@@ -92,7 +92,7 @@ function! s:jump(opener) abort
   return 1
 endfunction
 
-function! gina#core#diff#jump(...) abort
+function! gina#core#diffjump#jump(...) abort
   let opener = a:0 ? a:1 : ''
   let opener = empty(opener) ? 'edit' : opener
   return gina#core#exception#call(
