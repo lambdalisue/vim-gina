@@ -67,7 +67,7 @@ function! s:_on_WinLeave(hash) abort
   execute 'augroup vital_vim_buffer_group_temporal_' . a:hash
   execute 'autocmd! *'
   execute printf(
-        \ 'autocmd WinEnter * call s:_on_WinEnter(''%s'', %d)',
+        \ 'autocmd WinEnter * nested call s:_on_WinEnter(''%s'', %d)',
         \ a:hash, winnr('$'),
         \)
   execute 'augroup END'

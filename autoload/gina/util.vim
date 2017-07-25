@@ -153,10 +153,16 @@ function! gina#util#diffthis() abort
   diffthis
   augroup gina_internal_util_diffthis
     autocmd! * <buffer>
-    autocmd BufHidden <buffer> call s:diffoff()
-    autocmd BufUnload <buffer> call s:diffoff()
-    autocmd BufDelete <buffer> call s:diffoff()
-    autocmd BufWipeout <buffer> call s:diffoff()
+    autocmd BufWinEnter *
+          \ if &diff && s:diffcount() == 1 |
+          \   call s:diffoff(0) |
+          \ endif
+    autocmd BufWinLeave <buffer>
+          \ if &diff && s:diffcount() == 2 |
+          \   call s:diffoff_all() |
+          \ elseif &diff |
+          \   call s:diffoff(1) |
+          \ endif
     autocmd BufWritePost <buffer> call s:diffupdate()
   augroup END
   call gina#util#diffupdate()
@@ -175,19 +181,44 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:syncbind(...) abort
   syncbind
+  silent! wincmd p
+  silent! wincmd p
 endfunction
 
-function! s:diffoff() abort
+function! s:diffoff(update) abort
   augroup gina_internal_util_diffthis
     autocmd! * <buffer>
   augroup END
   diffoff
-  diffupdate
+  if a:update
+    call s:diffupdate()
+  endif
+endfunction
+
+function! s:diffoff_all() abort
+  let winid = win_getid()
+  for winnr in range(1, winnr('$'))
+    if getwinvar(winnr, '&diff')
+      call win_gotoid(win_getid(winnr))
+      call s:diffoff(0)
+    endif
+  endfor
+  call win_gotoid(winid)
+  call s:diffupdate()
 endfunction
 
 function! s:diffupdate(...) abort
   diffupdate
   syncbind
+endfunction
+
+function! s:diffcount() abort
+  let indicators = map(
+        \ range(1, winnr('$')),
+        \ {nr -> getwinvar(nr, '&diff')}
+        \)
+  let indicators = filter(indicators, 'v:val')
+  return len(indicators)
 endfunction
 
 function! s:call_super(cls, method, ...) abort dict
