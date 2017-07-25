@@ -129,7 +129,7 @@ endfunction
 function! s:define_plug_mapping(command, bufnr, ...) abort
   let suffix = a:0 ? a:1 : ''
   let lhs = printf('<Plug>(gina-%s%s)', a:command, suffix)
-  let rhs = printf(':<C-u>%s %d<CR>', a:command, a:bufnr)
+  let rhs = printf(':<C-u>%s %d<CR>:diffupdate<CR>', a:command, a:bufnr)
   call gina#util#map(lhs, rhs, {
         \ 'mode': 'n',
         \ 'noremap': 1,
