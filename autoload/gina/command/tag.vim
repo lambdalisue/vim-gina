@@ -11,7 +11,7 @@ function! gina#command#tag#call(range, args, mods) abort
     call args.pop('--group')
     call args.pop('--opener')
     " Call raw git command
-    return gina#command#_raw#call(a:range, a:args, a:mods)
+    return gina#command#_raw#call(a:range, args, a:mods)
   endif
 
   " list
