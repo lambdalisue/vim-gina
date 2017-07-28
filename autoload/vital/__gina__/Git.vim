@@ -139,7 +139,7 @@ function! s:_get_reference_trad(git, refname) abort
   endif
   let name = matchstr(a:refname, '^refs/\%(heads\|remotes\|tags\)/\zs.*')
   return {
-        \ 'name': empty(name) ? a:refname : name,
+        \ 'name': empty(name) ? content[:7] : name,
         \ 'path': a:refname,
         \ 'hash': content,
         \}
