@@ -215,7 +215,7 @@ endfunction
 function! s:diffcount() abort
   let indicators = map(
         \ range(1, winnr('$')),
-        \ {nr -> getwinvar(nr, '&diff')}
+        \ 'getwinvar(v:val, ''&diff'')'
         \)
   let indicators = filter(indicators, 'v:val')
   return len(indicators)

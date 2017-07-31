@@ -137,8 +137,9 @@ function! s:_get_reference_trad(git, refname) abort
   if content =~# '^ref:'
     return s:_get_reference_trad(a:git, matchstr(content, '^ref:\s\+\zs.\+'))
   endif
+  let name = matchstr(a:refname, '^refs/\%(heads\|remotes\|tags\)/\zs.*')
   return {
-        \ 'name': matchstr(a:refname, '^refs/\%(heads\|remotes\|tags\)/\zs.*'),
+        \ 'name': empty(name) ? content[:7] : name,
         \ 'path': a:refname,
         \ 'hash': content,
         \}
