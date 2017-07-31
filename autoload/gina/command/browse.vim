@@ -105,7 +105,7 @@ function! s:get_remote_url(git, commit1, commit2) abort
   let candidates = [a:commit1, a:commit2, 'master']
   for candidate in candidates
     let remote_name = get(config, printf('branch.%s.remote', candidate), '')
-    if !empty(remote_name)
+    if !empty(remote_name) && remote_name !=# '.'
       break
     endif
   endfor
