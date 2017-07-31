@@ -29,6 +29,9 @@ if s:is_windows
   endfunction
 else
   function! gina#core#askpass#wrap(git, args) abort
+    if empty(a:git)
+      return a:args
+    endif
     let prefix = ['env', 'GIT_TERMINAL_PROMPT=0']
     let askpass = s:askpass(a:git)
     if !empty(askpass)
