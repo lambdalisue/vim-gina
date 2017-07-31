@@ -1,5 +1,6 @@
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Queue = vital#gina#import('Data.Queue')
+let s:String = vital#gina#import('Data.String')
 
 
 " Default pipe ---------------------------------------------------------------
@@ -65,7 +66,9 @@ let s:echo_pipe = gina#util#inherit(s:store_pipe)
 
 function! s:echo_pipe.on_exit(job, msg, event) abort
   if len(self._content)
-    call gina#core#console#message(join(self._content, "\n"))
+    call gina#core#console#message(
+          \ s:String.remove_ansi_sequences(join(self._content, "\n")),
+          \)
   endif
   call self.super(s:echo_pipe, 'on_exit', a:job, a:msg, a:event)
 endfunction

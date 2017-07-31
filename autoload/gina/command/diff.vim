@@ -368,11 +368,11 @@ function! s:init(args) abort
   augroup END
 
   nnoremap <buffer><silent> <Plug>(gina-diff-jump)
-        \ :<C-u>call gina#core#diff#jump()<CR>
+        \ :<C-u>call gina#core#diffjump#jump()<CR>
   nnoremap <buffer><silent> <Plug>(gina-diff-jump-split)
-        \ :<C-u>call gina#core#diff#jump('split')<CR>
+        \ :<C-u>call gina#core#diffjump#jump('split')<CR>
   nnoremap <buffer><silent> <Plug>(gina-diff-jump-vsplit)
-        \ :<C-u>call gina#core#diff#jump('vsplit')<CR>
+        \ :<C-u>call gina#core#diffjump#jump('vsplit')<CR>
   if g:gina#command#diff#use_default_mappings
     nmap <buffer> <CR> <Plug>(gina-diff-jump)
   endif

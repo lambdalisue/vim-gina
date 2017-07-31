@@ -125,9 +125,9 @@ function! s:parse_rev(git, rev) abort
   let hash1 = gina#core#treeish#sha1(a:git, commit1)
   let hash2 = gina#core#treeish#sha1(a:git, commit2)
   return {
-        \ 'commit0': gina#core#treeish#resolve(a:git, commit0),
-        \ 'commit1': gina#core#treeish#resolve(a:git, commit1),
-        \ 'commit2': gina#core#treeish#resolve(a:git, commit2),
+        \ 'commit0': gina#core#treeish#resolve(a:git, commit0, 1),
+        \ 'commit1': gina#core#treeish#resolve(a:git, commit1, 1),
+        \ 'commit2': gina#core#treeish#resolve(a:git, commit2, 1),
         \ 'hash0': hash0,
         \ 'hash1': hash1,
         \ 'hash2': hash2,
@@ -140,7 +140,7 @@ function! s:get_remote_url(git, commit1, commit2) abort
   let candidates = [a:commit1, a:commit2, 'master']
   for candidate in candidates
     let remote_name = get(config, printf('branch.%s.remote', candidate), '')
-    if !empty(remote_name)
+    if !empty(remote_name) && remote_name !=# '.'
       break
     endif
   endfor
@@ -154,6 +154,7 @@ function! s:build_base_url(remote_url, scheme) abort
       let pattern = substitute(pattern, '\C' . '%domain', domain, 'g')
       if a:remote_url =~# pattern
         let repl = get(info[1], a:scheme, a:remote_url)
+        let repl = escape(repl, '&')
         return substitute(a:remote_url, '\C' . pattern, repl, 'g')
       endif
     endfor
@@ -186,7 +187,7 @@ call gina#config(expand('<sfile>'), {
       \       '\vssh://git\@(%domain)/(.{-})/(.{-})%(\.git)?$',
       \     ], {
       \       '_': 'https://\1/\2/\3/src/%r0/%pt%{#cl-|}ls',
-      \       'root': 'https://\1/\2/\3/branch/%r0/',
+      \       'root': 'https://\1/\2/\3/branch/%r0',
       \       'blame': 'https://\1/\2/\3/annotate/%r0/%pt',
       \       'compare': 'https://\1/\2/\3/diff/%pt?diff1=%h1&diff2=%h2',
       \     },
