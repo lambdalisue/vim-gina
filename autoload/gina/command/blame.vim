@@ -16,7 +16,7 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:build_args(git, args) abort
+function! s:build_args(git, args, range) abort
   let args = a:args.clone()
   let args.params.groups = [
         \ args.pop('--group1', 'blame-body'),
@@ -35,6 +35,11 @@ function! s:build_args(git, args) abort
           \))
   endif
 
+  if !(a:range[0] == 1 && a:range[1] == line('$'))
+    " Apply visual range
+    call args.set('-L', join(a:range, ','))
+  endif
+
   call args.pop('--porcelain')
   call args.pop('--line-porcelain')
   call args.set('--incremental', 1)
@@ -45,7 +50,7 @@ endfunction
 
 function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:args)
+  let args = s:build_args(git, a:args, a:range)
   let mods = gina#util#contain_direction(a:mods)
         \ ? 'keepalt ' . a:mods
         \ : join(['keepalt', 'rightbelow', a:mods])
