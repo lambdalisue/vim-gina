@@ -791,8 +791,9 @@ Additionally, users can customize the content via the following variables.
 
 	|g:gina#command#blame#formatter#separator|
 	|g:gina#command#blame#formatter#current_mark|
-	|g:gina#command#blame#timestamper#format1|
-	|g:gina#command#blame#timestamper#format2|
+	|g:gina#command#blame#formatter#timestamp_months|
+	|g:gina#command#blame#formatter#timestamp_format1|
+	|g:gina#command#blame#formatter#timestamp_format2|
 >
 The following is a recommended customization while gina does not show exact
 SHA1 of the revision of the chunk.
@@ -1952,17 +1953,30 @@ g:gina#command#blame#formatter#current_mark
 	equal to the revision of the blame content.
 	Default: "|"
 
-		*g:gina#command#blame#timestamper#format1*
-g:gina#command#blame#timestamper#format1
+		*g:gina#command#blame#formatter#timestamp_months*
+g:gina#command#blame#formatter#timestamp_months
+	Threshold number of months to use human friendly timestamp.
+	Default: 3
+
+		*g:gina#command#blame#formatter#timestamp_format1*
+g:gina#command#blame#formatter#timestamp_format1
 	A |strftime()| format used for an absolute timestamp which year is
 	equal to the year of the current time.
 	Default: "%d %b"
 
-		*g:gina#command#blame#timestamper#format2*
-g:gina#command#blame#timestamper#format2
+		*g:gina#command#blame#formatter#timestamp_format2*
+g:gina#command#blame#formatter#timestamp_format2
 	A |strftime()| format used for an absolute timestamp which year is
 	NOT equal to the year of the current time.
 	Default: "%d %b, %Y"
+
+		*g:gina#command#blame#timestamper#format1*
+g:gina#command#blame#timestamper#format1
+	Removed. Use |gina#command#blame#formatter#timestamp_format1|.
+
+		*g:gina#command#blame#timestamper#format2*
+g:gina#command#blame#timestamper#format2
+	Removed. Use |gina#command#blame#formatter#timestamp_format2|.
 
 		*g:gina#command#browse#translation_patterns*
 g:gina#command#browse#translation_patterns

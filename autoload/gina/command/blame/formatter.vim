@@ -13,7 +13,11 @@ function! gina#command#blame#formatter#new(width, current, revisions, ...) abort
   let formatter._current = empty(a:current) ? 'X' : a:current
   let formatter._revisions = s:index_revisions(a:revisions)
   let formatter._previous = 1
-  let formatter._timestamper = gina#command#blame#timestamper#new()
+  let formatter._timestamper = gina#core#timestamper#new({
+        \ 'months': g:gina#command#blame#formatter#timestamp_months,
+        \ 'format1': g:gina#command#blame#formatter#timestamp_format1,
+        \ 'format2': g:gina#command#blame#formatter#timestamp_format2,
+        \})
   let formatter._cache = {}
   let formatter._use_author_instead = options.use_author_instead
   return formatter
@@ -93,4 +97,7 @@ endfunction
 call gina#config(expand('<sfile>'), {
       \ 'separator': '...',
       \ 'current_mark': '|',
+      \ 'timestamp_months': 3,
+      \ 'timestamp_format1': '%d %b',
+      \ 'timestamp_format2': '%d %b, %Y',
       \})
