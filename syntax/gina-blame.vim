@@ -17,7 +17,7 @@ let s:TERM_COLORS = [
       \]
 
 syntax match GinaBlameBase /.*/ display
-syntax match GinaBlameSummary /^.*\zeon .\{-}/ containedin=GinaBlameBase
+syntax match GinaBlameSummary /^.*\ze\<on .\{-}/ containedin=GinaBlameBase
 
 execute printf(
       \ 'syn match GinaBlameRev /\%%(%s\|%s\)[0-9A-F]\+$/ containedin=GinaBlameBase',
