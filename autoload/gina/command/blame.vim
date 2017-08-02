@@ -187,6 +187,7 @@ function! s:call(range, args, mods) abort
   " Navi
   let bufname = gina#core#buffer#bufname(git, 'blame', {
         \ 'treeish': args.params.treeish,
+        \ 'noautocmd': 1,
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': 'leftabove',

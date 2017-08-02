@@ -13,6 +13,7 @@ function! gina#command#diff#call(range, args, mods) abort
         \   args.params.R ? 'R' : '',
         \   args.params.partial ? '--' : '',
         \ ],
+        \ 'noautocmd': !empty(args.params.path),
         \})
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,

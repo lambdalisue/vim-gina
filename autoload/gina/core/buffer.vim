@@ -1,10 +1,12 @@
 let s:Buffer = vital#gina#import('Vim.Buffer')
+let s:String = vital#gina#import('Data.String')
 let s:Exception = vital#gina#import('Vim.Exception')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:Path = vital#gina#import('System.Filepath')
 let s:Window = vital#gina#import('Vim.Window')
 
+let s:NOAUTOCMD_SUFFIX = ':$'
 let s:DEFAULT_PARAMS_ATTRIBUTES = {
       \ 'repo': '',
       \ 'scheme': '',
@@ -23,19 +25,21 @@ function! gina#core#buffer#bufname(git, scheme, ...) abort
         \ gina#util#get(options, 'path'),
         \))
   return s:normalize_bufname(printf(
-        \ 'gina://%s:%s%s/%s',
+        \ 'gina://%s:%s%s/%s%s',
         \ a:git.refname,
         \ a:scheme,
         \ empty(params) ? '' : ':' . join(params, ':'),
         \ s:Path.unixpath(substitute(treeish, '^:0', '', '')),
+        \ gina#util#get(options, 'noautocmd', 0) ? s:NOAUTOCMD_SUFFIX : '',
         \))
 endfunction
 
 function! gina#core#buffer#parse(expr) abort
   let path = expand(a:expr)
-  let m = matchlist(
-        \ path,'\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?(:[0-3]|[^:]*%(:.*)?)$',
-        \)
+  let m = matchlist(path, printf(
+        \ '\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?(:[0-3]|[^:]*%%(:[^:]*)?)%%(\m%s\v)?$',
+        \ s:String.escape_pattern(s:NOAUTOCMD_SUFFIX),
+        \))
   if empty(m)
     return {}
   endif
