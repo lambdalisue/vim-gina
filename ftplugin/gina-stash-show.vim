@@ -9,6 +9,7 @@ call gina#action#include('compare')
 call gina#action#include('diff')
 call gina#action#include('edit')
 call gina#action#include('show')
+call gina#action#include('yank')
 
 if g:gina#command#stash#show#use_default_aliases
   call gina#action#shorten('show')
