@@ -6,6 +6,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#blame#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   call gina#process#register(s:SCHEME, 1)
   try
     call s:call(a:range, a:args, a:mods)
@@ -14,9 +15,96 @@ function! gina#command#blame#call(range, args, mods) abort
   endtry
 endfunction
 
+function! gina#command#blame#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#common#treeish(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
 
 " Private --------------------------------------------------------------------
-function! s:build_args(git, args) abort
+function! s:get_options() abort
+  if exists('s:options') && !g:gina#develop
+    return s:options
+  endif
+  let s:options = gina#core#options#new()
+  call s:options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call s:options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call s:options.define(
+        \ '--line=',
+        \ 'An initial line number.',
+        \)
+  call s:options.define(
+        \ '--col=',
+        \ 'An initial column number.',
+        \)
+  call s:options.define(
+        \ '--group1=',
+        \ 'A window group name used for a blame body buffer.',
+        \)
+  call s:options.define(
+        \ '--group2=',
+        \ 'A window group name used for a blame navigation buffer.',
+        \)
+  call s:options.define(
+        \ '--width=',
+        \ 'A window width used for a blame navigation buffer.',
+        \)
+  call s:options.define(
+        \ '--use-author-instead',
+        \ 'Use an author name instead of a commit summary.',
+        \)
+  call s:options.define(
+        \ '--root',
+        \ 'Do not treat root commits as boundaries.',
+        \)
+  call s:options.define(
+        \ '-L',
+        \ 'Annotate only the given line range. May be specified multiple times.',
+        \)
+  call s:options.define(
+        \ '--reverse=',
+        \ 'Walk history forward instead of backward.',
+        \ function('gina#complete#range#any'),
+        \)
+  call s:options.define(
+        \ '--encoding=',
+        \ 'Specifies the encoding used to output.',
+        \)
+  call s:options.define(
+        \ '--content=', join([
+        \   'This flag makes the command pretend as if the working tree copy',
+        \   'has the contents of the named file.',
+        \   'Works only when {rev} is not specified.'
+        \ ]),
+        \ function('gina#complete#filename#any'),
+        \)
+  call s:options.define(
+        \ '-M',
+        \ 'Detect moved or copied lines within a file.',
+        \)
+  call s:options.define(
+        \ '-C',
+        \ 'In addition to -M, detect lines moved or copied from other files.',
+        \)
+  call s:options.define(
+        \ '-w',
+        \ 'Ignore whitespace when comparing.',
+        \)
+  return s:options
+endfunction
+
+function! s:build_args(git, args, range) abort
   let args = a:args.clone()
   let args.params.groups = [
         \ args.pop('--group1', 'blame-body'),
@@ -35,6 +123,11 @@ function! s:build_args(git, args) abort
           \))
   endif
 
+  if !(a:range[0] == 1 && a:range[1] == line('$'))
+    " Apply visual range
+    call args.set('-L', join(a:range, ','))
+  endif
+
   call args.pop('--porcelain')
   call args.pop('--line-porcelain')
   call args.set('--incremental', 1)
@@ -45,7 +138,7 @@ endfunction
 
 function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:args)
+  let args = s:build_args(git, a:args, a:range)
   let mods = gina#util#contain_direction(a:mods)
         \ ? 'keepalt ' . a:mods
         \ : join(['keepalt', 'rightbelow', a:mods])
