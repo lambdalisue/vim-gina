@@ -41,28 +41,25 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:get_options() abort
-  if exists('s:options') && !g:gina#develop
-    return s:options
-  endif
-  let s:options = gina#core#options#new()
-  call s:options.define(
+  let options = gina#core#options#new()
+  call options.define(
         \ '-h|--help',
         \ 'Show this help.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--scheme=',
         \ 'Specify a URL scheme to open.',
         \ ['_', 'root', 'blame', 'compare'],
         \)
-  call s:options.define(
+  call options.define(
         \ '--exact',
         \ 'Use a sha1 instead of a branch name.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--yank',
         \ 'Yank a URL instead of opening.',
         \)
-  return s:options
+  return options
 endfunction
 
 function! s:build_args(git, args, range) abort

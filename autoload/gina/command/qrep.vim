@@ -54,132 +54,129 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:get_options() abort
-  if exists('s:options') && !g:gina#develop
-    return s:options
-  endif
-  let s:options = gina#core#options#new()
-  call s:options.define(
+  let options = gina#core#options#new()
+  call options.define(
         \ '-h|--help',
         \ 'Show this help.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--opener=',
         \ 'A Vim command to open a new buffer.',
         \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
         \)
-  call s:options.define(
+  call options.define(
         \ '--group=',
         \ 'A window group name used for the buffer.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--cached',
         \ 'Search in index instead of in the work tree',
         \)
-  call s:options.define(
+  call options.define(
         \ '--no-index',
         \ 'Find in contents not managed by git',
         \)
-  call s:options.define(
+  call options.define(
         \ '--untracked',
         \ 'Search in both tracked and untracked files',
         \)
-  call s:options.define(
+  call options.define(
         \ '--exclude-standard',
         \ 'Ignore files specified via .gitignore',
         \)
-  call s:options.define(
+  call options.define(
         \ '-v|--invert-match',
         \ 'Show non-matching lines',
         \)
-  call s:options.define(
+  call options.define(
         \ '-i|--ignore-case',
         \ 'Case insensitive matching',
         \)
-  call s:options.define(
+  call options.define(
         \ '-w|--word-regexp',
         \ 'Match patterns only at word boundaries',
         \)
-  call s:options.define(
+  call options.define(
         \ '-a|--text',
         \ 'Process binary files as text',
         \)
-  call s:options.define(
+  call options.define(
         \ '-I',
         \ 'Don''t match patterns in binary files',
         \)
-  call s:options.define(
+  call options.define(
         \ '--textconv',
         \ 'Process binary files with textconv filters',
         \)
-  call s:options.define(
+  call options.define(
         \ '--max-depth=',
         \ 'Descend at most <depth> levels',
         \)
-  call s:options.define(
+  call options.define(
         \ '-E|--extended-regexp',
         \ 'Use extended POSIC regular expression',
         \)
-  call s:options.define(
+  call options.define(
         \ '-G|--basic-regexp',
         \ 'Use basic POSIX regular expression',
         \)
-  call s:options.define(
+  call options.define(
         \ '-F|--fixed-string',
         \ 'Interpret patterns as fixed strings',
         \)
-  call s:options.define(
+  call options.define(
         \ '-P|--perl-regexp',
         \ 'Use Perl-compatible regular expression',
         \)
-  call s:options.define(
+  call options.define(
         \ '--break',
         \ 'Print empty line between matches from different files',
         \)
-  call s:options.define(
+  call options.define(
         \ '-C|--context=',
         \ 'Show <n> context lines before and after matches',
         \)
-  call s:options.define(
+  call options.define(
         \ '-B|--before-context=',
         \ 'Show <n> context lines before matches',
         \)
-  call s:options.define(
+  call options.define(
         \ '-A|--after-context=',
         \ 'Show <n> context lines after matches',
         \)
-  call s:options.define(
+  call options.define(
         \ '--threads=',
         \ 'Use <n> worker threads',
         \)
-  call s:options.define(
+  call options.define(
         \ '-p|--show-function',
         \ 'Show a line with the function name before matches',
         \)
-  call s:options.define(
+  call options.define(
         \ '-W|--function-context',
         \ 'Show the surrounding function',
         \)
-  call s:options.define(
+  call options.define(
         \ '-f',
         \ 'Read patterns from file',
         \)
-  call s:options.define(
+  call options.define(
         \ '-e',
         \ 'Match <pattern>',
         \)
-  call s:options.define(
+  call options.define(
         \ '--and|--or|--not',
         \ 'Combine patterns specified with -e',
         \)
-  call s:options.define(
+  call options.define(
         \ '--all-match',
         \ 'Show only matches from files that match all patterns',
         \)
-  call s:options.define(
+  call options.define(
         \ '--action',
         \ 'An action which is specified to setqflist()',
         \)
-  return s:options
+  return options
 endfunction
 
 function! s:build_args(git, args) abort

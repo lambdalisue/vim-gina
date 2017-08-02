@@ -76,136 +76,133 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:get_options() abort
-  if exists('s:options') && !g:gina#develop
-    return s:options
-  endif
-  let s:options = gina#core#options#new()
-  call s:options.define(
+  let options = gina#core#options#new()
+  call options.define(
         \ '-h|--help',
         \ 'Show this help.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--opener=',
         \ 'A Vim command to open a new buffer.',
         \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
         \)
-  call s:options.define(
+  call options.define(
         \ '--cached',
         \ 'Compare to the index rather than the working tree',
         \)
-  call s:options.define(
+  call options.define(
         \ '-U|--unified=',
         \ 'Generate diffs with <n> lines of context',
         \)
-  call s:options.define(
+  call options.define(
         \ '--raw',
         \ 'Generate the diff in raw format',
         \)
-  call s:options.define(
+  call options.define(
         \ '--patch-with-raw',
         \ 'Synonym for -p --raw',
         \)
-  call s:options.define(
+  call options.define(
         \ '--minimal',
         \ 'Spend extra time to make sure the smallest possible diff is produced',
         \)
-  call s:options.define(
+  call options.define(
         \ '--patience',
         \ 'Generate a diff using the "patience diff" algorithm',
         \)
-  call s:options.define(
+  call options.define(
         \ '--histogram',
         \ 'Generate a diff using the "histogram diff" algorithm',
         \)
-  call s:options.define(
+  call options.define(
         \ '--diff-algorithm',
         \ 'Choose a diff algorithm',
         \)
-  call s:options.define(
+  call options.define(
         \ '--stat',
         \ 'Generate a diffstat',
         \)
-  call s:options.define(
+  call options.define(
         \ '--numstat',
         \ 'Similar to --stat, but with more machine friendly output',
         \)
-  call s:options.define(
+  call options.define(
         \ '--shortstat',
         \ 'Output only the last line of the --stat format',
         \)
-  call s:options.define(
+  call options.define(
         \ '--dirstat',
         \ 'Output the dirstat numbers',
         \)
-  call s:options.define(
+  call options.define(
         \ '--summary',
         \ 'Output a condensed summary of extended header information',
         \)
-  call s:options.define(
+  call options.define(
         \ '--patch-with-stat',
         \ 'Synonym for -p --stat',
         \)
-  call s:options.define(
+  call options.define(
         \ '--name-only',
         \ 'Show only names of changed files',
         \)
-  call s:options.define(
+  call options.define(
         \ '--name-status',
         \ 'Show only names and status of changed files',
         \)
-  call s:options.define(
+  call options.define(
         \ '--submodule',
         \ 'Specify how differences in submodules are shown',
         \)
-  call s:options.define(
+  call options.define(
         \ '--submodule',
         \ 'Specify how differences in submodules are shown',
         \)
-  call s:options.define(
+  call options.define(
         \ '--no-renames',
         \ 'Turn off rename detection',
         \)
-  call s:options.define(
+  call options.define(
         \ '--check',
         \ 'Warn if changes introduce conflict markers or whitespace errors',
         \)
-  call s:options.define(
+  call options.define(
         \ '--full-index',
         \ 'Instead of the first handful of characters,show the full blob',
         \)
-  call s:options.define(
+  call options.define(
         \ '--binary',
         \ 'In addition to --full-index, output a binary diff',
         \)
-  call s:options.define(
+  call options.define(
         \ '--abbrev',
         \ 'Show only a particular prefix hexadecimal object name',
         \)
-  call s:options.define(
+  call options.define(
         \ '-B|--break-rewrites',
         \ 'Break complete rewrite changes into pair of delete and create',
         \)
-  call s:options.define(
+  call options.define(
         \ '-M|--find-renames',
         \ 'Detect renames. -M<n> to specify the threshold.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-C|--find-copies',
         \ 'Detect copies as well as renames. -C<n> to specify the threshold',
         \)
-  call s:options.define(
+  call options.define(
         \ '--find-copies-harder',
         \ 'Detect copies more harder than -C/--find-copies',
         \)
-  call s:options.define(
+  call options.define(
         \ '-D|--irreversible-delete',
         \ 'Omit the preimage for deletes',
         \)
-  call s:options.define(
+  call options.define(
         \ '-l',
         \ 'Specify the threshold of -M or -C',
         \)
-  call s:options.define(
+  call options.define(
         \ '--diff-filter=', join([
         \   'Specify the Select only files that are Added(A), Copied(C), ',
         \   'Deleted (D), Modified (M), Renamed (R), ',
@@ -213,107 +210,107 @@ function! s:get_options() abort
         \   'are Unknown (X), or have had their pairing Broken (B)',
         \ ])
         \)
-  call s:options.define(
+  call options.define(
         \ '-S', join([
         \   'Look for differences that change the number of occurrences of ',
         \   'the specified string in a file.'
         \ ])
         \)
-  call s:options.define(
+  call options.define(
         \ '-G', join([
         \   'Look for differences whose patch text contains added/removed ',
         \   'line that match <regex>'
         \ ])
         \)
-  call s:options.define(
+  call options.define(
         \ '--pickaxe-all', join([
         \   'Wnen -S or -G finds a change, show all the changes in that ',
         \   'changeset, not just the files and contain the change'
         \ ])
         \)
-  call s:options.define(
+  call options.define(
         \ '--pickaxe-regex', join([
         \   'Treat the <string> given to -S as an extended POSIX regular ',
         \   'expression to match'
         \ ])
         \)
-  call s:options.define(
+  call options.define(
         \ '-O',
         \ 'Output the patch in the order specified in the <orderfile>',
         \)
-  call s:options.define(
+  call options.define(
         \ '-R',
         \ 'Swap two inputs',
         \)
-  call s:options.define(
+  call options.define(
         \ '--relative',
         \ 'Show pathnames relative to',
         \)
-  call s:options.define(
+  call options.define(
         \ '-a|--text',
         \ 'Treat all files as text',
         \)
-  call s:options.define(
+  call options.define(
         \ '--ignore-space-at-eol',
         \ 'Ignore changes in whitespace at EOL',
         \)
-  call s:options.define(
+  call options.define(
         \ '-b|--ignore-space-change',
         \ 'Ignore changes in amount of whitespace',
         \)
-  call s:options.define(
+  call options.define(
         \ '-w|--ignore-all-space',
         \ 'Ignore whitespace when comparing lines',
         \)
-  call s:options.define(
+  call options.define(
         \ '--ignore-blank-lines',
         \ 'Ignore changes whose line are all blank',
         \)
-  call s:options.define(
+  call options.define(
         \ '--inter-hunk-context=',
         \ 'Show the context between diff hunks',
         \)
-  call s:options.define(
+  call options.define(
         \ '-W|--function-context',
         \ 'Show whole surrounding functions of changes',
         \)
-  call s:options.define(
+  call options.define(
         \ '--ext-diff',
         \ 'Allow an external diff helper to be executed',
         \)
-  call s:options.define(
+  call options.define(
         \ '--no-ext-diff',
         \ 'Disallow external diff drivers',
         \)
-  call s:options.define(
+  call options.define(
         \ '--textconv',
         \ 'Allow an external text conversion filters',
         \)
-  call s:options.define(
+  call options.define(
         \ '--no-textconv',
         \ 'Disallow an external text conversion filters',
         \)
-  call s:options.define(
+  call options.define(
         \ '--ignore-submodules',
         \ 'Ignore changes to submodules in the diff generation',
         \)
-  call s:options.define(
+  call options.define(
         \ '--src-prefix=',
         \ 'Show the given source prefix instead of "a/"',
         \)
-  call s:options.define(
+  call options.define(
         \ '--dst-prefix=',
         \ 'Show the given destination prefix instead of "a/"',
         \)
-  call s:options.define(
+  call options.define(
         \ '--no-prefix',
         \ 'Do not show any source or destination prefix',
         \)
-  call s:options.define(
+  call options.define(
         \ '--line-prefix=',
         \ 'Prepend an additional prefix to every line of output',
         \)
-  return s:options
+  return options
 endfunction
 
 function! s:build_args(git, args) abort

@@ -27,61 +27,58 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:get_options() abort
-  if exists('s:options') && !g:gina#develop
-    return s:options
-  endif
-  let s:options = gina#core#options#new()
-  call s:options.define(
+  let options = gina#core#options#new()
+  call options.define(
         \ '-h|--help',
         \ 'Show this help.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--opener=',
         \ 'A Vim command to open a new buffer.',
         \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
         \)
-  call s:options.define(
+  call options.define(
         \ '--line=',
         \ 'An initial line number.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--col=',
         \ 'An initial column number.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--group1=',
         \ 'A window group name used for a blame body buffer.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--group2=',
         \ 'A window group name used for a blame navigation buffer.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--width=',
         \ 'A window width used for a blame navigation buffer.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--format=',
         \ 'Format string used to construct the navi line.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--root',
         \ 'Do not treat root commits as boundaries.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-L',
         \ 'Annotate only the given line range. May be specified multiple times.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--reverse=',
         \ 'Walk history forward instead of backward.',
         \ function('gina#complete#range#any'),
         \)
-  call s:options.define(
+  call options.define(
         \ '--encoding=',
         \ 'Specifies the encoding used to output.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--content=', join([
         \   'This flag makes the command pretend as if the working tree copy',
         \   'has the contents of the named file.',
@@ -89,19 +86,19 @@ function! s:get_options() abort
         \ ]),
         \ function('gina#complete#filename#any'),
         \)
-  call s:options.define(
+  call options.define(
         \ '-M',
         \ 'Detect moved or copied lines within a file.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-C',
         \ 'In addition to -M, detect lines moved or copied from other files.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-w',
         \ 'Ignore whitespace when comparing.',
         \)
-  return s:options
+  return options
 endfunction
 
 function! s:build_args(git, args, range) abort

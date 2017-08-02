@@ -56,138 +56,135 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:get_options() abort
-  if exists('s:options') && !g:gina#develop
-    return s:options
-  endif
-  let s:options = gina#core#options#new()
-  call s:options.define(
+  let options = gina#core#options#new()
+  call options.define(
         \ '-h|--help',
         \ 'Show this help.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--opener=',
         \ 'A Vim command to open a new buffer.',
         \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
         \)
-  call s:options.define(
+  call options.define(
         \ '--group=',
         \ 'A window group name used for a buffer.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-a|--all',
         \ 'Commit all changed files',
         \)
-  call s:options.define(
+  call options.define(
         \ '-C|--reuse-message=',
         \ 'Reuse message from specified commit',
         \)
-  call s:options.define(
+  call options.define(
         \ '-c|--reedit-message=',
         \ 'Reuse and edit message from specified commit',
         \)
-  call s:options.define(
+  call options.define(
         \ '--fixup=',
         \ 'Use autosquash formatted message to fixup specified commit',
         \)
-  call s:options.define(
+  call options.define(
         \ '--squash=',
         \ 'Use autosquash formatted message to squash specified commit',
         \)
-  call s:options.define(
+  call options.define(
         \ '--reset-author',
         \ 'The commit is authored by me now (used with -C/-c/--amend)',
         \)
-  call s:options.define(
+  call options.define(
         \ '-F|--file=',
         \ 'Read message from file',
         \)
-  call s:options.define(
+  call options.define(
         \ '--author=',
         \ 'Override the commit author',
         \)
-  call s:options.define(
+  call options.define(
         \ '--date=',
         \ 'Override the author date used in the commit',
         \)
-  call s:options.define(
+  call options.define(
         \ '-m|--message=',
         \ 'Use the given message as the commit message',
         \)
-  call s:options.define(
+  call options.define(
         \ '-t|--template=',
         \ 'Read message from file and use it as a template',
         \)
-  call s:options.define(
+  call options.define(
         \ '-s|--signoff',
         \ 'Add Signed-off-by:',
         \)
-  call s:options.define(
+  call options.define(
         \ '--allow-empty',
         \ 'Allow empty commit',
         \)
-  call s:options.define(
+  call options.define(
         \ '--allow-empty-message',
         \ 'Allow empty commit message',
         \)
-  call s:options.define(
+  call options.define(
         \ '--cleanup=',
         \ 'How to strip spaces and #comments from message',
         \ ['strip', 'whitespace', 'verbatim', 'scissors', 'default'],
         \)
-  call s:options.define(
+  call options.define(
         \ '-e|--edit',
         \ 'Force edit of commit',
         \)
-  call s:options.define(
+  call options.define(
         \ '--no-edit',
         \ 'Use the selected commit message without editing',
         \)
-  call s:options.define(
+  call options.define(
         \ '--amend',
         \ 'Replace the tip of the current branch by creating a new commit',
         \)
-  call s:options.define(
+  call options.define(
         \ '-i|--include',
         \ 'Add specified files to index for commit',
         \)
-  call s:options.define(
+  call options.define(
         \ '-o|--only',
         \ 'Commit only specified files',
         \)
-  call s:options.define(
+  call options.define(
         \ '-u|--untracked-files=',
         \ 'Show untracked files, optional modes: all, normal, no (Default: all)',
         \ ['no', 'normal', 'all'],
         \)
-  call s:options.define(
+  call options.define(
         \ '-v|--verbose',
         \ 'Show unified diff between the HEAD commit and what would be committed',
         \)
-  call s:options.define(
+  call options.define(
         \ '-q|--quiet',
         \ 'Suppress commit summary message',
         \)
-  call s:options.define(
+  call options.define(
         \ '--dry-run',
         \ 'Do not create a commit, but show a list of paths that are to be committed',
         \)
-  call s:options.define(
+  call options.define(
         \ '--status',
         \ 'Include status in commit message template',
         \)
-  call s:options.define(
+  call options.define(
         \ '--no-status',
         \ 'Do not include status in commit message template',
         \)
-  call s:options.define(
+  call options.define(
         \ '-S|--gpg-sign',
         \ 'GPG sign commit',
         \)
-  call s:options.define(
+  call options.define(
         \ '--no-gpg-sign',
         \ 'Do not GPG sign commit',
         \)
-  return s:options
+  return options
 endfunction
 
 function! s:build_args(args) abort

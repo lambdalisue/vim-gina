@@ -25,19 +25,16 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:get_options() abort
-  if exists('s:options') && !g:gina#develop
-    return s:options
-  endif
-  let s:options = gina#core#options#new()
-  call s:options.define(
+  let options = gina#core#options#new()
+  call options.define(
         \ '-h|--help',
         \ 'Show this help.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--local',
         \ 'Use "lcd" command instead of "cd" command.',
         \)
-  return s:options
+  return options
 endfunction
 
 function! s:build_args(git, args) abort

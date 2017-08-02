@@ -36,8 +36,6 @@ function! gina#command#reflog#complete(arglead, cmdline, cursorpos) abort
     if a:arglead =~# '^-'
       let options = s:get_options_show()
       return options.complete(a:arglead, a:cmdline, a:cursorpos)
-    else
-      return gina#complete#commit#any(a:arglead, a:cmdline, a:cursorpos)
     endif
   elseif args.get(1) ==# 'expire'
     if a:arglead =~# '^-'
@@ -56,101 +54,98 @@ function! gina#command#reflog#complete(arglead, cmdline, cursorpos) abort
   elseif args.get(1) ==# 'exists'
     return gina#complete#commit#any(a:arglead, a:cmdline, a:cursorpos)
   endif
+  return gina#util#filter(a:arglead, [
+        \ 'show',
+        \ 'expire',
+        \ 'delete',
+        \ 'exists',
+        \])
 endfunction
 
 
 " Private --------------------------------------------------------------------
 function! s:get_options_show() abort
-  if exists('s:options') && !g:gina#develop
-    return s:options
-  endif
-  let s:options = gina#core#options#new()
-  call s:options.define(
+  let options = gina#core#options#new()
+  call options.define(
         \ '-h|--help',
         \ 'Show this help.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--opener=',
         \ 'A Vim command to open a new buffer.',
         \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
         \)
-  call s:options.define(
+  call options.define(
         \ '--group=',
         \ 'A window group name used for the buffer.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--follow',
         \ 'Continue listing the history of a file beyond renames',
         \)
-  return s:options
+  return options
 endfunction
 
 function! s:get_options_expire() abort
-  if exists('s:options') && !g:gina#develop
-    return s:options
-  endif
-  let s:options = gina#core#options#new()
-  call s:options.define(
+  let options = gina#core#options#new()
+  call options.define(
         \ '-h|--help',
         \ 'Show this help.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--expire=',
         \ 'Prune entries older than the specified time.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--expire-unreachable=',
         \ 'Prune entries older than the specified time that are not reachable.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--rewrite',
         \ 'Adjust old SHA-1 to be equal to the new SHA-1',
         \)
-  call s:options.define(
+  call options.define(
         \ '--updateref',
         \ 'Update the reference to the value of the top reflog entry',
         \)
-  call s:options.define(
+  call options.define(
         \ '--stale-fix',
         \ 'Prune broken commit reflog entries',
         \)
-  call s:options.define(
+  call options.define(
         \ '-n|--dry-run',
         \ 'Do not actually prune any entries',
         \)
-  call s:options.define(
+  call options.define(
         \ '--verbose',
         \ 'Print extra information',
         \)
-  return s:options
+  return options
 endfunction
 
 function! s:get_options_delete() abort
-  if exists('s:options') && !g:gina#develop
-    return s:options
-  endif
-  let s:options = gina#core#options#new()
-  call s:options.define(
+  let options = gina#core#options#new()
+  call options.define(
         \ '-h|--help',
         \ 'Show this help.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--rewrite',
         \ 'Adjust old SHA-1 to be equal to the new SHA-1',
         \)
-  call s:options.define(
+  call options.define(
         \ '--updateref',
         \ 'Update the reference to the value of the top reflog entry',
         \)
-  call s:options.define(
+  call options.define(
         \ '-n|--dry-run',
         \ 'Do not actually prune any entries',
         \)
-  call s:options.define(
+  call options.define(
         \ '--verbose',
         \ 'Print extra information',
         \)
-  return s:options
+  return options
 endfunction
 
 function! s:build_args(git, args) abort

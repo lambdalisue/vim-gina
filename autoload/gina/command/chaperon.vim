@@ -31,40 +31,37 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:get_options() abort
-  if exists('s:options') && !g:gina#develop
-    return s:options
-  endif
-  let s:options = gina#core#options#new()
-  call s:options.define(
+  let options = gina#core#options#new()
+  call options.define(
         \ '-h|--help',
         \ 'Show this help.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--opener=',
         \ 'A Vim command to open a new buffer.',
         \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
         \)
-  call s:options.define(
+  call options.define(
         \ '--group1=',
         \ 'A window group name used for a LOCAL (our) buffer.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--group2=',
         \ 'A window group name used for a MERGE (working tree) buffer.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--group3=',
         \ 'A window group name used for a REMOTE (theirs) buffer.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--line=',
         \ 'An initial line number.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--col=',
         \ 'An initial column number.',
         \)
-  return s:options
+  return options
 endfunction
 
 function! s:build_args(git, args) abort

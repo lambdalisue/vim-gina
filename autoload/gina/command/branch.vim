@@ -43,108 +43,105 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:get_options() abort
-  if exists('s:options') && !g:gina#develop
-    return s:options
-  endif
-  let s:options = gina#core#options#new()
-  call s:options.define(
+  let options = gina#core#options#new()
+  call options.define(
         \ '-h|--help',
         \ 'Show this help.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--opener=',
         \ 'A Vim command to open a new buffer.',
         \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
         \)
-  call s:options.define(
+  call options.define(
         \ '--group=',
         \ 'A window group name.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-d|--delete',
         \ 'Delete a branch.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-D',
         \ 'Shortcut for --delete --force.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-l|--create-reflog',
         \ 'Create the branch''s reflog.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-f|--force',
         \ 'Operate forcedly.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-m|--move',
         \ 'Move/rename a branch and the corresponding reflog.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-M',
         \ 'Shortcut for --move --force.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-i|--ignore-case',
         \ 'Sorting and filtering branches are case insensitive.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-r|--remotes',
         \ 'List or delete (if used with -d) the remote-tracking branches.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-a|--all',
         \ 'List both remote-tracking branches and local branches.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--list',
         \ 'Activate the list mode. Mainly for <pattern> match.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-v|--verbose',
         \ 'Show sha1 and commit subject line for each head.'
         \)
-  call s:options.define(
+  call options.define(
         \ '-q|--quiet',
         \ 'Be more quiet when creating or deleting a branch.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-t|--track',
         \ 'Set up a branch.<name>.remote and branch.<name>.merge config.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--no-track',
         \ 'Do not set up "upstream" config.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--set-upstream',
         \ 'Set up a "upstream" as like --track for non existing branch.',
         \)
-  call s:options.define(
+  call options.define(
         \ '-u|--set-upstream-to=',
         \ 'Set up "upstream" to <upstream>.',
         \ function('gina#complete#commit#branch'),
         \)
-  call s:options.define(
+  call options.define(
         \ '--unset-upstream',
         \ 'Remove the upstream information.',
         \)
-  call s:options.define(
+  call options.define(
         \ '--contains=',
         \ 'Only list branches which contain the specified commit.',
         \ function('gina#complete#commit#any')
         \)
-  call s:options.define(
+  call options.define(
         \ '--merged=',
         \ 'Only list branches whose tips are reachable from the specified commit.',
         \ function('gina#complete#commit#any')
         \)
-  call s:options.define(
+  call options.define(
         \ '--no-merged=',
         \ 'Only list branches whose tips are not reachable from the specified commit.',
         \ function('gina#complete#commit#any')
         \)
-  return s:options
+  return options
 endfunction
 
 function! s:build_args(git, args) abort
