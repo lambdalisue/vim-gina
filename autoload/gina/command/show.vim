@@ -5,6 +5,8 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#show#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
+
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
@@ -27,8 +29,46 @@ function! gina#command#show#call(range, args, mods) abort
         \})
 endfunction
 
+function! gina#command#show#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead =~# '^-'
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#common#treeish(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  if exists('s:options') && !g:gina#develop
+    return s:options
+  endif
+  let s:options = gina#core#options#new()
+  call s:options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call s:options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call s:options.define(
+        \ '--group=',
+        \ 'A window group name used for the buffer.',
+        \)
+  call s:options.define(
+        \ '--line',
+        \ 'An initial line number.',
+        \)
+  call s:options.define(
+        \ '--col',
+        \ 'An initial column number.',
+        \)
+  return s:options
+endfunction
+
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
