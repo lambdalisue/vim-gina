@@ -107,7 +107,7 @@ function! s:build_args(git, args, range) abort
         \ args.pop('--group1', 'blame-body'),
         \ args.pop('--group2', 'blame-navi'),
         \]
-  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.opener = args.pop('--opener', 'tabnew')
   let args.params.width = args.pop('--width', v:null)
   let args.params.format = args.pop('--format', v:null)
 
@@ -165,7 +165,7 @@ function! s:call(range, args, mods) abort
   call gina#core#buffer#open(bufname, {
         \ 'mods': 'leftabove',
         \ 'group': args.params.groups[1],
-        \ 'opener': (args.params.width ? args.params.width : 35) . 'vsplit',
+        \ 'opener': (args.params.width ? args.params.width : 80) . 'vsplit',
         \ 'cmdarg': args.params.cmdarg,
         \ 'range': 'all',
         \ 'width': args.params.width,

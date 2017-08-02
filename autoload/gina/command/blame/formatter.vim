@@ -118,7 +118,7 @@ endfunction
 
 " Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
-      \ 'format': '%su%=on %ti %ma%in',
+      \ 'format': '%su%=on %ti by %au %ma%in',
       \ 'separator': '...',
       \ 'current_mark': '|',
       \ 'timestamp_months': 3,
