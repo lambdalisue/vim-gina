@@ -100,7 +100,7 @@ function! s:print_event(prefix, name, attrs) abort
   let tail = printf('<%s>', bufname('%'))
   let args = join(map(copy(a:attrs), 'string(v:val)'), ', ')
   let args = substitute(args, '\r\?\n', '\\n', 'g')
-  let args = substitute(args, '', '^[', 'g')
+  let args = substitute(args, '\e', '^[', 'g')
   let args = s:String.truncate_skipping(
         \ printf('(%s)', args),
         \ width - len(head) - len(tail) - 1,
