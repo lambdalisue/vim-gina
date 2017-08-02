@@ -37,7 +37,7 @@ endfunction
 function! gina#core#buffer#parse(expr) abort
   let path = expand(a:expr)
   let m = matchlist(path, printf(
-        \ '\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?(:[0-3]|[^:]*%%(:[^:]*)?)%%(\m%s\v)?$',
+        \ '\v^gina://([^:]+):([^:\/]+)([^\/]*)[\/]?(%%(:[0-3]|[^:]*)%%(:[^:]*)?)%%(\m%s\v)?$',
         \ s:String.escape_pattern(s:NOAUTOCMD_SUFFIX),
         \))
   if empty(m)
@@ -53,7 +53,12 @@ function! gina#core#buffer#parse(expr) abort
         \ 'treeish': treeish,
         \}
   if path isnot# v:null
-    let params.path = path
+    let params.path = substitute(
+          \ path,
+          \ s:String.escape_pattern(s:NOAUTOCMD_SUFFIX) . '$',
+          \ '',
+          \ '',
+          \)
   endif
   return params
 endfunction
