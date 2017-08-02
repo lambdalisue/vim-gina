@@ -3,12 +3,17 @@ function! s:_vital_created(module) abort
 endfunction
 
 
-function! s:new() abort
+function! s:new(...) abort
+  let options = extend({
+        \ 'on_close_fail': v:null,
+        \}, get(a:000, 0, {})
+        \)
   let hash = sha256(reltimestr(reltime()))
   let s:groups[hash] = copy(s:group)
   let s:groups[hash].__hash = hash
   let s:groups[hash].__tabnr = v:null
   let s:groups[hash].__members = []
+  let s:groups[hash].__on_close_fail = options.on_close_fail
   return s:groups[hash]
 endfunction
 
@@ -58,6 +63,9 @@ function! s:group.close() abort
       " E444: Cannot close last window may thrown but ignore that
       " Vim.Buffer.Group should NOT close the last window so ignore
       " this exception silently.
+      if self.__on_close_fail isnot# v:null
+        call call(self.__on_close_fail, [winnr, member], self)
+      endif
     endtry
   endfor
 endfunction

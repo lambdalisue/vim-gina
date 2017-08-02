@@ -170,7 +170,9 @@ function! s:call(range, args, mods) abort
   let mods = gina#util#contain_direction(a:mods)
         \ ? 'keepalt ' . a:mods
         \ : join(['keepalt', 'rightbelow', a:mods])
-  let group = s:Group.new()
+  let group = s:Group.new({
+        \ 'on_close_fail': function('s:on_close_fail'),
+        \})
 
   " Content
   call s:open(mods, args.params.opener, args.params)
@@ -203,6 +205,20 @@ function! s:call(range, args, mods) abort
   setlocal scrollbind
   call gina#util#syncbind()
   call gina#core#emitter#emit('command:called', s:SCHEME)
+endfunction
+
+function! s:on_close_fail(winnr, member) abort dict
+  let bufname = bufname(winbufnr(a:winnr))
+  let abspath = gina#core#repo#abspath(
+        \ gina#core#get_or_fail(),
+        \ gina#core#buffer#param(bufname, 'path')
+        \)
+  echomsg abspath
+  if filereadable(abspath)
+    execute printf('edit %s', fnameescape(abspath))
+  else
+    enew
+  endif
 endfunction
 
 function! s:open(mods, opener, params) abort
@@ -384,7 +400,6 @@ function! s:translate_candidate(rev, chunk, revisions) abort
         \ 'line': line,
         \})
 endfunction
-
 
 
 " Writer ---------------------------------------------------------------------
