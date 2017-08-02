@@ -3,7 +3,7 @@
 Version: 0.2.1
 Author:  Alisue <lambdalisue@hashnote.net>
 Support: Vim 8.0.0027 and above
-Support: Neovim 0.1.7 and above
+Support: Neovim 0.2.0 and above
 License: MIT License (See LICENSE)
 
 
