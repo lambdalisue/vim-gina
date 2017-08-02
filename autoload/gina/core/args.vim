@@ -97,7 +97,6 @@ function! gina#core#args#extend_line(git, args, line) abort
         \ gina#util#get(a:args.params, 'rev', v:null),
         \ gina#util#get(a:args.params, 'path', v:null),
         \)
-  echom string([treeish1, treeish2])
   let a:args.params.line = treeish1 ==# treeish2
         \ ? line('.')
         \ : v:null
