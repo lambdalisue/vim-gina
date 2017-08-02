@@ -45,7 +45,7 @@ function! s:init(args) abort
   setlocal winfixwidth
   setlocal winfixheight
   setlocal buftype=nofile
-  setlocal bufhidden&
+  setlocal bufhidden=wipe
   setlocal noswapfile
   setlocal nomodifiable
   setlocal noautoread
@@ -91,7 +91,7 @@ function! s:print_message(msg) abort
 endfunction
 
 function! s:print_event(prefix, name, attrs) abort
-  let width = winwidth(bufwinnr(s:current.bufnr))
+  let width = gina#util#winwidth(bufwinnr(s:current.bufnr))
   let head = printf('%-5s: %s: %s',
         \ a:prefix,
         \ s:now(),
@@ -100,6 +100,7 @@ function! s:print_event(prefix, name, attrs) abort
   let tail = printf('<%s>', bufname('%'))
   let args = join(map(copy(a:attrs), 'string(v:val)'), ', ')
   let args = substitute(args, '\r\?\n', '\\n', 'g')
+  let args = substitute(args, '', '^[', 'g')
   let args = s:String.truncate_skipping(
         \ printf('(%s)', args),
         \ width - len(head) - len(tail) - 1,

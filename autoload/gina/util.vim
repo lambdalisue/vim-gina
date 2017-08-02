@@ -152,6 +152,16 @@ function! gina#util#doautocmd(name, ...) abort
   endtry
 endfunction
 
+function! gina#util#winwidth(winnr) abort
+  let width = winwidth(a:winnr)
+  let width -= &foldcolumn
+  let width -= s:is_sign_visible(winbufnr(a:winnr)) ? 2 : 0
+  let width -= (&number || &relativenumber)
+        \ ? len(string(line('$'))) + 1
+        \ : 0
+  return width
+endfunction
+
 function! gina#util#inherit(super, ...) abort
   let prototype = a:0 ? a:1 : {}
   let instance = extend(copy(a:super), prototype)
@@ -242,4 +252,12 @@ endfunction
 
 function! s:call_super(cls, method, ...) abort dict
   return call(a:cls.__super[a:method], a:000, self)
+endfunction
+
+function! s:is_sign_visible(bufnr) abort
+  if !exists('&signcolumn') || &signcolumn ==# 'auto'
+    return len(split(execute('sign place buffer=' . a:bufnr), '\r\?\n')) > 1
+  else
+    return &signcolumn ==# 'yes'
+  endif
 endfunction
