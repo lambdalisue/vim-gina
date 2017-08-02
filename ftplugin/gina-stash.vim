@@ -7,6 +7,7 @@ setlocal foldcolumn=0 colorcolumn=0
 
 call gina#action#include('diff')
 call gina#action#include('stash')
+call gina#action#include('yank')
 
 if g:gina#command#status#use_default_aliases
   call gina#action#shorten('stash')

@@ -14,6 +14,7 @@ call gina#action#include('export')
 call gina#action#include('index')
 call gina#action#include('patch')
 call gina#action#include('show')
+call gina#action#include('yank')
 
 if g:gina#command#status#use_default_aliases
   call gina#action#shorten('edit')
