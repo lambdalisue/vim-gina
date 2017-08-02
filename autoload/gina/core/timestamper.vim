@@ -47,7 +47,7 @@ function! s:timestamper.format(epoch, timezone) abort
   endif
   let datetime = self.datetime(a:epoch, a:timezone)
   let timedelta = datetime.delta(self.now)
-  if timedelta.duration().months() < self.month
+  if timedelta.duration().months() < self.months
     let timestamp = timedelta.about()
   elseif datetime.year() == self.now.year()
     let timestamp = datetime.strftime(self.format1)
