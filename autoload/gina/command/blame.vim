@@ -23,7 +23,7 @@ function! s:build_args(git, args, range) abort
         \ args.pop('--group2', 'blame-navi'),
         \]
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.width = args.pop('--width', 35)
+  let args.params.width = args.pop('--width', v:null)
   let args.params.use_author_instead = args.pop('--use-author-instead', 0)
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
@@ -73,9 +73,10 @@ function! s:call(range, args, mods) abort
   call gina#core#buffer#open(bufname, {
         \ 'mods': 'leftabove',
         \ 'group': args.params.groups[1],
-        \ 'opener': args.params.width . 'vsplit',
+        \ 'opener': (args.params.width ? args.params.width : 35) . 'vsplit',
         \ 'cmdarg': args.params.cmdarg,
         \ 'range': 'all',
+        \ 'width': args.params.width,
         \ 'line': args.params.line,
         \ 'callback': {
         \   'fn': function('s:init'),

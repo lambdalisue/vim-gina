@@ -73,6 +73,8 @@ function! gina#core#buffer#open(bufname, ...) abort
         \ 'opener': '',
         \ 'range': 'tabpage',
         \ 'cmdarg': '',
+        \ 'width': v:null,
+        \ 'height': v:null,
         \ 'line': v:null,
         \ 'col': v:null,
         \ 'callback': v:null,
@@ -88,6 +90,13 @@ function! gina#core#buffer#open(bufname, ...) abort
     let context = s:open_without_callback(bufname, options)
   else
     let context = s:open_with_callback(bufname, options)
+  endif
+  " Resize width/height if necessary
+  if options.width && options.width != winwidth(0)
+    execute printf('vertical resize %d', options.width)
+  endif
+  if options.height && options.height != winheight(0)
+    execute printf('resize %d', options.height)
   endif
   " Move cursor if necessary
   call setpos('.', [
