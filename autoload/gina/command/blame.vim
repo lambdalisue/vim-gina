@@ -137,7 +137,31 @@ function! s:build_args(git, args, range) abort
   call args.set('--incremental', 1)
   call args.set(1, substitute(args.params.rev, '^:0$', '', ''))
   call args.residual([args.params.path])
+
+  " Check no unknown options are specified
+  call s:validate(args)
+
   return args.lock()
+endfunction
+
+function! s:validate(args) abort
+  " Remove all known options
+  let args = a:args.clone()
+  let options = s:get_options()
+  for option in values(options._options)
+    for name in option.names
+      call args.pop(name)
+    endfor
+  endfor
+  call args.pop('--incremental')
+  " Get remaining
+  let unknown = args.get('^-')
+  if !empty(unknown)
+    throw gina#core#exception#error(printf(
+          \ 'Unknwon options %s has specified',
+          \ string(unknown)
+          \))
+  endif
 endfunction
 
 function! s:call(range, args, mods) abort
