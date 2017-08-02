@@ -1,6 +1,6 @@
 *gina.txt*		Asynchronously control git repositories from Vim
 
-Version: 0.3.0
+Version: 0.3.1
 Author:  Alisue <lambdalisue@hashnote.net>
 Support: Vim 8.0.0027 and above
 Support: Neovim 0.2.0 and above

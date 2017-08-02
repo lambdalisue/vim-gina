@@ -3,7 +3,7 @@ gina
 [![Gitter](https://img.shields.io/gitter/room/lambdalisue/gina-vim.svg?style=flat-square)](https://gitter.im/gina-vim)
 [![Travis CI](https://img.shields.io/travis/lambdalisue/gina.vim/master.svg?style=flat-square&label=Travis%20CI)](https://travis-ci.org/lambdalisue/gina.vim)
 [![AppVeyor](https://img.shields.io/appveyor/ci/lambdalisue/gina-vim/master.svg?style=flat-square&label=AppVeyor)](https://ci.appveyor.com/project/lambdalisue/gina-vim/branch/master)
-![Version 0.3.0](https://img.shields.io/badge/version-0.3.0-yellow.svg?style=flat-square)
+![Version 0.3.1](https://img.shields.io/badge/version-0.3.1-yellow.svg?style=flat-square)
 ![Support Vim 8.0.0027 or above](https://img.shields.io/badge/support-Vim%208.0.0027%20or%20above-yellowgreen.svg?style=flat-square)
 ![Support Neovim 0.2.0 or above](https://img.shields.io/badge/support-Neovim%200.2.0%20or%20above-yellowgreen.svg?style=flat-square)
 ![Support Git 1.8.5.6 or above](https://img.shields.io/badge/support-Git%201.8.5.6%20or%20above-green.svg?style=flat-square)
