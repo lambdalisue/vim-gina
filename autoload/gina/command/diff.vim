@@ -360,8 +360,8 @@ function! s:init(args) abort
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer>
           \ call gina#core#exception#call(function('s:BufReadCmd'), [])
-    autocmd BufWinEnter <buffer> setlocal buflisted
-    autocmd BufWinLeave <buffer> setlocal nobuflisted
+    autocmd BufWinEnter <buffer> call setbufvar(expand('<afile>'), '&buflisted', 1)
+    autocmd BufWinLeave <buffer> call setbufvar(expand('<afile>'), '&buflisted', 0)
   augroup END
 
   nnoremap <buffer><silent> <Plug>(gina-diff-jump)
