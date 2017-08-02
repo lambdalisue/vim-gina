@@ -32,7 +32,18 @@ Describe gina#command#status
       Assert Equals(winnr('$'), 2)
       Assert Equals(bufname('%'), printf('gina://%s:status', slit1.refname))
       Assert Equals(getline(1, '$'), [
-            \ '[32mM[m[31mM[m A/foo.txt'
+            \ 'On branch master',
+            \ 'Changes to be committed:',
+            \ '  (use "git reset HEAD <file>..." to unstage)',
+            \ '',
+            \ '	[32mmodified:   A/foo.txt[m',
+            \ '',
+            \ 'Changes not staged for commit:',
+            \ '  (use "git add <file>..." to update what will be committed)',
+            \ '  (use "git checkout -- <file>..." to discard changes in working directory)',
+            \ '',
+            \ '	[31mmodified:   A/foo.txt[m',
+            \ '',
             \])
     End
 
@@ -42,13 +53,57 @@ Describe gina#command#status
       Assert Equals(winnr('$'), 2)
       Assert Equals(bufname('%'), printf('gina://%s:status:--', slit1.refname))
       Assert Equals(getline(1, '$'), [
-            \ '[32mM[m[31mM[m A/foo.txt'
+            \ 'On branch master',
+            \ 'Changes to be committed:',
+            \ '  (use "git reset HEAD <file>..." to unstage)',
+            \ '',
+            \ '	[32mmodified:   A/foo.txt[m',
+            \ '',
+            \ 'Changes not staged for commit:',
+            \ '  (use "git add <file>..." to update what will be committed)',
+            \ '  (use "git checkout -- <file>..." to discard changes in working directory)',
+            \ '',
+            \ '	[31mmodified:   A/foo.txt[m',
+            \ ''
             \])
     End
 
     It might be called with -- A/*.vim
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync status -- A/*.vim
+      Assert Equals(winnr('$'), 2)
+      Assert Equals(bufname('%'), printf('gina://%s:status:--', slit1.refname))
+      Assert Equals(getline(1, '$'), [
+            \ 'On branch master',
+            \ 'nothing to commit, working tree clean',
+            \])
+    End
+  End
+
+  Describe Use cases (--short)
+    It might be called without arguments
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync status --short
+      Assert Equals(winnr('$'), 2)
+      Assert Equals(bufname('%'), printf('gina://%s:status', slit1.refname))
+      Assert Equals(getline(1, '$'), [
+            \ '[32mM[m[31mM[m A/foo.txt'
+            \])
+    End
+
+    It might be called with -- A/*.txt
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync status --short -- A/*.txt
+      Assert Equals(winnr('$'), 2)
+      Assert Equals(bufname('%'), printf('gina://%s:status:--', slit1.refname))
+      Assert Equals(getline(1, '$'), [
+            \ '[32mM[m[31mM[m A/foo.txt'
+            \])
+    End
+
+    It might be called with -- A/*.vim
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync status --short -- A/*.vim
       Assert Equals(winnr('$'), 2)
       Assert Equals(bufname('%'), printf('gina://%s:status:--', slit1.refname))
       Assert Equals(getline(1, '$'), [''])

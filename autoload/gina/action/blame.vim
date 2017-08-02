@@ -40,7 +40,12 @@ function! s:on_echo(candidates, options) abort dict
     return
   endif
   let chunk = a:candidates[0]
-  let timestamp = gina#command#blame#timestamper#new().format(
+  let timestamper = gina#core#timestamper#new({
+        \ 'months': g:gina#action#blame#timestamp_months,
+        \ 'format1': g:gina#action#blame#timestamp_format1,
+        \ 'format2': g:gina#action#blame#timestamp_format2,
+        \})
+  let timestamp = timestamper.format(
         \ chunk.author_time,
         \ chunk.author_tz,
         \)
@@ -131,3 +136,11 @@ function! s:pop_history() abort
   endif
   return remove(w:gina_blame_history, -1)
 endfunction
+
+
+" Config ---------------------------------------------------------------------
+call gina#config(expand('<sfile>'), {
+      \ 'timestamp_months': 3,
+      \ 'timestamp_format1': '%d %b',
+      \ 'timestamp_format2': '%d %b, %Y',
+      \})

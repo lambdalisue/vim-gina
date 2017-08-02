@@ -6,6 +6,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#blame#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   call gina#process#register(s:SCHEME, 1)
   try
     call s:call(a:range, a:args, a:mods)
@@ -14,17 +15,108 @@ function! gina#command#blame#call(range, args, mods) abort
   endtry
 endfunction
 
+function! gina#command#blame#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#common#treeish(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
 
 " Private --------------------------------------------------------------------
-function! s:build_args(git, args) abort
+function! s:get_options() abort
+  let options = gina#core#options#new()
+  call options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call options.define(
+        \ '--line=',
+        \ 'An initial line number.',
+        \)
+  call options.define(
+        \ '--col=',
+        \ 'An initial column number.',
+        \)
+  call options.define(
+        \ '--group1=',
+        \ 'A window group name used for a blame body buffer.',
+        \)
+  call options.define(
+        \ '--group2=',
+        \ 'A window group name used for a blame navigation buffer.',
+        \)
+  call options.define(
+        \ '--width=',
+        \ 'A window width used for a blame navigation buffer.',
+        \)
+  call options.define(
+        \ '--format=',
+        \ 'Format string used to construct the navi line.',
+        \)
+  call options.define(
+        \ '--root',
+        \ 'Do not treat root commits as boundaries.',
+        \)
+  call options.define(
+        \ '-L',
+        \ 'Annotate only the given line range. May be specified multiple times.',
+        \)
+  call options.define(
+        \ '--reverse=',
+        \ 'Walk history forward instead of backward.',
+        \ function('gina#complete#range#any'),
+        \)
+  call options.define(
+        \ '--encoding=',
+        \ 'Specifies the encoding used to output.',
+        \)
+  call options.define(
+        \ '--content=', join([
+        \   'This flag makes the command pretend as if the working tree copy',
+        \   'has the contents of the named file.',
+        \   'Works only when {rev} is not specified.'
+        \ ]),
+        \ function('gina#complete#filename#any'),
+        \)
+  call options.define(
+        \ '-M',
+        \ 'Detect moved or copied lines within a file.',
+        \)
+  call options.define(
+        \ '-C',
+        \ 'In addition to -M, detect lines moved or copied from other files.',
+        \)
+  call options.define(
+        \ '-w',
+        \ 'Ignore whitespace when comparing.',
+        \)
+  return options
+endfunction
+
+function! s:build_args(git, args, range) abort
   let args = a:args.clone()
   let args.params.groups = [
         \ args.pop('--group1', 'blame-body'),
         \ args.pop('--group2', 'blame-navi'),
         \]
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.width = args.pop('--width', 35)
-  let args.params.use_author_instead = args.pop('--use-author-instead', 0)
+  let args.params.width = args.pop('--width', v:null)
+  let args.params.format = args.pop('--format', v:null)
+
+  " Warn deperecated feature
+  if args.pop('--use-author-instead')
+    call gina#core#console#warn(
+          \ '--use-author-instead option is removed. Use --format instead.'
+          \)
+  endif
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
@@ -33,6 +125,11 @@ function! s:build_args(git, args) abort
           \ 'No filename is specified. Did you mean "Gina blame %s:"?',
           \ args.params.rev,
           \))
+  endif
+
+  if !(a:range[0] == 1 && a:range[1] == line('$'))
+    " Apply visual range
+    call args.set('-L', join(a:range, ','))
   endif
 
   call args.pop('--porcelain')
@@ -45,7 +142,7 @@ endfunction
 
 function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:args)
+  let args = s:build_args(git, a:args, a:range)
   let mods = gina#util#contain_direction(a:mods)
         \ ? 'keepalt ' . a:mods
         \ : join(['keepalt', 'rightbelow', a:mods])
@@ -54,7 +151,7 @@ function! s:call(range, args, mods) abort
   " Content
   call s:open(mods, args.params.opener, args.params)
   call group.add()
-  windo setlocal noscrollbind
+  call gina#util#windo('setlocal noscrollbind')
   setlocal scrollbind nowrap nofoldenable
   augroup gina_command_blame_internal
     autocmd! * <buffer>
@@ -68,9 +165,10 @@ function! s:call(range, args, mods) abort
   call gina#core#buffer#open(bufname, {
         \ 'mods': 'leftabove',
         \ 'group': args.params.groups[1],
-        \ 'opener': args.params.width . 'vsplit',
+        \ 'opener': (args.params.width ? args.params.width : 35) . 'vsplit',
         \ 'cmdarg': args.params.cmdarg,
         \ 'range': 'all',
+        \ 'width': args.params.width,
         \ 'line': args.params.line,
         \ 'callback': {
         \   'fn': function('s:init'),
@@ -185,11 +283,11 @@ function! s:redraw_content() abort
   let chunks = gina#core#meta#get_or_fail('chunks')
   let revisions = gina#core#meta#get_or_fail('revisions')
   let formatter = gina#command#blame#formatter#new(
-        \ winwidth(0) - (s:is_sign_visible() ? 2 : 0),
+        \ gina#util#winwidth(0),
         \ args.params.rev,
         \ revisions,
         \ {
-        \   'use_author_instead': args.params.use_author_instead,
+        \   'format': args.params.format,
         \ }
         \)
   if exists('b:gina_blame_writer')
@@ -261,14 +359,6 @@ function! s:translate_candidate(rev, chunk, revisions) abort
         \ 'path': path,
         \ 'line': line,
         \})
-endfunction
-
-function! s:is_sign_visible() abort
-  if !exists('&signcolumn') || &signcolumn ==# 'auto'
-    return len(split(execute('sign place buffer=' . bufnr('%')), '\r\?\n')) > 1
-  else
-    return &signcolumn ==# 'yes'
-  endif
 endfunction
 
 

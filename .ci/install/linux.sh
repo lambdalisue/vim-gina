@@ -27,9 +27,10 @@ install_nvim() {
   local ncpu=$(awk '/^processor/{n+=1}END{print n}' /proc/cpuinfo)
   git clone --depth 1 --single-branch $ext $URL $tmp
   cd $tmp
+  make deps
   make -j$ncpu \
     CMAKE_BUILD_TYPE=Release \
-    CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX:PATH=$out"
+    CMAKE_EXTRA_FLAGS="-DTRAVIS_CI_BUILD=ON -DCMAKE_INSTALL_PREFIX:PATH=$out"
   make install
   pip install --user neovim
   easy_install3 --user neovim

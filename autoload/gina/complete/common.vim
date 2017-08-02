@@ -16,6 +16,22 @@ function! gina#complete#common#opener(arglead, cmdline, cursorpos) abort
   return gina#util#filter(a:arglead, map(candidates, 'prefix . v:val'))
 endfunction
 
+function! gina#complete#common#treeish(arglead, cmdline, cursorpos) abort
+  if a:arglead =~# '^[^:]*:'
+    let revision = matchstr(a:arglead, '^[^:]*\ze:')
+    let candidates = gina#complete#filename#tracked(
+          \ matchstr(a:arglead, '^[^:]*:\zs.*'),
+          \ a:cmdline,
+          \ a:cursorpos,
+          \ revision,
+          \)
+    return map(candidates, 'revision . '':'' . v:val')
+  else
+    let candidates = gina#complete#range#any(a:arglead, a:cmdline, a:cursorpos)
+    return map(candidates, 'v:val . '':''')
+  endif
+endfunction
+
 function! gina#complete#common#command(arglead, cmdline, cursorpos) abort
   let cache = s:get_cache()
   if !cache.has('command_names')

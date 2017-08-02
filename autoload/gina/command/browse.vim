@@ -20,6 +20,7 @@ let s:FORMAT_MAP = {
 
 
 function! gina#command#browse#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   call gina#process#register(s:SCHEME, 1)
   try
     call s:call(a:range, a:args, a:mods)
@@ -28,8 +29,39 @@ function! gina#command#browse#call(range, args, mods) abort
   endtry
 endfunction
 
+function! gina#command#browse#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#common#treeish(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  let options = gina#core#options#new()
+  call options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call options.define(
+        \ '--scheme=',
+        \ 'Specify a URL scheme to open.',
+        \ ['_', 'root', 'blame', 'compare'],
+        \)
+  call options.define(
+        \ '--exact',
+        \ 'Use a sha1 instead of a branch name.',
+        \)
+  call options.define(
+        \ '--yank',
+        \ 'Yank a URL instead of opening.',
+        \)
+  return options
+endfunction
+
 function! s:build_args(git, args, range) abort
   let args = a:args.clone()
   let args.params.yank = args.pop('--yank')
@@ -90,9 +122,9 @@ function! s:parse_rev(git, rev) abort
   let hash1 = gina#core#treeish#sha1(a:git, commit1)
   let hash2 = gina#core#treeish#sha1(a:git, commit2)
   return {
-        \ 'commit0': gina#core#treeish#resolve(a:git, commit0),
-        \ 'commit1': gina#core#treeish#resolve(a:git, commit1),
-        \ 'commit2': gina#core#treeish#resolve(a:git, commit2),
+        \ 'commit0': gina#core#treeish#resolve(a:git, commit0, 1),
+        \ 'commit1': gina#core#treeish#resolve(a:git, commit1, 1),
+        \ 'commit2': gina#core#treeish#resolve(a:git, commit2, 1),
         \ 'hash0': hash0,
         \ 'hash1': hash1,
         \ 'hash2': hash2,
@@ -105,7 +137,7 @@ function! s:get_remote_url(git, commit1, commit2) abort
   let candidates = [a:commit1, a:commit2, 'master']
   for candidate in candidates
     let remote_name = get(config, printf('branch.%s.remote', candidate), '')
-    if !empty(remote_name)
+    if !empty(remote_name) && remote_name !=# '.'
       break
     endif
   endfor
@@ -119,6 +151,7 @@ function! s:build_base_url(remote_url, scheme) abort
       let pattern = substitute(pattern, '\C' . '%domain', domain, 'g')
       if a:remote_url =~# pattern
         let repl = get(info[1], a:scheme, a:remote_url)
+        let repl = escape(repl, '&')
         return substitute(a:remote_url, '\C' . pattern, repl, 'g')
       endif
     endfor
@@ -151,7 +184,7 @@ call gina#config(expand('<sfile>'), {
       \       '\vssh://git\@(%domain)/(.{-})/(.{-})%(\.git)?$',
       \     ], {
       \       '_': 'https://\1/\2/\3/src/%r0/%pt%{#cl-|}ls',
-      \       'root': 'https://\1/\2/\3/branch/%r0/',
+      \       'root': 'https://\1/\2/\3/branch/%r0',
       \       'blame': 'https://\1/\2/\3/annotate/%r0/%pt',
       \       'compare': 'https://\1/\2/\3/diff/%pt?diff1=%h1&diff2=%h2',
       \     },

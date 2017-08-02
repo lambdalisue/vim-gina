@@ -5,6 +5,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#status#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
@@ -24,14 +25,40 @@ function! gina#command#status#call(range, args, mods) abort
         \})
 endfunction
 
+function! gina#command#status#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  let options = gina#core#options#new()
+  call options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call options.define(
+        \ '--group=',
+        \ 'A window group name used for the buffer.',
+        \)
+  return options
+endfunction
+
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
   let args.params.opener = args.pop('--opener', &previewheight . 'split')
   let args.params.partial = !empty(args.residual())
-  call args.set('--short', 2)
   return args.lock()
 endfunction
 
@@ -84,14 +111,21 @@ endfunction
 function! s:get_candidates(fline, lline) abort
   let args = gina#core#meta#get_or_fail('args')
   let residual = args.residual()
-  let candidates = map(
-        \ getline(a:fline, a:lline),
-        \ 's:parse_record(v:val, residual)'
-        \)
+  if args.get('-s|--short')
+    let candidates = map(
+          \ getline(a:fline, a:lline),
+          \ 's:parse_record_short(v:val, residual)'
+          \)
+  else
+    let candidates = map(
+          \ getline(a:fline, a:lline),
+          \ 's:parse_record_normal(v:val, residual)'
+          \)
+  endif
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(record, residual) abort
+function! s:parse_record_short(record, residual) abort
   let record = s:String.remove_ansi_sequences(a:record)
   let m = matchlist(
         \ record,
@@ -104,6 +138,73 @@ function! s:parse_record(record, residual) abort
         \ 'word': record,
         \ 'abbr': a:record,
         \ 'sign': m[1],
+        \ 'residual': a:residual,
+        \}
+  if len(m) && !empty(m[3])
+    return extend(candidate, {
+          \ 'path': s:strip_quotes(m[3]),
+          \ 'path1': s:strip_quotes(m[2]),
+          \ 'path2': s:strip_quotes(m[3]),
+          \})
+  else
+    return extend(candidate, {
+          \ 'path': s:strip_quotes(m[2]),
+          \ 'path1': s:strip_quotes(m[2]),
+          \ 'path2': '',
+          \})
+  endif
+endfunction
+
+function! s:parse_record_normal(record, residual) abort
+  let signs = {
+        \ 'modified': 'M',
+        \ 'new file': 'A',
+        \ 'deleted': 'D',
+        \ 'renamed': 'R',
+        \ 'copied': 'C',
+        \ 'both added': 'AA',
+        \ 'both deleted': 'DD',
+        \ 'both modified': 'UU',
+        \ 'added by us': 'AU',
+        \ 'added by them': 'UA',
+        \ 'deleted by us': 'DU',
+        \ 'deleted by them': 'UD',
+        \}
+  let record = s:String.remove_ansi_sequences(a:record)
+  if record !~# '^\t'
+    return {}
+  endif
+  let m = matchlist(record, printf(
+        \ '^\s\+\(%s\):\s\+\("[^"]\{-}"\|.\{-}\)\%( -> \("[^"]\{-}"\|[^ ]\+\)\)\?$',
+        \ join(keys(signs), '\|')
+        \))
+  if empty(m)
+    " Untracked files
+    let path = s:strip_quotes(substitute(record, '^\t', '', ''))
+    return {
+          \ 'word': record,
+          \ 'abbr': a:record,
+          \ 'sign': '??',
+          \ 'residual': a:residual,
+          \ 'path': path,
+          \ 'path1': path,
+          \ 'path2': '',
+          \}
+  endif
+  if search('^Unmerged paths:', 'bnW') != 0
+    " Conflict
+    let sign = signs[m[1]]
+  elseif search('^Changes not staged for commit:', 'bnW') != 0
+    " Unstaged
+    let sign = ' ' . signs[m[1]]
+  else
+    " Staged
+    let sign = signs[m[1]] . ' '
+  endif
+  let candidate = {
+        \ 'word': record,
+        \ 'abbr': a:record,
+        \ 'sign': sign,
         \ 'residual': a:residual,
         \}
   if len(m) && !empty(m[3])

@@ -8,6 +8,7 @@ let s:is_windows = has('win32') || has('win64')
 
 
 function! gina#command#patch#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   call gina#process#register(s:SCHEME, 1)
   try
     call s:call(a:range, a:args, a:mods)
@@ -16,8 +17,52 @@ function! gina#command#patch#call(range, args, mods) abort
   endtry
 endfunction
 
+function! gina#command#patch#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#filename#tracked(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
+
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  let options = gina#core#options#new()
+  call options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call options.define(
+        \ '--group1=',
+        \ 'A window group name used for the 1st buffer.',
+        \)
+  call options.define(
+        \ '--group2=',
+        \ 'A window group name used for the 2nd buffer.',
+        \)
+  call options.define(
+        \ '--group3=',
+        \ 'A window group name used for the 3rd buffer.',
+        \)
+  call options.define(
+        \ '--line=',
+        \ 'An initial line number.',
+        \)
+  call options.define(
+        \ '--col=',
+        \ 'An initial column number.',
+        \)
+  return options
+endfunction
+
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.groups = [
@@ -129,7 +174,7 @@ endfunction
 function! s:define_plug_mapping(command, bufnr, ...) abort
   let suffix = a:0 ? a:1 : ''
   let lhs = printf('<Plug>(gina-%s%s)', a:command, suffix)
-  let rhs = printf(':<C-u>%s %d<CR>', a:command, a:bufnr)
+  let rhs = printf(':<C-u>%s %d<CR>:diffupdate<CR>', a:command, a:bufnr)
   call gina#util#map(lhs, rhs, {
         \ 'mode': 'n',
         \ 'noremap': 1,

@@ -100,6 +100,25 @@ function! gina#util#fnameescape(value, ...) abort
   return prefix . value
 endfunction
 
+function! gina#util#windo(expr) abort
+  let winid = win_getid()
+  try
+    execute printf('windo %s', a:expr)
+  finally
+    call win_gotoid(winid)
+  endtry
+endfunction
+
+function! gina#util#bufdo(expr, ...) abort
+  let bang = a:0 ? '!' : ''
+  let winid = win_getid()
+  try
+    execute printf('bufdo%s %s', bang, a:expr)
+  finally
+    call win_gotoid(winid)
+  endtry
+endfunction
+
 function! gina#util#doautocmd(name, ...) abort
   let pattern = get(a:000, 0, '')
   let expr = '#' . a:name
@@ -133,6 +152,16 @@ function! gina#util#doautocmd(name, ...) abort
   endtry
 endfunction
 
+function! gina#util#winwidth(winnr) abort
+  let width = winwidth(a:winnr)
+  let width -= &foldcolumn
+  let width -= s:is_sign_visible(winbufnr(a:winnr)) ? 2 : 0
+  let width -= (&number || &relativenumber)
+        \ ? len(string(line('$'))) + 1
+        \ : 0
+  return width
+endfunction
+
 function! gina#util#inherit(super, ...) abort
   let prototype = a:0 ? a:1 : {}
   let instance = extend(copy(a:super), prototype)
@@ -153,10 +182,16 @@ function! gina#util#diffthis() abort
   diffthis
   augroup gina_internal_util_diffthis
     autocmd! * <buffer>
-    autocmd BufHidden <buffer> call s:diffoff()
-    autocmd BufUnload <buffer> call s:diffoff()
-    autocmd BufDelete <buffer> call s:diffoff()
-    autocmd BufWipeout <buffer> call s:diffoff()
+    autocmd BufWinEnter *
+          \ if &diff && s:diffcount() == 1 |
+          \   call s:diffoff(0) |
+          \ endif
+    autocmd BufWinLeave <buffer>
+          \ if &diff && s:diffcount() == 2 |
+          \   call s:diffoff_all() |
+          \ elseif &diff |
+          \   call s:diffoff(1) |
+          \ endif
     autocmd BufWritePost <buffer> call s:diffupdate()
   augroup END
   call gina#util#diffupdate()
@@ -175,14 +210,30 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:syncbind(...) abort
   syncbind
+  silent! wincmd p
+  silent! wincmd p
 endfunction
 
-function! s:diffoff() abort
+function! s:diffoff(update) abort
   augroup gina_internal_util_diffthis
     autocmd! * <buffer>
   augroup END
   diffoff
-  diffupdate
+  if a:update
+    call s:diffupdate()
+  endif
+endfunction
+
+function! s:diffoff_all() abort
+  let winid = win_getid()
+  for winnr in range(1, winnr('$'))
+    if getwinvar(winnr, '&diff')
+      call win_gotoid(win_getid(winnr))
+      call s:diffoff(0)
+    endif
+  endfor
+  call win_gotoid(winid)
+  call s:diffupdate()
 endfunction
 
 function! s:diffupdate(...) abort
@@ -190,6 +241,23 @@ function! s:diffupdate(...) abort
   syncbind
 endfunction
 
+function! s:diffcount() abort
+  let indicators = map(
+        \ range(1, winnr('$')),
+        \ 'getwinvar(v:val, ''&diff'')'
+        \)
+  let indicators = filter(indicators, 'v:val')
+  return len(indicators)
+endfunction
+
 function! s:call_super(cls, method, ...) abort dict
   return call(a:cls.__super[a:method], a:000, self)
+endfunction
+
+function! s:is_sign_visible(bufnr) abort
+  if !exists('&signcolumn') || &signcolumn ==# 'auto'
+    return len(split(execute('sign place buffer=' . a:bufnr), '\r\?\n')) > 1
+  else
+    return &signcolumn ==# 'yes'
+  endif
 endfunction

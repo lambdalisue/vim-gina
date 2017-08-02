@@ -14,7 +14,7 @@ function! s:_vital_created(module) abort
   call a:module.register(s:get_default_handler())
 endfunction
 
-function! s:_throw(category, msg) abort
+function! s:message(category, msg) abort
   if a:category ==# 'Info'
     let v:statusmsg = a:msg
   elseif a:category ==# 'Warning'
@@ -30,19 +30,19 @@ function! s:_throw(category, msg) abort
 endfunction
 
 function! s:info(msg) abort
-  return s:_throw('Info', a:msg)
+  return s:message('Info', a:msg)
 endfunction
 
 function! s:warn(msg) abort
-  return s:_throw('Warning', a:msg)
+  return s:message('Warning', a:msg)
 endfunction
 
 function! s:error(msg) abort
-  return s:_throw('Error', a:msg)
+  return s:message('Error', a:msg)
 endfunction
 
 function! s:critical(msg) abort
-  return s:_throw('Critical', a:msg)
+  return s:message('Critical', a:msg)
 endfunction
 
 function! s:handle(...) abort dict
