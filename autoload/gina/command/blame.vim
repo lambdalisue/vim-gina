@@ -6,6 +6,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#blame#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   call gina#process#register(s:SCHEME, 1)
   try
     call s:call(a:range, a:args, a:mods)
@@ -14,8 +15,92 @@ function! gina#command#blame#call(range, args, mods) abort
   endtry
 endfunction
 
+function! gina#command#blame#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#common#treeish(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  let options = gina#core#options#new()
+  call options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call options.define(
+        \ '--line=',
+        \ 'An initial line number.',
+        \)
+  call options.define(
+        \ '--col=',
+        \ 'An initial column number.',
+        \)
+  call options.define(
+        \ '--group1=',
+        \ 'A window group name used for a blame body buffer.',
+        \)
+  call options.define(
+        \ '--group2=',
+        \ 'A window group name used for a blame navigation buffer.',
+        \)
+  call options.define(
+        \ '--width=',
+        \ 'A window width used for a blame navigation buffer.',
+        \)
+  call options.define(
+        \ '--format=',
+        \ 'Format string used to construct the navi line.',
+        \)
+  call options.define(
+        \ '--root',
+        \ 'Do not treat root commits as boundaries.',
+        \)
+  call options.define(
+        \ '-L',
+        \ 'Annotate only the given line range. May be specified multiple times.',
+        \)
+  call options.define(
+        \ '--reverse=',
+        \ 'Walk history forward instead of backward.',
+        \ function('gina#complete#range#any'),
+        \)
+  call options.define(
+        \ '--encoding=',
+        \ 'Specifies the encoding used to output.',
+        \)
+  call options.define(
+        \ '--content=', join([
+        \   'This flag makes the command pretend as if the working tree copy',
+        \   'has the contents of the named file.',
+        \   'Works only when {rev} is not specified.'
+        \ ]),
+        \ function('gina#complete#filename#any'),
+        \)
+  call options.define(
+        \ '-M',
+        \ 'Detect moved or copied lines within a file.',
+        \)
+  call options.define(
+        \ '-C',
+        \ 'In addition to -M, detect lines moved or copied from other files.',
+        \)
+  call options.define(
+        \ '-w',
+        \ 'Ignore whitespace when comparing.',
+        \)
+  return options
+endfunction
+
 function! s:build_args(git, args, range) abort
   let args = a:args.clone()
   let args.params.groups = [

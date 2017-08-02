@@ -58,13 +58,6 @@ So basically user would
 
 See `:h gina-usage` for advance usage. Gina provides a lot more features.
 
-Missings
--------------------------------------------------------------------------------
-
-The following features are planned but missing for now
-
-- Command completions
-
 Pros.
 -------------------------------------------------------------------------------
 

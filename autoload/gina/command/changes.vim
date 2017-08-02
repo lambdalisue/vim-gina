@@ -2,6 +2,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#changes#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
 
@@ -24,8 +25,41 @@ function! gina#command#changes#call(range, args, mods) abort
         \})
 endfunction
 
+function! gina#command#changes#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:cmdline =~# '\s--\s'
+    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#range#any(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  let options = gina#core#options#new()
+  call options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call options.define(
+        \ '--group=',
+        \ 'A window group name used for a buffer.',
+        \)
+  call options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call options.define(
+        \ '--cached',
+        \ 'Compare changes to the index instead of the working tree.',
+        \)
+  return options
+endfunction
+
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
@@ -34,6 +68,9 @@ function! s:build_args(git, args) abort
   let args.params.partial = !empty(args.residual())
   let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev'))
 
+  " NOTE:
+  " --stat is more human friendly but --stat with long filename truncate the
+  " filename so could not be used.
   call args.set('--numstat', 1)
   call args.set(0, 'diff')
   call args.set(1, args.params.rev)

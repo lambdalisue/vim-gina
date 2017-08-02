@@ -6,6 +6,8 @@ let s:messages = {}
 
 
 function! gina#command#commit#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
+
   if s:is_raw_command(a:args)
     " Remove non git options
     let args = a:args.clone()
@@ -30,8 +32,161 @@ function! gina#command#commit#call(range, args, mods) abort
         \})
 endfunction
 
+function! gina#command#commit#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead =~# '^\%(-C\|--reuse-message=\|-c\|--reedit-message=\|--fixup=\|--squash=\)'
+    let leading = matchstr(
+          \ a:arglead,
+          \ '^\%(-C\|--reuse-message=\|-c\|--reedit-message\|--fixup=\|--squash=\)'
+          \)
+    let candidates = gina#complete#commit#any(
+          \ matchstr(a:arglead, '^' . leading . '\zs.*'),
+          \ a:cmdline, a:cursorpos,
+          \)
+    return map(candidates, 'leading . v:val')
+  elseif a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  elseif a:cmdline !~# '\s--\s'
+    return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#filename#tracked(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  let options = gina#core#options#new()
+  call options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call options.define(
+        \ '--group=',
+        \ 'A window group name used for a buffer.',
+        \)
+  call options.define(
+        \ '-a|--all',
+        \ 'Commit all changed files',
+        \)
+  call options.define(
+        \ '-C|--reuse-message=',
+        \ 'Reuse message from specified commit',
+        \)
+  call options.define(
+        \ '-c|--reedit-message=',
+        \ 'Reuse and edit message from specified commit',
+        \)
+  call options.define(
+        \ '--fixup=',
+        \ 'Use autosquash formatted message to fixup specified commit',
+        \)
+  call options.define(
+        \ '--squash=',
+        \ 'Use autosquash formatted message to squash specified commit',
+        \)
+  call options.define(
+        \ '--reset-author',
+        \ 'The commit is authored by me now (used with -C/-c/--amend)',
+        \)
+  call options.define(
+        \ '-F|--file=',
+        \ 'Read message from file',
+        \)
+  call options.define(
+        \ '--author=',
+        \ 'Override the commit author',
+        \)
+  call options.define(
+        \ '--date=',
+        \ 'Override the author date used in the commit',
+        \)
+  call options.define(
+        \ '-m|--message=',
+        \ 'Use the given message as the commit message',
+        \)
+  call options.define(
+        \ '-t|--template=',
+        \ 'Read message from file and use it as a template',
+        \)
+  call options.define(
+        \ '-s|--signoff',
+        \ 'Add Signed-off-by:',
+        \)
+  call options.define(
+        \ '--allow-empty',
+        \ 'Allow empty commit',
+        \)
+  call options.define(
+        \ '--allow-empty-message',
+        \ 'Allow empty commit message',
+        \)
+  call options.define(
+        \ '--cleanup=',
+        \ 'How to strip spaces and #comments from message',
+        \ ['strip', 'whitespace', 'verbatim', 'scissors', 'default'],
+        \)
+  call options.define(
+        \ '-e|--edit',
+        \ 'Force edit of commit',
+        \)
+  call options.define(
+        \ '--no-edit',
+        \ 'Use the selected commit message without editing',
+        \)
+  call options.define(
+        \ '--amend',
+        \ 'Replace the tip of the current branch by creating a new commit',
+        \)
+  call options.define(
+        \ '-i|--include',
+        \ 'Add specified files to index for commit',
+        \)
+  call options.define(
+        \ '-o|--only',
+        \ 'Commit only specified files',
+        \)
+  call options.define(
+        \ '-u|--untracked-files=',
+        \ 'Show untracked files, optional modes: all, normal, no (Default: all)',
+        \ ['no', 'normal', 'all'],
+        \)
+  call options.define(
+        \ '-v|--verbose',
+        \ 'Show unified diff between the HEAD commit and what would be committed',
+        \)
+  call options.define(
+        \ '-q|--quiet',
+        \ 'Suppress commit summary message',
+        \)
+  call options.define(
+        \ '--dry-run',
+        \ 'Do not create a commit, but show a list of paths that are to be committed',
+        \)
+  call options.define(
+        \ '--status',
+        \ 'Include status in commit message template',
+        \)
+  call options.define(
+        \ '--no-status',
+        \ 'Do not include status in commit message template',
+        \)
+  call options.define(
+        \ '-S|--gpg-sign',
+        \ 'GPG sign commit',
+        \)
+  call options.define(
+        \ '--no-gpg-sign',
+        \ 'Do not GPG sign commit',
+        \)
+  return options
+endfunction
+
 function! s:build_args(args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')

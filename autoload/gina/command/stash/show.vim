@@ -23,8 +23,34 @@ function! gina#command#stash#show#call(range, args, mods) abort
         \})
 endfunction
 
+function! gina#command#stash#show#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead =~# '^-' || !empty(args.get(2))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#stash#any(a:arglead, a:cmdline, a:cursorpos)
+endfunction
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  let options = gina#core#options#new()
+  call options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call options.define(
+        \ '--group=',
+        \ 'A window group name.',
+        \)
+  return options
+endfunction
+
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')

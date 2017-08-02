@@ -3,14 +3,16 @@ let s:Path = vital#gina#import('System.Filepath')
 let s:Store = vital#gina#import('System.Store')
 
 
-function! gina#complete#commit#any(arglead, cmdline, cursorpos, ...) abort
-  let candidates = []
+function! gina#complete#commit#any(arglead, cmdline, cursorpos) abort
+  let candidates = ['']
   let candidates += gina#complete#commit#branch(a:arglead, a:cmdline, a:cursorpos)
-  let candidates += gina#complete#commit#hashref(a:arglead, a:cmdline, a:cursorpos)
+  if !empty(a:arglead)
+    let candidates += gina#complete#commit#hashref(a:arglead, a:cmdline, a:cursorpos)
+  endif
   return s:filter(a:arglead, candidates)
 endfunction
 
-function! gina#complete#commit#branch(arglead, cmdline, cursorpos, ...) abort
+function! gina#complete#commit#branch(arglead, cmdline, cursorpos) abort
   let git = gina#core#get_or_fail()
   let slug = eval(s:Store.get_slug_expr())
   let store = s:Store.of(s:Git.resolve(git, 'config'))
@@ -22,7 +24,7 @@ function! gina#complete#commit#branch(arglead, cmdline, cursorpos, ...) abort
   return s:filter(a:arglead, candidates)
 endfunction
 
-function! gina#complete#commit#local_branch(arglead, cmdline, cursorpos, ...) abort
+function! gina#complete#commit#local_branch(arglead, cmdline, cursorpos) abort
   let git = gina#core#get_or_fail()
   let slug = eval(s:Store.get_slug_expr())
   let store = s:Store.of(s:Git.resolve(git, 'config'))
@@ -34,7 +36,7 @@ function! gina#complete#commit#local_branch(arglead, cmdline, cursorpos, ...) ab
   return s:filter(a:arglead, candidates)
 endfunction
 
-function! gina#complete#commit#remote_branch(arglead, cmdline, cursorpos, ...) abort
+function! gina#complete#commit#remote_branch(arglead, cmdline, cursorpos) abort
   let git = gina#core#get_or_fail()
   let slug = eval(s:Store.get_slug_expr())
   let store = s:Store.of(s:Git.resolve(git, 'config'))
@@ -46,7 +48,7 @@ function! gina#complete#commit#remote_branch(arglead, cmdline, cursorpos, ...) a
   return s:filter(a:arglead, candidates)
 endfunction
 
-function! gina#complete#commit#hashref(arglead, cmdline, cursorpos, ...) abort
+function! gina#complete#commit#hashref(arglead, cmdline, cursorpos) abort
   let git = gina#core#get_or_fail()
   let slug = eval(s:Store.get_slug_expr())
   let store = s:Store.of(s:Git.resolve(git, 'config'))

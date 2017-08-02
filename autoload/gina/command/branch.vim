@@ -5,6 +5,8 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#branch#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
+
   if s:is_raw_command(a:args)
     " Remove non git options
     let args = a:args.clone()
@@ -29,8 +31,119 @@ function! gina#command#branch#call(range, args, mods) abort
         \})
 endfunction
 
+function! gina#command#branch#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead[0] ==# '-' || !empty(args.get(1))
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return gina#complete#commit#branch(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  let options = gina#core#options#new()
+  call options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call options.define(
+        \ '--group=',
+        \ 'A window group name.',
+        \)
+  call options.define(
+        \ '-d|--delete',
+        \ 'Delete a branch.',
+        \)
+  call options.define(
+        \ '-D',
+        \ 'Shortcut for --delete --force.',
+        \)
+  call options.define(
+        \ '-l|--create-reflog',
+        \ 'Create the branch''s reflog.',
+        \)
+  call options.define(
+        \ '-f|--force',
+        \ 'Operate forcedly.',
+        \)
+  call options.define(
+        \ '-m|--move',
+        \ 'Move/rename a branch and the corresponding reflog.',
+        \)
+  call options.define(
+        \ '-M',
+        \ 'Shortcut for --move --force.',
+        \)
+  call options.define(
+        \ '-i|--ignore-case',
+        \ 'Sorting and filtering branches are case insensitive.',
+        \)
+  call options.define(
+        \ '-r|--remotes',
+        \ 'List or delete (if used with -d) the remote-tracking branches.',
+        \)
+  call options.define(
+        \ '-a|--all',
+        \ 'List both remote-tracking branches and local branches.',
+        \)
+  call options.define(
+        \ '--list',
+        \ 'Activate the list mode. Mainly for <pattern> match.',
+        \)
+  call options.define(
+        \ '-v|--verbose',
+        \ 'Show sha1 and commit subject line for each head.'
+        \)
+  call options.define(
+        \ '-q|--quiet',
+        \ 'Be more quiet when creating or deleting a branch.',
+        \)
+  call options.define(
+        \ '-t|--track',
+        \ 'Set up a branch.<name>.remote and branch.<name>.merge config.',
+        \)
+  call options.define(
+        \ '--no-track',
+        \ 'Do not set up "upstream" config.',
+        \)
+  call options.define(
+        \ '--set-upstream',
+        \ 'Set up a "upstream" as like --track for non existing branch.',
+        \)
+  call options.define(
+        \ '-u|--set-upstream-to=',
+        \ 'Set up "upstream" to <upstream>.',
+        \ function('gina#complete#commit#branch'),
+        \)
+  call options.define(
+        \ '--unset-upstream',
+        \ 'Remove the upstream information.',
+        \)
+  call options.define(
+        \ '--contains=',
+        \ 'Only list branches which contain the specified commit.',
+        \ function('gina#complete#commit#any')
+        \)
+  call options.define(
+        \ '--merged=',
+        \ 'Only list branches whose tips are reachable from the specified commit.',
+        \ function('gina#complete#commit#any')
+        \)
+  call options.define(
+        \ '--no-merged=',
+        \ 'Only list branches whose tips are not reachable from the specified commit.',
+        \ function('gina#complete#commit#any')
+        \)
+  return options
+endfunction
+
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', 'short')
@@ -51,10 +164,8 @@ function! s:is_raw_command(args) abort
     return 1
   elseif a:args.get('-d|--delete') || a:args.get('-D')
     return 1
-  elseif a:args.get('--edit-description')
-    return 1
   endif
-  return 0
+  return !empty(a:args.get(1))
 endfunction
 
 function! s:init(args) abort

@@ -36,7 +36,7 @@ function! gina#command#complete(arglead, cmdline, cursorpos) abort
     return gina#core#exception#call(
           \ printf('gina#command#%s#complete', scheme),
           \ [a:arglead, cmdline, a:cursorpos],
-          \)
+          \)[:g:gina#complete_threshold]
   catch /^Vim\%((\a\+)\)\=:E117: [^:]\+: gina#command#[^#]\+#complete/
     call gina#core#console#debug(v:exception)
     call gina#core#console#debug(v:throwpoint)
@@ -45,7 +45,7 @@ function! gina#command#complete(arglead, cmdline, cursorpos) abort
         \ a:arglead,
         \ substitute(a:cmdline, '^Gina', 'Gina _raw', ''),
         \ a:cursorpos,
-        \)
+        \)[:g:gina#complete_threshold]
 endfunction
 
 function! gina#command#scheme(sfile) abort
