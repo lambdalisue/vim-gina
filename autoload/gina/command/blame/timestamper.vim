@@ -10,11 +10,6 @@ function! gina#command#blame#timestamper#new(...) abort
   return timestamper
 endfunction
 
-function! gina#command#blame#timestamper#format(epoch, timezone) abort
-  let timestamper = gina#command#blame#timestamper#new()
-  return timestamper.format(a:epoch, a:timezone)
-endfunction
-
 
 " Timestamper ----------------------------------------------------------------
 let s:timestamper = {}
