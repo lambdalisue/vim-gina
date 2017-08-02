@@ -181,7 +181,10 @@ function! s:call(range, args, mods) abort
     autocmd! * <buffer>
     autocmd WinLeave <buffer> call s:WinLeave()
     autocmd WinEnter <buffer> call s:WinEnter()
+    autocmd QuitPre  <buffer> call s:QuitPre()
   augroup END
+  nnoremap <buffer><silent> <Plug>(gina-blame-exit)
+        \ :<C-u>call <SID>exit_from_entire_blame()<CR>
   " Navi
   let bufname = gina#core#buffer#bufname(git, 'blame', {
         \ 'treeish': args.params.treeish,
@@ -247,6 +250,8 @@ function! s:init(args) abort
         \ :<C-u>call <SID>redraw_content()<CR>
   nnoremap <buffer><silent> <Plug>(gina-blame-C-L)
         \ :<C-u>call <SID>redraw_content()<CR>:execute "normal! \<C-L>"<CR>
+  nnoremap <buffer><silent> <Plug>(gina-blame-exit)
+        \ :<C-u>call <SID>exit_from_entire_blame()<CR>
 
   augroup gina_command_blame_internal
     autocmd! * <buffer>
@@ -255,22 +260,16 @@ function! s:init(args) abort
     autocmd VimResized <buffer> call s:redraw_content_if_necessary()
     autocmd WinLeave <buffer> call s:WinLeave()
     autocmd WinEnter <buffer> call s:WinEnter()
+    autocmd QuitPre <buffer> call s:QuitPre()
     autocmd BufReadCmd <buffer>
           \ call gina#core#exception#call(function('s:BufReadCmd'), [])
   augroup END
 endfunction
 
 function! s:WinLeave() abort
-  let bufname = bufname('%')
-  let scheme = gina#core#buffer#param(bufname, 'scheme')
-  let alternate = substitute(
-        \ bufname,
-        \ ':' . scheme . '\>',
-        \ ':' . (scheme ==# 'blame' ? 'show' : 'blame'),
-        \ ''
-        \)
-  if bufwinnr(alternate) > 0
-    call setbufvar(alternate, 'gina_syncbind_line', line('.'))
+  let bufinfo = s:get_blame_buffer_info()
+  if bufwinnr(bufinfo.alternative_name) > 0
+    call setbufvar(bufinfo.alternative_name, 'gina_syncbind_line', line('.'))
   endif
 endfunction
 
@@ -280,6 +279,10 @@ function! s:WinEnter() abort
     unlet b:gina_syncbind_line
   endif
   syncbind
+endfunction
+
+function! s:QuitPre() abort
+  call s:exit_from_entire_blame()
 endfunction
 
 function! s:BufReadCmd() abort
@@ -300,6 +303,39 @@ function! s:BufReadCmd() abort
   call s:redraw_content()
   call gina#util#syncbind()
   setlocal filetype=gina-blame
+endfunction
+
+function! s:get_blame_buffer_info() abort
+  let bufname = bufname('%')
+  let scheme = gina#core#buffer#param(bufname, 'scheme')
+  let alternate = substitute(
+        \ bufname,
+        \ ':' . scheme . '\>',
+        \ ':' . (scheme ==# 'blame' ? 'show' : 'blame'),
+        \ ''
+        \)
+  return {'current_name': bufname, 'alternative_name': alternate}
+endfunction
+
+" TODO: If `--opener` exists, then close both window, otherwise close
+" alternative and switch to original buffer in current window.
+function! s:exit_from_entire_blame() abort
+  let bufinfo = s:get_blame_buffer_info()
+  let original_buffer = gina#core#buffer#param(bufname('%'), 'path')
+  let close_both = gina#core#meta#get_or_fail('args').params.opener !=? 'edit'
+  try
+    execute printf('%dclose', bufwinnr(bufinfo.alternative_name))
+    if close_both
+      execute printf('%dclose', bufwinnr(bufinfo.current_name))
+    endif
+  catch /^Vim\%((\a\+)\)\=:E444/
+    " E444: Cannot close last window may thrown but ignore that
+    " Vim.Buffer.Group should NOT close the last window so ignore
+    " this exception silently.
+  endtry
+  if !close_both
+    execute 'buffer ' original_buffer
+  endif
 endfunction
 
 function! s:redraw_content() abort
