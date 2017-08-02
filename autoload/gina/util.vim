@@ -100,6 +100,25 @@ function! gina#util#fnameescape(value, ...) abort
   return prefix . value
 endfunction
 
+function! gina#util#windo(expr) abort
+  let winid = win_getid()
+  try
+    execute printf('windo %s', a:expr)
+  finally
+    call win_gotoid(winid)
+  endtry
+endfunction
+
+function! gina#util#bufdo(expr, ...) abort
+  let bang = a:0 ? '!' : ''
+  let winid = win_getid()
+  try
+    execute printf('bufdo%s %s', bang, a:expr)
+  finally
+    call win_gotoid(winid)
+  endtry
+endfunction
+
 function! gina#util#doautocmd(name, ...) abort
   let pattern = get(a:000, 0, '')
   let expr = '#' . a:name
