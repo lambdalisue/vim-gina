@@ -54,7 +54,12 @@ function! s:call(range, args, mods) abort
   " Content
   call s:open(mods, args.params.opener, args.params)
   call group.add()
-  windo setlocal noscrollbind
+  try
+    let winid = win_getid()
+    windo setlocal noscrollbind
+  finally
+    call win_gotoid(winid)
+  endtry
   setlocal scrollbind nowrap nofoldenable
   augroup gina_command_blame_internal
     autocmd! * <buffer>
