@@ -2,6 +2,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 
 
 function! gina#command#tag#call(range, args, mods) abort
+  call gina#core#options#help_if_necessary(a:args, s:get_options())
 
   if s:is_edit_command(a:args)
     return gina#command#tag#edit#call(a:range, a:args, a:mods)
@@ -30,8 +31,103 @@ function! gina#command#tag#call(range, args, mods) abort
         \})
 endfunction
 
+function! gina#command#tag#complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if a:arglead[0] ==# '-'
+    let options = s:get_options()
+    return options.complete(a:arglead, a:cmdline, a:cursorpos)
+  elseif s:is_edit_command(args)
+    return gina#complete#commit#any(a:arglead, a:cmdline, a:cursorpos)
+  elseif s:is_raw_command(args)
+    return gina#complete#tag#any(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return []
+endfunction
+
 
 " Private --------------------------------------------------------------------
+function! s:get_options() abort
+  let options = gina#core#options#new()
+  call options.define(
+        \ '-h|--help',
+        \ 'Show this help.',
+        \)
+  call options.define(
+        \ '--opener=',
+        \ 'A Vim command to open a new buffer.',
+        \ ['edit', 'split', 'vsplit', 'tabedit', 'pedit'],
+        \)
+  call options.define(
+        \ '--group=',
+        \ 'A window group name used for the buffer.',
+        \)
+  call options.define(
+        \ '-a|--annotate',
+        \ 'Make an unsigned, annotated tag object',
+        \)
+  call options.define(
+        \ '-s|--sign',
+        \ 'Make a GPG-signed tag, using the default e-mail address key',
+        \)
+  call options.define(
+        \ '-U|--local-user=',
+        \ 'Make a GPG-signed tag, using the given key',
+        \)
+  call options.define(
+        \ '-f|--force',
+        \ 'Replace an existing tag with the given name',
+        \)
+  call options.define(
+        \ '-d|--delete',
+        \ 'Delete existing tags with the given name',
+        \)
+  call options.define(
+        \ '-n',
+        \ 'Print <n> lines from the annotation when using -l',
+        \)
+  call options.define(
+        \ '-l|--list=',
+        \ 'List tags with names that match the given pattern',
+        \)
+  call options.define(
+        \ '--sort=',
+        \ 'Sort based on the key given',
+        \)
+  call options.define(
+        \ '--contains=',
+        \ 'Only listtags which contains the specified commit',
+        \)
+  call options.define(
+        \ '--points-at=',
+        \ 'Only list tags of the given object',
+        \)
+  call options.define(
+        \ '-m|--message=',
+        \ 'Use the given tag message',
+        \)
+  call options.define(
+        \ '-F|--file=',
+        \ 'Take thetag message from the given file',
+        \)
+  call options.define(
+        \ '--cleanup=',
+        \ 'Set how thetag message is cleaned up',
+        \)
+  call options.define(
+        \ '--create-reflog',
+        \ 'Createa reflog for the tag',
+        \)
+  call options.define(
+        \ '--merged=',
+        \ 'Only list tags whose tips are reachable from the given commit',
+        \)
+  call options.define(
+        \ '--no-merged=',
+        \ 'Only list tags whose tips are not reachable from the given commit',
+        \)
+  return options
+endfunction
+
 function! s:is_edit_command(args) abort
   if a:args.get('-a|--annotate')
     return 1
