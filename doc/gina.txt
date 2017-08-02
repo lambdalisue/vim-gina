@@ -789,6 +789,7 @@ Users can disable the default aliases (shorten) and/or mappings by
 
 Additionally, users can customize the content via the following variables.
 
+	|g:gina#command#blame#formatter#format|
 	|g:gina#command#blame#formatter#separator|
 	|g:gina#command#blame#formatter#current_mark|
 	|g:gina#command#blame#formatter#timestamp_months|
@@ -1238,8 +1239,9 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 		An initial column number
 	--width={width}
 		Width used for the navigation buffer
-	--use-author-instead
-		Use an author name instead of a commit summary.
+	--format={format}
+		Format string used to construct navi line.
+		(|g:gina#command#blame#formatter#format|)
 
 	See also~
 	|gina-buffer-blame|
@@ -1941,6 +1943,22 @@ g:gina#command#{scheme}#use_default_mappings
 	Define a default mappings in a corresponding buffer.
 	Assign 0 if you would like to disable the default mappings.
 	Default: 1
+
+		*g:gina#command#blame#formatter#format*
+g:gina#command#blame#formatter#format
+	A format string used to construct individual lines of a blame navi
+	buffer. The following format strings are replaced by a rule which
+	explained in |gina-misc-string-format|.
+
+	"su"	A commit summary (a first line of the commit message)
+	"au"	An author name of the commit
+	"ma"	A current commit indication mark
+	"in"	A commit SHA indicator
+	"ti"	A timestamp string
+
+	Additionally, the format is splitted by "%=" like |statusline|.
+
+	Default: "%su%=on %ti %ma%in"
 
 		*g:gina#command#blame#formatter#separator*
 g:gina#command#blame#formatter#separator

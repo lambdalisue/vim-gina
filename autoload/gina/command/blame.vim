@@ -24,7 +24,14 @@ function! s:build_args(git, args, range) abort
         \]
   let args.params.opener = args.pop('--opener', 'edit')
   let args.params.width = args.pop('--width', v:null)
-  let args.params.use_author_instead = args.pop('--use-author-instead', 0)
+  let args.params.format = args.pop('--format', v:null)
+
+  " Warn deperecated feature
+  if args.pop('--use-author-instead')
+    call gina#core#console#warn(
+          \ '--use-author-instead option is removed. Use --format instead.'
+          \)
+  endif
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
@@ -195,7 +202,7 @@ function! s:redraw_content() abort
         \ args.params.rev,
         \ revisions,
         \ {
-        \   'use_author_instead': args.params.use_author_instead,
+        \   'format': args.params.format,
         \ }
         \)
   if exists('b:gina_blame_writer')
