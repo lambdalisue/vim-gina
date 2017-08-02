@@ -148,7 +148,8 @@ ACTION						*gina-usage-action*
 When |:Gina| opens a non file-like buffer (e.g. "gina-status" buffer), users
 may able to perform pre-defined actions on candidates shown in the buffer.
 
-For example, ":Gina status" opens a "gina-status" buffer which looks like
+For example, ":Gina status -s" opens a "gina-status" buffer with short format
+which looks like
 >
 	M  foo.txt
 	 M bar.txt
