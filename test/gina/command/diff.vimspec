@@ -31,7 +31,7 @@ Describe gina#command#diff
       GinaSync diff :
       Assert Equals(winnr('$'), 1)
       " Focused buffer
-      Assert Equals(bufname('%'), printf('gina://%s:diff/:A/foo.txt', slit1.refname))
+      Assert Equals(bufname('%'), printf('gina://%s:diff/:A/foo.txt:$', slit1.refname))
       Assert Equals(getline(1, 1) + getline(3, '$'), [
             \ 'diff --git a/A/foo.txt b/A/foo.txt',
             \ '--- a/A/foo.txt',
@@ -47,7 +47,7 @@ Describe gina#command#diff
       GinaSync diff -R :
       Assert Equals(winnr('$'), 1)
       " Focused buffer
-      Assert Equals(bufname('%'), printf('gina://%s:diff:R/:A/foo.txt', slit1.refname))
+      Assert Equals(bufname('%'), printf('gina://%s:diff:R/:A/foo.txt:$', slit1.refname))
       Assert Equals(getline(1, 1) + getline(3, '$'), [
             \ 'diff --git b/A/foo.txt a/A/foo.txt',
             \ '--- b/A/foo.txt',
@@ -63,7 +63,7 @@ Describe gina#command#diff
       GinaSync diff --cached :
       Assert Equals(winnr('$'), 1)
       " Focused buffer
-      Assert Equals(bufname('%'), printf('gina://%s:diff:cached/:A/foo.txt', slit1.refname))
+      Assert Equals(bufname('%'), printf('gina://%s:diff:cached/:A/foo.txt:$', slit1.refname))
       Assert Equals(getline(1, 1) + getline(3, '$'), [
             \ 'diff --git a/A/foo.txt b/A/foo.txt',
             \ '--- a/A/foo.txt',
@@ -79,7 +79,7 @@ Describe gina#command#diff
       GinaSync diff HEAD:
       Assert Equals(winnr('$'), 1)
       " Focused buffer
-      Assert Equals(bufname('%'), printf('gina://%s:diff/HEAD:A/foo.txt', slit1.refname))
+      Assert Equals(bufname('%'), printf('gina://%s:diff/HEAD:A/foo.txt:$', slit1.refname))
       Assert Equals(getline(1, 1) + getline(3, '$'), [
             \ 'diff --git a/A/foo.txt b/A/foo.txt',
             \ '--- a/A/foo.txt',
@@ -95,7 +95,7 @@ Describe gina#command#diff
       GinaSync diff HEAD..HEAD~:
       Assert Equals(winnr('$'), 1)
       " Focused buffer
-      Assert Equals(bufname('%'), printf('gina://%s:diff/HEAD..HEAD~:A/foo.txt', slit1.refname))
+      Assert Equals(bufname('%'), printf('gina://%s:diff/HEAD..HEAD~:A/foo.txt:$', slit1.refname))
       Assert Equals(getline(1, 1) + getline(3, '$'), [
             \ 'diff --git a/A/foo.txt b/A/foo.txt',
             \ '--- a/A/foo.txt',

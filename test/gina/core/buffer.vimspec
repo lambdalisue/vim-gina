@@ -91,7 +91,7 @@ Describe gina#core#buffer
             \ 'path': 'README.md',
             \ 'treeish': ':README.md',
             \})
-      Assert Equals(gina#core#buffer#parse('gina://valid:diff/origin/HEAD:README.md'), {
+      Assert Equals(gina#core#buffer#parse('gina://valid:diff/origin/HEAD:README.md:$'), {
             \ 'repo': 'valid',
             \ 'scheme': 'diff',
             \ 'params': [],
@@ -139,7 +139,7 @@ Describe gina#core#buffer
       Assert Equals(gina#core#buffer#param('gina://valid:status', 'scheme'), 'status')
       Assert Equals(gina#core#buffer#param('gina://valid:commit:amend', 'params'), ['amend'])
       Assert Equals(gina#core#buffer#param('gina://valid:show/:README.md', 'path'), 'README.md')
-      Assert Equals(gina#core#buffer#param('gina://valid:diff/origin/HEAD:README.md', 'rev'), 'origin/HEAD')
+      Assert Equals(gina#core#buffer#param('gina://valid:diff/origin/HEAD:README.md:$', 'rev'), 'origin/HEAD')
       Assert Equals(gina#core#buffer#param('gina://valid:changes/origin/HEAD...', 'rev'), 'origin/HEAD...')
     End
 
