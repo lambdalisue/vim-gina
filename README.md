@@ -53,8 +53,8 @@ The following is a schematic image of general working-flow with gina.
 So basically user would
 
 1. Edit contents in a git repository
-2. Stage changes with `:Gina-status`
-3. Commit changes with `:Gina-commit`
+2. Stage changes with `:Gina status`
+3. Commit changes with `:Gina commit`
 
 See `:h gina-usage` for advance usage. Gina provides a lot more features.
 

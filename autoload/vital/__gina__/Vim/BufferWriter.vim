@@ -217,6 +217,8 @@ function! s:_extend_content(content) abort
     setlocal modifiable
     let leading = getline('$') . a:content[0]
     call setline(line('$'), [leading] + a:content[1:])
+  catch /^Vim\%((\a\+)\)\=:E523/  " Not allowed here
+    " Skip
   finally
     call guard.restore()
   endtry

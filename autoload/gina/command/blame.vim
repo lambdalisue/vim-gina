@@ -61,8 +61,8 @@ function! s:get_options() abort
         \ 'A window width used for a blame navigation buffer.',
         \)
   call s:options.define(
-        \ '--use-author-instead',
-        \ 'Use an author name instead of a commit summary.',
+        \ '--format=',
+        \ 'Format string used to construct the navi line.',
         \)
   call s:options.define(
         \ '--root',
@@ -104,15 +104,22 @@ function! s:get_options() abort
   return s:options
 endfunction
 
-function! s:build_args(git, args) abort
+function! s:build_args(git, args, range) abort
   let args = a:args.clone()
   let args.params.groups = [
         \ args.pop('--group1', 'blame-body'),
         \ args.pop('--group2', 'blame-navi'),
         \]
   let args.params.opener = args.pop('--opener', 'edit')
-  let args.params.width = args.pop('--width', 35)
-  let args.params.use_author_instead = args.pop('--use-author-instead', 0)
+  let args.params.width = args.pop('--width', v:null)
+  let args.params.format = args.pop('--format', v:null)
+
+  " Warn deperecated feature
+  if args.pop('--use-author-instead')
+    call gina#core#console#warn(
+          \ '--use-author-instead option is removed. Use --format instead.'
+          \)
+  endif
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
@@ -121,6 +128,11 @@ function! s:build_args(git, args) abort
           \ 'No filename is specified. Did you mean "Gina blame %s:"?',
           \ args.params.rev,
           \))
+  endif
+
+  if !(a:range[0] == 1 && a:range[1] == line('$'))
+    " Apply visual range
+    call args.set('-L', join(a:range, ','))
   endif
 
   call args.pop('--porcelain')
@@ -133,7 +145,7 @@ endfunction
 
 function! s:call(range, args, mods) abort
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:args)
+  let args = s:build_args(git, a:args, a:range)
   let mods = gina#util#contain_direction(a:mods)
         \ ? 'keepalt ' . a:mods
         \ : join(['keepalt', 'rightbelow', a:mods])
@@ -142,7 +154,7 @@ function! s:call(range, args, mods) abort
   " Content
   call s:open(mods, args.params.opener, args.params)
   call group.add()
-  windo setlocal noscrollbind
+  call gina#util#windo('setlocal noscrollbind')
   setlocal scrollbind nowrap nofoldenable
   augroup gina_command_blame_internal
     autocmd! * <buffer>
@@ -156,9 +168,10 @@ function! s:call(range, args, mods) abort
   call gina#core#buffer#open(bufname, {
         \ 'mods': 'leftabove',
         \ 'group': args.params.groups[1],
-        \ 'opener': args.params.width . 'vsplit',
+        \ 'opener': (args.params.width ? args.params.width : 35) . 'vsplit',
         \ 'cmdarg': args.params.cmdarg,
         \ 'range': 'all',
+        \ 'width': args.params.width,
         \ 'line': args.params.line,
         \ 'callback': {
         \   'fn': function('s:init'),
@@ -273,11 +286,11 @@ function! s:redraw_content() abort
   let chunks = gina#core#meta#get_or_fail('chunks')
   let revisions = gina#core#meta#get_or_fail('revisions')
   let formatter = gina#command#blame#formatter#new(
-        \ winwidth(0) - (s:is_sign_visible() ? 2 : 0),
+        \ gina#util#winwidth(0),
         \ args.params.rev,
         \ revisions,
         \ {
-        \   'use_author_instead': args.params.use_author_instead,
+        \   'format': args.params.format,
         \ }
         \)
   if exists('b:gina_blame_writer')
@@ -349,14 +362,6 @@ function! s:translate_candidate(rev, chunk, revisions) abort
         \ 'path': path,
         \ 'line': line,
         \})
-endfunction
-
-function! s:is_sign_visible() abort
-  if !exists('&signcolumn') || &signcolumn ==# 'auto'
-    return len(split(execute('sign place buffer=' . bufnr('%')), '\r\?\n')) > 1
-  else
-    return &signcolumn ==# 'yes'
-  endif
 endfunction
 
 

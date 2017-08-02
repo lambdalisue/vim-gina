@@ -148,7 +148,8 @@ ACTION						*gina-usage-action*
 When |:Gina| opens a non file-like buffer (e.g. "gina-status" buffer), users
 may able to perform pre-defined actions on candidates shown in the buffer.
 
-For example, ":Gina status" opens a "gina-status" buffer which looks like
+For example, ":Gina status -s" opens a "gina-status" buffer with short format
+which looks like
 >
 	M  foo.txt
 	 M bar.txt
@@ -788,10 +789,12 @@ Users can disable the default aliases (shorten) and/or mappings by
 
 Additionally, users can customize the content via the following variables.
 
+	|g:gina#command#blame#formatter#format|
 	|g:gina#command#blame#formatter#separator|
 	|g:gina#command#blame#formatter#current_mark|
-	|g:gina#command#blame#timestamper#format1|
-	|g:gina#command#blame#timestamper#format2|
+	|g:gina#command#blame#formatter#timestamp_months|
+	|g:gina#command#blame#formatter#timestamp_format1|
+	|g:gina#command#blame#formatter#timestamp_format2|
 >
 The following is a recommended customization while gina does not show exact
 SHA1 of the revision of the chunk.
@@ -1235,8 +1238,9 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 		An initial line number
 	--width={width}
 		Width used for the navigation buffer
-	--use-author-instead
-		Use an author name instead of a commit summary.
+	--format={format}
+		Format string used to construct navi line.
+		(|g:gina#command#blame#formatter#format|)
 
 	See also~
 	|gina-buffer-blame|
@@ -1965,6 +1969,22 @@ g:gina#command#{scheme}#use_default_mappings
 	Assign 0 if you would like to disable the default mappings.
 	Default: 1
 
+		*g:gina#command#blame#formatter#format*
+g:gina#command#blame#formatter#format
+	A format string used to construct individual lines of a blame navi
+	buffer. The following format strings are replaced by a rule which
+	explained in |gina-misc-string-format|.
+
+	"su"	A commit summary (a first line of the commit message)
+	"au"	An author name of the commit
+	"ma"	A current commit indication mark
+	"in"	A commit SHA indicator
+	"ti"	A timestamp string
+
+	Additionally, the format is splitted by "%=" like |statusline|.
+
+	Default: "%su%=on %ti %ma%in"
+
 		*g:gina#command#blame#formatter#separator*
 g:gina#command#blame#formatter#separator
 	A separator text used to indicate that the content is squashed.
@@ -1976,17 +1996,30 @@ g:gina#command#blame#formatter#current_mark
 	equal to the revision of the blame content.
 	Default: "|"
 
-		*g:gina#command#blame#timestamper#format1*
-g:gina#command#blame#timestamper#format1
+		*g:gina#command#blame#formatter#timestamp_months*
+g:gina#command#blame#formatter#timestamp_months
+	Threshold number of months to use human friendly timestamp.
+	Default: 3
+
+		*g:gina#command#blame#formatter#timestamp_format1*
+g:gina#command#blame#formatter#timestamp_format1
 	A |strftime()| format used for an absolute timestamp which year is
 	equal to the year of the current time.
 	Default: "%d %b"
 
-		*g:gina#command#blame#timestamper#format2*
-g:gina#command#blame#timestamper#format2
+		*g:gina#command#blame#formatter#timestamp_format2*
+g:gina#command#blame#formatter#timestamp_format2
 	A |strftime()| format used for an absolute timestamp which year is
 	NOT equal to the year of the current time.
 	Default: "%d %b, %Y"
+
+		*g:gina#command#blame#timestamper#format1*
+g:gina#command#blame#timestamper#format1
+	Removed. Use |gina#command#blame#formatter#timestamp_format1|.
+
+		*g:gina#command#blame#timestamper#format2*
+g:gina#command#blame#timestamper#format2
+	Removed. Use |gina#command#blame#formatter#timestamp_format2|.
 
 		*g:gina#command#browse#translation_patterns*
 g:gina#command#browse#translation_patterns

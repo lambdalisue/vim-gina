@@ -100,6 +100,25 @@ function! gina#util#fnameescape(value, ...) abort
   return prefix . value
 endfunction
 
+function! gina#util#windo(expr) abort
+  let winid = win_getid()
+  try
+    execute printf('windo %s', a:expr)
+  finally
+    call win_gotoid(winid)
+  endtry
+endfunction
+
+function! gina#util#bufdo(expr, ...) abort
+  let bang = a:0 ? '!' : ''
+  let winid = win_getid()
+  try
+    execute printf('bufdo%s %s', bang, a:expr)
+  finally
+    call win_gotoid(winid)
+  endtry
+endfunction
+
 function! gina#util#doautocmd(name, ...) abort
   let pattern = get(a:000, 0, '')
   let expr = '#' . a:name
@@ -131,6 +150,16 @@ function! gina#util#doautocmd(name, ...) abort
       augroup END
     endif
   endtry
+endfunction
+
+function! gina#util#winwidth(winnr) abort
+  let width = winwidth(a:winnr)
+  let width -= &foldcolumn
+  let width -= s:is_sign_visible(winbufnr(a:winnr)) ? 2 : 0
+  let width -= (&number || &relativenumber)
+        \ ? len(string(line('$'))) + 1
+        \ : 0
+  return width
 endfunction
 
 function! gina#util#inherit(super, ...) abort
@@ -223,4 +252,12 @@ endfunction
 
 function! s:call_super(cls, method, ...) abort dict
   return call(a:cls.__super[a:method], a:000, self)
+endfunction
+
+function! s:is_sign_visible(bufnr) abort
+  if !exists('&signcolumn') || &signcolumn ==# 'auto'
+    return len(split(execute('sign place buffer=' . a:bufnr), '\r\?\n')) > 1
+  else
+    return &signcolumn ==# 'yes'
+  endif
 endfunction

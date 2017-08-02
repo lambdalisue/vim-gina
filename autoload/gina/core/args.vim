@@ -87,7 +87,7 @@ function! gina#core#args#extend_line(git, args, line) abort
     let a:args.params.line = v:null
     return
   elseif empty(scheme)
-    let treeish1 = gina#core#repo#relpath(a:git, expand('%'))
+    let treeish1 = gina#core#repo#relpath(a:git, expand('%:p'))
     let treeish1 = ':' . treeish1
   else
     let treeish1 = gina#core#buffer#param('%', 'treeish')
@@ -97,6 +97,7 @@ function! gina#core#args#extend_line(git, args, line) abort
         \ gina#util#get(a:args.params, 'rev', v:null),
         \ gina#util#get(a:args.params, 'path', v:null),
         \)
+  echom string([treeish1, treeish2])
   let a:args.params.line = treeish1 ==# treeish2
         \ ? line('.')
         \ : v:null
