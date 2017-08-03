@@ -1994,7 +1994,7 @@ g:gina#command#blame#formatter#format
 
 	Additionally, the format is splitted by "%=" like |statusline|.
 
-	Default: "%su%=on %ti %ma%in"
+	Default: "%su%=on %ti by %au %ma%in"
 
 		*g:gina#command#blame#formatter#separator*
 g:gina#command#blame#formatter#separator
@@ -2445,8 +2445,8 @@ SHORT FORMAT					*gina-misc-short-format*
 
 gina use a short format in |gina-buffer-status|.
 The following is a cheatsheet of that format.
-
-	X          Y     Meaning ~
+>
+	X          Y     Meaning
 	          [MD]   not updated
 	M        [ MD]   updated in index
 	A        [ MD]   added to index
@@ -2467,7 +2467,7 @@ The following is a cheatsheet of that format.
 
 	?           ?    untracked
 	!           !    ignored
-
+<
 See :!man git-status for more detail.
 
 -----------------------------------------------------------------------------
