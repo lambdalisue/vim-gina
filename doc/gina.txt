@@ -2597,9 +2597,9 @@ CHANGELOG					*gina-changelog*
 
 2017.02.25 (v0.1.0)
 	Release first beta version.
+
 2017.03.05 (v0.2.1)
 	Release second beta version.
-
 	- Bug fixes
 	  - Fix commit issue on a newly checked out repository
 	  - Fix tabpage issue of Vim.Buffer.Group module
@@ -2621,6 +2621,21 @@ CHANGELOG					*gina-changelog*
 	  - Allow "Gina log v0.1.0..." to show log from v0.1.0 to HEAD
 	- Guess --line/--col from the current buffer if possible
 	- Add Gina blame
+
+2017.08.03 (v0.3.1)
+	Release third beta version.
+	- Add
+	  - Gina stash
+	  - statusline/tabline components
+	  - command completion
+	  - diff jumps on diff/commit buffer
+	  - shell/term execution via Gina!!
+	  - Yank actions
+	- Fix
+	  - 'Not allowed here' exceptions
+	  - Scroll position on Gina blame
+	  - Gina show --opener=edit :
+	  - Gina init
 
 =============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
