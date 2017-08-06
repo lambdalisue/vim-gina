@@ -27,15 +27,7 @@ function! gina#component#repo#branch() abort
   if !empty(branch)
     return branch
   endif
-  let result = gina#process#call(git, [
-        \ 'rev-parse',
-        \ '--abbrev-ref',
-        \ 'HEAD',
-        \])
-  if result.status
-    return ''
-  endif
-  let branch = get(result.stdout, 0)
+  let branch = gina#core#treeish#resolve(git, 'HEAD', 1)
   call store.set(slug, branch)
   return branch
 endfunction
