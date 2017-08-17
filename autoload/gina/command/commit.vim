@@ -260,10 +260,17 @@ endfunction
 function! s:BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
-  let content = gina#core#exception#call(
-        \ function('s:get_commitmsg'),
-        \ [git, args]
-        \)
+  if v:cmdbang
+    let content = gina#core#exception#call(
+          \ function('s:get_commitmsg_template'),
+          \ [git, args]
+          \)
+  else
+    let content = gina#core#exception#call(
+          \ function('s:get_commitmsg'),
+          \ [git, args]
+          \)
+  endif
   call gina#core#buffer#assign_cmdarg()
   call gina#core#writer#assign_content(v:null, content)
   call gina#core#emitter#emit('command:called', s:SCHEME)
