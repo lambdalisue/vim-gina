@@ -109,9 +109,11 @@ function! s:compare_record(a, b) abort
 endfunction
 
 function! s:get_candidates(fline, lline) abort
+  let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
+  let conf = gina#core#repo#config(git)
   let residual = args.residual()
-  if args.get('-s|--short')
+  if args.get('-s|--short') || get(conf, 'status.short', 'false') ==? 'true'
     let candidates = map(
           \ getline(a:fline, a:lline),
           \ 's:parse_record_short(v:val, residual)'
