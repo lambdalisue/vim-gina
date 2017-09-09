@@ -11,7 +11,7 @@ gina
 [![Doc](https://img.shields.io/badge/doc-%3Ah%20gina-orange.svg?style=flat-square)](doc/gina.txt)
 [![Powered by vital.vim](https://img.shields.io/badge/powered%20by-vital.vim-80273f.svg?style=flat-square)](https://github.com/vim-jp/vital.vim)
 
-gina.vim (gina) is a plugin to asynchrnously control git repositories.
+gina.vim (gina) is a plugin to asynchronously control git repositories.
 
 The plugin was developed based on the success of [lambdalisue/vim-gita][].
 So gina.vim has most of the outstanding features of vim-gita and drops some unwilling points.
