@@ -27,7 +27,14 @@ function! gina#component#repo#branch() abort
   if !empty(branch)
     return branch
   endif
-  let branch = gina#core#treeish#resolve(git, 'HEAD', 1)
+  let content = get(readfile(s:Git.resolve(git, 'HEAD')), 0, '')
+  if content =~# '^ref:\s\+refs/heads'
+    let branch = matchstr(content, '^ref:\s\+refs/heads/\zs.\+')
+  elseif content =~# '^ref:'
+    let branch = matchstr(content, '^ref:\s\+refs/\zs.\+')
+  else
+    let branch = content
+  endif
   call store.set(slug, branch)
   return branch
 endfunction
