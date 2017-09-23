@@ -178,45 +178,96 @@ Describe Git
   End
 
   Describe .ref({git}, {refname})
-    It returns a ref (e.g. refs/heads/master) of {refname} (e.g. master)
-      let git = Git.new(profile.valid1)
-      let cmd = printf('git -C %s rev-parse %%s', shellescape(git.worktree))
-      let hash = matchstr(system(printf(cmd, 'master')), '^\w\+')
-      let ref = Git.ref(git, 'master')
-      Assert Equals(ref, {
-            \ 'path': 'refs/heads/master',
-            \ 'name': 'master',
-            \ 'hash': hash,
-            \})
-      let ref = Git.ref(git, 'refs/heads/master')
-      Assert Equals(ref, {
-            \ 'path': 'refs/heads/master',
-            \ 'name': 'master',
-            \ 'hash': hash,
-            \})
-      let ref = Git.ref(git, 'HEAD')
-      Assert Equals(ref, {
-            \ 'path': 'refs/heads/master',
-            \ 'name': 'master',
-            \ 'hash': hash,
-            \})
+    Context with traditional ref
+      Before
+        let git = Git.new(profile.valid1)
+      End
 
-      let hash = matchstr(system(printf(cmd, 'develop')), '^\w\+')
-      let ref = Git.ref(git, 'develop')
-      Assert Equals(ref, {
-            \ 'path': 'refs/heads/develop',
-            \ 'name': 'develop',
-            \ 'hash': hash,
-            \})
-      let ref = Git.ref(git, 'refs/heads/develop')
-      Assert Equals(ref, {
-            \ 'path': 'refs/heads/develop',
-            \ 'name': 'develop',
-            \ 'hash': hash,
-            \})
+      It returns a ref (e.g. refs/heads/master) of {refname} (e.g. master)
+        let cmd = printf('git -C %s rev-parse %%s', shellescape(git.worktree))
+        let hash = matchstr(system(printf(cmd, 'master')), '^\w\+')
+        let ref = Git.ref(git, 'master')
+        Assert Equals(ref, {
+              \ 'path': 'refs/heads/master',
+              \ 'name': 'master',
+              \ 'hash': hash,
+              \})
+        let ref = Git.ref(git, 'refs/heads/master')
+        Assert Equals(ref, {
+              \ 'path': 'refs/heads/master',
+              \ 'name': 'master',
+              \ 'hash': hash,
+              \})
+        let ref = Git.ref(git, 'HEAD')
+        Assert Equals(ref, {
+              \ 'path': 'refs/heads/master',
+              \ 'name': 'master',
+              \ 'hash': hash,
+              \})
 
-      let ref = Git.ref(git, 'unknown')
-      Assert Equals(ref, {})
+        let hash = matchstr(system(printf(cmd, 'develop')), '^\w\+')
+        let ref = Git.ref(git, 'develop')
+        Assert Equals(ref, {
+              \ 'path': 'refs/heads/develop',
+              \ 'name': 'develop',
+              \ 'hash': hash,
+              \})
+        let ref = Git.ref(git, 'refs/heads/develop')
+        Assert Equals(ref, {
+              \ 'path': 'refs/heads/develop',
+              \ 'name': 'develop',
+              \ 'hash': hash,
+              \})
+
+        let ref = Git.ref(git, 'unknown')
+        Assert Equals(ref, {})
+      End
+    End
+
+    Context with packed ref
+      Before
+        let git = Git.new(profile.valid4)
+      End
+
+      It returns a ref (e.g. refs/heads/master) of {refname} (e.g. master)
+        let cmd = printf('git -C %s rev-parse %%s', shellescape(git.worktree))
+        let hash = matchstr(system(printf(cmd, 'master')), '^\w\+')
+        let ref = Git.ref(git, 'master')
+        Assert Equals(ref, {
+              \ 'path': 'refs/heads/master',
+              \ 'name': 'master',
+              \ 'hash': hash,
+              \})
+        let ref = Git.ref(git, 'refs/heads/master')
+        Assert Equals(ref, {
+              \ 'path': 'refs/heads/master',
+              \ 'name': 'master',
+              \ 'hash': hash,
+              \})
+        let ref = Git.ref(git, 'HEAD')
+        Assert Equals(ref, {
+              \ 'path': 'refs/heads/master',
+              \ 'name': 'master',
+              \ 'hash': hash,
+              \})
+
+        let hash = matchstr(system(printf(cmd, 'develop')), '^\w\+')
+        let ref = Git.ref(git, 'develop')
+        Assert Equals(ref, {
+              \ 'path': 'refs/heads/develop',
+              \ 'name': 'develop',
+              \ 'hash': hash,
+              \})
+        let ref = Git.ref(git, 'refs/heads/develop')
+        Assert Equals(ref, {
+              \ 'path': 'refs/heads/develop',
+              \ 'name': 'develop',
+              \ 'hash': hash,
+              \})
+
+        let ref = Git.ref(git, 'unknown')
+        Assert Equals(ref, {})
+      End
     End
   End
 End
@@ -229,10 +280,11 @@ function! s:new_profile() abort
   let valid1 = Path.join(root, 'valid1')  " Normal
   let valid2 = Path.join(root, 'valid2')  " Worktree (git worktree)
   let valid3 = Path.join(root, 'valid3')  " For external remote
+  let valid4 = Path.join(root, 'valid4')  " Normal with packed-ref
   let invalid = Path.join(root, 'invalid')
 
   " Build files and directories
-  for path in [valid1, valid3, invalid]
+  for path in [valid1, valid3, valid4, invalid]
     call mkdir(Path.join(path, 'A', 'foo'), 'p')
     call mkdir(Path.join(path, 'B', 'foo'), 'p')
     call mkdir(Path.join(path, 'C', 'foo'), 'p')
@@ -286,11 +338,24 @@ function! s:new_profile() abort
   call git.execute('checkout --track -b ext/master remotes/ext/master')
   call git.execute('checkout master')
 
+  let git.worktree = valid4
+  call git.execute('init')
+  call git.execute('add %s', fnameescape(Path.realpath('A/foo/bar.txt')))
+  call git.execute('commit --quiet -m "First"')
+  call git.execute('checkout --track -b develop')
+  call git.execute('add %s', fnameescape(Path.realpath('B/foo/bar.txt')))
+  call git.execute('commit --quiet -m "Second"')
+  call git.execute('checkout master')
+  call git.execute('add %s', fnameescape(Path.realpath('C/foo/bar.txt')))
+  call git.execute('commit --quiet -m "Third"')
+  call git.execute('gc')
+
   return {
         \ 'root': root,
         \ 'valid1': valid1,
         \ 'valid2': valid2,
         \ 'valid3': valid3,
+        \ 'valid4': valid4,
         \ 'invalid': invalid,
         \ 'git_version': git_version,
         \ 'git_support_worktree': git_support_worktree,
