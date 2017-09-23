@@ -111,14 +111,13 @@ function! s:ref(git, refname) abort
   if !filereadable(path)
     let packed_refs = []
   else
-    let packed_refs = filter(readfile(path), 'v:val[:0] !=# ''#''')
+    let packed_refs = map(
+          \ filter(readfile(path), 'v:val[:0] !=# ''#'''),
+          \ 'split(v:val)'
+          \)
   endif
   for candidate in candidates
-    let ref = s:_get_reference_trad(a:git, candidate)
-    if !empty(ref)
-      return ref
-    endif
-    let ref = s:_get_reference_packed(a:git, candidate, packed_refs)
+    let ref = s:_get_reference(a:git, candidate, packed_refs)
     if !empty(ref)
       return ref
     endif
@@ -128,14 +127,26 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
-function! s:_get_reference_trad(git, refname) abort
+function! s:_get_reference(git, refname, packed_refs) abort
+  let ref = s:_get_reference_trad(a:git, a:refname, a:packed_refs)
+  if !empty(ref)
+    return ref
+  endif
+  return s:_get_reference_packed(a:git, a:refname, a:packed_refs)
+endfunction
+
+function! s:_get_reference_trad(git, refname, packed_refs) abort
   let path = s:resolve(a:git, a:refname)
   if !filereadable(path)
     return {}
   endif
   let content = get(readfile(path), 0, '')
   if content =~# '^ref:'
-    return s:_get_reference_trad(a:git, matchstr(content, '^ref:\s\+\zs.\+'))
+    return s:_get_reference(
+          \ a:git,
+          \ matchstr(content, '^ref:\s\+\zs.\+'),
+          \ a:packed_refs,
+          \)
   endif
   let name = matchstr(a:refname, '^refs/\%(heads\|remotes\|tags\)/\zs.*')
   return {
@@ -146,14 +157,15 @@ function! s:_get_reference_trad(git, refname) abort
 endfunction
 
 function! s:_get_reference_packed(git, refname, packed_refs) abort
-  let expr = printf('v:val[-%d:] ==# a:refname', len(a:refname))
-  let record = get(filter(copy(a:packed_refs), expr), 0, '')
+  let record = get(filter(copy(a:packed_refs), 'v:val[1] ==# a:refname'), 0, '')
   if empty(record)
     return {}
   endif
-  let m = split(record)
+  let refname = record[1]
+  let name = matchstr(refname, '^refs/\%(heads\|remotes\|tags\)/\zs.*')
   return {
-        \ 'name': m[0],
-        \ 'hash': m[1],
+        \ 'name': name,
+        \ 'path': refname,
+        \ 'hash': record[0],
         \}
 endfunction
