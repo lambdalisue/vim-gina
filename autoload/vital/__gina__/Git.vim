@@ -115,6 +115,8 @@ function! s:ref(git, refname) abort
           \ filter(readfile(path), 'v:val[:0] !=# ''#'''),
           \ 'split(v:val)'
           \)
+    " Remove annotation lines
+    call filter(packed_refs, 'len(v:val) >= 2')
   endif
   for candidate in candidates
     let ref = s:_get_reference(a:git, candidate, packed_refs)
