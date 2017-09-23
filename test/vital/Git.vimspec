@@ -348,6 +348,11 @@ function! s:new_profile() abort
   call git.execute('checkout master')
   call git.execute('add %s', fnameescape(Path.realpath('C/foo/bar.txt')))
   call git.execute('commit --quiet -m "Third"')
+
+  call git.execute('remote add ext %s', fnameescape(valid3))
+  call git.execute('fetch ext')
+  call git.execute('checkout --track -b ext/master remotes/ext/master')
+  call git.execute('checkout master')
   call git.execute('gc')
 
   return {

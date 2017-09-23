@@ -111,7 +111,10 @@ function! s:ref(git, refname) abort
   if !filereadable(path)
     let packed_refs = []
   else
-    let packed_refs = filter(readfile(path), 'v:val[:0] !=# ''#''')
+    let packed_refs = map(
+          \ filter(readfile(path), 'v:val[:0] !=# ''#'''),
+          \ 'split(v:val)'
+          \)
   endif
   for candidate in candidates
     let ref = s:_get_reference(a:git, candidate, packed_refs)
@@ -154,17 +157,15 @@ function! s:_get_reference_trad(git, refname, packed_refs) abort
 endfunction
 
 function! s:_get_reference_packed(git, refname, packed_refs) abort
-  let expr = printf('v:val[-%d:] ==# a:refname', len(a:refname))
-  let record = get(filter(copy(a:packed_refs), expr), 0, '')
+  let record = get(filter(copy(a:packed_refs), 'v:val[1] ==# a:refname'), 0, '')
   if empty(record)
     return {}
   endif
-  let m = split(record)
-  let refname = m[1]
+  let refname = record[1]
   let name = matchstr(refname, '^refs/\%(heads\|remotes\|tags\)/\zs.*')
   return {
         \ 'name': name,
         \ 'path': refname,
-        \ 'hash': m[0],
+        \ 'hash': record[0],
         \}
 endfunction
