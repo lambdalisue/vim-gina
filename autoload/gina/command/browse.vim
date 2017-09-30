@@ -85,7 +85,7 @@ function! s:call(range, args, mods) abort
         \   : args.params.scheme,
         \)
   let url = s:Formatter.format(base_url, s:FORMAT_MAP, {
-        \ 'path': path,
+        \ 'path': substitute(path, ' ', '%20', 'g'),
         \ 'line_start': get(args.params.range, 0, ''),
         \ 'line_end': get(args.params.range, 1, ''),
         \ 'commit0': revinfo.commit0,
@@ -104,7 +104,6 @@ function! s:call(range, args, mods) abort
           \ rev,
           \))
   endif
-
   if args.params.yank
     call gina#util#yank(url)
   else
