@@ -1,6 +1,6 @@
 setlocal nomodeline
 setlocal nobuflisted
-setlocal nolist nospell
+setlocal nolist
 setlocal nowrap nofoldenable
 setlocal nonumber norelativenumber
 setlocal foldcolumn=0 colorcolumn=0
