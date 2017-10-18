@@ -29,7 +29,7 @@ function! gina#command#ls#complete(arglead, cmdline, cursorpos) abort
     let options = s:get_options()
     return options.complete(a:arglead, a:cmdline, a:cursorpos)
   endif
-  return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  return gina#complete#commit#any(a:arglead, a:cmdline, a:cursorpos)
 endfunction
 
 
