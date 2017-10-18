@@ -11,6 +11,7 @@ call gina#action#include('changes')
 call gina#action#include('commit')
 call gina#action#include('show')
 call gina#action#include('yank')
+call gina#action#include('ls')
 
 if g:gina#command#branch#use_default_aliases
   call gina#action#shorten('branch')

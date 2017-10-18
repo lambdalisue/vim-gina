@@ -12,6 +12,7 @@ call gina#action#include('edit')
 call gina#action#include('export')
 call gina#action#include('show')
 call gina#action#include('yank')
+call gina#action#include('ls')
 
 " Does this buffer points files on working-tree or index/commit?
 let s:is_worktree = empty(gina#core#buffer#param('%', 'rev'))

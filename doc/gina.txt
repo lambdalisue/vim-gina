@@ -768,6 +768,7 @@ In this buffer, users can use the following action groups.
 	|gina-actions-changes|
 	|gina-actions-compare|
 	|gina-actions-diff|
+	|gina-actions-ls|
 	|gina-actions-show|
 	|gina-actions-yank|
 
@@ -827,6 +828,7 @@ In this buffer, users can use the following action groups.
 	|gina-actions-commit|
 		"commit:checkout" is aliased to "checkout"
 		"commit:checkout:track" is aliased to "checkout:track"
+	|gina-actions-ls|
 	|gina-actions-show|
 	|gina-actions-yank|
 
@@ -963,7 +965,8 @@ In this buffer, users can use the following action groups.
 	|gina-actions-compare|
 	|gina-actions-diff|
 	|gina-actions-edit|	(shorten when {rev} is missing)
-	|gina-actions-expose|
+	|gina-actions-export|
+	|gina-actions-ls|
 	|gina-actions-show|	(shorten when {rev} exists)
 	|gina-actions-yank|
 
@@ -990,6 +993,7 @@ In this buffer, users can use the following action groups.
 	|gina-actions-compare|
 	|gina-actions-diff|
 	|gina-actions-edit|
+	|gina-actions-ls|
 	|gina-actions-show|	(shorten)
 	|gina-actions-yank|
 
@@ -1175,6 +1179,7 @@ In this buffer, users can use the following action groups.
 	|gina-actions-commit|
 		"commit:checkout" is aliased to "checkout"
 		"commit:checkout:track" is aliased to "checkout:track"
+	|gina-actions-ls|
 	|gina-actions-show|	(shorten)
 	|gina-actions-tag|	(shorten)
 	|gina-actions-yank|
@@ -2373,6 +2378,13 @@ index:discard:force (hidden)
 	Discard changes on a working tree.
 	If the file is tracked, the content is overwritten via the content in
 	HEAD. If the file is untracked, the file is removed
+
+					*gina-actions-ls*
+ls
+ls:split/vsplit/tab/preview (hidden)
+ls:above/below/left/right (alias)
+ls:top/bottom/leftest/rightest (alias)
+	List files/directories in a repository on a parcitular commit.
 
 					*gina-actions-patch*
 patch
