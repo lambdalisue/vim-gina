@@ -332,6 +332,10 @@ function! s:writer.read() abort
 endfunction
 
 function! s:writer.flush() abort
+  " DO NOT FLUSH while vim is exiting
+  if v:exiting isnot# v:null
+    return
+  endif
   let msg = self.read()
   if msg is# v:null && !self._running
     " No left over content and the writer is going to stop
