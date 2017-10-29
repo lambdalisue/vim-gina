@@ -1,8 +1,17 @@
+function! s:_SID() abort
+  return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
+endfunction
+
 function! s:_vital_loaded(V) abort
   let s:Guard = a:V.import('Vim.Guard')
   let s:Queue = a:V.import('Data.Queue')
   let s:String = a:V.import('Data.String')
   let s:Window = a:V.import('Vim.Window')
+  let s:exiting = 0
+  augroup vital_vim_buffer_writer_{s:_SID()}
+    autocmd! *
+    autocmd VimLeave * let s:exiting = 1
+  augroup END
 endfunction
 
 function! s:_vital_depends() abort
@@ -333,7 +342,7 @@ endfunction
 
 function! s:writer.flush() abort
   " DO NOT FLUSH while vim is exiting
-  if get(v:, 'exiting', v:null) isnot# v:null
+  if v:dying || s:exiting
     return
   endif
   let msg = self.read()
