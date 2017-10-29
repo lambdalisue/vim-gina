@@ -333,7 +333,7 @@ endfunction
 
 function! s:writer.flush() abort
   " DO NOT FLUSH while vim is exiting
-  if v:exiting isnot# v:null
+  if get(v:, 'exiting', v:null) isnot# v:null
     return
   endif
   let msg = self.read()
