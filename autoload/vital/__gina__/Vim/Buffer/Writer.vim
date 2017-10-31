@@ -247,6 +247,9 @@ function! s:writer.read() abort
 endfunction
 
 function! s:writer.flush() abort
+  if bufwinnr(self.bufnr) == -1
+    return
+  endif
   let msg = self.read()
   if msg is# v:null && !self._running
     " No left over content and the writer is going to stop
