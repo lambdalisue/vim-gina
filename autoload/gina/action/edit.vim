@@ -32,6 +32,8 @@ function! gina#action#edit#define(binder) abort
   call a:binder.alias('edit:bottom', 'botright edit:split')
   call a:binder.alias('edit:leftest', 'topleft edit:vsplit')
   call a:binder.alias('edit:rightest', 'botright edit:vsplit')
+  call a:binder.alias('edit:preview:top', 'topleft edit:preview')
+  call a:binder.alias('edit:preview:bottom', 'botright edit:preview')
 endfunction
 
 

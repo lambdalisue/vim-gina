@@ -32,6 +32,8 @@ function! gina#action#diff#define(binder) abort
   call a:binder.alias('diff:bottom', 'botright diff:split')
   call a:binder.alias('diff:leftest', 'topleft diff:vsplit')
   call a:binder.alias('diff:rightest', 'botright diff:vsplit')
+  call a:binder.alias('diff:preview:top', 'topleft diff:preview')
+  call a:binder.alias('diff:preview:bottom', 'botright diff:preview')
 endfunction
 
 

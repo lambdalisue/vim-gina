@@ -57,6 +57,8 @@ function! gina#action#show#define(binder) abort
   call a:binder.alias('show:bottom', 'botright show:split')
   call a:binder.alias('show:leftest', 'topleft show:vsplit')
   call a:binder.alias('show:rightest', 'botright show:vsplit')
+  call a:binder.alias('show:preview:top', 'topleft show:preview')
+  call a:binder.alias('show:preview:bottom', 'botright show:preview')
   call a:binder.alias('show:commit:above', 'leftabove show:commit:split')
   call a:binder.alias('show:commit:below', 'belowright show:commit:split')
   call a:binder.alias('show:commit:left', 'leftabove show:commit:vsplit')
@@ -65,6 +67,8 @@ function! gina#action#show#define(binder) abort
   call a:binder.alias('show:commit:bottom', 'botright show:commit:split')
   call a:binder.alias('show:commit:leftest', 'topleft show:commit:vsplit')
   call a:binder.alias('show:commit:rightest', 'botright show:commit:vsplit')
+  call a:binder.alias('show:commit:preview:top', 'topleft show:commit:preview')
+  call a:binder.alias('show:commit:preview:bottom', 'botright show:commit:preview')
 endfunction
 
 
