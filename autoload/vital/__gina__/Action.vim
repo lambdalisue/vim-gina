@@ -308,7 +308,9 @@ function! s:_action_help(candidates, options) abort dict
           \ : printf('%s [%s]', action.name, alias)
     let hidden = action.hidden ? '*' : ' '
     let description = action.description
-    let mapping = printf('%s [%s]', action.mapping, action.mapping_mode)
+    let mapping = get(a:options, 'all')
+          \ ? printf('%s [%s]', action.mapping, action.mapping_mode)
+          \ : ''
     call add(rows, [
           \ lhs,
           \ identifier,
@@ -331,7 +333,7 @@ function! s:_action_help(candidates, options) abort dict
   for params in sort(rows, 's:_compare')
     call add(content, call('printf', [pattern] + params))
   endfor
-  echo join(content, "\n")
+  redraw | echo join(content, "\n")
 endfunction
 
 function! s:_action_choice(candidates, options) abort dict
