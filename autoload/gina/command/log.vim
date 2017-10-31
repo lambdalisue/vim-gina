@@ -66,7 +66,7 @@ function! s:build_args(git, args) abort
   let args.params.partial = !empty(args.residual())
 
   call args.set('--color', 'always')
-  call args.set('--pretty', "format:\e[32m%h\e[m - %s \e[33;1m%cr\e[m \e[35;1m<%an>\e[m\e[36;1m%d\e[m")
+  call args.set('--pretty', "format:\e[32m%h\e[m %s \e[33;1m%cr\e[m \e[35;1m<%an>\e[m\e[36;1m%d\e[m")
   call gina#core#args#extend_treeish(a:git, args, args.pop(1, v:null))
   if args.params.path isnot# v:null
     call args.residual([args.params.path] + args.residual())
@@ -126,7 +126,7 @@ endfunction
 
 function! s:parse_record(record, path, residual) abort
   let record = s:String.remove_ansi_sequences(a:record)
-  let rev = matchstr(record, '^[|/\* ]\?\s*\zs[a-z0-9]\+')
+  let rev = matchstr(record, '^[|/\* ]*\s*\zs[a-z0-9]\+')
   return empty(rev) ? {} : {
         \ 'word': record,
         \ 'abbr': a:record,
