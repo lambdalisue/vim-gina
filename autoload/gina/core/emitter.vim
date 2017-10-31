@@ -28,6 +28,7 @@ if has('nvim')
   function! s:on_modified(...) abort
     if !empty(gina#process#runnings())
       " DO NOT update if there are some running process
+      call gina#core#emitter#emit('modified:delay')
       return
     endif
     let winid_saved = win_getid()
@@ -82,6 +83,7 @@ else
   function! s:on_modified(...) abort
     if !empty(gina#process#runnings())
       " DO NOT update if there are some running process
+      call gina#core#emitter#emit('modified:delay')
       return
     endif
     let winid_saved = win_getid()
