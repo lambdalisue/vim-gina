@@ -5,7 +5,6 @@ let s:READ_THRESHOLD = 0.01
 
 function! s:_vital_loaded(V) abort
   let s:Guard = a:V.import('Vim.Guard')
-  let s:Queue = a:V.import('Data.Queue')
   let s:String = a:V.import('Data.String')
   let s:Window = a:V.import('Vim.Window')
   let s:exiting = 0
@@ -16,7 +15,7 @@ function! s:_vital_loaded(V) abort
 endfunction
 
 function! s:_vital_depends() abort
-  return ['Vim.Guard', 'Data.Queue', 'Data.String', 'Vim.Window']
+  return ['Vim.Guard', 'Data.String', 'Vim.Window']
 endfunction
 
 function! s:_vital_created(module) abort
@@ -80,79 +79,36 @@ else
   endfunction
 endif
 
-function! s:_assign_content(expr, text, retries, timer) abort
+function! s:assign_content(expr, text) abort
   if v:dying || s:exiting
     return
-  elseif (a:retries > s:RETRY_NUMBER)
-    throw printf(
-          \ 'vital: Vim.Buffer.Writer: Failed to assign content of %s',
-          \ bufname(a:expr),
-          \)
-  elseif !bufloaded(a:expr)
-    call timer_start(
-          \ s:RETRY_DELAY,
-          \ function('s:_assign_content', [a:expr, a:text, a:retries + 1])
-          \)
-    return
   endif
-  let modifiable = getbufvar(a:expr, '&modifiable')
-  try
-    call setbufvar(a:expr, '&modifiable', 1)
-    call s:subbufline(a:expr, a:text)
-  catch /^Vim\%((\a\+)\)\=:E523/  " Not allowed here
-    " Retry a bit later while Vim raise E523 when the buffer is not ready
-    call timer_start(
-          \ s:RETRY_DELAY,
-          \ function('s:_assign_content', [a:expr, a:text, a:retries + 1])
-          \)
-  finally
-    call setbufvar(a:expr, '&modifiable', modifiable)
-  endtry
-endfunction
-
-function! s:assign_content(expr, text) abort
   let bufnr = a:expr is# v:null ? bufnr('%') : bufnr(a:expr)
   let text = s:_iconv(bufnr, a:text)
-  call call('s:_assign_content', [bufnr, text, 0, v:null])
-endfunction
-
-function! s:_extend_content(expr, text, retries, timer) abort
-  if v:dying || s:exiting || empty(a:text)
-    return
-  elseif (a:retries > s:RETRY_NUMBER)
-    throw printf(
-          \ 'vital: Vim.Buffer.Writer: Failed to extend content of %s',
-          \ bufname(a:expr),
-          \)
-  elseif !bufloaded(a:expr)
-    call timer_start(
-          \ s:RETRY_DELAY,
-          \ function('s:_extend_content', [a:expr, a:text, a:retries + 1])
-          \)
-    return
-  endif
-
-  let modifiable = getbufvar(a:expr, '&modifiable')
+  let modifiable = getbufvar(bufnr, '&modifiable')
   try
-    let leading = getbufline(a:expr, '$')
-    let leading[0] .= a:text[0]
-    call setbufvar(a:expr, '&modifiable', 1)
-    call s:setbufline(a:expr, '$', leading + a:text[1:])
-  catch /^Vim\%((\a\+)\)\=:E523/  " Not allowed here
-    " Retry a bit later while Vim raise E523 when the buffer is not ready
-    call timer_start(
-          \ s:RETRY_DELAY,
-          \ function('s:_extend_content', [a:expr, a:text, a:retries + 1])
-          \)
+    call setbufvar(bufnr, '&modifiable', 1)
+    call s:subbufline(bufnr, text)
   finally
-    call setbufvar(a:expr, '&modifiable', modifiable)
+    call setbufvar(bufnr, '&modifiable', modifiable)
   endtry
 endfunction
 
 function! s:extend_content(expr, text) abort
+  if v:dying || s:exiting || empty(a:text)
+    return
+  endif
   let bufnr = a:expr is# v:null ? bufnr('%') : bufnr(a:expr)
   let text = s:_iconv(bufnr, a:text)
-  call call('s:_extend_content', [bufnr, text, 0, v:null])
+  let modifiable = getbufvar(bufnr, '&modifiable')
+  try
+    call setbufvar(bufnr, '&modifiable', 1)
+    let leading = getbufline(bufnr, '$')
+    let leading[0] .= text[0]
+    call s:setbufline(bufnr, '$', leading + text[1:])
+  finally
+    call setbufvar(bufnr, '&modifiable', modifiable)
+  endtry
 endfunction
 
 function! s:new(...) abort dict
@@ -162,7 +118,6 @@ function! s:new(...) abort dict
         \}, get(a:000, 0, {})
         \)
   let writer = extend(copy(s:writer), options)
-  let writer._queue = s:Queue.new()
   return writer
 endfunction
 
@@ -170,7 +125,7 @@ endfunction
 " Writer instance ------------------------------------------------------------
 let s:timers = {}
 let s:writers = {}
-let s:writer = {'_timer': v:null, '_running': 0}
+let s:writer = {'_timer': v:null, '_running': 0, '_data': []}
 
 function! s:_timer_callback(timer) abort
   let writer = get(s:timers, a:timer, v:null)
@@ -224,22 +179,21 @@ function! s:writer.clear() abort
 endfunction
 
 function! s:writer.write(msg) abort
-  call self._queue.put(a:msg)
+  call add(self._data, a:msg)
   call self.on_write(a:msg)
 endfunction
 
 function! s:writer.read() abort
-  let chunk = self._queue.get()
-  if chunk is# v:null
+  if !len(self._data)
     return v:null
   endif
-  let content = copy(chunk)
+  let content = copy(remove(self._data, 0))
   let start = reltime()
   while reltimefloat(reltime(start)) < s:READ_THRESHOLD
-    let chunk = self._queue.get()
-    if chunk is# v:null
+    if !len(self._data)
       break
     endif
+    let chunk = remove(self._data, 0)
     let content[-1] .= chunk[0]
     call extend(content, chunk[1:])
   endwhile
@@ -247,7 +201,7 @@ function! s:writer.read() abort
 endfunction
 
 function! s:writer.flush() abort
-  if bufwinnr(self.bufnr) == -1
+  if !bufloaded(self.bufnr) || bufwinnr(self.bufnr) == -1
     return
   endif
   let msg = self.read()
@@ -259,6 +213,10 @@ function! s:writer.flush() abort
   try
     call s:extend_content(self.bufnr, msg)
     call self.on_flush(msg)
+  catch /^Vim\%((\a\+)\)\=:E523/  " Not allowed here
+    " Vim raise E523 when called in 'BufReadCmd' so put back msg into
+    " '_data' for later.
+    call insert(self._data, msg, 0)
   catch
     call self.kill()
   endtry
