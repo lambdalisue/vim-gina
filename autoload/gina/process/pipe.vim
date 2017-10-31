@@ -149,6 +149,7 @@ endfunction
 " is available in BufReadCmd and winsaveview() always returns unwilling value
 augroup gina_process_pipe_internal
   autocmd! *
+  autocmd BufEnter  gina://* let b:gina_winview = winsaveview()
   autocmd CursorMoved  gina://* let b:gina_winview = winsaveview()
   autocmd CursorMovedI gina://* let b:gina_winview = winsaveview()
 augroup END
