@@ -105,6 +105,7 @@ endfunction
 
 function! s:stream_pipe_writer.on_start() abort
   let self._winview = getbufvar(self.bufnr, 'gina_winview', [])
+  let self._spinner = gina#core#spinner#start(self.bufnr)
   call gina#process#register('writer:' . self.bufnr, 1)
   call gina#core#emitter#emit('writer:started', self.bufnr)
 endfunction
@@ -119,6 +120,7 @@ endfunction
 
 function! s:stream_pipe_writer.on_stop() abort
   call self._job.stop()
+  call self._spinner.stop()
 
   let focus = gina#core#buffer#focus(self.bufnr)
   if empty(focus) || bufnr('%') != self.bufnr
