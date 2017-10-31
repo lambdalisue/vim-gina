@@ -1,6 +1,6 @@
 scriptencoding utf-8
 
-if $LANG == 'C'
+if $LANG ==# 'C'
   let s:frames = ['-', '\', '|', '/']
 else
   let s:frames = ['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷']
