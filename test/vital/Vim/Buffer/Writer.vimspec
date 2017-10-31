@@ -1,0 +1,468 @@
+scriptencoding utf8
+
+Describe Vim.Buffer.Writer
+  Before all
+    let Writer = vital#gina#import('Vim.Buffer.Writer')
+    let Path = vital#gina#import('System.Filepath')
+    let utf8_encoding = Path.realpath('test/vital/_testdata/Vim/Buffer/Writer/utf8-encoding.txt')
+    let cp1250_encoding = Path.realpath('test/vital/_testdata/Vim/Buffer/Writer/cp1250-encoding.txt')
+  End
+
+  Before
+    %bwipeout!
+  End
+
+  Describe .assign_content({bufnr}, {content})
+    It assigns a content of a {bufnr} buffer to {content}
+      edit foo1
+      vnew foo2
+      let bufnr = bufnr('foo1')
+      call Writer.assign_content(bufnr, ['Hello'])
+      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+
+      call Writer.assign_content(bufnr, ['Hello', 'World'])
+      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello', 'World'])
+
+      call Writer.assign_content(bufnr, [])
+      Assert Equals(getbufline(bufnr, 1, '$'), [''])
+    End
+
+    It assigns a content of a {bufnr} buffer (utf-8) to {content} (utf-8)
+      edit foo1 | setlocal fileencoding=utf-8
+      vnew foo2
+      let bufnr = bufnr('foo1')
+      let content = readfile(utf8_encoding)
+      call Writer.assign_content(bufnr, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'utf-8')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+    End
+
+    It assigns a content of a {bufnr} buffer (utf-8) to {content} (cp1250)
+      edit foo1 | setlocal fileencoding=utf-8
+      vnew foo2
+      let bufnr = bufnr('foo1')
+      let content = readfile(cp1250_encoding)
+      call Writer.assign_content(bufnr, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'utf-8')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
+            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
+            \])
+    End
+
+    It assigns a content of a {bufnr} buffer (cp1250) to {content} (cp1250)
+      edit foo1 | setlocal fileencoding=cp1250
+      vnew foo2
+      let bufnr = bufnr('foo1')
+      let content = readfile(cp1250_encoding)
+      call Writer.assign_content(bufnr, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'cp1250')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+    End
+
+    It assigns a content of a {bufnr} buffer (cp1250) to {content} (utf-8)
+      if !empty(&termencoding)
+        Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
+      endif
+      edit foo1 | setlocal fileencoding=cp1250
+      vnew foo2
+      let bufnr = bufnr('foo1')
+      let content = readfile(utf8_encoding)
+      call Writer.assign_content(bufnr, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
+            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
+            \])
+
+    End
+
+    It assigns a content of a current buffer to {content} if {bufnr} is v:null
+      edit foo1
+      let bufnr = bufnr('%')
+      call Writer.assign_content(v:null, ['Hello'])
+      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+
+      call Writer.assign_content(v:null, ['Hello', 'World'])
+      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello', 'World'])
+
+      call Writer.assign_content(v:null, [])
+      Assert Equals(getbufline(bufnr, 1, '$'), [''])
+    End
+
+    It assigns a content of a current buffer (utf-8) to {content} (utf-8) if {bufnr} is v:null
+      edit foo1 | setlocal fileencoding=utf-8
+      let bufnr = bufnr('%')
+      let content = readfile(utf8_encoding)
+      call Writer.assign_content(v:null, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'utf-8')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+    End
+
+    It assigns a content of a current buffer (utf-8) to {content} (cp1250) if {bufnr} is v:null
+      edit foo1 | setlocal fileencoding=utf-8
+      let bufnr = bufnr('%')
+      let content = readfile(cp1250_encoding)
+      call Writer.assign_content(v:null, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'utf-8')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
+            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
+            \])
+    End
+
+    It assigns a content of a current buffer (cp1250) to {content} (cp1250) if {bufnr} is v:null
+      edit foo1 | setlocal fileencoding=cp1250
+      let bufnr = bufnr('%')
+      let content = readfile(cp1250_encoding)
+      call Writer.assign_content(v:null, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'cp1250')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+    End
+
+    It assigns a content of a current buffer (cp1250) to {content} (utf-8) if {bufnr} is v:null
+      if !empty(&termencoding)
+        Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
+      endif
+      edit foo1 | setlocal fileencoding=cp1250
+      let bufnr = bufnr('%')
+      let content = readfile(utf8_encoding)
+      call Writer.assign_content(v:null, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
+            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
+            \])
+
+    End
+  End
+
+  Describe .extend_content({bufnr}, {content})
+    It extends a content of a {bufnr} buffer with {content}
+      edit foo1
+      vnew foo2
+      let bufnr = bufnr('foo1')
+      call Writer.extend_content(bufnr, ['Hello'])
+      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+
+      call Writer.extend_content(bufnr, ['Hello', 'World'])
+      Assert Equals(getbufline(bufnr, 1, '$'), ['HelloHello', 'World'])
+
+      call Writer.extend_content(bufnr, ['Hello', 'World'])
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'HelloHello',
+            \ 'WorldHello',
+            \ 'World',
+            \])
+
+      call Writer.extend_content(bufnr, ['Hello', 'World'])
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'HelloHello',
+            \ 'WorldHello',
+            \ 'WorldHello',
+            \ 'World',
+            \])
+
+      call Writer.extend_content(bufnr, [])
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'HelloHello',
+            \ 'WorldHello',
+            \ 'WorldHello',
+            \ 'World',
+            \])
+    End
+
+    It extends a content of a {bufnr} buffer (utf-8) with {content} (utf-8)
+      edit foo1 | setlocal fileencoding=utf-8
+      vnew foo2
+      let bufnr = bufnr('foo1')
+      let content = readfile(utf8_encoding)
+      call Writer.extend_content(bufnr, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'utf-8')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+
+      call Writer.extend_content(bufnr, content)
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉPUnix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+    End
+
+    It extends a content of a {bufnr} buffer (utf-8) with {content} (cp1250)
+      edit foo1 | setlocal fileencoding=utf-8
+      vnew foo2
+      let bufnr = bufnr('foo1')
+      let content = readfile(cp1250_encoding)
+      call Writer.extend_content(bufnr, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'utf-8')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
+            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
+            \])
+
+      call Writer.extend_content(bufnr, content)
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
+            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9PUnix EOL",
+            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
+            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
+            \])
+    End
+
+    It extends a content of a {bufnr} buffer (cp1250) with {content} (cp1250)
+      edit foo1 | setlocal fileencoding=cp1250
+      vnew foo2
+      let bufnr = bufnr('foo1')
+      let content = readfile(cp1250_encoding)
+      call Writer.extend_content(bufnr, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+
+      call Writer.extend_content(bufnr, content)
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉPUnix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+    End
+
+    It extends a content of a {bufnr} buffer (cp1250) with {content} (utf-8)
+      if !empty(&termencoding)
+        Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
+      endif
+      edit foo1 | setlocal fileencoding=cp1250
+      vnew foo2
+      let bufnr = bufnr('foo1')
+      let content = readfile(utf8_encoding)
+      call Writer.extend_content(bufnr, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
+            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
+            \])
+
+      call Writer.extend_content(bufnr, content)
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
+            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰PUnix EOL',
+            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
+            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
+            \])
+    End
+
+    It extends a content of a current buffer with {content} if {bufnr} is v:null
+      edit foo1
+      let bufnr = bufnr('%')
+      call Writer.extend_content(v:null, ['Hello'])
+      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+
+      call Writer.extend_content(v:null, ['Hello', 'World'])
+      Assert Equals(getbufline(bufnr, 1, '$'), ['HelloHello', 'World'])
+
+      call Writer.extend_content(v:null, ['Hello', 'World'])
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'HelloHello',
+            \ 'WorldHello',
+            \ 'World',
+            \])
+
+      call Writer.extend_content(v:null, ['Hello', 'World'])
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'HelloHello',
+            \ 'WorldHello',
+            \ 'WorldHello',
+            \ 'World',
+            \])
+
+      call Writer.extend_content(v:null, [])
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'HelloHello',
+            \ 'WorldHello',
+            \ 'WorldHello',
+            \ 'World',
+            \])
+    End
+
+    It extends a content of a current buffer (utf-8) with {content} (utf-8) if {bufnr} is v:null
+      edit foo1 | setlocal fileencoding=utf-8
+      let bufnr = bufnr('%')
+      let content = readfile(utf8_encoding)
+      call Writer.extend_content(v:null, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'utf-8')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+
+      call Writer.extend_content(v:null, content)
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉPUnix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+    End
+
+    It extends a content of a current buffer (utf-8) with {content} (cp1250) if {bufnr} is v:null
+      edit foo1 | setlocal fileencoding=utf-8
+      let bufnr = bufnr('%')
+      let content = readfile(cp1250_encoding)
+      call Writer.extend_content(v:null, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'utf-8')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
+            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
+            \])
+
+      call Writer.extend_content(v:null, content)
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
+            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9PUnix EOL",
+            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
+            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
+            \])
+    End
+
+    It extends a content of a current buffer (cp1250) with {content} (cp1250) if {bufnr} is v:null
+      edit foo1 | setlocal fileencoding=cp1250
+      let bufnr = bufnr('%')
+      let content = readfile(cp1250_encoding)
+      call Writer.extend_content(v:null, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+
+      call Writer.extend_content(v:null, content)
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉPUnix EOL',
+            \ 'árvíztűrő tükörfúrógép',
+            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+            \])
+    End
+
+    It extends a content of a current buffer (cp1250) with {content} (utf-8) if {bufnr} is v:null
+      if !empty(&termencoding)
+        Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
+      endif
+      edit foo1 | setlocal fileencoding=cp1250
+      let bufnr = bufnr('%')
+      let content = readfile(utf8_encoding)
+      call Writer.extend_content(v:null, content)
+      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
+            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
+            \])
+
+      call Writer.extend_content(v:null, content)
+      Assert Equals(getbufline(bufnr, 1, '$'), [
+            \ 'Unix EOL',
+            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
+            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰PUnix EOL',
+            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
+            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
+            \])
+    End
+  End
+
+  Describe .new({options})
+    It returns a new writer instance
+      let writer = Writer.new()
+      Assert KeyExists(writer, 'bufnr')
+      Assert KeyExists(writer, 'updatetime')
+      Assert KeyExists(writer, 'start')
+      Assert KeyExists(writer, 'stop')
+      Assert KeyExists(writer, 'clear')
+      Assert KeyExists(writer, 'write')
+      Assert KeyExists(writer, 'flush')
+    End
+
+    Describe A writer instance
+      Before
+        edit foo1
+        vnew foo2
+        let bufnr = bufnr('foo1')
+      End
+
+      It repeatedly flush a queued content into the assigned buffer
+        let waittime = (Writer.updatetime * 5) . 'm'
+        let writer = Writer.new({'bufnr': bufnr})
+        call writer.write(['Hello', ''])
+        call writer.write(['Hello', ''])
+        call writer.write(['Hello', ''])
+        execute 'sleep' waittime
+        Assert Equals(getbufline(bufnr, 1, '$'), [''])
+        call writer.start()
+        execute 'sleep' waittime
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Hello',
+              \ 'Hello',
+              \ '',
+              \])
+        call writer.write(['Hello', ''])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Hello',
+              \ 'Hello',
+              \ '',
+              \])
+        execute 'sleep' waittime
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Hello',
+              \ 'Hello',
+              \ 'Hello',
+              \ '',
+              \])
+      End
+    End
+  End
+End
