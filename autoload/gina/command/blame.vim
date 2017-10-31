@@ -345,6 +345,7 @@ function! s:redraw_content() abort
     " To improve UX, use writer for chunks over 1000 (e.g. vim/src/eval.c)
     let writer = gina#core#writer#new(s:writer)
     let writer.formatter = formatter
+    call extend(writer, s:writer)
     call writer.start()
     call map(copy(chunks), 'writer.write(v:val)')
     call writer.stop()

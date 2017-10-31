@@ -187,17 +187,17 @@ function! s:writer.read() abort
   if !len(self._data)
     return v:null
   endif
-  let content = copy(remove(self._data, 0))
+  let content = copy(self.on_read(remove(self._data, 0)))
   let start = reltime()
   while reltimefloat(reltime(start)) < s:READ_THRESHOLD
     if !len(self._data)
       break
     endif
-    let chunk = remove(self._data, 0)
+    let chunk = self.on_read(remove(self._data, 0))
     let content[-1] .= chunk[0]
     call extend(content, chunk[1:])
   endwhile
-  return self.on_read(content)
+  return content
 endfunction
 
 function! s:writer.flush() abort
