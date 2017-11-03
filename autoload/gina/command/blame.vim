@@ -278,15 +278,20 @@ function! s:init(args) abort
 endfunction
 
 function! s:WinLeave() abort
-  let bufname = bufname('%')
-  let scheme = gina#core#buffer#param(bufname, 'scheme')
-  let alternate = substitute(
-        \ bufname,
-        \ ':' . scheme . '\>',
-        \ ':' . (scheme ==# 'blame' ? 'show' : 'blame'),
-        \ ''
-        \)
-  if bufwinnr(alternate) > 0
+  let git = gina#core#get_or_fail()
+  let params = gina#core#buffer#parse('%')
+  if params.scheme ==# 'blame'
+    let alternate = gina#core#buffer#bufname(git, 'show', {
+          \ 'params': params.params,
+          \ 'treeish': params.treeish,
+          \})
+  else
+    let alternate = gina#core#buffer#bufname(git, 'blame', {
+          \ 'params': params.params,
+          \ 'treeish': params.treeish,
+          \})
+  endif
+  if bufwinnr(alternate) != -1
     call setbufvar(alternate, 'gina_syncbind_line', line('.'))
   endif
 endfunction
