@@ -334,7 +334,8 @@ function! s:redraw_content() abort
   if exists('b:gina_blame_writer')
     call b:gina_blame_writer.kill()
   endif
-  if len(chunks) < g:gina#command#blame#writer_threshold
+  if !g:gina#command#blame#writer_threshold
+        \ || len(chunks) < g:gina#command#blame#writer_threshold
     let winview_saved = winsaveview()
     let content = []
     call map(copy(chunks), 'extend(content, formatter.format(v:val))')
@@ -420,5 +421,5 @@ endfunction
 call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,
-      \ 'writer_threshold': 1000,
+      \ 'writer_threshold': 0,
       \})
