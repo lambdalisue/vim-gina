@@ -74,7 +74,7 @@ function! s:build_args(git, args) abort
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
 
-  call gina#core#args#extend_treeish(a:git, args, args.pop(1))
+  call gina#core#args#extend_treeish(a:git, args, args.pop(1, ':'))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
   call gina#core#args#extend_col(a:git, args, args.pop('--col'))
   if empty(args.params.path)

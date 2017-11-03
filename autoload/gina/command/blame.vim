@@ -118,7 +118,7 @@ function! s:build_args(git, args, range) abort
           \)
   endif
 
-  call gina#core#args#extend_treeish(a:git, args, args.pop(1))
+  call gina#core#args#extend_treeish(a:git, args, args.pop(1, ':'))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
   if empty(args.params.path)
     throw gina#core#exception#warn(printf(
