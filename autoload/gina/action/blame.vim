@@ -49,13 +49,13 @@ function! s:on_echo(candidates, options) abort dict
         \ chunk.author_time,
         \ chunk.author_tz,
         \)
-  redraw | call gina#core#console#info(printf(
+  redraw | echo printf(
         \ '%s: %s authored on %s [%s]',
         \ chunk.summary,
         \ chunk.author,
         \ timestamp,
         \ chunk.revision,
-        \))
+        \)
 endfunction
 
 function! s:on_open(candidates, options) abort dict
