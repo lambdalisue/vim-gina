@@ -192,7 +192,7 @@ function! s:call(range, args, mods) abort
   call gina#core#buffer#open(bufname, {
         \ 'mods': 'leftabove',
         \ 'group': args.params.groups[1],
-        \ 'opener': (args.params.width ? args.params.width : 80) . 'vsplit',
+        \ 'opener': (args.params.width ? args.params.width : g:gina#command#blame#default_navi_width) . 'vsplit',
         \ 'cmdarg': args.params.cmdarg,
         \ 'range': 'all',
         \ 'width': args.params.width,
@@ -422,4 +422,5 @@ call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,
       \ 'writer_threshold': 0,
+      \ 'default_navi_width': 50,
       \})
