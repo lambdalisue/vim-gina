@@ -82,7 +82,15 @@ function! s:on_open(candidates, options) abort dict
     endif
     let rev = matchstr(chunk.previous, '^\S\+')
     let path = matchstr(chunk.previous, '^\S\+\s\zs.*')
-    let line = v:null
+    let line = gina#core#tracker#track(
+          \ gina#core#get_or_fail(),
+          \ chunk.path,
+          \ line('.'),
+          \ {
+          \   'lhs': chunk.rev,
+          \   'rhs': rev,
+          \ }
+          \)
   else
     let rev = chunk.rev
     let path = chunk.path
