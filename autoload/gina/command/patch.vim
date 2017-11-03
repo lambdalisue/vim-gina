@@ -60,6 +60,10 @@ function! s:get_options() abort
         \ '--col=',
         \ 'An initial column number.',
         \)
+  call options.define(
+        \ '--oneside',
+        \ 'Use two buffers instead of three buffers.',
+        \)
   return options
 endfunction
 
@@ -71,6 +75,7 @@ function! s:build_args(git, args) abort
         \ args.pop('--group3', 'patch-r'),
         \]
   let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.oneside = args.pop('--oneside', 0)
   call gina#core#args#extend_path(a:git, args, args.pop(1))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
   call gina#core#args#extend_col(a:git, args, args.pop('--col'))
@@ -118,14 +123,22 @@ function! s:call(range, args, mods) abort
         \ ? 'split'
         \ : 'vsplit'
 
-  call s:open(0, mods, opener1, 'HEAD', args.params)
-  let bufnr1 = bufnr('%')
+  if args.params.oneside
+    call s:open(1, mods, opener1, ':0', args.params)
+    let bufnr2 = bufnr('%')
 
-  call s:open(1, mods, opener2, ':0', args.params)
-  let bufnr2 = bufnr('%')
+    call s:open(2, mods, opener2, s:WORKTREE, args.params)
+    let bufnr3 = bufnr('%')
+  else
+    call s:open(0, mods, opener1, 'HEAD', args.params)
+    let bufnr1 = bufnr('%')
 
-  call s:open(2, mods, opener2, s:WORKTREE, args.params)
-  let bufnr3 = bufnr('%')
+    call s:open(1, mods, opener2, ':0', args.params)
+    let bufnr2 = bufnr('%')
+
+    call s:open(2, mods, opener2, s:WORKTREE, args.params)
+    let bufnr3 = bufnr('%')
+  endif
 
   " WORKTREE
   call gina#util#diffthis()
@@ -138,12 +151,14 @@ function! s:call(range, args, mods) abort
   endif
 
   " HEAD
-  execute printf('%dwincmd w', bufwinnr(bufnr1))
-  call gina#util#diffthis()
-  call group.add()
-  call s:define_plug_mapping('diffput', bufnr2)
-  if g:gina#command#patch#use_default_mappings
-    nmap dp <Plug>(gina-diffput)
+  if !args.params.oneside
+    execute printf('%dwincmd w', bufwinnr(bufnr1))
+    call gina#util#diffthis()
+    call group.add()
+    call s:define_plug_mapping('diffput', bufnr2)
+    if g:gina#command#patch#use_default_mappings
+      nmap dp <Plug>(gina-diffput)
+    endif
   endif
 
   " INDEX
@@ -151,11 +166,15 @@ function! s:call(range, args, mods) abort
   call gina#util#diffthis()
   call group.add()
   call s:define_plug_mapping('diffput', bufnr3)
-  call s:define_plug_mapping('diffget', bufnr1, '-l')
+  if !args.params.oneside
+    call s:define_plug_mapping('diffget', bufnr1, '-l')
+  endif
   call s:define_plug_mapping('diffget', bufnr3, '-r')
   if g:gina#command#patch#use_default_mappings
     nmap dp <Plug>(gina-diffput)
-    nmap dol <Plug>(gina-diffget-l)
+    if !args.params.oneside
+      nmap dol <Plug>(gina-diffget-l)
+    endif
     nmap dor <Plug>(gina-diffget-r)
   endif
 

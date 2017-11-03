@@ -1570,6 +1570,8 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 
 	The followings are allowed in {options}
 
+	--oneside
+		Open two buffers (INDEX and WORKTREE) instead
 	--group1={group}
 		A window group name used for the 1st buffer
 		(|gina-options-group|)
@@ -2388,6 +2390,12 @@ patch:split/vsplit/tab (hidden)
 patch:above/below/left/right (alias)
 patch:top/bottom/leftest/rightest (alias)
 	Open three buffers to patch changes to an index.
+
+patch:oneside
+patch:oneside:split/vsplit/tab (hidden)
+patch:oneside:above/below/left/right (alias)
+patch:oneside:top/bottom/leftest/rightest (alias)
+	Open two buffers to patch changes to an index.
 
 					*gina-actions-show*
 show
