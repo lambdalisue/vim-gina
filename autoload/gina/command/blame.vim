@@ -194,7 +194,6 @@ function! s:call(range, args, mods) abort
         \ 'group': args.params.groups[1],
         \ 'opener': (args.params.width ? args.params.width : g:gina#command#blame#default_navi_width) . 'vsplit',
         \ 'cmdarg': args.params.cmdarg,
-        \ 'range': 'all',
         \ 'width': args.params.width,
         \ 'line': args.params.line,
         \ 'callback': {
