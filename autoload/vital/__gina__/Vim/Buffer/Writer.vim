@@ -33,18 +33,7 @@ function! s:_iconv(bufnr, text) abort
 endfunction
 
 " s:setbufline(expr, lnum, text)
-if exists('*setbufline')
-  " https://github.com/vim-jp/issues/issues/1080
-  function! s:setbufline(expr, lnum, text) abort
-    let foldmethod = getbufvar(a:expr, '&foldmethod')
-    try
-      call setbufvar(a:expr, '&foldmethod', 'manual')
-      call setbufline(a:expr, a:lnum, a:text)
-    finally
-      call setbufvar(a:expr, '&foldmethod', foldmethod)
-    endtry
-  endfunction
-elseif exists('*nvim_buf_set_lines')
+if exists('*nvim_buf_set_lines')
   function! s:setbufline(expr, lnum, text) abort
     let bufnr = type(a:expr) == s:t_number ? a:expr : bufnr(a:expr)
     let start = a:lnum ==# '$' ? -2 : a:lnum
