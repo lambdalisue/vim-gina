@@ -66,6 +66,10 @@ function! gina#component#traffic#behind() abort
 endfunction
 
 function! gina#component#traffic#preset(...) abort
+  let git = gina#core#get()
+  if empty(git)
+    return ''
+  endif
   let kind = get(a:000, 0, 'ascii')
   return call('s:preset_' . kind, [])
 endfunction

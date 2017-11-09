@@ -68,6 +68,10 @@ function! gina#component#repo#track() abort
 endfunction
 
 function! gina#component#repo#preset(...) abort
+  let git = gina#core#get()
+  if empty(git)
+    return ''
+  endif
   let kind = get(a:000, 0, 'ascii')
   return call('s:preset_' . kind, [])
 endfunction

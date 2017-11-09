@@ -35,6 +35,10 @@ function! gina#component#status#conflicted() abort
 endfunction
 
 function! gina#component#status#preset(...) abort
+  let git = gina#core#get()
+  if empty(git)
+    return ''
+  endif
   let kind = get(a:000, 0, 'ascii')
   return call('s:preset_' . kind, [])
 endfunction
