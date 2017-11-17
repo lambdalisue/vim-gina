@@ -29,7 +29,7 @@ endfunction
 
 
 " Parser pipe ----------------------------------------------------------------
-let s:parser_pipe = gina#util#inherit(gina#process#pipe#echo())
+let s:parser_pipe = gina#util#inherit(gina#process#pipe#store())
 
 function! s:parser_pipe.on_stdout(job, msg, event) abort
   if len(a:msg) <= 1
