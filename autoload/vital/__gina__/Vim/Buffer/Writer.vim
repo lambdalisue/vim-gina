@@ -106,7 +106,7 @@ function! s:new(...) abort dict
         \ 'updatetime': self.updatetime,
         \}, get(a:000, 0, {})
         \)
-  let writer = extend(copy(s:writer), options)
+  let writer = extend(deepcopy(s:writer), options)
   return writer
 endfunction
 
