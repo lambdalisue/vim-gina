@@ -23,7 +23,7 @@ endfunction
 
 " Store pipe -----------------------------------------------------------------
 function! gina#process#pipe#store() abort
-  let pipe = copy(s:store_pipe)
+  let pipe = deepcopy(s:store_pipe)
   let pipe._stdout = []
   let pipe._stderr = []
   let pipe._content = []
@@ -58,7 +58,7 @@ endfunction
 
 " Echo pipe ------------------------------------------------------------------
 function! gina#process#pipe#echo() abort
-  let pipe = copy(s:echo_pipe)
+  let pipe = deepcopy(s:echo_pipe)
   return pipe
 endfunction
 
@@ -76,13 +76,13 @@ endfunction
 
 " Stream pipe ----------------------------------------------------------------
 function! gina#process#pipe#stream(...) abort
-  let pipe = copy(s:stream_pipe)
+  let pipe = deepcopy(s:stream_pipe)
   let pipe.writer = gina#core#writer#new(a:0 ? a:1 : s:stream_pipe_writer)
   return pipe
 endfunction
 
 function! gina#process#pipe#stream_writer() abort
-  return copy(s:stream_pipe_writer)
+  return deepcopy(s:stream_pipe_writer)
 endfunction
 
 let s:stream_pipe = gina#util#inherit(gina#process#pipe#default())
