@@ -19,16 +19,16 @@ function! gina#command#call(bang, range, rargs, mods) abort
 endfunction
 
 function! gina#command#complete(arglead, cmdline, cursorpos) abort
-  if a:cmdline =~# '^Gina!'
+  if a:cmdline =~# '^.\{-}Gina!'
     return gina#command#complete(
           \ a:arglead,
-          \ substitute(a:cmdline, '^Gina!', 'Gina _raw', ''),
+          \ substitute(a:cmdline, '^\(.\{-}\)Gina!', '\1Gina _raw', ''),
           \ a:cursorpos,
           \)
-  elseif a:cmdline =~# printf('^Gina\s\+%s$', a:arglead)
+  elseif a:cmdline =~# printf('^.\{-}Gina\s\+%s$', a:arglead)
     return gina#complete#common#command(a:arglead, a:cmdline, a:cursorpos)
   endif
-  let cmdline = matchstr(a:cmdline, '^Gina\s\+\zs.*')
+  let cmdline = matchstr(a:cmdline, '^.\{-}Gina\s\+\zs.*')
   let scheme = matchstr(cmdline, '^\S\+')
   let scheme = substitute(scheme, '!$', '', '')
   let scheme = substitute(scheme, '\W', '_', 'g')
@@ -43,7 +43,7 @@ function! gina#command#complete(arglead, cmdline, cursorpos) abort
   endtry
   return gina#command#complete(
         \ a:arglead,
-        \ substitute(a:cmdline, '^Gina', 'Gina _raw', ''),
+        \ substitute(a:cmdline, '^\(.\{-}\)Gina', '\1Gina _raw', ''),
         \ a:cursorpos,
         \)[:g:gina#complete_threshold]
 endfunction
