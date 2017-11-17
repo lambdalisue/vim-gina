@@ -54,7 +54,7 @@ endif
 if exists('*nvim_buf_set_lines')
   function! s:subbufline(expr, text) abort
     let bufnr = type(a:expr) == s:t_number ? a:expr : bufnr(a:expr)
-    return nvim_buf_set_lines(bufnr, 0, -1, v:true, a:text)
+    return nvim_buf_set_lines(bufnr, 0, -1, v:false, a:text)
   endfunction
 else
   function! s:subbufline(expr, text) abort
