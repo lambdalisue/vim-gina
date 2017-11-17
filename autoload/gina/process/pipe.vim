@@ -77,10 +77,7 @@ endfunction
 " Stream pipe ----------------------------------------------------------------
 function! gina#process#pipe#stream(...) abort
   let pipe = copy(s:stream_pipe)
-  let pipe.writer = gina#core#writer#new(extend(
-        \ copy(s:stream_pipe_writer),
-        \ a:0 ? a:1 : {}
-        \))
+  let pipe.writer = gina#core#writer#new(a:0 ? a:1 : s:stream_pipe_writer)
   return pipe
 endfunction
 

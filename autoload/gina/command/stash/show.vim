@@ -88,11 +88,7 @@ endfunction
 function! s:BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
-  let pipe = gina#process#pipe#stream()
-  let pipe.writer = gina#core#writer#new(extend(
-        \ gina#process#pipe#stream_writer(),
-        \ s:writer
-        \))
+  let pipe = gina#process#pipe#stream(s:writer)
   call gina#core#buffer#assign_cmdarg()
   call gina#process#open(git, args, pipe)
   setlocal filetype=gina-stash-show
