@@ -23,14 +23,14 @@ endfunction
 
 " Store pipe -----------------------------------------------------------------
 function! gina#process#pipe#store() abort
-  let pipe = extend(gina#process#pipe#default(), s:store_pipe)
+  let pipe = copy(s:store_pipe)
   let pipe._stdout = []
   let pipe._stderr = []
   let pipe._content = []
   return pipe
 endfunction
 
-let s:store_pipe = gina#util#inherit(s:default_pipe)
+let s:store_pipe = gina#util#inherit(gina#process#pipe#default())
 
 function! s:store_pipe.on_stdout(job, msg, event) abort
   call gina#util#extend_content(self._stdout, a:msg)
@@ -58,11 +58,11 @@ endfunction
 
 " Echo pipe ------------------------------------------------------------------
 function! gina#process#pipe#echo() abort
-  let pipe = extend(gina#process#pipe#store(), s:echo_pipe)
+  let pipe = copy(s:echo_pipe)
   return pipe
 endfunction
 
-let s:echo_pipe = gina#util#inherit(s:store_pipe)
+let s:echo_pipe = gina#util#inherit(gina#process#pipe#store())
 
 function! s:echo_pipe.on_exit(job, msg, event) abort
   if len(self._content)
@@ -75,9 +75,12 @@ endfunction
 
 
 " Stream pipe ----------------------------------------------------------------
-function! gina#process#pipe#stream() abort
-  let pipe = extend(gina#process#pipe#echo(), s:stream_pipe)
-  let pipe.writer = gina#core#writer#new(s:stream_pipe_writer)
+function! gina#process#pipe#stream(...) abort
+  let pipe = copy(s:stream_pipe)
+  let pipe.writer = gina#core#writer#new(extend(
+        \ copy(s:stream_pipe_writer),
+        \ a:0 ? a:1 : {}
+        \))
   return pipe
 endfunction
 
@@ -85,7 +88,7 @@ function! gina#process#pipe#stream_writer() abort
   return copy(s:stream_pipe_writer)
 endfunction
 
-let s:stream_pipe = gina#util#inherit(s:echo_pipe)
+let s:stream_pipe = gina#util#inherit(gina#process#pipe#default())
 let s:stream_pipe_writer = {}
 
 function! s:stream_pipe.on_start(job, msg, event) abort
