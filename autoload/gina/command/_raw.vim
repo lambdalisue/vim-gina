@@ -1,7 +1,9 @@
 function! gina#command#_raw#call(range, args, mods) abort
   let git = gina#core#get()
   let args = s:build_args(git, a:args)
-  let pipe = deepcopy(s:pipe)
+  let pipe = a:mods =~ '\<silent\>'
+        \ ? deepcopy(s:pipe_silent)
+        \ : deepcopy(s:pipe)
   return gina#process#open(git, args, pipe)
 endfunction
 
@@ -23,9 +25,18 @@ endfunction
 
 " Pipe -----------------------------------------------------------------------
 let s:pipe = gina#util#inherit(gina#process#pipe#echo())
+let s:pipe_silent = gina#util#inherit(gina#process#pipe#default())
 
 function! s:pipe.on_exit(job, msg, event) abort
   call self.super(s:pipe, 'on_exit', a:job, a:msg, a:event)
+  call gina#core#emitter#emit(
+        \ 'command:called:raw',
+        \ self.params.scheme,
+        \)
+endfunction
+
+function! s:pipe_silent.on_exit(job, msg, event) abort
+  call self.super(s:pipe_silent, 'on_exit', a:job, a:msg, a:event)
   call gina#core#emitter#emit(
         \ 'command:called:raw',
         \ self.params.scheme,
