@@ -1,7 +1,7 @@
 function! gina#command#_raw#call(range, args, mods) abort
   let git = gina#core#get()
   let args = s:build_args(git, a:args)
-  let pipe = a:mods =~ '\<silent\>'
+  let pipe = a:mods =~# '\<silent\>'
         \ ? deepcopy(s:pipe_silent)
         \ : deepcopy(s:pipe)
   return gina#process#open(git, args, pipe)
