@@ -1,7 +1,7 @@
-if exists('g:gina_loaded')
+if exists('g:loaded_gina')
   finish
 endif
-let g:gina_loaded = 1
+let g:loaded_gina = 1
 
 command! -nargs=+ -range=% -bang
       \ -complete=customlist,gina#command#complete
