@@ -99,7 +99,7 @@ function! s:preset_ascii() abort
   let staged = empty(staged) ? '' : ('<' . staged)
   let unstaged = empty(unstaged) ? '' : ('>' . unstaged)
   let conflicted = empty(conflicted) ? '' : ('x' . conflicted)
-  return join([staged, unstaged, conflicted])
+  return join(filter([staged, unstaged, conflicted], '!empty(v:val)'))
 endfunction
 
 function! s:preset_fancy() abort
@@ -109,7 +109,7 @@ function! s:preset_fancy() abort
   let staged = empty(staged) ? '' : ('«' . staged)
   let unstaged = empty(unstaged) ? '' : ('»' . unstaged)
   let conflicted = empty(conflicted) ? '' : ('×' . conflicted)
-  return join([staged, unstaged, conflicted])
+  return join(filter([staged, unstaged, conflicted], '!empty(v:val)'))
 endfunction
 
 " NOTE:
