@@ -64,7 +64,9 @@ endfunction
 let s:middleware = {}
 
 function! s:middleware.on_emit_pre(name, listeners, attrs) abort
+  " Users can override this method
 endfunction
 
 function! s:middleware.on_emit_post(name, listeners, attrs) abort
+  " Users can override this method
 endfunction
