@@ -45,9 +45,11 @@ after_test:
   - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
   - pip install codecov
   - pip install covimerage
-  - covimerage write_coverage %PROFILE%
-  - coverage xml
-  - codecov -f coverage.xml
+  - if exists %PROFILE% (
+      covimerage write_coverage %PROFILE%
+      coverage xml
+      codecov -f coverage.xml
+    )
 
 build: off
 deploy: off
