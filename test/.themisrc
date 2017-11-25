@@ -4,7 +4,8 @@ endif
 " Profile ------------------------------------------------------------------
 if $PROFILE !=# ''
   execute 'profile start' $PROFILE
-  profile! file ./autoload/*
+  profile! file ./autoload/gina/*
+  profile! file ./autoload/vital/__gina__/*
 endif
 
 
