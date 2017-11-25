@@ -22,3 +22,4 @@ else
   git clone --depth 1 --single-branch https://github.com/thinca/vim-themis "$HOME/themis"
 fi
 pip install --user vim-vint
+pip install --user covimerage

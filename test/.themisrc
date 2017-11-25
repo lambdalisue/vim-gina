@@ -1,6 +1,12 @@
 if &encoding ==# 'latin1'
   set encoding=utf-8
 endif
+" Profile ------------------------------------------------------------------
+if $PROFILE !=# ''
+  execute 'profile start' $PROFILE
+  profile! file ./autoload/*
+endif
+
 
 " Force English interface
 language message C
@@ -42,7 +48,7 @@ command! -nargs=* -range=% -bang
       \ call gina#process#wait()
 
 
-" Git ------------------------------------------------------------------------
+" Git ----------------------------------------------------------------------
 let s:is_windows = has('win32') || has('win64')
 let s:scriptroot = expand('<sfile>:p:h')
 let s:separator = s:is_windows ? '\' : '/'
@@ -55,5 +61,3 @@ for record in split(system('git config --list'), '\r\?\n')
   call themis#log('  ' . record)
 endfor
 call themis#log('***********************************************************')
-
-
