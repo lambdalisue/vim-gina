@@ -46,7 +46,7 @@ after_test:
   - pip install codecov
   - pip install covimerage
   - |
-    if exists %PROFILE% (
+    if exist %PROFILE% (
       covimerage write_coverage %PROFILE%
       coverage xml
       codecov -f coverage.xml
