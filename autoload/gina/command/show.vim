@@ -109,6 +109,18 @@ function! s:init(args) abort
     autocmd BufWinEnter <buffer> call setbufvar(expand('<afile>'), '&buflisted', 1)
     autocmd BufWinLeave <buffer> call setbufvar(expand('<afile>'), '&buflisted', 0)
   augroup END
+
+  if a:args.params.path is# v:null
+    nnoremap <buffer><silent> <Plug>(gina-diff-jump)
+          \ :<C-u>call gina#core#diffjump#jump()<CR>
+    nnoremap <buffer><silent> <Plug>(gina-diff-jump-split)
+          \ :<C-u>call gina#core#diffjump#jump('split')<CR>
+    nnoremap <buffer><silent> <Plug>(gina-diff-jump-vsplit)
+          \ :<C-u>call gina#core#diffjump#jump('vsplit')<CR>
+    if g:gina#command#show#use_default_mappings
+      nmap <buffer> <CR> <Plug>(gina-diff-jump)
+    endif
+  endif
 endfunction
 
 function! s:reassign_rev(git, args) abort
@@ -133,3 +145,9 @@ function! s:BufReadCmd() abort
     call gina#util#doautocmd('BufRead')
   endif
 endfunction
+
+
+" Config ---------------------------------------------------------------------
+call gina#config(expand('<sfile>'), {
+      \ 'use_default_mappings': 1,
+      \})

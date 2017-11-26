@@ -1068,7 +1068,27 @@ The following commands also opens this buffer to compare the content.
 	|:Gina-compare|
 	|:Gina-patch|
 
-Note that no actions or default mappings are available on this buffer.
+The following <Plug> mapping is available on this buffer when no {path} is
+specified.
+	
+	<Plug>(gina-diff-jump)		Jump to a corresponding file with a
+					corresponding line number.
+					If jumps to the source file when the
+					cursor is on removed line (the line
+					starts from '-') or destination file
+					when the cursor is on non modified or
+					added line (the line starts from ' '
+					or '+')
+
+And the following default keymapping is defined
+	
+	<Return>	Jump to a corresponding file
+
+Users can disable the default mappings by
+
+	|g:gina#command#show#use_default_mappings|
+
+Note that no actions are available on this buffer.
 
 -----------------------------------------------------------------------------
 STASH						*gina-buffer-stash*
@@ -1955,6 +1975,7 @@ g:gina#action#mark_sign_text
 		*g:gina#command#log#use_default_aliases*
 		*g:gina#command#ls#use_default_aliases*
 		*g:gina#command#reflog#use_default_aliases*
+		*g:gina#command#show#use_default_aliases*
 		*g:gina#command#stash#use_default_aliases*
 		*g:gina#command#stash#show#use_default_aliases*
 		*g:gina#command#status#use_default_aliases*
