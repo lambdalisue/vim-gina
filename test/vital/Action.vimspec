@@ -103,8 +103,15 @@ Describe Action
       Assert Equals(mapcheck('.', 'n'), '<Plug>(action-builtin-repeat)')
       Assert Equals(mapcheck('.', 'v'), '<Plug>(action-builtin-repeat)')
       Assert Equals(mapcheck('.', 'i'), '<Plug>(action-builtin-repeat)')
-      Assert Equals(mapcheck('*', 'n'), '<Plug>(action-builtin-mark)')
-      Assert Equals(mapcheck('*', 'v'), '<Plug>(action-builtin-mark)')
+      Assert Equals(mapcheck('mm', 'n'), '<Plug>(action-builtin-mark)')
+      Assert Equals(mapcheck('mm', 'v'), '<Plug>(action-builtin-mark)')
+      Assert Equals(mapcheck('m+', 'n'), '<Plug>(action-builtin-mark-set)')
+      Assert Equals(mapcheck('m+', 'v'), '<Plug>(action-builtin-mark-set)')
+      Assert Equals(mapcheck('m-', 'n'), '<Plug>(action-builtin-mark-unset)')
+      Assert Equals(mapcheck('m-', 'v'), '<Plug>(action-builtin-mark-unset)')
+      Assert Equals(mapcheck('m*', 'n'), '<Plug>(action-builtin-mark-unall)')
+      Assert Equals(mapcheck('<C-j>', 'n'), '<Plug>(action-builtin-mark)j')
+      Assert Equals(mapcheck('<C-k>', 'n'), 'k<Plug>(action-builtin-mark)')
     End
   End
 
