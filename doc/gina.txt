@@ -207,10 +207,18 @@ action on all candidates listed in the buffer.
 Actions in some buffer are defined as "markable", mean that users can mark
 candidates by "builtin:mark" action and all further actions are applied to the
 selected candidates (only when the action is defined to use marks).
-In default, the "builtin:mark" action is mapped to "*" if the buffer allowed
-mark. Note that marks are removed after users call any actions.
+In default, the follwoing mappings are provided.
 
+	mm		Mark/Unmark the selection [nv]
+	m+		Mark the selection [nv]
+	m-		Unmark the selection [nv]
+	m*		Unmark all marks [n]
+	<C-j>		Move to the below line and mark/unmark [n]
+	<C-k>		Mark/Unmark the line and move to the above line [n]
 
+Note that marks are removed after users call any actions.
+
+						*gina-usage-action-repeat*
 You may want to repeat a previous action. In that case, use a "builtin:repeat"
 action which is mapped to "." in default.
 Note that actions executed from "builtin:choice" action become repeatable.

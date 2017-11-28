@@ -140,8 +140,15 @@ function! s:attach(candidates, ...) abort dict
           \})
     call binder.alias('mark', 'builtin:mark')
     call binder.alias('mark:unall', 'builtin:mark:unall')
-    execute printf('nmap <buffer> * <Plug>(%s-builtin-mark)', binder.name)
-    execute printf('vmap <buffer> * <Plug>(%s-builtin-mark)', binder.name)
+    execute printf('nmap <buffer> mm <Plug>(%s-builtin-mark)', binder.name)
+    execute printf('vmap <buffer> mm <Plug>(%s-builtin-mark)', binder.name)
+    execute printf('nmap <buffer> m+ <Plug>(%s-builtin-mark-set)', binder.name)
+    execute printf('vmap <buffer> m+ <Plug>(%s-builtin-mark-set)', binder.name)
+    execute printf('nmap <buffer> m- <Plug>(%s-builtin-mark-unset)', binder.name)
+    execute printf('vmap <buffer> m- <Plug>(%s-builtin-mark-unset)', binder.name)
+    execute printf('nmap <buffer> m* <Plug>(%s-builtin-mark-unall)', binder.name)
+    execute printf('nmap <buffer> <C-j> <Plug>(%s-builtin-mark)j', binder.name)
+    execute printf('nmap <buffer> <C-k> k<Plug>(%s-builtin-mark)', binder.name)
   endif
   let b:{s:PREFIX . s:UNIQUE} = binder
   return binder
