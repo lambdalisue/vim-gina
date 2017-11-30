@@ -1973,6 +1973,12 @@ gina#custom#mapping#imap({scheme}, {lhs}, {rhs} [, {options}])
 -----------------------------------------------------------------------------
 VARIABLES					*gina-variables*
 
+		*g:gina#action#index#discard_directories*
+g:gina#action#index#discard_directories
+	A safe-net for index:discard action.
+	If the value is not 1, gina ignore any directory candidates.
+	Default: 0
+
 		*g:gina#action#mark_sign_text*
 g:gina#action#mark_sign_text
 	One or two characters used for a mark |sign|.
@@ -2407,7 +2413,9 @@ index:discard
 index:discard:force (hidden)
 	Discard changes on a working tree.
 	If the file is tracked, the content is overwritten via the content in
-	HEAD. If the file is untracked, the file is removed
+	HEAD. If the file is untracked, the file is removed.
+	See |g:gina#action#index#discard_directories| if you would like to
+	discard directories as well.
 
 					*gina-actions-ls*
 ls

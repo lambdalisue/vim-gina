@@ -66,12 +66,22 @@ Describe gina#core#path
       let expr = Path.realpath(':/foo/bar.txt')
       Assert Equals(gina#core#path#abspath(expr), ':/foo/bar.txt')
     End
+
+    It does not expand <Plug>_
+      let expect = Path.realpath(getcwd() . '/<Plug>_')
+      Assert Equals(gina#core#path#abspath('<Plug>_'), expect)
+    End
   End
 
   Describe #relpath({expr} [, {root}])
     It returns a Unix-like path of {expr} when {expr} starts from ':'
       let expr = Path.realpath(':/foo/bar.txt')
       Assert Equals(gina#core#path#relpath(expr), ':/foo/bar.txt')
+    End
+
+    It does not expand <Plug>_
+      let expect = Path.realpath('<Plug>_')
+      Assert Equals(gina#core#path#relpath('<Plug>_'), expect)
     End
   End
 End

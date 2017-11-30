@@ -313,7 +313,14 @@ function! s:on_discard(candidates, options) abort dict
   for candidate in delete_candidates
     let abspath = s:Path.realpath(gina#core#repo#abspath(git, candidate.path))
     if isdirectory(abspath)
-      call s:File.rmdir(abspath, 'r')
+      if g:gina#action#index#discard_directories
+        call s:File.rmdir(abspath, 'r')
+      else
+        call gina#core#console#info(printf(
+              \ '"%s" is directory. While g:gina#action#index#discard_directories is not set, it is not removed.',
+              \ candidate.path,
+              \))
+      endif
     elseif filewritable(abspath)
       call delete(abspath)
     endif
@@ -323,3 +330,9 @@ function! s:on_discard(candidates, options) abort dict
     call gina#core#emitter#emit('modified:delay')
   endif
 endfunction
+
+
+" Config ---------------------------------------------------------------------
+call gina#config(expand('<sfile>'), {
+      \ 'discard_directories': 0,
+      \})

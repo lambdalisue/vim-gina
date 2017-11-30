@@ -9,14 +9,14 @@ if s:is_windows
     return s:Path.unixpath(s:expand(s:realpath(a:expr)))
   endfunction
 
-  function! gina#core#path#abspath(expr, ...) abort
-    let path = s:realpath(s:expand(s:realpath(a:expr)))
+  function! gina#core#path#abspath(path, ...) abort
+    let path = s:realpath(a:path)
     return s:Path.unixpath(call('s:abspath', [path] + a:000))
   endfunction
 
-  function! gina#core#path#relpath(expr, ...) abort
-    let path = s:realpath(s:expand(s:realpath(a:expr)))
-    return s:Path.unixpath(call('s:path', [path] + a:000))
+  function! gina#core#path#relpath(path, ...) abort
+    let path = s:realpath(a:path)
+    return s:Path.unixpath(call('s:relpath', [path] + a:000))
   endfunction
 
   function! s:realpath(path) abort
@@ -30,14 +30,12 @@ else
     return s:expand(a:expr)
   endfunction
 
-  function! gina#core#path#abspath(expr, ...) abort
-    let path = s:expand(a:expr)
-    return call('s:abspath', [path] + a:000)
+  function! gina#core#path#abspath(path, ...) abort
+    return call('s:abspath', [a:path] + a:000)
   endfunction
 
-  function! gina#core#path#relpath(expr, ...) abort
-    let path = s:expand(a:expr)
-    return call('s:path', [path] + a:000)
+  function! gina#core#path#relpath(path, ...) abort
+    return call('s:relpath', [a:path] + a:000)
   endfunction
 endif
 
@@ -66,7 +64,7 @@ function! s:abspath(path, ...) abort
   return s:Path.join(root, a:path)
 endfunction
 
-function! s:path(path, ...) abort
+function! s:relpath(path, ...) abort
   if s:Path.is_relative(a:path) || a:path[0] ==# ':'
     return a:path
   endif
