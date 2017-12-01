@@ -26,14 +26,16 @@ Describe gina#process
 
   Describe #open({git}, {args} [, {options}])
     Before
-      let options = {'stdout': [], 'stderr': []}
+      let options = {'stdout': [''], 'stderr': ['']}
 
       function! options.on_stdout(job, msg, event) abort
-        call extend(self.stdout, a:msg)
+        let self.stdout[-1] .= a:msg[0]
+        call extend(self.stdout, a:msg[1:])
       endfunction
 
       function! options.on_stderr(job, msg, event) abort
-        call extend(self.stderr, a:msg)
+        let self.stderr[-1] .= a:msg[0]
+        call extend(self.stderr, a:msg[1:])
       endfunction
     End
 
@@ -43,7 +45,7 @@ Describe gina#process
       let job = gina#process#open(git, ['branch'], options)
       call job.wait()
       Assert Equals(job.stdout, ['  develop', '* master', ''])
-      Assert Equals(job.stderr, [])
+      Assert Equals(job.stderr, [''])
     End
   End
 
