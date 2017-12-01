@@ -8,7 +8,9 @@ Describe gina#action#index
     call slit.write('D/foo.txt', ['foo'])
     call slit.write('E/foo.txt', ['foo'])
     call slit.write('F/foo.txt', ['foo'])
-    call slit.write('G/<Plug>_', ['foo'])
+    if !has('win32') && !has('win64')
+      call slit.write('G/<Plug>_', ['foo'])
+    endif
 
     call slit.execute('add %s', slit.path('A/foo.txt'))
     call slit.execute('commit --quiet -m "First"')
