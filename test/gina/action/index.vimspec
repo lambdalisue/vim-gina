@@ -68,6 +68,9 @@ Describe gina#action#index
     End
 
     It can handle <Plug>_ correctly (Issue #133)
+      if has('win32') || has('win64')
+        Skip Windows filesystem does not allow < or > in path
+      endif
       Assert True(filereadable(slit.path('G/<Plug>_')))
       call gina#action#call('index:discard:force', [
             \ { 'path': slit.path('G/<Plug>_'), 'sign': '!!' },
