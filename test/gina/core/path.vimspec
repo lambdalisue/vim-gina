@@ -68,7 +68,7 @@ Describe gina#core#path
     End
 
     It does not expand <Plug>_
-      let expect = Path.realpath(getcwd() . '/<Plug>_')
+      let expect = Path.unixpath(getcwd() . '/<Plug>_')
       Assert Equals(gina#core#path#abspath('<Plug>_'), expect)
     End
   End
@@ -80,7 +80,7 @@ Describe gina#core#path
     End
 
     It does not expand <Plug>_
-      let expect = Path.realpath('<Plug>_')
+      let expect = Path.unixpath('<Plug>_')
       Assert Equals(gina#core#path#relpath('<Plug>_'), expect)
     End
   End
