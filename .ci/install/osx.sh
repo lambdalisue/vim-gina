@@ -2,9 +2,13 @@ install_vim() {
   local tag=$1
   local ext=$([[ $tag == "HEAD" ]] && echo "--HEAD" || echo "")
   brew update
-  brew install lua
-  brew instal python3
-  brew install vim --with-lua --with-python3 $ext
+  brew install luajit python3
+  brew install vim \
+      --with-luajit \
+      --with-python3 \
+      --without-perl \
+      --without-ruby \
+      $ext
 }
 
 install_nvim() {
