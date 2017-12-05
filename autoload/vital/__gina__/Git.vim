@@ -2,6 +2,7 @@ function! s:_vital_loaded(V) abort
   let s:INI = a:V.import('Text.INI')
   let s:Path = a:V.import('System.Filepath')
   let s:String = a:V.import('Data.String')
+  let s:Store = a:V.import('System.Store')
 endfunction
 
 function! s:_vital_depends() abort
@@ -9,6 +10,7 @@ function! s:_vital_depends() abort
         \ 'Text.INI',
         \ 'System.Filepath',
         \ 'Data.String',
+        \ 'System.Store',
         \]
 endfunction
 
@@ -107,17 +109,7 @@ function! s:ref(git, refname) abort
         \ printf('refs/remotes/%s', refname),
         \ printf('refs/remotes/%s/HEAD', refname),
         \]
-  let path = s:resolve(a:git, 'packed-refs')
-  if !filereadable(path)
-    let packed_refs = []
-  else
-    let packed_refs = map(
-          \ filter(readfile(path), 'v:val[:0] !=# ''#'''),
-          \ 'split(v:val)'
-          \)
-    " Remove annotation lines
-    call filter(packed_refs, 'len(v:val) >= 2')
-  endif
+  let packed_refs = s:_get_packed_refs(a:git)
   for candidate in candidates
     let ref = s:_get_reference(a:git, candidate, packed_refs)
     if !empty(ref)
@@ -129,6 +121,21 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:_get_packed_refs(git) abort
+  let path = s:resolve(a:git, 'packed-refs')
+  if !filereadable(path)
+    return []
+  endif
+  let store = s:Store.of(path)
+  let packed_refs = store.get('packed-refs', [])
+  if !empty(packed_refs)
+    return packed_refs
+  endif
+  let packed_refs = readfile(path)
+  call store.set('packed-refs', packed_refs)
+  return packed_refs
+endfunction
+
 function! s:_get_reference(git, refname, packed_refs) abort
   let ref = s:_get_reference_trad(a:git, a:refname, a:packed_refs)
   if !empty(ref)
@@ -159,15 +166,16 @@ function! s:_get_reference_trad(git, refname, packed_refs) abort
 endfunction
 
 function! s:_get_reference_packed(git, refname, packed_refs) abort
-  let record = get(filter(copy(a:packed_refs), 'v:val[1] ==# a:refname'), 0, '')
-  if empty(record)
+  let m = matchstr(a:packed_refs, '\s' . a:refname . '$')
+  if empty(m)
     return {}
   endif
-  let refname = record[1]
+  let m = matchlist(m, '^\([0-9a-f]\+\)\s\+\(.*\)$')
+  let refname = m[2]
   let name = matchstr(refname, '^refs/\%(heads\|remotes\|tags\)/\zs.*')
   return {
         \ 'name': name,
         \ 'path': refname,
-        \ 'hash': record[0],
+        \ 'hash': m[1],
         \}
 endfunction
