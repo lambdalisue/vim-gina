@@ -15,9 +15,9 @@ install_nvim() {
   local tag=$1
   local ext=$([[ $tag == "HEAD" ]] && echo "--HEAD" || echo "")
   brew update
-  brew install python3
+  brew install python python3
   brew install neovim/neovim/neovim $ext
-  pip install --user neovim
+  pip2 install --user neovim
   pip3 install --user neovim
 }
 
