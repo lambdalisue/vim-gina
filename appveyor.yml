@@ -2,35 +2,57 @@ version: '{build}'
 clone_depth: 1
 environment:
   matrix:
-    - CONDITION: Official latest-32
+    - VIM: vim
+      VIM_VERSION: 8.0.0027
+      VIM_ARCH: x86
       PROFILE: .profile
-    - CONDITION: Official 8.0.0069-32
+    - VIM: vim
+      VIM_VERSION: 8.0.0027
+      VIM_ARCH: x64
       PROFILE: .profile
-    - CONDITION: Kaoriya latest-32
+    - VIM: vim
+      VIM_VERSION: latest
+      VIM_ARCH: x86
       PROFILE: .profile
-    - CONDITION: Kaoriya latest-64
+    - VIM: vim
+      VIM_VERSION: latest
+      VIM_ARCH: x64
       PROFILE: .profile
-    - CONDITION: Kaoriya 8.0.0082-32
+    - VIM: nvim
+      VIM_VERSION: 0.2.0
+      VIM_ARCH: 32
       PROFILE: .profile
-    - CONDITION: Kaoriya 8.0.0082-64
+    - VIM: nvim
+      VIM_VERSION: 0.2.0
+      VIM_ARCH: 64
       PROFILE: .profile
-    - CONDITION: Neovim latest-32
+    - VIM: nvim
+      VIM_VERSION: 0.2.2
+      VIM_ARCH: 32
       PROFILE: .profile
-    - CONDITION: Neovim latest-64
+    - VIM: nvim
+      VIM_VERSION: 0.2.2
+      VIM_ARCH: 64
       PROFILE: .profile
-    - CONDITION: Neovim 0.2.0-32
+    - VIM: nvim
+      VIM_VERSION: latest
+      VIM_ARCH: 32
       PROFILE: .profile
-    - CONDITION: Neovim 0.2.0-64
+    - VIM: nvim
+      VIM_VERSION: latest
+      VIM_ARCH: 64
       PROFILE: .profile
+
 install:
   - 'reg copy HKLM\SOFTWARE\Python\PythonCore\2.7 HKLM\SOFTWARE\Python\PythonCore\2.7-32 /s /reg:32'
   - 'reg copy HKLM\SOFTWARE\Python\PythonCore\2.7 HKLM\SOFTWARE\Python\PythonCore\2.7-32 /s /reg:64'
   - 'git config --global user.name "Appveyor"'
   - 'git config --global user.email appveyor@example.com'
   - 'git clone -q --depth 1 --single-branch https://github.com/thinca/vim-themis %TEMP%\vim-themis'
+  - 'git clone -q --depth 1 --single-branch https://github.com/vim-jp/vital.vim %TEMP%\vital.vim'
   - 'set THEMIS_HOME=%TEMP%\vim-themis'
   - 'set PATH=%THEMIS_HOME%\bin;%PATH%'
-  - ps: .ci/install.ps1
+  - ps: .ci/windows.ps1
 
 test_script:
   - 'echo %PATH%'
@@ -39,12 +61,12 @@ test_script:
   - 'echo %THEMIS_ARGS%'
   - '%THEMIS_VIM% --version'
   - 'themis --version'
-  - 'themis --reporter dot'
+  - 'themis --reporter dot --runtimepath %TEMP%\vital.vim'
 
 after_test:
   - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
-  - pip install codecov
-  - pip install covimerage
+  - pip3 install codecov
+  - pip3 install covimerage
   - if exist %PROFILE% (covimerage write_coverage %PROFILE% & coverage xml & codecov -f coverage.xml)
 
 build: off
