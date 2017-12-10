@@ -49,7 +49,6 @@ install:
   - 'git config --global user.name "Appveyor"'
   - 'git config --global user.email appveyor@example.com'
   - 'git clone -q --depth 1 --single-branch https://github.com/thinca/vim-themis %TEMP%\vim-themis'
-  - 'git clone -q --depth 1 --single-branch https://github.com/vim-jp/vital.vim %TEMP%\vital.vim'
   - 'set THEMIS_HOME=%TEMP%\vim-themis'
   - 'set PATH=%THEMIS_HOME%\bin;%PATH%'
   - ps: .ci/windows.ps1
