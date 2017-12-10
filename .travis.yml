@@ -22,9 +22,9 @@ addons:
       - python3-pip
 
 install:
-  - pip3 install setuptools --upgrade
-  - pip3 install vim-vint
-  - pip3 install coverage covimerage
+  - pip3 install --user setuptools --upgrade
+  - pip3 install --user vim-vint
+  - pip3 install --user coverage covimerage
   - docker build -t ci-test --build-arg TAG=${TAG} -f .ci/Dockerfile.${VIM} .
 
 before_script:
