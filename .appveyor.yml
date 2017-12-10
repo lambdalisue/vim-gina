@@ -60,7 +60,7 @@ test_script:
   - 'echo %THEMIS_ARGS%'
   - '%THEMIS_VIM% --version'
   - 'themis --version'
-  - 'themis --reporter dot --runtimepath %TEMP%\vital.vim'
+  - 'themis --reporter dot'
 
 after_test:
   - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
