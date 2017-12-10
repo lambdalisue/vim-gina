@@ -31,11 +31,11 @@ function install_neovim($version, $arch) {
   $Env:THEMIS_ARGS = '-e -s --headless'
 }
 
-Write-Out "**********************************************************************"
-Write-Out "Vim:     $Env:VIM"
-Write-Out "Version: $Env:VIM_VERSION"
-Write-Out "Arch:    $Env:VIM_ARCH"
-Write-Out "**********************************************************************"
+Write-Output "**********************************************************************"
+Write-Output "Vim:     $Env:VIM"
+Write-Output "Version: $Env:VIM_VERSION"
+Write-Output "Arch:    $Env:VIM_ARCH"
+Write-Output "**********************************************************************"
 if ($Env:VIM -eq "nvim") {
   install_neovim $Env:VIM_VERSION $Env:VIM_ARCH
 }
