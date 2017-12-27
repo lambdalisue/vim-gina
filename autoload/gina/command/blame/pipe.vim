@@ -31,25 +31,25 @@ endfunction
 " Parser pipe ----------------------------------------------------------------
 let s:parser_pipe = gina#util#inherit(gina#process#pipe#store())
 
-function! s:parser_pipe.on_stdout(job, msg, event) abort
-  if len(a:msg) <= 1
-    let self._previous .= get(a:msg, 0, '')
+function! s:parser_pipe.on_stdout(data) abort
+  if len(a:data) <= 1
+    let self._previous .= get(a:data, 0, '')
     return
   endif
-  let content = [self._previous . a:msg[0]] + a:msg[1:-2]
-  let self._previous = a:msg[-1]
+  let content = [self._previous . a:data[0]] + a:data[1:-2]
+  let self._previous = a:data[-1]
   call map(content, 'self.parse(v:val)')
 endfunction
 
-function! s:parser_pipe.on_exit(job, msg, event) abort
-  if a:msg == 0
+function! s:parser_pipe.on_exit(data) abort
+  if a:data == 0
     if !empty(self._previous)
       call self.parse(self._previous)
     endif
     call sort(self.chunks, function('s:compare_chunks'))
     call map(self.chunks, 'extend(v:val, {''index'': v:key})')
   endif
-  call self.super(s:parser_pipe, 'on_exit', a:job, a:msg, a:event)
+  call self.super(s:parser_pipe, 'on_exit', a:data)
 endfunction
 
 function! s:parser_pipe.parse(record) abort

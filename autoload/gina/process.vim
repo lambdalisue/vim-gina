@@ -65,7 +65,7 @@ function! gina#process#open(git, args, ...) abort
   finally
     call guard.restore()
   endtry
-  call job.on_start(job.__job, '', 'on_start')
+  call job.on_start()
   call gina#core#console#debug(printf('process: %s', join(job.args)))
   return job
 endfunction

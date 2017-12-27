@@ -28,14 +28,14 @@ Describe gina#process
     Before
       let options = {'stdout': [''], 'stderr': ['']}
 
-      function! options.on_stdout(job, msg, event) abort
-        let self.stdout[-1] .= a:msg[0]
-        call extend(self.stdout, a:msg[1:])
+      function! options.on_stdout(data) abort
+        let self.stdout[-1] .= a:data[0]
+        call extend(self.stdout, a:data[1:])
       endfunction
 
-      function! options.on_stderr(job, msg, event) abort
-        let self.stderr[-1] .= a:msg[0]
-        call extend(self.stderr, a:msg[1:])
+      function! options.on_stderr(data) abort
+        let self.stderr[-1] .= a:data[0]
+        call extend(self.stderr, a:data[1:])
       endfunction
     End
 

@@ -20,11 +20,11 @@ function! gina#util#contain_direction(mods) abort
 endfunction
 
 function! gina#util#extend_content(content, msg) abort
-  let leading = get(a:content, -1, '')
-  if len(a:content) > 0
-    call remove(a:content, -1)
+  if empty(a:content)
+    call extend(a:content, [''])
   endif
-  call extend(a:content, [leading . get(a:msg, 0, '')] + a:msg[1:])
+  let a:content[-1] .= a:msg[0]
+  call extend(a:content, a:msg[1:])
 endfunction
 
 function! gina#util#get(obj, key, ...) abort

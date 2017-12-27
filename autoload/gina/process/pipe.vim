@@ -11,11 +11,11 @@ endfunction
 
 let s:default_pipe = {}
 
-function! s:default_pipe.on_start(job, msg, event) abort
+function! s:default_pipe.on_start() abort
   call gina#process#register(self)
 endfunction
 
-function! s:default_pipe.on_exit(job, msg, event) abort
+function! s:default_pipe.on_exit(data) abort
   call gina#process#unregister(self)
 endfunction
 
@@ -24,25 +24,25 @@ endfunction
 " Store pipe -----------------------------------------------------------------
 function! gina#process#pipe#store() abort
   let pipe = deepcopy(s:store_pipe)
-  let pipe._stdout = []
-  let pipe._stderr = []
-  let pipe._content = []
+  let pipe._stdout = ['']
+  let pipe._stderr = ['']
+  let pipe._content = ['']
   return pipe
 endfunction
 
 let s:store_pipe = gina#util#inherit(gina#process#pipe#default())
 
-function! s:store_pipe.on_stdout(job, msg, event) abort
-  call gina#util#extend_content(self._stdout, a:msg)
-  call gina#util#extend_content(self._content, a:msg)
+function! s:store_pipe.on_stdout(data) abort
+  call gina#util#extend_content(self._stdout, a:data)
+  call gina#util#extend_content(self._content, a:data)
 endfunction
 
-function! s:store_pipe.on_stderr(job, msg, event) abort
-  call gina#util#extend_content(self._stderr, a:msg)
-  call gina#util#extend_content(self._content, a:msg)
+function! s:store_pipe.on_stderr(data) abort
+  call gina#util#extend_content(self._stderr, a:data)
+  call gina#util#extend_content(self._content, a:data)
 endfunction
-
-function! s:store_pipe.on_exit(job, msg, event) abort
+"
+function! s:store_pipe.on_exit(data) abort
   if empty(get(self._content, -1, 'a'))
     call remove(self._content, -1)
   endif
@@ -52,7 +52,7 @@ function! s:store_pipe.on_exit(job, msg, event) abort
   if empty(get(self._stderr, -1, 'a'))
     call remove(self._stderr, -1)
   endif
-  call self.super(s:store_pipe, 'on_exit', a:job, a:msg, a:event)
+  call self.super(s:store_pipe, 'on_exit', a:data)
 endfunction
 
 
@@ -64,13 +64,13 @@ endfunction
 
 let s:echo_pipe = gina#util#inherit(gina#process#pipe#store())
 
-function! s:echo_pipe.on_exit(job, msg, event) abort
+function! s:echo_pipe.on_exit(data) abort
   if len(self._content)
     call gina#core#console#message(
           \ s:String.remove_ansi_sequences(join(self._content, "\n")),
           \)
   endif
-  call self.super(s:echo_pipe, 'on_exit', a:job, a:msg, a:event)
+  call self.super(s:echo_pipe, 'on_exit', a:data)
 endfunction
 
 
@@ -88,18 +88,18 @@ endfunction
 let s:stream_pipe = gina#util#inherit(gina#process#pipe#default())
 let s:stream_pipe_writer = {}
 
-function! s:stream_pipe.on_start(job, msg, event) abort
-  call self.super(s:stream_pipe, 'on_start', a:job, a:msg, a:event)
+function! s:stream_pipe.on_start() abort
+  call self.super(s:stream_pipe, 'on_start')
   let self.writer._job = self
   call self.writer.start()
 endfunction
 
-function! s:stream_pipe.on_stdout(job, msg, event) abort
-  call self.writer.write(a:msg)
+function! s:stream_pipe.on_stdout(data) abort
+  call self.writer.write(a:data)
 endfunction
 
-function! s:stream_pipe.on_exit(job, msg, event) abort
-  call self.super(s:stream_pipe, 'on_exit', a:job, a:msg, a:event)
+function! s:stream_pipe.on_exit(data) abort
+  call self.super(s:stream_pipe, 'on_exit', a:data)
   call self.writer.stop()
 endfunction
 

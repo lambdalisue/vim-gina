@@ -27,16 +27,16 @@ endfunction
 let s:pipe = gina#util#inherit(gina#process#pipe#echo())
 let s:pipe_silent = gina#util#inherit(gina#process#pipe#default())
 
-function! s:pipe.on_exit(job, msg, event) abort
-  call self.super(s:pipe, 'on_exit', a:job, a:msg, a:event)
+function! s:pipe.on_exit(data) abort
+  call self.super(s:pipe, 'on_exit', a:data)
   call gina#core#emitter#emit(
         \ 'command:called:raw',
         \ self.params.scheme,
         \)
 endfunction
 
-function! s:pipe_silent.on_exit(job, msg, event) abort
-  call self.super(s:pipe_silent, 'on_exit', a:job, a:msg, a:event)
+function! s:pipe_silent.on_exit(data) abort
+  call self.super(s:pipe_silent, 'on_exit', a:data)
   call gina#core#emitter#emit(
         \ 'command:called:raw',
         \ self.params.scheme,
