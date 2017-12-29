@@ -7,6 +7,8 @@ endfunction
 execute join(['function! vital#_gina#System#Job#Neovim#import() abort', printf("return map({'is_available': '', 'start': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
+let s:is_windows = has('win32') || has('win64')
+
 " http://vim-jp.org/blog/2016/03/23/take-care-of-patch-1577.html
 function! s:is_available() abort
   return has('nvim') && has('patch-7.4.1646')
@@ -16,10 +18,14 @@ function! s:start(args, options) abort
   let job = extend(copy(s:job), a:options)
   let job_options = {}
   if has_key(job, 'on_stdout')
-    let job_options.on_stdout = function('s:_on_stdout', [job])
+    let job_options.on_stdout = get(job, 'stdout_mode', 'nl') ==# 'nl'
+          \ ? function('s:_on_stdout_nl', [job])
+          \ : function('s:_on_stdout_raw', [job])
   endif
   if has_key(job, 'on_stderr')
-    let job_options.on_stderr = function('s:_on_stderr', [job])
+    let job_options.on_stderr = get(job, 'stderr_mode', 'nl') ==# 'nl'
+          \ ? function('s:_on_stderr_nl', [job])
+          \ : function('s:_on_stderr_raw', [job])
   endif
   if has_key(job, 'on_exit')
     let job_options.on_exit = function('s:_on_exit', [job])
@@ -29,13 +35,33 @@ function! s:start(args, options) abort
   return job
 endfunction
 
-function! s:_on_stdout(job, job_id, data, event) abort
+function! s:_on_stdout_raw(job, job_id, data, event) abort
   call a:job.on_stdout(a:data)
 endfunction
 
-function! s:_on_stderr(job, job_id, data, event) abort
+function! s:_on_stderr_raw(job, job_id, data, event) abort
   call a:job.on_stderr(a:data)
 endfunction
+
+if s:is_windows
+  function! s:_on_stdout_nl(job, job_id, data, event) abort
+    let data = map(copy(a:data), 'v:val[-1:] ==# "\r" ? v:val[:-2] : v:val')
+    call a:job.on_stdout(data)
+  endfunction
+
+  function! s:_on_stderr_nl(job, job_id, data, event) abort
+    let data = map(copy(a:data), 'v:val[-1:] ==# "\r" ? v:val[:-2] : v:val')
+    call a:job.on_stderr(data)
+  endfunction
+else
+  function! s:_on_stdout_nl(job, job_id, data, event) abort
+    call a:job.on_stdout(a:data)
+  endfunction
+
+  function! s:_on_stderr_nl(job, job_id, data, event) abort
+    call a:job.on_stderr(a:data)
+  endfunction
+endif
 
 function! s:_on_exit(job, job_id, data, event) abort
   call a:job.on_exit(a:data)
