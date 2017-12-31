@@ -7,7 +7,8 @@ endfunction
 execute join(['function! vital#_gina#System#Job#Vim#import() abort', printf("return map({'is_available': '', 'start': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
-let s:is_windows = has('win32') || has('win64')
+" https://github.com/neovim/neovim/blob/f629f83/src/nvim/event/process.c#L24-L26
+let s:KILL_TIMEOUT_MS = 2000
 
 function! s:is_available() abort
   return !has('nvim') && has('patch-8.0.0027')
@@ -20,16 +21,12 @@ function! s:start(args, options) abort
         \ 'timeout': 0,
         \}
   if has_key(job, 'on_stdout')
-    let job_options.out_cb = get(job, 'stdout_mode', 'nl') ==# 'nl'
-          \ ? function('s:_out_cb_nl', [job])
-          \ : function('s:_out_cb_raw', [job])
+    let job_options.out_cb = function('s:_out_cb', [job])
   else
     let job_options.out_io = 'null'
   endif
   if has_key(job, 'on_stderr')
-    let job_options.err_cb = get(job, 'stderr_mode', 'nl') ==# 'nl'
-          \ ? function('s:_err_cb_nl', [job])
-          \ : function('s:_err_cb_raw', [job])
+    let job_options.err_cb = function('s:_err_cb', [job])
   else
     let job_options.err_io = 'null'
   endif
@@ -44,57 +41,25 @@ function! s:start(args, options) abort
   return job
 endfunction
 
-function! s:_out_cb_raw(job, channel, msg) abort
+function! s:_out_cb(job, channel, msg) abort
   call a:job.on_stdout(split(a:msg, "\n", 1))
 endfunction
 
-function! s:_err_cb_raw(job, channel, msg) abort
+function! s:_err_cb(job, channel, msg) abort
   call a:job.on_stderr(split(a:msg, "\n", 1))
 endfunction
-
-if s:is_windows
-  function! s:_out_cb_nl(job, channel, msg) abort
-    let data = map(
-          \ split(a:msg, "\n", 1),
-          \ 'v:val[-1:] ==# "\r" ? v:val[:-2] : v:val'
-          \)
-    call a:job.on_stdout(data)
-  endfunction
-
-  function! s:_err_cb_nl(job, channel, msg) abort
-    let data = map(
-          \ split(a:msg, "\n", 1),
-          \ 'v:val[-1:] ==# "\r" ? v:val[:-2] : v:val'
-          \)
-    call a:job.on_stderr(data)
-  endfunction
-else
-  function! s:_out_cb_nl(job, channel, msg) abort
-    call a:job.on_stdout(split(a:msg, "\n", 1))
-  endfunction
-
-  function! s:_err_cb_nl(job, channel, msg) abort
-    call a:job.on_stderr(split(a:msg, "\n", 1))
-  endfunction
-endif
 
 function! s:_close_cb(job, channel) abort
   if has_key(a:job, 'on_stdout')
     let options = {'part': 'out'}
-    let l:Out_cb = get(a:job, 'stdout_mode', 'nl') ==# 'nl'
-          \ ? function('s:_out_cb_nl')
-          \ : function('s:_out_cb_raw')
     while ch_status(a:channel, options) ==# 'buffered'
-      call Out_cb(a:job, a:channel, ch_readraw(a:channel, options))
+      call s:_out_cb(a:job, a:channel, ch_readraw(a:channel, options))
     endwhile
   endif
   if has_key(a:job, 'on_stderr')
     let options = {'part': 'err'}
-    let l:Err_cb = get(a:job, 'stderr_mode', 'nl') ==# 'nl'
-          \ ? function('s:_err_cb_nl')
-          \ : function('s:_err_cb_raw')
     while ch_status(a:channel, options) ==# 'buffered'
-      call Err_cb(a:job, a:channel, ch_readraw(a:channel, options))
+      call s:_err_cb(a:job, a:channel, ch_readraw(a:channel, options))
     endwhile
   endif
 endfunction
@@ -106,7 +71,7 @@ endfunction
 
 " Instance -------------------------------------------------------------------
 function! s:_job_id() abort dict
-  return str2nr(matchstr(string(self.__job), '^process \zs\d\+\ze'))
+  return job_info(self.__job).process
 endfunction
 
 " NOTE:
@@ -125,34 +90,30 @@ function! s:_job_send(data) abort dict
   let data = type(a:data) == v:t_list
         \ ? join(map(a:data, 'substitute(v:val, "\n", '''', ''g'')'), "\n")
         \ : a:data
-  if has('win32') || has('win64')
-    let data = substitute(data, "\n", "\r\n", 'g')
-  endif
   return ch_sendraw(self.__job, data)
 endfunction
 
 function! s:_job_stop() abort dict
-  return job_stop(self.__job)
+  call job_stop(self.__job)
+  call timer_start(s:KILL_TIMEOUT_MS, { -> job_stop(self.__job, 'kill') })
 endfunction
 
 function! s:_job_wait(...) abort dict
   let timeout = a:0 ? a:1 : v:null
   let timeout = timeout is# v:null ? v:null : timeout / 1000.0
   let start_time = reltime()
+  let job = self.__job
   try
     while timeout is# v:null || timeout > reltimefloat(reltime(start_time))
-      let status = self.status()
-      if status ==# 'fail'
-        return -3
-      elseif status ==# 'dead'
-        let info = job_info(self.__job)
-        return info.exitval
+      let status = job_status(job)
+      if status !=# 'run'
+        return status ==# 'dead' ? job_info(job).exitval : -3
       endif
       sleep 1m
     endwhile
   catch /^Vim:Interrupt$/
     call self.stop()
-    return 1
+    return -2
   endtry
   return -1
 endfunction

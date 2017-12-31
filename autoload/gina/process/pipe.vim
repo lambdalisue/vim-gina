@@ -33,11 +33,13 @@ endfunction
 let s:store_pipe = gina#util#inherit(gina#process#pipe#default())
 
 function! s:store_pipe.on_stdout(data) abort
+  call map(a:data, 'v:val[-1:] ==# "\r" ? v:val[:-2] : v:val')
   call gina#util#extend_content(self._stdout, a:data)
   call gina#util#extend_content(self._content, a:data)
 endfunction
 
 function! s:store_pipe.on_stderr(data) abort
+  call map(a:data, 'v:val[-1:] ==# "\r" ? v:val[:-2] : v:val')
   call gina#util#extend_content(self._stderr, a:data)
   call gina#util#extend_content(self._content, a:data)
 endfunction
@@ -95,6 +97,7 @@ function! s:stream_pipe.on_start() abort
 endfunction
 
 function! s:stream_pipe.on_stdout(data) abort
+  call map(a:data, 'v:val[-1:] ==# "\r" ? v:val[:-2] : v:val')
   call self.writer.write(a:data)
 endfunction
 

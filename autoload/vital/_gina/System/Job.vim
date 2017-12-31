@@ -7,6 +7,7 @@ endfunction
 execute join(['function! vital#_gina#System#Job#import() abort', printf("return map({'_vital_depends': '', 'is_available': '', 'start': '', '_vital_loaded': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
+let s:t_string = type('')
 let s:t_list = type([])
 
 function! s:_vital_loaded(V) abort
@@ -26,20 +27,20 @@ endfunction
 
 
 " Note:
-" A string {args} is not permitted while Vim/Neovim treat that a bit
-" differently and makes thing complicated.
-" Note:
 " Vim does not raise E902 on Unix system even the prog is not found so use a
 " custom exception instead to make the method compatible.
 function! s:_validate_args(args) abort
-  if type(a:args) != s:t_list
-    throw 'vital: System.Job: Argument requires to be a List instance.'
-  elseif len(a:args) == 0
-    throw 'vital: System.Job: Argument vector must have at least one item.'
+  if type(a:args) != s:t_string && type(a:args) != s:t_list
+    throw 'vital: System.Job: Argument requires to be a String or List instance.'
   endif
-  let prog = a:args[0]
-  if !executable(prog)
-    throw printf('vital: System.Job: "%s" is not an executable', prog)
+  if type(a:args) == s:t_list
+    if len(a:args) == 0
+      throw 'vital: System.Job: Argument vector must have at least one item.'
+    endif
+    let prog = a:args[0]
+    if !executable(prog)
+      throw printf('vital: System.Job: "%s" is not an executable', prog)
+    endif
   endif
 endfunction
 
