@@ -72,7 +72,7 @@ endfunction
 
 function! gina#process#call(git, args, ...) abort
   let options = extend({
-        \ 'timeout': v:null,
+        \ 'timeout': g:gina#process#timeout,
         \}, get(a:000, 0, {})
         \)
   let pipe = gina#process#pipe#store()
@@ -144,4 +144,5 @@ endfunction
 call gina#config(expand('<sfile>'), {
       \ 'command': 'git --no-pager -c core.editor=false -c color.status=always',
       \ 'updatetime': 100,
+      \ 'timeout': 10000,
       \})
