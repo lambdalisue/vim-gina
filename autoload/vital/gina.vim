@@ -257,20 +257,20 @@ function! s:_sid(path, filter_pattern) abort
   return 0
 endfunction
 
-" A bug of execute() is fixed in Vim 8.0.0264
-if has('patch-8.0.0264')
-  let s:_execute = function('execute')
-else
-  function! s:_execute(cmd) abort
-    let [save_verbose, save_verbosefile] = [&verbose, &verbosefile]
-    set verbose=0 verbosefile=
-    redir => res
-      silent! execute a:cmd
-    redir END
-    let [&verbose, &verbosefile] = [save_verbose, save_verbosefile]
-    return res
-  endfunction
-endif
+" We want to use a execute() builtin function instead of s:_execute(),
+" however there is a bug in execute().
+" execute() returns empty string when it is called in
+" completion function of user defined ex command.
+" https://github.com/vim-jp/issues/issues/1129
+function! s:_execute(cmd) abort
+  let [save_verbose, save_verbosefile] = [&verbose, &verbosefile]
+  set verbose=0 verbosefile=
+  redir => res
+    silent! execute a:cmd
+  redir END
+  let [&verbose, &verbosefile] = [save_verbose, save_verbosefile]
+  return res
+endfunction
 
 if filereadable(expand('<sfile>:r') . '.VIM') " is case-insensitive or not
   let s:_unify_path_cache = {}

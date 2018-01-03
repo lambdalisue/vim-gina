@@ -13,12 +13,11 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 function! s:_vital_loaded(V) abort
-  let s:Prelude = a:V.import('Prelude')
   let s:Filepath = a:V.import('System.Filepath')
 endfunction
 
 function! s:_vital_depends() abort
-  return ['Prelude', 'System.Filepath']
+  return ['System.Filepath']
 endfunction
 
 let s:is_unix = has('unix')
@@ -192,7 +191,7 @@ endif
 " Implemented by pure Vim script.
 function! s:copy_dir_vim(src, dest) abort
   if isdirectory(a:src)
-    for src in s:Prelude.glob(s:Filepath.join(a:src, '*'))
+    for src in glob(s:Filepath.join(a:src, '*'), 1, 1)
       let basename = s:Filepath.basename(src)
       let dest = s:Filepath.join(a:dest, basename)
       if !s:copy_dir_vim(src, dest)
