@@ -23,7 +23,7 @@ function! gina#command#qrep#call(range, args, mods) abort
     let residual = args.residual()
 
     let items = map(
-          \ result.content,
+          \ copy(result.content),
           \ 's:parse_record(git, v:val, rev, residual)',
           \)
     call setqflist(
