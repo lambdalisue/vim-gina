@@ -43,11 +43,29 @@ call themis#log('-----------------------------------------------------------')
 
 
 " Synchronous Gina command for test
+function! s:GinaSync(bang, range, args, mods) abort
+  let timeout = 5000
+  call call('gina#command#call', [a:bang, a:range, a:args, a:mods])
+  if gina#process#wait(timeout) == -1
+    call themis#log(printf(
+          \ 'WARNING: ":%s%sGina%s %s" did not finish within %d ms',
+          \ empty(a:mods) ? '' : a:mods . ' ',
+          \ join(a:range, ','),
+          \ a:bang,
+          \ a:args,
+          \ timeout,
+          \))
+    call themis#log('Remaining running process:')
+    for process in gina#process#runnings()
+      call themis#log('  ' . process)
+    endfor
+  endif
+endfunction
+
 command! -nargs=* -range=% -bang
       \ -complete=customlist,gina#command#complete
       \ GinaSync
-      \ call gina#command#call(<q-bang>, [<line1>, <line2>], <q-args>, <q-mods>) |
-      \ call gina#process#wait()
+      \ call s:GinaSync(<q-bang>, [<line1>, <line2>], <q-args>, <q-mods>)
 
 
 " Git ----------------------------------------------------------------------
