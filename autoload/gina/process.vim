@@ -81,9 +81,9 @@ function! gina#process#call(git, args, ...) abort
   return {
         \ 'args': job.args,
         \ 'status': status,
-        \ 'stdout': pipe._stdout,
-        \ 'stderr': pipe._stderr,
-        \ 'content': pipe._content,
+        \ 'stdout': pipe.stdout,
+        \ 'stderr': pipe.stderr,
+        \ 'content': pipe.content,
         \}
 endfunction
 
