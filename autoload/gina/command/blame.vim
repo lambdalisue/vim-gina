@@ -343,7 +343,7 @@ function! s:redraw_content() abort
     let winview_saved = winsaveview()
     let content = []
     call map(copy(chunks), 'extend(content, formatter.format(v:val))')
-    call gina#core#writer#assign_content(v:null, content)
+    call gina#core#writer#replace('%', 0, -1, content[:-2])
     call winrestview(winview_saved)
     call gina#util#syncbind()
   else

@@ -83,7 +83,7 @@ function! s:print_message(msg) abort
   endif
   let focus = gina#core#buffer#focus(bufnr)
   try
-    call gina#core#writer#extend_content(bufnr, [a:msg, ''])
+    call gina#core#writer#replace(bufnr, -1, -1, [a:msg])
     normal! G
   finally
     call focus.restore()

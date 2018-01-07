@@ -1,224 +1,233 @@
 let s:t_number = type(0)
-let s:RETRY_DELAY = 100
-let s:RETRY_NUMBER = 15
-let s:READ_THRESHOLD = 0.01
-
-function! s:_vital_loaded(V) abort
-  let s:Guard = a:V.import('Vim.Guard')
-  let s:String = a:V.import('Data.String')
-  let s:Window = a:V.import('Vim.Window')
-  let s:exiting = 0
-  augroup vital_vim_buffer_writer_{s:_SID()}
-    autocmd! *
-    autocmd VimLeave * let s:exiting = 1
-  augroup END
-endfunction
-
-function! s:_vital_depends() abort
-  return ['Vim.Guard', 'Data.String', 'Vim.Window']
-endfunction
+let s:running_writers = {}
+let s:exiting = v:false
 
 function! s:_vital_created(module) abort
+  " Default updatetime
   let a:module.updatetime = 100
+
+  " Subscribe VimLeave to cancel 'replace()' during VimLeave
+  let sid = matchstr(
+        \ get(function('s:_vital_created'), 'name'),
+        \ '<SNR>\zs\d\+\ze'
+        \)
+  execute 'augroup vital_vim_buffer_writer_' . sid
+  execute 'autocmd! *'
+  execute 'autocmd VimLeave * let s:exiting = v:true'
+  execute 'augroup END'
 endfunction
 
-function! s:_iconv(bufnr, text) abort
+function! s:_iconv(bufnr, content) abort
   let fileencoding = getbufvar(a:bufnr, '&fileencoding')
-  if fileencoding ==# ''
-    return a:text
+  if fileencoding ==# '' || fileencoding ==? &encoding || empty(a:content)
+    return a:content
   endif
-  let expr = join(a:text, "\n")
-  let result = s:String.iconv(expr, fileencoding, &encoding)
-  return split(result, '\n', 1)
+  let result = iconv(join(a:content, "\n"), fileencoding, &encoding)
+  return empty(result) ? a:content : split(result, '\n', 1)
 endfunction
 
-" s:setbufline(expr, lnum, text)
 if exists('*nvim_buf_set_lines')
-  function! s:setbufline(expr, lnum, text) abort
-    let bufnr = type(a:expr) == s:t_number ? a:expr : bufnr(a:expr)
-    let start = a:lnum ==# '$' ? -2 : a:lnum
-    return nvim_buf_set_lines(bufnr, start, -1, v:false, a:text)
+  function! s:_replace(bufnr, start, end, replacement) abort
+    try
+      call nvim_buf_set_lines(a:bufnr, a:start, a:end, v:true, a:replacement)
+    catch /^Vim(call):Index out of bounds/
+      return 1
+    endtry
   endfunction
 else
-  function! s:setbufline(expr, lnum, text) abort
-    let focus = s:Window.focus_buffer(a:expr)
+  function! s:_replace(bufnr, start, end, replacement) abort
+    if bufnr('%') == a:bufnr
+      return s:_replace_local(a:start, a:end, a:replacement)
+    elseif bufwinnr(a:bufnr) != -1
+      return s:_replace_shown(a:bufnr, a:start, a:end, a:replacement)
+    else
+      return s:_replace_hidden(a:bufnr, a:start, a:end, a:replacement)
+    endif
+  endfunction
+
+  " Used to replace content of current window
+  function! s:_replace_local(start, end, replacement) abort
+    " Calculate negative indices and validate
+    let lnum = line('$')
+    let s = a:start >= 0 ? a:start : lnum + 1 + a:start
+    let e = a:end >= 0 ? a:end : lnum + 1 + a:end
+    if s < 0 || s > lnum || e < 0 || e > lnum
+      return 1
+    endif
+    " Save current cursor pos
+    let cursor_saved = getcurpos()
     try
-      return setline(a:lnum, a:text)
+      " NOTE: append() affects jumplist so the following does not work
+      " " Insert replacement to the index
+      " let failed = append(s, a:replacement)
+      " " Shrink lines between {start} and {end} (exclusive)
+      " if !failed && e - s > 0
+      "   let length = len(a:replacement)
+      "   execute printf(
+      "         \ 'silent keepjumps %d,%ddelete _',
+      "         \ length + s + 1,
+      "         \ length + e,
+      "         \)
+      " endif
+      " NOTE: Use setline() instead
+      let suffixes = getline(e + 1, '$')
+      if s < lnum
+        execute printf(
+              \ 'silent keepjumps %d,$delete _',
+              \ s + 1,
+              \)
+      endif
+      return setline(s + 1, a:replacement + suffixes)
     finally
-      silent! call focus.restore()
+      call setpos('.', cursor_saved)
+    endtry
+  endfunction
+
+  " Used to replace content of shown buffer (in current tabpage)
+  function! s:_replace_shown(bufnr, start, end, replacement) abort
+    let winnr_saved = winnr()
+    execute printf('%dwincmd w', bufwinnr(a:bufnr))
+    try
+      return s:_replace_local(a:start, a:end, a:replacement)
+    finally
+      execute printf('%dwincmd w', winnr_saved)
+    endtry
+  endfunction
+
+  " Used to replace content of hidden buffer
+  function! s:_replace_hidden(bufnr, start, end, replacement) abort
+    let bufnr_saved = bufnr('%')
+    let hidden_saved = &l:hidden
+    setlocal hidden
+    execute printf('keepjumps %dbuffer', a:bufnr)
+    try
+      return s:_replace_local(a:start, a:end, a:replacement)
+    finally
+      execute printf('keepjumps %dbuffer', bufnr_saved)
+      let &l:hidden = hidden_saved
     endtry
   endfunction
 endif
 
-" subbufline(expr, text)
-if exists('*nvim_buf_set_lines')
-  function! s:subbufline(expr, text) abort
-    let bufnr = type(a:expr) == s:t_number ? a:expr : bufnr(a:expr)
-    return nvim_buf_set_lines(bufnr, 0, -1, v:false, a:text)
-  endfunction
-else
-  function! s:subbufline(expr, text) abort
-    let focus = s:Window.focus_buffer(a:expr)
-    try
-      silent keepjumps %delete _
-      return setline(1, a:text)
-    finally
-      silent! call focus.restore()
-    endtry
-  endfunction
-endif
 
-function! s:assign_content(expr, text) abort
-  if v:dying || s:exiting
-    return
+" Public method ------------------------------------------------------------
+function! s:replace(expr, start, end, replacement) abort
+  let bufnr = bufnr(a:expr)
+  if v:dying || s:exiting || !bufexists(bufnr)
+    return 1
   endif
-  let bufnr = a:expr is# v:null ? bufnr('%') : bufnr(a:expr)
-  let text = s:_iconv(bufnr, a:text)
+  let data = s:_iconv(bufnr, a:replacement)
   let modifiable = getbufvar(bufnr, '&modifiable')
   try
     call setbufvar(bufnr, '&modifiable', 1)
-    call s:subbufline(bufnr, text)
-  finally
-    call setbufvar(bufnr, '&modifiable', modifiable)
-  endtry
-endfunction
-
-function! s:extend_content(expr, text) abort
-  if v:dying || s:exiting || empty(a:text)
-    return
-  endif
-  let bufnr = a:expr is# v:null ? bufnr('%') : bufnr(a:expr)
-  let text = s:_iconv(bufnr, a:text)
-  let modifiable = getbufvar(bufnr, '&modifiable')
-  try
-    call setbufvar(bufnr, '&modifiable', 1)
-    let leading = getbufline(bufnr, '$')
-    let leading[0] .= text[0]
-    call s:setbufline(bufnr, '$', leading + text[1:])
+    return s:_replace(bufnr, a:start, a:end, data)
   finally
     call setbufvar(bufnr, '&modifiable', modifiable)
   endtry
 endfunction
 
 function! s:new(...) abort dict
+  let options = a:0 ? a:1 : {}
   let options = extend({
         \ 'bufnr': bufnr('%'),
         \ 'updatetime': self.updatetime,
-        \}, get(a:000, 0, {})
+        \}, a:0 ? a:1 : {},
         \)
-  let writer = extend(deepcopy(s:writer), options)
+  let writer = extend(options, s:writer)
+  let writer.__timer = v:null
+  let writer.__running = 0
+  let writer.__content = []
   return writer
 endfunction
 
 
-" Writer instance ------------------------------------------------------------
-let s:writers = {}
-let s:writer = {'_timer': v:null, '_running': 0, '_data': []}
-
-function! s:writer.start() abort
-  if self._timer isnot# v:null
+" Writer instance ----------------------------------------------------------
+function! s:_writer_timer_callback(writer, ...) abort
+  " Check environment if writer is available and kill forcedly if not
+  if v:dying || s:exiting || !bufexists(a:writer.bufnr)
+    call a:writer.kill()
     return
   endif
-  lockvar! self.bufnr
-  lockvar! self.updatetime
-  " Kill previous writer which target a same buffer before start
-  if has_key(s:writers, self.bufnr)
-    call s:writers[self.bufnr].kill()
-    call self.clear()
+  " To improve UX, flush only when a target buffer is shown
+  if bufwinnr(a:writer.bufnr) != -1
+    call a:writer.flush()
   endif
-  let s:writers[self.bufnr] = self
-  let self._running = 1
-  let self._timer = timer_start(
-        \ self.updatetime,
-        \ { timer -> self.flush() },
-        \ {'repeat': -1}
-        \)
-  call self.on_start()
-endfunction
-
-function! s:writer.stop() abort
-  " Now writer is going to stop
-  let self._running = 0
-endfunction
-
-function! s:writer.kill() abort
-  silent! call timer_stop(self._timer)
-  silent! unlet! s:writers[self.bufnr]
-  let self._running = 0
-  unlockvar! self.bufnr
-  unlockvar! self.updatetime
-  call self.on_stop()
-endfunction
-
-function! s:writer.clear() abort
-  call s:assign_content(self.bufnr, [])
-  call self.on_clear()
-endfunction
-
-function! s:writer.write(msg) abort
-  call add(self._data, a:msg)
-  call self.on_write(a:msg)
-endfunction
-
-function! s:writer.read() abort
-  if !len(self._data)
-    return v:null
-  endif
-  let content = copy(self.on_read(remove(self._data, 0)))
-  let start = reltime()
-  while reltimefloat(reltime(start)) < s:READ_THRESHOLD
-    if !len(self._data)
-      break
+  " Kill writer when writing has been completed
+  if !a:writer.__running && empty(a:writer.__content)
+    " Content may has an extra line at EOF (POSIX text) so remove it.
+    if empty(getbufline(a:writer.bufnr, '$')[-1])
+      call s:replace(a:writer.bufnr, -2, -1, [])
     endif
-    let chunk = self.on_read(remove(self._data, 0))
-    let content[-1] .= chunk[0]
-    call extend(content, chunk[1:])
-  endwhile
-  return content
+    call a:writer.kill()
+  endif
 endfunction
 
-function! s:writer.flush() abort
-  if !bufloaded(self.bufnr) || bufwinnr(self.bufnr) == -1
-    return
+function! s:_writer_start() abort dict
+  if self.__timer isnot# v:null
+    return 1
   endif
-  let msg = self.read()
-  if msg is# v:null && !self._running
-    " No left over content and the writer is going to stop
-    " so kill the writer to stop
-    return self.kill()
+  if has_key(s:running_writers, self.bufnr)
+    call s:running_writers[self.bufnr].kill()
+  endif
+  let self.__running = 1
+  let self.__timer = timer_start(
+        \ self.updatetime,
+        \ function('s:_writer_timer_callback', [self]),
+        \ { 'repeat': -1 },
+        \)
+  let s:running_writers[self.bufnr] = self
+  if has_key(self, 'on_start')
+    call self.on_start()
+  endif
+endfunction
+
+function! s:_writer_stop() abort dict
+  let self.__running = 0
+endfunction
+
+function! s:_writer_kill() abort dict
+  if self.__timer is# v:null
+    return 1
+  endif
+  silent! call timer_stop(self.__timer)
+  silent! unlet! s:running_writers[self.bufnr]
+  let self.__running = 0
+  let self.__timer = v:null
+  if has_key(self, 'on_exit')
+    call self.on_exit()
+  endif
+endfunction
+
+function! s:_writer_write(content) abort dict
+  if empty(self.__content)
+    let self.__content = ['']
+  endif
+  let self.__content[-1] .= a:content[0]
+  call extend(self.__content, a:content[1:])
+endfunction
+
+function! s:_writer_flush(...) abort dict
+  if empty(self.__content)
+    return 1
   endif
   try
-    call s:extend_content(self.bufnr, msg)
-    call self.on_flush(msg)
-  catch /^Vim\%((\a\+)\)\=:E523/  " Not allowed here
-    " Vim raise E523 when called in 'BufReadCmd' so put back msg into
-    " '_data' for later.
-    call insert(self._data, msg, 0)
-  catch
-    call self.kill()
+    let content = remove(self.__content, 0, -1)
+    let replacement = has_key(self, 'on_read')
+          \ ? self.on_read(content)
+          \ : deepcopy(content)
+    let replacement[0] = getbufline(self.bufnr, '$')[-1] . replacement[0]
+    call s:replace(self.bufnr, -2, -1, replacement)
+  catch /^Vim\%((\a\+)\)\=:E523/
+    " Vim raise 'E523: Not allowed here' when called in 'BufReadCmd'
+    " so rollback the operation
+    call extend(self.__content, content, 0)
   endtry
 endfunction
 
-function! s:writer.on_start() abort
-  " User can override this method
-endfunction
-
-function! s:writer.on_clear() abort
-  " User can override this method
-endfunction
-
-function! s:writer.on_write(msg) abort
-  " User can override this method
-endfunction
-
-function! s:writer.on_read(msg) abort
-  return a:msg
-endfunction
-
-function! s:writer.on_flush(msg) abort
-  " User can override this method
-endfunction
-
-function! s:writer.on_stop() abort
-  " User can override this method
-endfunction
+let s:writer = {
+      \ 'start': function('s:_writer_start'),
+      \ 'stop': function('s:_writer_stop'),
+      \ 'kill': function('s:_writer_kill'),
+      \ 'write': function('s:_writer_write'),
+      \ 'flush': function('s:_writer_flush'),
+      \}

@@ -66,7 +66,7 @@ function! s:BufReadCmd() abort
         \ [git, args]
         \)
   call gina#core#buffer#assign_cmdarg()
-  call gina#core#writer#assign_content(v:null, content)
+  call gina#core#writer#replace('%', 0, -1, content)
   call gina#core#emitter#emit('command:called', s:SCHEME)
   setlocal filetype=conf
 endfunction

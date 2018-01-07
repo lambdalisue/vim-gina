@@ -93,7 +93,8 @@ else
             \ && getbufvar(bufnr, '&autoread')
             \ && bufname(bufnr) =~# '^gina://'
         call win_gotoid(bufwinid(bufnr))
-        call gina#core#writer#assign_content(bufnr, [])
+        call gina#util#doautocmd('BufUnload')
+        call gina#core#writer#replace(bufnr, 0, -1, [])
         call gina#util#doautocmd('BufReadCmd')
       endif
     endfor

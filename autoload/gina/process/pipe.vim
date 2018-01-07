@@ -20,7 +20,7 @@ function! s:_default_pipe_on_start() abort dict
   call gina#process#register(self)
 endfunction
 
-function! s:_default_pipe_on_exit(data) abort dict
+function! s:_default_pipe_on_exit(exitval) abort dict
   call gina#process#unregister(self)
 endfunction
 
@@ -48,11 +48,31 @@ function! s:_store_pipe_on_receive(event, data) abort dict
   call s:extend_content(self.content, a:data)
 endfunction
 
+function! s:_store_pipe_on_exit(exitval) abort dict
+  " Content may has an extra empty line (POSIX text) so remove it
+  if has_key(self, 'stdout') && empty(self.stdout[-1])
+    unlockvar 1 self.stdout
+    call remove(self.stdout, -1)
+    lockvar 1 self.stdout
+  endif
+  if has_key(self, 'stderr') && empty(self.stderr[-1])
+    unlockvar 1 self.stderr
+    call remove(self.stderr, -1)
+    lockvar 1 self.stderr
+  endif
+  if has_key(self, 'content') && empty(self.content[-1])
+    unlockvar 1 self.content
+    call remove(self.content, -1)
+    lockvar 1 self.content
+  endif
+  call call('s:_default_pipe_on_exit', [a:exitval], self)
+endfunction
+
 let s:store_pipe = {
       \ 'on_start': function('s:_default_pipe_on_start'),
       \ 'on_stdout': function('s:_store_pipe_on_receive', ['stdout']),
       \ 'on_stderr': function('s:_store_pipe_on_receive', ['stderr']),
-      \ 'on_exit': function('s:_default_pipe_on_exit'),
+      \ 'on_exit': function('s:_store_pipe_on_exit'),
       \}
 
 
@@ -68,13 +88,13 @@ function! gina#process#pipe#echo() abort
   return pipe
 endfunction
 
-function! s:_echo_pipe_on_exit(data) abort dict
-  call call('s:_default_pipe_on_exit', [a:data], self)
+function! s:_echo_pipe_on_exit(exitval) abort dict
   if len(self.content)
     call gina#core#console#message(
           \ s:String.remove_ansi_sequences(join(self.content, "\n")),
           \)
   endif
+  call call('s:_store_pipe_on_exit', [a:exitval], self)
 endfunction
 
 let s:echo_pipe = {
@@ -125,21 +145,13 @@ function! gina#process#pipe#stream_writer() abort
 endfunction
 
 function! s:_stream_pipe_writer_on_start() abort dict
-  let self._winview = getbufvar(self.bufnr, 'gina_winview', [])
+  let self._winview = getbufvar(self.bufnr, 'gina_winview', winsaveview())
   let self._spinner = gina#core#spinner#start(self.bufnr)
   call gina#process#register('writer:' . self.bufnr, 1)
   call gina#core#emitter#emit('writer:started', self.bufnr)
 endfunction
 
-function! s:_stream_pipe_writer_on_write(msg) abort dict
-  call gina#core#emitter#emit('writer:wrote', self.bufnr, a:msg)
-endfunction
-
-function! s:_stream_pipe_writer_on_flush(msg) abort dict
-  call gina#core#emitter#emit('writer:flushed', self.bufnr, a:msg)
-endfunction
-
-function! s:_stream_pipe_writer_on_stop() abort dict
+function! s:_stream_pipe_writer_on_exit() abort dict
   call self._job.stop()
   call self._spinner.stop()
 
@@ -149,18 +161,11 @@ function! s:_stream_pipe_writer_on_stop() abort dict
     call gina#process#unregister('writer:' . self.bufnr, 1)
     return
   endif
-  let guard = s:Guard.store(['&l:modifiable'])
   try
-    setlocal modifiable
-    if empty(getline('$'))
-      silent $delete _
-    endif
-    setlocal nomodified
-  finally
     if !empty(self._winview)
       silent! call winrestview(self._winview)
     endif
-    call guard.restore()
+  finally
     call focus.restore()
     call gina#core#emitter#emit('writer:stopped', self.bufnr)
     call gina#process#unregister('writer:' . self.bufnr, 1)
@@ -169,17 +174,13 @@ endfunction
 
 let s:stream_pipe_writer = {
       \ 'on_start': function('s:_stream_pipe_writer_on_start'),
-      \ 'on_write': function('s:_stream_pipe_writer_on_write'),
-      \ 'on_flush': function('s:_stream_pipe_writer_on_flush'),
-      \ 'on_stop': function('s:_stream_pipe_writer_on_stop'),
+      \ 'on_exit': function('s:_stream_pipe_writer_on_exit'),
       \}
 
 
-" Automatically update b:gina_winview with cursor move while no buffer content
-" is available in BufReadCmd and winsaveview() always returns unwilling value
+" Save winview on BufUnload while winsaveview() returns unwilling value
+" on BufReadCmd
 augroup gina_process_pipe_internal
   autocmd! *
-  autocmd BufEnter  gina://* let b:gina_winview = winsaveview()
-  autocmd CursorMoved  gina://* let b:gina_winview = winsaveview()
-  autocmd CursorMovedI gina://* let b:gina_winview = winsaveview()
+  autocmd BufUnload gina://* let b:gina_winview = winsaveview()
 augroup END
