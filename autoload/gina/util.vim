@@ -19,14 +19,6 @@ function! gina#util#contain_direction(mods) abort
   return a:mods =~# s:DIRECTION_PATTERN
 endfunction
 
-function! gina#util#extend_content(content, msg) abort
-  if empty(a:content)
-    call extend(a:content, [''])
-  endif
-  let a:content[-1] .= a:msg[0]
-  call extend(a:content, a:msg[1:])
-endfunction
-
 function! gina#util#get(obj, key, ...) abort
   let val = get(a:obj, a:key, v:null)
   return val is# v:null ? get(a:000, 0, '') : val
