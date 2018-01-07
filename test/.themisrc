@@ -56,8 +56,8 @@ function! s:GinaSync(bang, range, args, mods) abort
           \ timeout,
           \))
     call themis#log('Remaining running process:')
-    for process in gina#process#runnings()
-      call themis#log('  ' . process)
+    for [process, _] in gina#process#runnings()
+      call themis#log('  ' . string(process))
     endfor
   endif
 endfunction

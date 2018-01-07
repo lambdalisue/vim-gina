@@ -11,7 +11,7 @@ let s:runnings = {}
 
 
 function! gina#process#runnings() abort
-  return values(s:runnings)
+  return items(s:runnings)
 endfunction
 
 function! gina#process#register(job, ...) abort
