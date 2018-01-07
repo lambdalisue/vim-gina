@@ -38,7 +38,7 @@ before_script:
 
 script:
   - vint autoload/gina autoload/vital/__gina__ plugin ftplugin
-  - docker run --rm --volume ${PWD}:/mnt/volume -e "PROFILE=${PROFILE}" -it ci-test
+  - docker run --rm --volume ${PWD}:/mnt/volume -e "PROFILE=${PROFILE}" -e "CI=docker" -it ci-test
   - docker run --rm --volume ${PWD}:/mnt/volume -it lambdalisue/${VIM}-ci:${TAG} --cmd "try | helptags doc/ | catch | cquit | endtry" --cmd quit
 
 after_success:
