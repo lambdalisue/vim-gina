@@ -78,56 +78,56 @@ function! gina#action#index#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('index:checkout', function('s:on_checkout'), {
-        \ 'description': 'Checkout contents from an index',
+        \ 'description': 'Checkout a content from an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': {},
         \})
   call a:binder.define('index:checkout:force', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout contents from an index',
+        \ 'description': 'Checkout a content from an index',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'force': 1 },
         \})
   call a:binder.define('index:checkout:HEAD', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout contents from a HEAD',
+        \ 'description': 'Checkout a content from a HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'rev': 'HEAD' },
         \})
   call a:binder.define('index:checkout:HEAD:force', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout contents from a HEAD',
+        \ 'description': 'Checkout a content from a HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'rev': 'HEAD', 'force': 1 },
         \})
   call a:binder.define('index:checkout:origin', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout contents from an origin/HEAD',
+        \ 'description': 'Checkout a content from an origin/HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'rev': 'origin/HEAD' },
         \})
   call a:binder.define('index:checkout:origin:force', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout contents from an origin/HEAD',
+        \ 'description': 'Checkout a content from an origin/HEAD',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'rev': 'origin/HEAD', 'force': 1 },
         \})
   call a:binder.define('index:checkout:ours', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout contents from local (ours) during merge',
+        \ 'description': 'Checkout a content from local (ours) during merge',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'ours': 1 },
         \})
   call a:binder.define('index:checkout:theirs', function('s:on_checkout'), {
         \ 'hidden': 1,
-        \ 'description': 'Checkout contents from remote (theirs) during merge',
+        \ 'description': 'Checkout a content from remote (theirs) during merge',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['path'],
         \ 'options': { 'theirs': 1 },
