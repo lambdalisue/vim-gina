@@ -81,13 +81,10 @@ function! s:print_message(msg) abort
     let s:current.bufnr = 0
     return
   endif
-  let focus = gina#core#buffer#focus(bufnr)
-  try
-    call gina#core#writer#replace(bufnr, -1, -1, [a:msg])
-    normal! G
-  finally
-    call focus.restore()
-  endtry
+  " NOTE:
+  " 'timer_start' is required for prevent E523 Not allowed here raised when
+  " events are emitted from 'statusline' or 'tabline'
+  call timer_start(0, { -> gina#core#writer#replace(bufnr, -1, -1, [a:msg]) })
 endfunction
 
 function! s:print_event(prefix, name, attrs) abort
