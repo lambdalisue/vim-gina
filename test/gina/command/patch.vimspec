@@ -52,7 +52,7 @@ Describe gina#command#patch
 
       " Patch should fail
       Assert Equals(split(execute('write'), '\r\?\n'), [
-            \ 'No difference between index and buffer',
+            \ '[gina] No difference between index and buffer',
             \])
       Assert Equals(slit1.execute('status --porcelain'), [
             \ 'MM A/foo.txt',

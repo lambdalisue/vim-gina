@@ -28,11 +28,36 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:exception_handler(exception) abort
-  let category = matchstr(a:exception, '^vital: Vim\.Exception: \zs\w\+\ze: .*')
-  if category ==# 'Cancel'
-    return 1
+  let m = matchlist(a:exception, '^vital: Vim\.Exception: \(\w\+\): \(.*\)')
+  if len(m)
+    let category = m[1]
+    let message = m[2]
+    if category ==# 'Cancel'
+      return 1
+    elseif category ==# 'Info'
+      redraw
+      call gina#core#console#info(message)
+      call gina#core#console#debug(v:throwpoint)
+      return 1
+    elseif category ==# 'Warning'
+      redraw
+      call gina#core#console#warn(message)
+      call gina#core#console#debug(v:throwpoint)
+      return 1
+    elseif category ==# 'Error'
+      redraw
+      call gina#core#console#error(message)
+      call gina#core#console#debug(v:throwpoint)
+      return 1
+    elseif category ==# 'Critical'
+      redraw
+      call gina#core#console#error(message)
+      call gina#core#console#error(v:throwpoint)
+    endif
+    throw message
   endif
   return 0
 endfunction
 
+call s:Exception.unregister(s:Exception.get_default_handler())
 call s:Exception.register(function('s:exception_handler'))
