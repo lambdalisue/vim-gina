@@ -3,11 +3,11 @@ clone_depth: 1
 environment:
   matrix:
     - VIM: vim
-      VIM_VERSION: 8.0.0027
+      VIM_VERSION: 8.0.0118
       VIM_ARCH: x86
       PROFILE: .profile
     - VIM: vim
-      VIM_VERSION: 8.0.0027
+      VIM_VERSION: 8.0.0118
       VIM_ARCH: x64
       PROFILE: .profile
     - VIM: vim

@@ -5,7 +5,7 @@ gina
 [![Travis CI](https://img.shields.io/travis/lambdalisue/gina.vim/master.svg?style=flat-square&label=Travis%20CI)](https://travis-ci.org/lambdalisue/gina.vim)
 [![AppVeyor](https://img.shields.io/appveyor/ci/lambdalisue/gina-vim/master.svg?style=flat-square&label=AppVeyor)](https://ci.appveyor.com/project/lambdalisue/gina-vim/branch/master)
 ![Version 0.3.1](https://img.shields.io/badge/version-0.3.1-yellow.svg?style=flat-square)
-![Support Vim 8.0.0027 or above](https://img.shields.io/badge/support-Vim%208.0.0027%20or%20above-yellowgreen.svg?style=flat-square)
+![Support Vim 8.0.0107 or above](https://img.shields.io/badge/support-Vim%208.0.0107%20or%20above-yellowgreen.svg?style=flat-square)
 ![Support Neovim 0.2.0 or above](https://img.shields.io/badge/support-Neovim%200.2.0%20or%20above-yellowgreen.svg?style=flat-square)
 ![Support Git 1.8.5.6 or above](https://img.shields.io/badge/support-Git%201.8.5.6%20or%20above-green.svg?style=flat-square)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
@@ -23,7 +23,7 @@ So gina.vim has most of the outstanding features of vim-gita and drops some unwi
 Supports
 -------------------------------------------------------------------------------
 - Git 1.8.5.6 or above
-- Vim 8.0.0027 or above or Neovim 0.2.0
+- Vim 8.0.0107 or above or Neovim 0.2.0
 - All major platforms
   - Linux (Tested on TravisCI, author use Linux)
   - macOS (Tested on TravisCI, author use OS X Elcapitan)
