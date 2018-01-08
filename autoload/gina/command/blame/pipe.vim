@@ -21,40 +21,51 @@ function! gina#command#blame#pipe#incremental() abort
   let parser_pipe = deepcopy(s:parser_pipe)
   let parser_pipe.revisions = {}
   let parser_pipe.chunks = []
-  let parser_pipe._stderr = []
+  let parser_pipe._stdout = ['']
+  let parser_pipe._stderr = ['']
   let parser_pipe._chunk = {}
-  let parser_pipe._previous = ''
   return parser_pipe
 endfunction
 
 
 " Parser pipe ----------------------------------------------------------------
-let s:parser_pipe = gina#util#inherit(gina#process#pipe#store())
-
-function! s:parser_pipe.on_stdout(data) abort
-  if len(a:data) <= 1
-    let self._previous .= get(a:data, 0, '')
-    return
-  endif
-  let content = [self._previous . a:data[0]] + a:data[1:-2]
-  let self._previous = a:data[-1]
-  call map(content, 'self.parse(v:val)')
+function! s:_parser_pipe_on_stdout(data) abort dict
+  let self._stdout[-1] .= a:data[0]
+  call extend(self._stdout, a:data[1:])
 endfunction
 
-function! s:parser_pipe.on_exit(data) abort
-  if a:data == 0
-    if !empty(self._previous)
-      call self.parse(self._previous)
-    endif
-    call sort(self.chunks, function('s:compare_chunks'))
-    call map(self.chunks, 'extend(v:val, {''index'': v:key})')
-  endif
-  call self.super(s:parser_pipe, 'on_exit', a:data)
+function! s:_parser_pipe_on_stderr(data) abort dict
+  let self._stderr[-1] .= a:data[0]
+  call extend(self._stderr, a:data[1:])
 endfunction
 
-function! s:parser_pipe.parse(record) abort
-  let chunk = self._chunk
-  let revisions = self.revisions
+function! s:_parser_pipe_on_exit(exitval) abort dict
+  call call(s:original_pipe.on_exit, [a:exitval], self)
+  if a:exitval
+    throw gina#process#errormsg({
+          \ 'args': self.args,
+          \ 'content': self._stderr,
+          \})
+  endif
+  " Parse records to create chunks
+  call map(filter(self._stdout, '!empty(v:val)'), 's:parse(self, v:val)')
+  " Sort chunks and assign indices
+  call sort(self.chunks, { a, b -> a.lnum - b.lnum })
+  call map(self.chunks, 'extend(v:val, {''index'': v:key})')
+endfunction
+
+let s:original_pipe = gina#process#pipe#default()
+let s:parser_pipe = extend(deepcopy(s:original_pipe), {
+      \ 'on_stdout': function('s:_parser_pipe_on_stdout'),
+      \ 'on_stderr': function('s:_parser_pipe_on_stderr'),
+      \ 'on_exit': function('s:_parser_pipe_on_exit'),
+      \})
+
+
+" Private --------------------------------------------------------
+function! s:parse(pipe, record) abort
+  let chunk = a:pipe._chunk
+  let revisions = a:pipe.revisions
   call extend(chunk, s:parse_record(a:record))
   if !has_key(chunk, 'filename')
     return
@@ -69,12 +80,10 @@ function! s:parser_pipe.parse(record) abort
           \ 'nlines': chunk.nlines,
           \}
   endif
-  call add(self.chunks, chunk)
-  let self._chunk = {}
+  call add(a:pipe.chunks, chunk)
+  let a:pipe._chunk = {}
 endfunction
 
-
-" Private --------------------------------------------------------
 function! s:parse_record(record) abort
   for [prefix, length, vname] in s:KEYWORDS
     if a:record[:length-1] ==# prefix
@@ -95,8 +104,4 @@ function! s:parse_record(record) abort
         \ 'Failed to parse a record "%s"',
         \ a:record,
         \))
-endfunction
-
-function! s:compare_chunks(lhs, rhs) abort
-  return a:lhs.lnum - a:rhs.lnum
 endfunction

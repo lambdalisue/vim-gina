@@ -154,14 +154,6 @@ function! gina#util#winwidth(winnr) abort
   return width
 endfunction
 
-function! gina#util#inherit(super, ...) abort
-  let prototype = a:0 ? a:1 : {}
-  let instance = extend(copy(a:super), prototype)
-  let instance.super = function('s:call_super')
-  let instance.__super = s:Dict.omit(a:super, ['super', '__super'])
-  return instance
-endfunction
-
 function! gina#util#syncbind() abort
   " NOTE:
   " 'syncbind' does not work just after a buffer has opened
