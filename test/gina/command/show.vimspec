@@ -5,18 +5,20 @@ Describe gina#command#show
     let Path = vital#gina#import('System.Filepath')
     let File = vital#gina#import('System.File')
     let slit1 = Slit(tempname(), 1)
-    call File.copy(
-          \ Path.realpath('test/gina/_testdata/utf8-encoding.txt'),
-          \ Path.join(slit1.worktree, 'utf8-encoding.txt'),
-          \)
-    call File.copy(
-          \ Path.realpath('test/gina/_testdata/cp932-encoding.txt'),
-          \ Path.join(slit1.worktree, 'cp932-encoding.txt'),
-          \)
-    call File.copy(
-          \ Path.realpath('test/gina/_testdata/cp1250-encoding.txt'),
-          \ Path.join(slit1.worktree, 'cp1250-encoding.txt'),
-          \)
+    let encodings = {}
+    let encoding_dir = 'test/gina/_testdata'
+    for filename in glob(Path.realpath(encoding_dir . '/*-encoding.txt'), 1, 1)
+      let name = matchstr(fnamemodify(filename, ':t'), '.*\ze-encoding.txt')
+      let encodings[name] = {
+            \ 'name': name,
+            \ 'filename': fnamemodify(filename, ':t'),
+            \ 'supported': !empty(iconv('foo', name, &encoding))
+            \}
+      call File.copy(
+            \ filename,
+            \ Path.join(slit1.worktree, fnamemodify(filename, ':t')),
+            \)
+    endfor
     call slit1.execute('add .')
     call slit1.execute('commit --quiet -am "First"')
 
@@ -274,13 +276,17 @@ Describe gina#command#show
 
     Context ++enc
       It might be called with ++enc=utf-8
-        execute 'edit' fnameescape(slit1.path('utf8-encoding.txt'))
-        GinaSync show ++enc=utf-8 :
+        let encoding = encodings['utf-8']
+        if !encoding.supported
+          Skip iconv in this Vim does not support utf-8
+        endif
+        execute 'edit' fnameescape(slit1.path(encoding.filename))
+        execute printf('GinaSync show ++enc=%s :', encoding.name)
         Assert Equals(winnr('$'), 1)
         " Focused buffer
-        Assert Equals(bufname('%'), printf('gina://%s:show/:utf8-encoding.txt', slit1.refname))
-        Assert Equals(gina#core#meta#get('args').params.cmdarg, '++enc=utf-8 ')
-        Assert Equals(&fileencoding, 'utf-8')
+        Assert Equals(bufname('%'), printf('gina://%s:show/:%s', slit1.refname, encoding.filename))
+        Assert Equals(gina#core#meta#get('args').params.cmdarg, printf('++enc=%s ', encoding.name))
+        Assert Equals(&fileencoding, encoding.name)
         Assert Equals(getline(1, '$'), [
               \ 'Unix EOL',
               \ 'árvíztűrő tükörfúrógép',
@@ -295,13 +301,70 @@ Describe gina#command#show
               \])
       End
 
-      It might be called with ++enc=cp932
-        execute 'edit' fnameescape(slit1.path('cp932-encoding.txt'))
-        GinaSync show ++enc=cp932 :
+      It might be called with ++enc=euc-jp
+        let encoding = encodings['euc-jp']
+        if !encoding.supported
+          Skip iconv in this Vim does not support euc-jp
+        endif
+        execute 'edit' fnameescape(slit1.path(encoding.filename))
+        execute printf('GinaSync show ++enc=%s :', encoding.name)
         Assert Equals(winnr('$'), 1)
         " Focused buffer
-        Assert Equals(bufname('%'), printf('gina://%s:show/:cp932-encoding.txt', slit1.refname))
-        Assert Equals(&fileencoding, 'cp932')
+        Assert Equals(bufname('%'), printf('gina://%s:show/:%s', slit1.refname, encoding.filename))
+        Assert Equals(gina#core#meta#get('args').params.cmdarg, printf('++enc=%s ', encoding.name))
+        Assert Equals(&fileencoding, encoding.name)
+        Assert Equals(getline(1, '$'), [
+              \ 'Unix EOL',
+              \ 'こんにちわ コンニチワ',
+              \ '今日和 ｺﾝﾆﾁﾜ',
+              \])
+
+        GinaSync show :
+        Assert Equals(getline(1, '$'), [
+              \ 'Unix EOL',
+              \ 'こんにちわ コンニチワ',
+              \ '今日和 ｺﾝﾆﾁﾜ',
+              \])
+      End
+
+      It might be called with ++enc=sjis
+        let encoding = encodings['sjis']
+        if !encoding.supported
+          Skip iconv in this Vim does not support sjis
+        endif
+        execute 'edit' fnameescape(slit1.path(encoding.filename))
+        execute printf('GinaSync show ++enc=%s :', encoding.name)
+        Assert Equals(winnr('$'), 1)
+        " Focused buffer
+        Assert Equals(bufname('%'), printf('gina://%s:show/:%s', slit1.refname, encoding.filename))
+        Assert Equals(gina#core#meta#get('args').params.cmdarg, printf('++enc=%s ', encoding.name))
+        Assert Equals(&fileencoding, encoding.name)
+        Assert Equals(getline(1, '$'), [
+              \ 'Unix EOL',
+              \ 'こんにちわ コンニチワ',
+              \ '今日和 ｺﾝﾆﾁﾜ',
+              \])
+
+        GinaSync show :
+        Assert Equals(getline(1, '$'), [
+              \ 'Unix EOL',
+              \ 'こんにちわ コンニチワ',
+              \ '今日和 ｺﾝﾆﾁﾜ',
+              \])
+      End
+
+      It might be called with ++enc=cp932
+        let encoding = encodings['cp932']
+        if !encoding.supported
+          Skip iconv in this Vim does not support cp932
+        endif
+        execute 'edit' fnameescape(slit1.path(encoding.filename))
+        execute printf('GinaSync show ++enc=%s :', encoding.name)
+        Assert Equals(winnr('$'), 1)
+        " Focused buffer
+        Assert Equals(bufname('%'), printf('gina://%s:show/:%s', slit1.refname, encoding.filename))
+        Assert Equals(gina#core#meta#get('args').params.cmdarg, printf('++enc=%s ', encoding.name))
+        Assert Equals(&fileencoding, encoding.name)
         Assert Equals(getline(1, '$'), [
               \ 'Unix EOL',
               \ 'こんにちわ コンニチワ',
@@ -317,12 +380,17 @@ Describe gina#command#show
       End
 
       It might be called with ++enc=cp1250
-        execute 'edit' fnameescape(slit1.path('cp1250-encoding.txt'))
-        GinaSync show ++enc=cp1250 :
+        let encoding = encodings['cp1250']
+        if !encoding.supported
+          Skip iconv in this Vim does not support cp1250
+        endif
+        execute 'edit' fnameescape(slit1.path(encoding.filename))
+        execute printf('GinaSync show ++enc=%s :', encoding.name)
         Assert Equals(winnr('$'), 1)
         " Focused buffer
-        Assert Equals(bufname('%'), printf('gina://%s:show/:cp1250-encoding.txt', slit1.refname))
-        Assert Equals(&fileencoding, 'cp1250')
+        Assert Equals(bufname('%'), printf('gina://%s:show/:%s', slit1.refname, encoding.filename))
+        Assert Equals(gina#core#meta#get('args').params.cmdarg, printf('++enc=%s ', encoding.name))
+        Assert Equals(&fileencoding, encoding.name)
         Assert Equals(getline(1, '$'), [
               \ 'Unix EOL',
               \ 'árvíztűrő tükörfúrógép',
