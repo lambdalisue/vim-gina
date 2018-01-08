@@ -11,7 +11,7 @@ Describe Vim.Buffer.Writer
       let encodings[name] = {
             \ 'name': name,
             \ 'filename': filename,
-            \ 'supported': !empty(iconv('foo', name, &encoding))
+            \ 'supported': !empty(iconv(join(readfile(filename), "\n"), name, &encoding))
             \}
     endfor
   End

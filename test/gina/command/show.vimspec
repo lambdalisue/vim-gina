@@ -12,7 +12,7 @@ Describe gina#command#show
       let encodings[name] = {
             \ 'name': name,
             \ 'filename': fnamemodify(filename, ':t'),
-            \ 'supported': !empty(iconv('foo', name, &encoding))
+            \ 'supported': !empty(iconv(join(readfile(filename), "\n"), name, &encoding))
             \}
       call File.copy(
             \ filename,
