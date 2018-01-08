@@ -1,5 +1,4 @@
 let s:Guard = vital#gina#import('Vim.Guard')
-let s:Queue = vital#gina#import('Data.Queue')
 let s:String = vital#gina#import('Data.String')
 
 function! s:extend_content(content, data) abort
