@@ -77,7 +77,7 @@ function! s:init(args) abort
   setlocal autoread
 
   " Attach modules
-  call gina#core#anchor#attach()
+  call gina#core#locator#attach()
   call gina#action#attach(function('s:get_candidates'), {
         \ 'markable': 1,
         \})

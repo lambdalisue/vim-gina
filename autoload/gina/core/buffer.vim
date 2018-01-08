@@ -80,6 +80,7 @@ function! gina#core#buffer#open(bufname, ...) abort
         \ 'mods': '',
         \ 'group': '',
         \ 'opener': '',
+        \ 'origin': v:true,
         \ 'range': 'tabpage',
         \ 'cmdarg': '',
         \ 'width': v:null,
@@ -90,9 +91,10 @@ function! gina#core#buffer#open(bufname, ...) abort
         \}, get(a:000, 0, {}),
         \)
   let bufname = s:normalize_bufname(a:bufname)
-  " Move focus to an anchor buffer if necessary
-  if !gina#core#anchor#is_suitable(winnr())
-    call gina#core#anchor#focus_if_available(options.opener)
+  " Move focus to an origin window if necessary
+  if options.origin isnot# v:null && s:is_locator_available(options.opener)
+    let origin = options.origin is# v:true ? winnr() : options.origin
+    call gina#core#locator#focus(origin)
   endif
   " Open a buffer
   if options.callback is# v:null
@@ -204,4 +206,19 @@ function! s:open_with_callback(bufname, options) abort
     execute 'keepjumps edit' a:options.cmdarg
   endif
   return context
+endfunction
+
+function! s:is_locator_available(opener) abort
+  if a:opener =~# '\<p\%[tag]!\?\>'
+    return 0
+  elseif a:opener =~# '\<ped\%[it]!\?\>'
+    return 0
+  elseif a:opener =~# '\<ps\%[earch]!\?\>'
+    return 0
+  elseif a:opener =~# '\<\%(tabe\%[dit]\|tabnew\)\>'
+    return 0
+  elseif a:opener =~# '\<tabf\%[ind]\>'
+    return 0
+  endif
+  return 1
 endfunction
