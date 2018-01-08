@@ -37,6 +37,7 @@ function! s:start(args, options) abort
     let job_options.exit_cb = function('s:_exit_cb', [job])
   endif
   let job.__job = job_start(a:args, job_options)
+  let job.__closed = v:false
   let job.args = a:args
   return job
 endfunction
@@ -50,6 +51,7 @@ function! s:_err_cb(job, channel, msg) abort
 endfunction
 
 function! s:_close_cb(job, channel) abort
+  let a:job.__closed = v:true
   if has_key(a:job, 'on_stdout')
     let options = {'part': 'out'}
     while ch_status(a:channel, options) ==# 'buffered'
@@ -64,7 +66,15 @@ function! s:_close_cb(job, channel) abort
   endif
 endfunction
 
-function! s:_exit_cb(job, _, exitval) abort
+function! s:_exit_cb(job, channel, exitval) abort
+  " Make sure on_stdout/on_stderr are called prior to on_exit.
+  " This check requires 'close_cb' so perform only when on_stdout/on_stderr
+  " is defined in a job instance.
+  if has_key(a:job, 'on_stdout') || has_key(a:job, 'on_stderr')
+    while !a:job.__closed
+      sleep 1m
+    endwhile
+  endif
   call a:job.on_exit(a:exitval)
 endfunction
 
