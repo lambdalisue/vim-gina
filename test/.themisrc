@@ -41,19 +41,21 @@ for s:runtimepath in split(&runtimepath, ',')
 endfor
 call themis#log('-----------------------------------------------------------')
 
+" Decrease timeout to speed-up tests
+let s:timeout = 5000
+let g:gina#process#timeout = s:timeout
 
 " Synchronous Gina command for test
 function! s:GinaSync(bang, range, args, mods) abort
-  let timeout = 5000
   call call('gina#command#call', [a:bang, a:range, a:args, a:mods])
-  if gina#process#wait(timeout) == -1
+  if gina#process#wait(s:timeout) == -1
     call themis#log(printf(
           \ 'WARNING: ":%s%sGina%s %s" did not finish within %d ms',
           \ empty(a:mods) ? '' : a:mods . ' ',
           \ join(a:range, ','),
           \ a:bang,
           \ a:args,
-          \ timeout,
+          \ s:timeout,
           \))
     call themis#log('Remaining running process:')
     for [process, _] in gina#process#runnings()
