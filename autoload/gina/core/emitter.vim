@@ -24,84 +24,28 @@ endfunction
 
 
 " Subscribe ------------------------------------------------------------------
-if has('nvim')
-  function! s:on_modified(...) abort
-    if !empty(gina#process#runnings())
-      " DO NOT update if there are some running process
-      call gina#core#emitter#emit('modified:delay')
-      return
-    endif
-    let winid_saved = win_getid()
-    for winnr in range(1, winnr('$'))
-      let bufnr = winbufnr(winnr)
-      if !getbufvar(bufnr, '&modified')
-            \ && getbufvar(bufnr, '&autoread')
-            \ && bufname(bufnr) =~# '^gina://'
-        call win_gotoid(bufwinid(bufnr))
-        let diff_saved = &diff
-        edit
-        if diff_saved
-          call gina#util#diffthis()
-        endif
+function! s:on_modified(...) abort
+  if !empty(gina#process#runnings())
+    " DO NOT update if there are some running process
+    call gina#core#emitter#emit('modified:delay')
+    return
+  endif
+  let winid_saved = win_getid()
+  for winnr in range(1, winnr('$'))
+    let bufnr = winbufnr(winnr)
+    if !getbufvar(bufnr, '&modified')
+          \ && getbufvar(bufnr, '&autoread')
+          \ && bufname(bufnr) =~# '^gina://'
+      call win_gotoid(bufwinid(bufnr))
+      let diff_saved = &diff
+      edit
+      if diff_saved
+        call gina#util#diffthis()
       endif
-    endfor
-    call win_gotoid(winid_saved)
-  endfunction
-else
-  " Issue:
-  "
-  " The implementation for Vim 8 has two major issues
-  "
-  " 1. It uses 'BufReadCmd' instead of 'edit'. It is not eqaul to 'edit' which
-  "    is often used to update the buffer content in Vim. Using 'BufReadCmd'
-  "    directly may affect other plugins which rely on 'edit' related autocmd
-  " 2. It calls 'gina#process#wait()' at the end, mean that the function is no
-  "    longer asynchronous. This function would affect the Vim's main thread
-  "    as like other non-asynchronous plugins does. So heavy processions called
-  "    in this function would slow Vim's response.
-  "
-  " When users hit '<<' on gina-status window in Vim, users may notice that
-  " the content of the buffer is wiped out and have to hit ':e' to reload the
-  " content. It is not happen in Neovim.
-  "
-  " I'm not really sure but the issue comes from the following limitations
-  "
-  " When a parent thread is closed before children threads which were invoked
-  " in the parent thread, the buffer handling occurred in children threads
-  " fails without any exceptions. So that the parent thread requires to wait
-  " the children thread termination. In short, 'gina#process#wait()' is
-  " required at the end of the function.
-  "
-  " Even the parent thread waits children threads, if the children threads is
-  " called within autocmd which was invoked by "edit" command, the buffer
-  " handling fail and no content appeared on the buffer. In short, BufReadCmd
-  " requires to be called WITHOUT using "edit" comman.
-  "
-  " Let me know if you found a better solution or exact reason why the code
-  " for Neovim does not work properly in Vim.
-  "
-  function! s:on_modified(...) abort
-    if !empty(gina#process#runnings())
-      " DO NOT update if there are some running process
-      call gina#core#emitter#emit('modified:delay')
-      return
     endif
-    let winid_saved = win_getid()
-    for winnr in range(1, winnr('$'))
-      let bufnr = winbufnr(winnr)
-      if !getbufvar(bufnr, '&modified')
-            \ && getbufvar(bufnr, '&autoread')
-            \ && bufname(bufnr) =~# '^gina://'
-        call win_gotoid(bufwinid(bufnr))
-        call gina#util#doautocmd('BufUnload')
-        call gina#core#writer#replace(bufnr, 0, -1, [])
-        call gina#util#doautocmd('BufReadCmd')
-      endif
-    endfor
-    call win_gotoid(winid_saved)
-    call gina#process#wait()
-  endfunction
-endif
+  endfor
+  call win_gotoid(winid_saved)
+endfunction
 
 function! s:on_modified_delay() abort
   if s:modified_timer isnot# v:null
