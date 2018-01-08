@@ -106,6 +106,14 @@ function! s:call(range, args, mods) abort
     let [rev2, rev1] = [rev1, rev2]
   endif
 
+  " Validate if all requirements exist
+  if rev1 != s:WORKTREE
+    call gina#core#treeish#validate(git, rev1, args.params.path)
+  endif
+  if rev2 != s:WORKTREE
+    call gina#core#treeish#validate(git, rev2, args.params.path)
+  endif
+
   diffoff!
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))

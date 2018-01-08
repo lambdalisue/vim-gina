@@ -123,6 +123,12 @@ function! s:call(range, args, mods) abort
         \ ? 'split'
         \ : 'vsplit'
 
+  " Validate if all requirements exist
+  call gina#core#treeish#validate(git, ':0', args.params.path, printf(join([
+        \ 'The "%s" does not have an index content.',
+        \ 'Use "chaperon" instead if you would like to patch on conflicted file',
+        \], "\n"), args.params.path))
+
   if args.params.oneside
     call s:open(1, mods, opener1, ':0', args.params)
     let bufnr2 = bufnr('%')
