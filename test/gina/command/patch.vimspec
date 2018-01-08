@@ -64,10 +64,7 @@ Describe gina#command#patch
             \ '3',
             \])
       " Patch should be able to perform and status become clear.
-      Assert Equals(split(execute('write'), '\r\?\n'), [
-            \ '[gina] Checking patch A/foo.txt...',
-            \ '[gina] Applied patch A/foo.txt cleanly.',
-            \])
+      Assert Equals(split(execute('write'), '\r\?\n'), [])
       Assert Equals(slit1.execute('status --porcelain'), [
             \ 'M  A/foo.txt',
             \])
@@ -78,10 +75,7 @@ Describe gina#command#patch
             \ '1',
             \])
       " Patch should be able to perform and status become clear.
-      Assert Equals(split(execute('write'), '\r\?\n'), [
-            \ '[gina] Checking patch A/foo.txt...',
-            \ '[gina] Applied patch A/foo.txt cleanly.',
-            \])
+      Assert Equals(split(execute('write'), '\r\?\n'), [])
       Assert Equals(slit1.execute('status --porcelain'), [
             \ ' M A/foo.txt',
             \])

@@ -316,7 +316,6 @@ function! s:BufWriteCmd() abort
   let git = gina#core#get_or_fail()
   let result = gina#core#exception#call(function('s:patch'), [git])
   if !empty(result)
-    call gina#process#inform(result)
     setlocal nomodified
   endif
   call gina#util#diffupdate()
