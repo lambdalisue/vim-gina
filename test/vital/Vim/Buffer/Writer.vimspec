@@ -5,6 +5,7 @@ Describe Vim.Buffer.Writer
     let Writer = vital#gina#import('Vim.Buffer.Writer')
     let Path = vital#gina#import('System.Filepath')
     let utf8_encoding = Path.realpath('test/vital/_testdata/Vim/Buffer/Writer/utf8-encoding.txt')
+    let cp932_encoding = Path.realpath('test/vital/_testdata/Vim/Buffer/Writer/cp932-encoding.txt')
     let cp1250_encoding = Path.realpath('test/vital/_testdata/Vim/Buffer/Writer/cp1250-encoding.txt')
   End
 
@@ -920,7 +921,7 @@ Describe Vim.Buffer.Writer
     End
 
     Context Encoding
-      It replaces utf-8 content to utf-8 content
+      It replaces utf-8 content correctly when fileencoding is correct
         edit foo1 | setlocal fileencoding=utf-8
         vnew foo2
         let bufnr = bufnr('foo1')
@@ -934,21 +935,21 @@ Describe Vim.Buffer.Writer
               \])
       End
 
-      It replaces utf-8 content to cp1250 content
-        edit foo1 | setlocal fileencoding=utf-8
+      It replaces cp932 content correctly when fileencoding is correct
+        edit foo1 | setlocal fileencoding=cp932
         vnew foo2
         let bufnr = bufnr('foo1')
-        let content = readfile(cp1250_encoding)
+        let content = readfile(cp932_encoding)
         call Writer.replace(bufnr, 0, -1, content)
-        Assert Equals(getbufvar(bufnr, '&fileencoding'), 'utf-8')
+        Assert Equals(getbufvar(bufnr, '&fileencoding'), 'cp932')
         Assert Equals(getbufline(bufnr, 1, '$'), [
               \ 'Unix EOL',
-              \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
-              \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
+              \ 'こんにちわ コンニチワ',
+              \ '今日和 ｺﾝﾆﾁﾜ',
               \])
       End
 
-      It replaces cp1250 content to cp1250 content
+      It replaces cp1250 content correctly when fileencoding is correct
         edit foo1 | setlocal fileencoding=cp1250
         vnew foo2
         let bufnr = bufnr('foo1')
@@ -960,24 +961,6 @@ Describe Vim.Buffer.Writer
               \ 'árvíztűrő tükörfúrógép',
               \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
               \])
-      End
-
-      It replaces cp1250 content to utf-8 content
-        if !empty(&termencoding)
-          Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
-        endif
-        edit foo1 | setlocal fileencoding=cp1250
-        vnew foo2
-        let bufnr = bufnr('foo1')
-        let content = readfile(utf8_encoding)
-        call Writer.replace(bufnr, 0, -1, content)
-        Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
-        Assert Equals(getbufline(bufnr, 1, '$'), [
-              \ 'Unix EOL',
-              \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
-              \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
-              \])
-
       End
     End
   End
