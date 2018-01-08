@@ -106,8 +106,8 @@ function! s:init(args) abort
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer>
           \ call gina#core#exception#call(function('s:BufReadCmd'), [])
-    autocmd BufWinEnter <buffer> call setbufvar(expand('<afile>'), '&buflisted', 1)
-    autocmd BufWinLeave <buffer> call setbufvar(expand('<afile>'), '&buflisted', 0)
+    autocmd BufWinEnter <buffer> call setbufvar(str2nr(expand('<abuf>')), '&buflisted', 1)
+    autocmd BufWinLeave <buffer> call setbufvar(str2nr(expand('<abuf>')), '&buflisted', 0)
   augroup END
 
   if a:args.params.path is# v:null
