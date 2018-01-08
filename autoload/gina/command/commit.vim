@@ -289,7 +289,10 @@ function! s:BufWriteCmd() abort
 endfunction
 
 function! s:QuitPre() abort
-  let b:gina_QuitPre = 1
+  " Do not perform commit when user hit :q!
+  if histget('cmd', -1) !~# '^q\%[uit]!'
+    let b:gina_QuitPre = 1
+  endif
   silent! unlet b:gina_BufWriteCmd
 endfunction
 

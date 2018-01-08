@@ -905,6 +905,9 @@ when users open a "gina-commit" buffer again.
 When users close the buffer with |:wq| command, no confirmation prompt will
 appear and the commit is immediately performed.
 
+When users close the buffer with |:q!| command, no confirmation prompt will
+appear and the commit is canceled.
+
 Note that no actions are available on this buffer.
 
 The following <Plug> mapping is available on this buffer
