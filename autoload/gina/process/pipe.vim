@@ -144,11 +144,28 @@ function! gina#process#pipe#stream_writer() abort
   return deepcopy(s:stream_pipe_writer)
 endfunction
 
+function! s:_discard_winview() abort
+  augroup gina_process_pipe_stream_pipe_writer_internal
+    autocmd! * <buffer=abuf>
+    autocmd CursorMoved <buffer=abuf>
+          \ silent! unlet! b:gina_winview |
+          \ autocmd! gina_process_pipe_stream_pipe_writer_internal * <buffer=abuf>
+  augroup END
+endfunction
+
 function! s:_stream_pipe_writer_on_start() abort dict
-  let self._winview = getbufvar(self.bufnr, 'gina_winview', winsaveview())
   let self._spinner = gina#core#spinner#start(self.bufnr)
   call gina#process#register('writer:' . self.bufnr, 1)
   call gina#core#emitter#emit('writer:started', self.bufnr)
+  " When user moves cursor, remove 'b:gina_winview' to prevent unwilling
+  " cursor change after completion
+  augroup gina_process_pipe_stream_pipe_writer_internal
+    execute printf('autocmd! * <buffer=%d>', self.bufnr)
+    execute printf(
+          \ 'autocmd CursorMoved <buffer=%d> call s:_discard_winview()',
+          \ self.bufnr
+          \)
+  augroup END
 endfunction
 
 function! s:_stream_pipe_writer_on_exit() abort dict
@@ -162,8 +179,8 @@ function! s:_stream_pipe_writer_on_exit() abort dict
     return
   endif
   try
-    if !empty(self._winview)
-      silent! call winrestview(self._winview)
+    if exists('b:gina_winview')
+      silent! call winrestview(b:gina_winview)
     endif
   finally
     call focus.restore()
