@@ -184,7 +184,8 @@ function! gina#util#diffthis() abort
           \ elseif &diff |
           \   call s:diffoff(1) |
           \ endif
-    autocmd BufWritePost <buffer> call s:diffupdate()
+    autocmd BufWinEnter  <buffer> call gina#util#diffthis()
+    autocmd BufWritePost <buffer> call s:diffupdate(bufnr('%'))
   augroup END
   call gina#util#diffupdate()
 endfunction
@@ -194,7 +195,7 @@ function! gina#util#diffupdate() abort
   " 'diffupdate' does not work just after a buffer has opened
   " so use timer to delay the command.
   silent! call timer_stop(s:timer_diffupdate)
-  let s:timer_diffupdate = timer_start(100, function('s:diffupdate'))
+  let s:timer_diffupdate = timer_start(100, function('s:diffupdate', [bufnr('%')]))
 endfunction
 
 
@@ -212,7 +213,7 @@ function! s:diffoff(update) abort
   augroup END
   diffoff
   if a:update
-    call s:diffupdate()
+    call s:diffupdate(bufnr('%'))
   endif
 endfunction
 
@@ -225,12 +226,24 @@ function! s:diffoff_all() abort
     endif
   endfor
   call win_gotoid(winid)
-  call s:diffupdate()
+  call s:diffupdate(bufnr('%'))
 endfunction
 
-function! s:diffupdate(...) abort
-  diffupdate
-  syncbind
+function! s:diffupdate(bufnr, ...) abort
+  let winid = bufwinid(a:bufnr)
+  if winid == -1
+    return
+  endif
+  let winid_saved = win_getid()
+  try
+    if winid != winid_saved
+      call win_gotoid(winid)
+    endif
+    diffupdate
+    syncbind
+  finally
+    call win_gotoid(winid_saved)
+  endtry
 endfunction
 
 function! s:diffcount() abort

@@ -37,11 +37,7 @@ function! s:on_modified(...) abort
           \ && getbufvar(bufnr, '&autoread')
           \ && bufname(bufnr) =~# '^gina://'
       call win_gotoid(bufwinid(bufnr))
-      let diff_saved = &diff
       edit
-      if diff_saved
-        call gina#util#diffthis()
-      endif
     endif
   endfor
   call win_gotoid(winid_saved)
