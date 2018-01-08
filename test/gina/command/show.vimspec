@@ -12,7 +12,6 @@ Describe gina#command#show
       let encodings[name] = {
             \ 'name': name,
             \ 'filename': fnamemodify(filename, ':t'),
-            \ 'supported': !empty(iconv(join(readfile(filename), "\n"), name, &encoding))
             \}
       call File.copy(
             \ filename,
@@ -277,9 +276,6 @@ Describe gina#command#show
     Context ++enc
       It might be called with ++enc=utf-8
         let encoding = encodings['utf-8']
-        if !encoding.supported
-          Skip iconv in this Vim does not support utf-8
-        endif
         execute 'edit' fnameescape(slit1.path(encoding.filename))
         execute printf('GinaSync show ++enc=%s :', encoding.name)
         Assert Equals(winnr('$'), 1)
@@ -303,9 +299,6 @@ Describe gina#command#show
 
       It might be called with ++enc=euc-jp
         let encoding = encodings['euc-jp']
-        if !encoding.supported
-          Skip iconv in this Vim does not support euc-jp
-        endif
         execute 'edit' fnameescape(slit1.path(encoding.filename))
         execute printf('GinaSync show ++enc=%s :', encoding.name)
         Assert Equals(winnr('$'), 1)
@@ -329,9 +322,6 @@ Describe gina#command#show
 
       It might be called with ++enc=sjis
         let encoding = encodings['sjis']
-        if !encoding.supported
-          Skip iconv in this Vim does not support sjis
-        endif
         execute 'edit' fnameescape(slit1.path(encoding.filename))
         execute printf('GinaSync show ++enc=%s :', encoding.name)
         Assert Equals(winnr('$'), 1)
@@ -355,9 +345,6 @@ Describe gina#command#show
 
       It might be called with ++enc=cp932
         let encoding = encodings['cp932']
-        if !encoding.supported
-          Skip iconv in this Vim does not support cp932
-        endif
         execute 'edit' fnameescape(slit1.path(encoding.filename))
         execute printf('GinaSync show ++enc=%s :', encoding.name)
         Assert Equals(winnr('$'), 1)
@@ -381,9 +368,6 @@ Describe gina#command#show
 
       It might be called with ++enc=cp1250
         let encoding = encodings['cp1250']
-        if !encoding.supported
-          Skip iconv in this Vim does not support cp1250
-        endif
         execute 'edit' fnameescape(slit1.path(encoding.filename))
         execute printf('GinaSync show ++enc=%s :', encoding.name)
         Assert Equals(winnr('$'), 1)

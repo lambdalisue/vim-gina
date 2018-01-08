@@ -11,7 +11,6 @@ Describe Vim.Buffer.Writer
       let encodings[name] = {
             \ 'name': name,
             \ 'filename': filename,
-            \ 'supported': !empty(iconv(join(readfile(filename), "\n"), name, &encoding))
             \}
     endfor
   End
@@ -930,9 +929,6 @@ Describe Vim.Buffer.Writer
     Context Encoding
       It replaces utf-8 content correctly when fileencoding is correct
         let encoding = encodings['utf-8']
-        if !encoding.supported
-          Skip iconv in this Vim does not support utf-8
-        endif
         edit foo1 | execute('setlocal fileencoding=' . encoding.name)
         vnew foo2
         let bufnr = bufnr('foo1')
@@ -948,9 +944,6 @@ Describe Vim.Buffer.Writer
 
       It replaces sjis content correctly when fileencoding is correct
         let encoding = encodings['sjis']
-        if !encoding.supported
-          Skip iconv in this Vim does not support sjis
-        endif
         edit foo1 | execute('setlocal fileencoding=' . encoding.name)
         vnew foo2
         let bufnr = bufnr('foo1')
@@ -966,9 +959,6 @@ Describe Vim.Buffer.Writer
 
       It replaces euc-jp content correctly when fileencoding is correct
         let encoding = encodings['euc-jp']
-        if !encoding.supported
-          Skip iconv in this Vim does not support euc-jp
-        endif
         edit foo1 | execute('setlocal fileencoding=' . encoding.name)
         vnew foo2
         let bufnr = bufnr('foo1')
@@ -984,9 +974,6 @@ Describe Vim.Buffer.Writer
 
       It replaces cp932 content correctly when fileencoding is correct
         let encoding = encodings['cp932']
-        if !encoding.supported
-          Skip iconv in this Vim does not support cp932
-        endif
         edit foo1 | execute('setlocal fileencoding=' . encoding.name)
         vnew foo2
         let bufnr = bufnr('foo1')
@@ -1002,9 +989,6 @@ Describe Vim.Buffer.Writer
 
       It replaces cp1250 content correctly when fileencoding is correct
         let encoding = encodings['cp1250']
-        if !encoding.supported
-          Skip iconv in this Vim does not support cp1250
-        endif
         edit foo1 | execute('setlocal fileencoding=' . encoding.name)
         vnew foo2
         let bufnr = bufnr('foo1')
