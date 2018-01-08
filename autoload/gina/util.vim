@@ -165,11 +165,14 @@ endfunction
 function! gina#util#diffthis() abort
   diffthis
   augroup gina_internal_util_diffthis
-    autocmd! * <buffer>
+    autocmd! *
     autocmd BufWinEnter *
           \ if &diff && s:diffcount() == 1 |
           \   call s:diffoff(0) |
           \ endif
+  augroup END
+  augroup gina_internal_util_diffthis_local
+    autocmd! * <buffer>
     autocmd BufWinLeave <buffer>
           \ if &diff && s:diffcount() == 2 |
           \   call s:diffoff_all() |
