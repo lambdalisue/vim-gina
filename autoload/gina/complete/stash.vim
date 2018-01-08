@@ -28,7 +28,6 @@ function! s:get_available_stashes(git, args) abort
   if result.status
     return []
   endif
-  let candidates = result.stdout
+  let candidates = copy(result.stdout)
   return filter(candidates, '!empty(v:val)')
 endfunction
-
