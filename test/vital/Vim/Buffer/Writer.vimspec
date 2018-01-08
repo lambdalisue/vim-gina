@@ -4,9 +4,16 @@ Describe Vim.Buffer.Writer
   Before all
     let Writer = vital#gina#import('Vim.Buffer.Writer')
     let Path = vital#gina#import('System.Filepath')
-    let utf8_encoding = Path.realpath('test/vital/_testdata/Vim/Buffer/Writer/utf8-encoding.txt')
-    let cp932_encoding = Path.realpath('test/vital/_testdata/Vim/Buffer/Writer/cp932-encoding.txt')
-    let cp1250_encoding = Path.realpath('test/vital/_testdata/Vim/Buffer/Writer/cp1250-encoding.txt')
+    let encodings = {}
+    let encoding_dir = 'test/vital/_testdata/Vim/Buffer/Writer'
+    for filename in glob(Path.realpath(encoding_dir . '/*-encoding.txt'), 1, 1)
+      let name = matchstr(fnamemodify(filename, ':t'), '.*\ze-encoding.txt')
+      let encodings[name] = {
+            \ 'name': name,
+            \ 'filename': filename,
+            \ 'supported': !empty(iconv('foo', name, &encoding))
+            \}
+    endfor
   End
 
   Before
@@ -922,12 +929,16 @@ Describe Vim.Buffer.Writer
 
     Context Encoding
       It replaces utf-8 content correctly when fileencoding is correct
-        edit foo1 | setlocal fileencoding=utf-8
+        let encoding = encodings['utf-8']
+        if !encoding.supported
+          Skip iconv in this Vim does not support utf-8
+        endif
+        edit foo1 | execute('setlocal fileencoding=' . encoding.name)
         vnew foo2
         let bufnr = bufnr('foo1')
-        let content = readfile(utf8_encoding)
+        let content = readfile(encoding.filename)
         call Writer.replace(bufnr, 0, -1, content)
-        Assert Equals(getbufvar(bufnr, '&fileencoding'), 'utf-8')
+        Assert Equals(getbufvar(bufnr, '&fileencoding'), encoding.name)
         Assert Equals(getbufline(bufnr, 1, '$'), [
               \ 'Unix EOL',
               \ 'árvíztűrő tükörfúrógép',
@@ -935,13 +946,53 @@ Describe Vim.Buffer.Writer
               \])
       End
 
-      It replaces cp932 content correctly when fileencoding is correct
-        edit foo1 | setlocal fileencoding=cp932
+      It replaces sjis content correctly when fileencoding is correct
+        let encoding = encodings['sjis']
+        if !encoding.supported
+          Skip iconv in this Vim does not support sjis
+        endif
+        edit foo1 | execute('setlocal fileencoding=' . encoding.name)
         vnew foo2
         let bufnr = bufnr('foo1')
-        let content = readfile(cp932_encoding)
+        let content = readfile(encoding.filename)
         call Writer.replace(bufnr, 0, -1, content)
-        Assert Equals(getbufvar(bufnr, '&fileencoding'), 'cp932')
+        Assert Equals(getbufvar(bufnr, '&fileencoding'), encoding.name)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Unix EOL',
+              \ 'こんにちわ コンニチワ',
+              \ '今日和 ｺﾝﾆﾁﾜ',
+              \])
+      End
+
+      It replaces euc-jp content correctly when fileencoding is correct
+        let encoding = encodings['euc-jp']
+        if !encoding.supported
+          Skip iconv in this Vim does not support euc-jp
+        endif
+        edit foo1 | execute('setlocal fileencoding=' . encoding.name)
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        let content = readfile(encoding.filename)
+        call Writer.replace(bufnr, 0, -1, content)
+        Assert Equals(getbufvar(bufnr, '&fileencoding'), encoding.name)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Unix EOL',
+              \ 'こんにちわ コンニチワ',
+              \ '今日和 ｺﾝﾆﾁﾜ',
+              \])
+      End
+
+      It replaces cp932 content correctly when fileencoding is correct
+        let encoding = encodings['cp932']
+        if !encoding.supported
+          Skip iconv in this Vim does not support cp932
+        endif
+        edit foo1 | execute('setlocal fileencoding=' . encoding.name)
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        let content = readfile(encoding.filename)
+        call Writer.replace(bufnr, 0, -1, content)
+        Assert Equals(getbufvar(bufnr, '&fileencoding'), encoding.name)
         Assert Equals(getbufline(bufnr, 1, '$'), [
               \ 'Unix EOL',
               \ 'こんにちわ コンニチワ',
@@ -950,12 +1001,16 @@ Describe Vim.Buffer.Writer
       End
 
       It replaces cp1250 content correctly when fileencoding is correct
-        edit foo1 | setlocal fileencoding=cp1250
+        let encoding = encodings['cp1250']
+        if !encoding.supported
+          Skip iconv in this Vim does not support cp1250
+        endif
+        edit foo1 | execute('setlocal fileencoding=' . encoding.name)
         vnew foo2
         let bufnr = bufnr('foo1')
-        let content = readfile(cp1250_encoding)
+        let content = readfile(encoding.filename)
         call Writer.replace(bufnr, 0, -1, content)
-        Assert Equals(getbufvar(bufnr, '&fileencoding'), 'cp1250')
+        Assert Equals(getbufvar(bufnr, '&fileencoding'), encoding.name)
         Assert Equals(getbufline(bufnr, 1, '$'), [
               \ 'Unix EOL',
               \ 'árvíztűrő tükörfúrógép',
