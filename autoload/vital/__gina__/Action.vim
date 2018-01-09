@@ -242,20 +242,16 @@ function! s:binder.action(expr) abort
         \ keys(self.aliases) + keys(self.actions),
         \ 'v:val =~# ''^'' . name'
         \)
-  if len(candidates) == 1
-    return self.action(mods . candidates[0])
-  endif
-  " None or More than one action/alias has detected
+  " Shorter to Longer
+  call sort(candidates, { a, b -> len(a) - len(b) })
   if empty(candidates)
     throw s:Exception.warn(printf(
           \ 'No corresponding action has found for "%s"',
           \ a:expr
           \))
   else
-    throw s:Exception.warn(printf(
-          \ 'More than one action/alias has found for "%s"',
-          \ a:expr
-          \))
+    " Use the first match
+    return self.action(mods . candidates[0])
   endif
 endfunction
 
