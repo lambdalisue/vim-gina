@@ -74,7 +74,7 @@ function! s:build_args(git, args) abort
         \ args.pop('--group2', 'patch-c'),
         \ args.pop('--group3', 'patch-r'),
         \]
-  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.opener = args.pop('--opener', 'tabnew')
   let args.params.oneside = args.pop('--oneside', 0)
   call gina#core#args#extend_path(a:git, args, args.pop(1))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))

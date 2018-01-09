@@ -53,8 +53,8 @@ endfunction
 
 function! s:build_args(git, args) abort
   let args = a:args.clone()
-  let args.params.group = args.pop('--group', 'short')
-  let args.params.opener = args.pop('--opener', &previewheight . 'split')
+  let args.params.group = args.pop('--group', '')
+  let args.params.opener = args.pop('--opener', '')
   let args.params.rev = args.get(2, 'stash@{0}')
   call args.set('--numstat', 1)
   call args.set(1, 'show')

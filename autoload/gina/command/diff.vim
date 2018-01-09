@@ -317,7 +317,7 @@ endfunction
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
-  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.opener = args.pop('--opener', '')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
   let args.params.partial = !empty(args.residual())

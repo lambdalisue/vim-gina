@@ -189,8 +189,8 @@ endfunction
 
 function! s:build_args(args) abort
   let args = a:args.clone()
-  let args.params.group = args.pop('--group', 'short')
-  let args.params.opener = args.pop('--opener', &previewheight . 'split')
+  let args.params.group = args.pop('--group', '')
+  let args.params.opener = args.pop('--opener', '')
   let args.params.amend = args.get('--amend')
   return args.lock()
 endfunction

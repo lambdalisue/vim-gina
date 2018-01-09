@@ -69,7 +69,7 @@ endfunction
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
-  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.opener = args.pop('--opener', '')
   let args.params.partial = !empty(args.residual())
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   " Enable --line/--col only when a path has specified

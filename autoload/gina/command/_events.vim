@@ -27,8 +27,8 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(git, args) abort
   let args = a:args.clone()
-  let args.params.group = args.pop('--group', 'console')
-  let args.params.opener = args.pop('--opener', 'botright 30split')
+  let args.params.group = args.pop('--group', '')
+  let args.params.opener = args.pop('--opener', '')
   let args.params.detail = args.pop('--detail')
 
   return args.lock()

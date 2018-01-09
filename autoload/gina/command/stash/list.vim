@@ -53,8 +53,8 @@ endfunction
 
 function! s:build_args(git, args) abort
   let args = a:args.clone()
-  let args.params.group = args.pop('--group', 'short')
-  let args.params.opener = args.pop('--opener', &previewheight . 'split')
+  let args.params.group = args.pop('--group', '')
+  let args.params.opener = args.pop('--opener', '')
 
   return args.lock()
 endfunction
