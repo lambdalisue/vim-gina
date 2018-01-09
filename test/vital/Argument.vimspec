@@ -214,6 +214,13 @@ Describe Argument
         Assert Equals(args.index('--foo'), 3)
         Assert Equals(args.index('-h|--hoge'), 4)
         Assert Equals(args.index('-h'), -1)
+
+        let args = Argument.new('bar -f BAR --foo-bar --hoge=hoge -- -hHOGE hoge')
+        Assert Equals(args.index('-f'), 1)
+        Assert Equals(args.index('--foo'), -1)
+        Assert Equals(args.index('--foo-bar'), 3)
+        Assert Equals(args.index('-h|--hoge'), 4)
+        Assert Equals(args.index('-h'), -1)
       End
 
       It returns an index of a ({query} + 1)-th positional term

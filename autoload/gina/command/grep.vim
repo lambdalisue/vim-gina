@@ -196,8 +196,9 @@ function! s:build_args(git, args) abort
   call args.set('--full-name', 1)
 
   call args.set('--color', 'always')
-  call args.set(1, args.params.pattern)
-  call args.set(2, args.params.rev)
+  call args.set(1, '-e')
+  call args.set(2, args.params.pattern)
+  call args.set(3, args.params.rev)
   return args.lock()
 endfunction
 
