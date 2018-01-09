@@ -204,7 +204,7 @@ endfunction
 function! s:parse_record(git, record, rev, residual) abort
   " Parse record to make a gina candidate and translate it to a quickfix item
   let candidate = gina#command#grep#parse_record(
-        \ a:record, a:rev, a:residual,
+        \ a:record, a:residual,
         \)
   if empty(candidate)
     return {}
