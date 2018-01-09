@@ -74,7 +74,7 @@ endfunction
 function! s:_build_pattern(query) abort
   let patterns = split(a:query, '|')
   call map(patterns, 's:String.escape_pattern(v:val)')
-  call map(patterns, 'v:val =~# ''^--\w\+'' ? v:val . ''\>'' : v:val')
+  call map(patterns, 'v:val =~# ''^--\w\+'' ? v:val . ''\%(=\|$\)'' : v:val')
   return printf('^\%%(%s\)', join(patterns, '\|'))
 endfunction
 

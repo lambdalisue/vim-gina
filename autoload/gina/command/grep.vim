@@ -8,7 +8,6 @@ function! gina#command#grep#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
-        \ 'rev': args.params.rev,
         \ 'params': [
         \   args.params.partial ? '--' : '',
         \ ],
@@ -168,17 +167,15 @@ function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', '')
-  let args.params.pattern = args.pop(1, '')
   let args.params.partial = !empty(args.residual())
-  let args.params.rev = args.pop(1, gina#core#buffer#param('%', 'rev'))
 
-  " Check if available grep patterns has specified and ask if not
-  if empty(args.params.pattern) && !(args.has('-e') || args.has('-f'))
+  " Ask pattern if no option has specified.
+  if !s:is_pattern_given(args)
     let pattern = gina#core#console#ask('Pattern: ')
     if empty(pattern)
       throw gina#core#exception#info('Cancel')
     endif
-    let args.params.pattern = pattern
+    call args.set('-e', pattern)
   endif
 
   " Remove unsupported options
@@ -192,12 +189,17 @@ function! s:build_args(git, args) abort
   call args.pop('--heading')
 
   " Force required options
-  call args.set('--line-number', 1)
-  call args.set('--full-name', 1)
-
-  call args.set('--color', 'always')
-  call args.set(1, args.params.pattern)
-  call args.set(2, args.params.rev)
+  if !args.has('--line-number')
+    call insert(args.raw, '--line-number', 1)
+  endif
+  if !args.has('--full-name')
+    call insert(args.raw, '--full-name', 1)
+  endif
+  if !args.has('--color')
+    call insert(args.raw, '--color=always', 1)
+  else
+    call args.set('--color', 'always')
+  endif
   return args.lock()
 endfunction
 
@@ -238,34 +240,52 @@ endfunction
 
 function! s:get_candidates(fline, lline) abort
   let args = gina#core#meta#get_or_fail('args')
-  let rev = args.params.rev
   let residual = args.residual()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(v:val, rev, residual)'
+        \ 's:parse_record(v:val, residual)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(record, rev, residual) abort
+function! s:parse_record(record, residual) abort
   let record = s:String.remove_ansi_sequences(a:record)
-  let m = matchlist(record, '^\%([^:]\+:\)\?\(.*\):\(\d\+\):\(.*\)$')
+  let m = matchlist(record, '^\([^:]\+:\)\?\(.*\):\(\d\+\):\(.*\)$')
   if empty(m)
     return {}
   endif
   let matched = matchstr(a:record, '\e\[1;31m\zs.\{-}\ze\e\[m')
-  let line = str2nr(m[2])
-  let col = stridx(m[3], matched) + 1
+  let line = str2nr(m[3])
+  let col = stridx(m[4], matched) + 1
   let candidate = {
-        \ 'word': m[3],
+        \ 'word': m[4],
         \ 'abbr': a:record,
         \ 'line': line,
         \ 'col': col,
-        \ 'path': m[1],
-        \ 'rev': a:rev,
+        \ 'path': m[2],
+        \ 'rev': m[1],
         \ 'residual': a:residual,
         \}
   return candidate
+endfunction
+
+function! s:is_pattern_given(args) abort
+  let cmdline = join(a:args.raw[1:])
+  let value_options = [
+        \ '--max-depth',
+        \ '-C', '--context',
+        \ '-A', '--after-context',
+        \ '-B', '--before-context',
+        \ '--threads',
+        \]
+  for value_option in value_options
+    let cmdline = substitute(
+          \ cmdline,
+          \ value_option . '\s\+\d\+',
+          \ '', 'g',
+          \)
+  endfor
+  return cmdline =~# '\<\%(-e\|-f\|[^-].\{-}\)\>'
 endfunction
 
 
