@@ -292,6 +292,12 @@ function! s:QuitPre() abort
   " Do not perform commit when user hit :q!
   if histget('cmd', -1) !~# '^q\%[uit]!'
     let b:gina_QuitPre = 1
+    " If this is a last window, open a new window to prevent quit
+    if tabpagenr('$') == 1 && winnr('$') == 1
+      let win_id = win_getid()
+      silent tabnew
+      call win_gotoid(win_id)
+    endif
   endif
   silent! unlet b:gina_BufWriteCmd
 endfunction
