@@ -234,9 +234,18 @@ Describe gina#core#buffer
         Assert Equals(bufname(winbufnr(2)), 'foo1')
       End
 
-      It moves focus before opening a new {bufname} if a current window is not suitable for opening a buffer
+      It moves focus before opening a new {bufname} if a current window is too small (height) for opening a buffer
         edit foo1
-        new foo2 | setlocal buftype=nofile
+        new foo2 | execute 'resize' &lines / 10
+        let context = gina#core#buffer#open('foo3')
+        Assert Equals(winnr('$'), 2)
+        Assert Equals(bufname(winbufnr(1)), 'foo2')
+        Assert Equals(bufname(winbufnr(2)), 'foo3')
+      End
+
+      It moves focus before opening a new {bufname} if a current window is too small (width) for opening a buffer
+        edit foo1
+        vnew foo2 | execute 'vertical resize' &columns / 10
         let context = gina#core#buffer#open('foo3')
         Assert Equals(winnr('$'), 2)
         Assert Equals(bufname(winbufnr(1)), 'foo2')

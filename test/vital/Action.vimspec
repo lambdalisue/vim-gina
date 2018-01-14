@@ -88,18 +88,18 @@ Describe Action
     It defines default mappings
       call Action.attach([])
       Assert Equals(mapcheck('?', 'n'), '<Plug>(action-builtin-help)')
-      Assert Equals(mapcheck('<Tab>', 'n'), '<Plug>(action-builtin-choice)')
-      Assert Equals(mapcheck('<Tab>', 'v'), '<Plug>(action-builtin-choice)')
-      Assert Equals(mapcheck('<Tab>', 'i'), '<Plug>(action-builtin-choice)')
+      Assert Equals(mapcheck('a', 'n'), '<Plug>(action-builtin-choice)')
+      Assert Equals(mapcheck('a', 'v'), '<Plug>(action-builtin-choice)')
+      Assert Equals(mapcheck('a', 'i'), '<Plug>(action-builtin-choice)')
       Assert Equals(mapcheck('.', 'n'), '<Plug>(action-builtin-repeat)')
       Assert Equals(mapcheck('.', 'v'), '<Plug>(action-builtin-repeat)')
       Assert Equals(mapcheck('.', 'i'), '<Plug>(action-builtin-repeat)')
 
       call Action.attach([], {'markable': 1})
       Assert Equals(mapcheck('?', 'n'), '<Plug>(action-builtin-help)')
-      Assert Equals(mapcheck('<Tab>', 'n'), '<Plug>(action-builtin-choice)')
-      Assert Equals(mapcheck('<Tab>', 'v'), '<Plug>(action-builtin-choice)')
-      Assert Equals(mapcheck('<Tab>', 'i'), '<Plug>(action-builtin-choice)')
+      Assert Equals(mapcheck('a', 'n'), '<Plug>(action-builtin-choice)')
+      Assert Equals(mapcheck('a', 'v'), '<Plug>(action-builtin-choice)')
+      Assert Equals(mapcheck('a', 'i'), '<Plug>(action-builtin-choice)')
       Assert Equals(mapcheck('.', 'n'), '<Plug>(action-builtin-repeat)')
       Assert Equals(mapcheck('.', 'v'), '<Plug>(action-builtin-repeat)')
       Assert Equals(mapcheck('.', 'i'), '<Plug>(action-builtin-repeat)')
@@ -276,17 +276,19 @@ Describe Action
         Assert Equals(action.name, 'test')
       End
 
+      It returns [{mods}, {action}] for the first shortest action matched when multiple action/alias are found for {expr}
+        let binder = Action.attach([])
+        call binder.define('test', Funcref)
+        call binder.define('test:foo', Funcref)
+        let [mods, action] = binder.action('te')
+        Assert Equals(mods, '')
+        Assert Equals(action.name, 'test')
+      End
+
       It throws an exception when no action/alias is found for {expr}
         let binder = Action.attach([])
         call binder.define('test', Funcref)
         Throws /No corresponding action/ binder.action('fo')
-      End
-
-      It throws an exception when multiple action/alias are found for {expr}
-        let binder = Action.attach([])
-        call binder.define('test', Funcref)
-        call binder.alias('tes', 'test')
-        Throws /More than one/ binder.action('te')
       End
     End
 

@@ -26,7 +26,7 @@ Describe gina#command#stash#list
   Describe Use cases
     It might be called without arguments
       GinaSync stash list
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:stash', slit1.refname))
       Assert Match(getline(1), 'stash@{0}: WIP on master: [0-9a-f]\{7} First')
       Assert Match(getline(2), 'stash@{1}: WIP on master: [0-9a-f]\{7} First')

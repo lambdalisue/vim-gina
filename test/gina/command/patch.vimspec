@@ -25,6 +25,7 @@ Describe gina#command#patch
     It might be called without arguments
       execute 'edit' fnameescape(filename1)
       GinaSync patch
+      Assert Equals(tabpagenr('$'), 2)
       Assert Equals(winnr('$'), 3)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:show/:A/foo.txt', slit1.refname))

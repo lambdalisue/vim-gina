@@ -26,7 +26,7 @@ Describe gina#command#stash#show
   Describe Use cases
     It might be called without arguments
       GinaSync stash show
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:stash:show/stash@{0}', slit1.refname))
       Assert Match(getline(1), '0	0	C/foo.txt')
       Assert Equals(line('$'), 1)
@@ -34,7 +34,7 @@ Describe gina#command#stash#show
 
     It might be called with stash rev
       GinaSync stash show stash@{1}
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:stash:show/stash@{1}', slit1.refname))
       Assert Match(getline(1), '0	0	B/foo.txt')
       Assert Equals(line('$'), 1)

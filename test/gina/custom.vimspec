@@ -133,24 +133,30 @@ Describe gina#custom
   Describe #execute({scheme}, {expr})
     It executes {expr} on a {scheme} buffer
       call gina#custom#execute(scheme, 'setlocal winfixwidth')
-      GinaSync status
-      Assert Equals(&winfixwidth, 1)
-      %bwipeout!
+      setlocal winfixwidth&
       GinaSync branch
       Assert Equals(&winfixwidth, 0)
       %bwipeout!
+      setlocal winfixwidth&
+      GinaSync status
+      Assert Equals(&winfixwidth, 1)
+      %bwipeout!
+      setlocal winfixwidth&
       GinaSync tag
       Assert Equals(&winfixwidth, 0)
     End
 
     It executes {expr} on buffers which matches with {scheme}
       call gina#custom#execute(pattern, 'setlocal winfixwidth')
-      GinaSync status
-      Assert Equals(&winfixwidth, 0)
-      %bwipeout!
+      setlocal winfixwidth&
       GinaSync branch
       Assert Equals(&winfixwidth, 1)
       %bwipeout!
+      setlocal winfixwidth&
+      GinaSync status
+      Assert Equals(&winfixwidth, 0)
+      %bwipeout!
+      setlocal winfixwidth&
       GinaSync tag
       Assert Equals(&winfixwidth, 1)
     End

@@ -26,7 +26,7 @@ Describe gina#command#tag
     It might be called without arguments
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync tag
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:tag', slit1.refname))
       Assert Equals(getline(1, '$'), [

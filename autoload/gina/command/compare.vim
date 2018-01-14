@@ -70,7 +70,7 @@ function! s:build_args(git, args) abort
         \ args.pop('--group1', 'compare-l'),
         \ args.pop('--group2', 'compare-r'),
         \]
-  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.opener = args.pop('--opener', 'tabnew')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
 

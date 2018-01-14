@@ -22,7 +22,7 @@ Describe gina#command#commit
 
     It might be called without arguments
       GinaSync commit
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:commit', slit1.refname))
       Assert Equals(getline(1, 3), [
             \ '',
@@ -41,7 +41,7 @@ Describe gina#command#commit
 
     It might be called with --verbose
       GinaSync commit --verbose
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:commit', slit1.refname))
       Assert Equals(getline(1, 3), [
             \ '',
@@ -61,7 +61,7 @@ Describe gina#command#commit
 
     It might be called with --amend
       GinaSync commit --amend
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:commit', slit1.refname))
       Assert Equals(getline(1, 4), [
             \ 'First',
