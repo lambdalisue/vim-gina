@@ -97,14 +97,14 @@ else
   " Used to replace content of hidden buffer
   function! s:_replace_hidden(bufnr, start, end, replacement) abort
     let bufnr_saved = bufnr('%')
-    let hidden_saved = &l:hidden
-    setlocal hidden
+    let bufhidden_saved = &l:bufhidden
+    setlocal bufhidden=hide
     execute printf('keepjumps %dbuffer', a:bufnr)
     try
       return s:_replace_local(a:start, a:end, a:replacement)
     finally
       execute printf('keepjumps %dbuffer', bufnr_saved)
-      let &l:hidden = hidden_saved
+      let &l:bufhidden = bufhidden_saved
     endtry
   endfunction
 endif

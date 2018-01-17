@@ -624,9 +624,9 @@ Describe Vim.Buffer.Writer
 
     Context Buffer which is hidden (hidden)
       Before
-        edit foo1 | setlocal hidden
+        edit foo1 | setlocal bufhidden=hide
         call setline('$', ['Hello', 'Darkness', 'Friend'])
-        edit foo2 | setlocal nohidden
+        edit foo2
         let bufnr = bufnr('foo1')
         Assert NotEquals(bufnr('%'), bufnr)
         Assert Equals(bufwinnr(bufnr), -1)
@@ -1137,8 +1137,8 @@ Describe Vim.Buffer.Writer
 
       Context Buffer which is hidden
         Before
-          edit foo1 | setlocal hidden
-          edit foo2 | setlocal hidden
+          edit foo1 | setlocal bufhidden=hide
+          edit foo2 | setlocal bufhidden=hide
           let bufnr = bufnr('foo1')
         End
 
