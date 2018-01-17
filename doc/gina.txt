@@ -2170,6 +2170,32 @@ g:gina#core#emitter#modified_delay
 	Note: Users should not change the value unless you know what.
 	Default: 10
 
+		*g:gina#core#spinner#frames*
+g:gina#core#spinner#frames
+	A |List| of characters used for spinner animation.
+	Default:
+	['-', '\', '|', '/']				(LANG=C)
+	['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷']	(Other)
+
+		*g:gina#core#spinner#message*
+g:gina#core#spinner#message
+	A |String| message used in spinner.
+	Default: 'Loading ...'
+
+		*g:gina#core#spinner#delaytime*
+g:gina#core#spinner#delaytime
+	A delay-time in milliseconds. An actual spinner animation in a
+	'statusline' will be shown after this delay.
+	Note that negative value will disable the spinner animation
+	completely.
+	Default: 500
+
+		*g:gina#core#spinner#updatetime*
+g:gina#core#spinner#updatetime
+	A update-time in milliseconds. A spinner animation will be updated
+	every this update-time.
+	Default: 100
+
 		*g:gina#core#writer#updatetime*
 g:gina#core#writer#updatetime
 	A updatetime in millisecond used for a Vim.BufferWriter.
