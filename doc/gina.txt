@@ -2202,16 +2202,6 @@ g:gina#core#writer#updatetime
 	Users may need to increase this value for a large repository.
 	Default: 10
 
-		*g:gina#core#writer#use_python*
-g:gina#core#writer#use_python
-	Use |python| to update the buffer content if available.
-	Default: 1
-
-		*g:gina#core#writer#use_python3*
-g:gina#core#writer#use_python3
-	Use |python3| to update the buffer content if available.
-	Default: 1
-
 -----------------------------------------------------------------------------
 HIGHLIGHTS					*gina-highlights*
 
