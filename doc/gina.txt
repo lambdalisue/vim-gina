@@ -2134,11 +2134,6 @@ g:gina#command#browse#translation_patterns
 	    \ ],
 	    \})
 <
-		*g:gina#command#grep#send_to_quickfix*
-g:gina#command#grep#send_to_quickfix
-	Send all candidates to quickfix after command execution.
-	Default: 1
-
 		*g:gina#process#command*
 g:gina#process#command
 	A command string used to execute a git process.

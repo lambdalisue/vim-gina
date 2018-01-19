@@ -32,21 +32,3 @@ if g:gina#command#grep#use_default_mappings
     nmap <buffer> <Return> <Plug>(gina-show)zv
   endif
 endif
-
-if g:gina#command#grep#send_to_quickfix
-  function! s:on_grep(scheme) abort
-    if a:scheme !=# 'grep'
-      return
-    endif
-    let focus = gina#core#buffer#focus(bufnr('gina://*:grep*'))
-    if empty(focus)
-      return
-    endif
-    try
-      call gina#action#call('export:quickfix', 1, line('$'))
-    finally
-      call focus.restore()
-    endtry
-  endfunction
-  call gina#core#emitter#subscribe('command:called', function('s:on_grep'))
-endif
