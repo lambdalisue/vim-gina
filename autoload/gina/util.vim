@@ -19,14 +19,6 @@ function! gina#util#contain_direction(mods) abort
   return a:mods =~# s:DIRECTION_PATTERN
 endfunction
 
-function! gina#util#extend_content(content, msg) abort
-  if empty(a:content)
-    call extend(a:content, [''])
-  endif
-  let a:content[-1] .= a:msg[0]
-  call extend(a:content, a:msg[1:])
-endfunction
-
 function! gina#util#get(obj, key, ...) abort
   let val = get(a:obj, a:key, v:null)
   return val is# v:null ? get(a:000, 0, '') : val
@@ -162,14 +154,6 @@ function! gina#util#winwidth(winnr) abort
   return width
 endfunction
 
-function! gina#util#inherit(super, ...) abort
-  let prototype = a:0 ? a:1 : {}
-  let instance = extend(copy(a:super), prototype)
-  let instance.super = function('s:call_super')
-  let instance.__super = s:Dict.omit(a:super, ['super', '__super'])
-  return instance
-endfunction
-
 function! gina#util#syncbind() abort
   " NOTE:
   " 'syncbind' does not work just after a buffer has opened
@@ -181,18 +165,22 @@ endfunction
 function! gina#util#diffthis() abort
   diffthis
   augroup gina_internal_util_diffthis
-    autocmd! * <buffer>
+    autocmd! *
     autocmd BufWinEnter *
           \ if &diff && s:diffcount() == 1 |
           \   call s:diffoff(0) |
           \ endif
+  augroup END
+  augroup gina_internal_util_diffthis_local
+    autocmd! * <buffer>
     autocmd BufWinLeave <buffer>
           \ if &diff && s:diffcount() == 2 |
           \   call s:diffoff_all() |
           \ elseif &diff |
           \   call s:diffoff(1) |
           \ endif
-    autocmd BufWritePost <buffer> call s:diffupdate()
+    autocmd BufWinEnter  <buffer> call gina#util#diffthis()
+    autocmd BufWritePost <buffer> call s:diffupdate(bufnr('%'))
   augroup END
   call gina#util#diffupdate()
 endfunction
@@ -202,7 +190,7 @@ function! gina#util#diffupdate() abort
   " 'diffupdate' does not work just after a buffer has opened
   " so use timer to delay the command.
   silent! call timer_stop(s:timer_diffupdate)
-  let s:timer_diffupdate = timer_start(100, function('s:diffupdate'))
+  let s:timer_diffupdate = timer_start(100, function('s:diffupdate', [bufnr('%')]))
 endfunction
 
 
@@ -220,7 +208,7 @@ function! s:diffoff(update) abort
   augroup END
   diffoff
   if a:update
-    call s:diffupdate()
+    call s:diffupdate(bufnr('%'))
   endif
 endfunction
 
@@ -233,12 +221,24 @@ function! s:diffoff_all() abort
     endif
   endfor
   call win_gotoid(winid)
-  call s:diffupdate()
+  call s:diffupdate(bufnr('%'))
 endfunction
 
-function! s:diffupdate(...) abort
-  diffupdate
-  syncbind
+function! s:diffupdate(bufnr, ...) abort
+  let winid = bufwinid(a:bufnr)
+  if winid == -1
+    return
+  endif
+  let winid_saved = win_getid()
+  try
+    if winid != winid_saved
+      call win_gotoid(winid)
+    endif
+    diffupdate
+    syncbind
+  finally
+    call win_gotoid(winid_saved)
+  endtry
 endfunction
 
 function! s:diffcount() abort

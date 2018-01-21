@@ -29,7 +29,7 @@ Describe gina#command#ls
   Describe Use cases
     It might be called without arguments
       GinaSync ls
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:ls', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ 'A/foo.txt',
@@ -39,7 +39,7 @@ Describe gina#command#ls
 
     It might be called with --others
       GinaSync ls --others
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:ls', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ 'D/foo.txt',
@@ -48,7 +48,7 @@ Describe gina#command#ls
 
     It might be called with HEAD
       GinaSync ls HEAD
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:ls/HEAD', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ 'A/foo.txt',
@@ -58,7 +58,7 @@ Describe gina#command#ls
 
     It might be called with HEAD~
       GinaSync ls HEAD~
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:ls/HEAD~', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ 'A/foo.txt',
@@ -67,7 +67,7 @@ Describe gina#command#ls
 
     It might be called with develop
       GinaSync ls develop
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:ls/develop', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ 'A/foo.txt',
@@ -77,7 +77,7 @@ Describe gina#command#ls
 
     It might be called with -- A/*.txt
       GinaSync ls -- A/*.txt
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:ls:--', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ 'A/foo.txt',

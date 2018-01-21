@@ -4,411 +4,1003 @@ Describe Vim.Buffer.Writer
   Before all
     let Writer = vital#gina#import('Vim.Buffer.Writer')
     let Path = vital#gina#import('System.Filepath')
-    let utf8_encoding = Path.realpath('test/vital/_testdata/Vim/Buffer/Writer/utf8-encoding.txt')
-    let cp1250_encoding = Path.realpath('test/vital/_testdata/Vim/Buffer/Writer/cp1250-encoding.txt')
+    let encodings = {}
+    let encoding_dir = 'test/vital/_testdata/Vim/Buffer/Writer'
+    for filename in glob(Path.realpath(encoding_dir . '/*-encoding.txt'), 1, 1)
+      let name = matchstr(fnamemodify(filename, ':t'), '.*\ze-encoding.txt')
+      let encodings[name] = {
+            \ 'name': name,
+            \ 'filename': filename,
+            \}
+    endfor
   End
 
   Before
     %bwipeout!
   End
 
-  Describe .assign_content({bufnr}, {content})
-    It assigns a content of a {bufnr} buffer to {content}
-      edit foo1
-      vnew foo2
-      let bufnr = bufnr('foo1')
-      call Writer.assign_content(bufnr, ['Hello'])
-      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+  Describe .replace({expr}, {start}, {end}, {replacement})
+    Context Buffer which is shown on the current window
+      Before
+        edit foo2
+        vnew foo1
+        call setline('$', ['Hello', 'Darkness', 'Friend'])
+        let bufnr = bufnr('foo1')
+        Assert Equals(bufnr('%'), bufnr)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+      End
 
-      call Writer.assign_content(bufnr, ['Hello', 'World'])
-      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello', 'World'])
+      It returns 1 and do not modify content if {start} is out-of-range
+        let failed = Writer.replace(bufnr, 10, 0, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
 
-      call Writer.assign_content(bufnr, [])
-      Assert Equals(getbufline(bufnr, 1, '$'), [''])
+        let failed = Writer.replace(bufnr, -10, 0, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+      End
+
+      It returns 1 and do not modify content if {end} is out-of-range
+        let failed = Writer.replace(bufnr, 0, 10, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+
+        let failed = Writer.replace(bufnr, 0, -10, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+      End
+
+      It inserts lines at a given index
+        call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'My',
+              \ 'Old',
+              \ 'Friend',
+              \])
+      End
+
+      It inserts lines at a given negative index
+        call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \ 'My',
+              \ 'Old',
+              \])
+      End
+
+      It replaces lines between a given range
+        call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'My',
+              \ 'World',
+              \ 'Friend',
+              \])
+      End
+
+      It replaces lines between a given negative range
+        call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'My',
+              \ 'World',
+              \])
+      End
+
+      It removes lines between a given range when {replacement} is an empty list
+        call Writer.replace(bufnr, 1, 2, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Friend',
+              \])
+      End
+
+      It removes lines between a given negative range when {replacement} is an empty list
+        call Writer.replace(bufnr, -2, -1, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \])
+      End
+
+      It removes lines between a given positive/negative range when {replacement} is an empty list
+        call Writer.replace(bufnr, 0, -1, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ '',
+              \])
+      End
+
+      Context a current buffer
+        It should NOT change a current buffer (insert)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (insert, negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (replace)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (replace, negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (remove)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (remove, negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (remove, positive/negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(bufnr('%'), expect)
+        End
+      End
+
+      Context an alternate-file
+        It should NOT change an alternate-file (insert)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (insert, negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (replace)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (replace, negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (remove)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (remove, negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (remove, positive/negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(bufnr('#'), expect)
+        End
+      End
+
+      Context a cursor position
+        It should NOT change a cursor position (insert)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (insert, negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (replace)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (replace, negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (remove)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (remove, negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (remove, positive/negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(getcurpos(), expect)
+        End
+      End
+
+      Context a jumplist
+        It should NOT change a jumplist (insert)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (insert, negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (replace)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (replace, negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (replace, positive/negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 0, -1, ['My', 'World'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (remove)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (remove, negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (remove, positive/negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+      End
     End
 
-    It assigns a content of a {bufnr} buffer (utf-8) to {content} (utf-8)
-      edit foo1 | setlocal fileencoding=utf-8
-      vnew foo2
-      let bufnr = bufnr('foo1')
-      let content = readfile(utf8_encoding)
-      call Writer.assign_content(bufnr, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'utf-8')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
+    Context Buffer which is shown on the other window
+      Before
+        edit foo1
+        call setline('$', ['Hello', 'Darkness', 'Friend'])
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        Assert NotEquals(bufnr('%'), bufnr)
+        Assert NotEquals(bufwinnr(bufnr), -1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+      End
+
+      It returns 1 and do not modify content if {start} is out-of-range
+        let failed = Writer.replace(bufnr, 10, 0, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+
+        let failed = Writer.replace(bufnr, -10, 0, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+      End
+
+      It returns 1 and do not modify content if {end} is out-of-range
+        let failed = Writer.replace(bufnr, 0, 10, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+
+        let failed = Writer.replace(bufnr, 0, -10, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+      End
+
+      It inserts lines at a given index
+        call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'My',
+              \ 'Old',
+              \ 'Friend',
+              \])
+      End
+
+      It inserts lines at a given negative index
+        call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \ 'My',
+              \ 'Old',
+              \])
+      End
+
+      It replaces lines between a given range
+        call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'My',
+              \ 'World',
+              \ 'Friend',
+              \])
+      End
+
+      It replaces lines between a given negative range
+        call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'My',
+              \ 'World',
+              \])
+      End
+
+      It removes lines between a given range when {replacement} is an empty list
+        call Writer.replace(bufnr, 1, 2, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Friend',
+              \])
+      End
+
+      It removes lines between a given negative range when {replacement} is an empty list
+        call Writer.replace(bufnr, -2, -1, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \])
+
+        call Writer.replace(bufnr, 0, -1, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ '',
+              \])
+      End
+
+      It removes lines between a given positive/negative range when {replacement} is an empty list
+        call Writer.replace(bufnr, 0, -1, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ '',
+              \])
+      End
+
+      Context a current buffer
+        It should NOT change a current buffer (insert)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (insert, negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (replace)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (replace, negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (remove)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (remove, negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (remove, positive/negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(bufnr('%'), expect)
+        End
+      End
+
+      Context an alternate-file
+        It should NOT change an alternate-file (insert)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (insert, negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (replace)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (replace, negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (remove)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (remove, negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (remove, positive/negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(bufnr('#'), expect)
+        End
+      End
+
+      Context a cursor position
+        It should NOT change a cursor position (insert)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (insert, negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (replace)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (replace, negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (remove)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (remove, negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (remove, positive/negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(getcurpos(), expect)
+        End
+      End
+
+      Context a jumplist
+        It should NOT change a jumplist (insert)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (insert, negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (replace)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (replace, negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (replace, positive/negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 0, -1, ['My', 'World'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (remove)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (remove, negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (remove, positive/negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+      End
     End
 
-    It assigns a content of a {bufnr} buffer (utf-8) to {content} (cp1250)
-      edit foo1 | setlocal fileencoding=utf-8
-      vnew foo2
-      let bufnr = bufnr('foo1')
-      let content = readfile(cp1250_encoding)
-      call Writer.assign_content(bufnr, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'utf-8')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
-            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
-            \])
+    Context Buffer which is hidden (hidden)
+      Before
+        edit foo1 | setlocal bufhidden=hide
+        call setline('$', ['Hello', 'Darkness', 'Friend'])
+        edit foo2
+        let bufnr = bufnr('foo1')
+        Assert NotEquals(bufnr('%'), bufnr)
+        Assert Equals(bufwinnr(bufnr), -1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+      End
+
+      It returns 1 and do not modify content if {start} is out-of-range
+        let failed = Writer.replace(bufnr, 10, 0, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+
+        let failed = Writer.replace(bufnr, -10, 0, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+      End
+
+      It returns 1 and do not modify content if {end} is out-of-range
+        let failed = Writer.replace(bufnr, 0, 10, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+
+        let failed = Writer.replace(bufnr, 0, -10, ['Foo', 'Bar'])
+        Assert Equals(failed, 1)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \])
+      End
+
+      It inserts lines at a given index
+        call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'My',
+              \ 'Old',
+              \ 'Friend',
+              \])
+      End
+
+      It inserts lines at a given negative index
+        call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'Friend',
+              \ 'My',
+              \ 'Old',
+              \])
+      End
+
+      It replaces lines between a given range
+        call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'My',
+              \ 'World',
+              \ 'Friend',
+              \])
+      End
+
+      It replaces lines between a given negative range
+        call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \ 'My',
+              \ 'World',
+              \])
+      End
+
+      It removes lines between a given range when {replacement} is an empty list
+        call Writer.replace(bufnr, 1, 2, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Friend',
+              \])
+      End
+
+      It removes lines between a given negative range when {replacement} is an empty list
+        call Writer.replace(bufnr, -2, -1, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Hello',
+              \ 'Darkness',
+              \])
+
+        call Writer.replace(bufnr, 0, -1, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ '',
+              \])
+      End
+
+      It removes lines between a given positive/negative range when {replacement} is an empty list
+        call Writer.replace(bufnr, 0, -1, [])
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ '',
+              \])
+      End
+
+      Context a current buffer
+        It should NOT change a current buffer (insert)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (insert, negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (replace)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (replace, negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (remove)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (remove, negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(bufnr('%'), expect)
+        End
+
+        It should NOT change a current buffer (remove, positive/negative)
+          let expect = bufnr('%')
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(bufnr('%'), expect)
+        End
+      End
+
+      Context an alternate-file
+        It should NOT change an alternate-file (insert)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (insert, negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (replace)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (replace, negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (remove)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (remove, negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(bufnr('#'), expect)
+        End
+
+        It should NOT change an alternate-file (remove, positive/negative)
+          let expect = bufnr('#')
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(bufnr('#'), expect)
+        End
+      End
+
+      Context a cursor position
+        It should NOT change a cursor position (insert)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (insert, negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (replace)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (replace, negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (remove)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (remove, negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(getcurpos(), expect)
+        End
+
+        It should NOT change a cursor position (remove, positive/negative)
+          let expect = getcurpos()
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(getcurpos(), expect)
+        End
+      End
+
+      Context a jumplist
+        It should NOT change a jumplist (insert)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 2, 2, ['My', 'Old'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (insert, negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, -1, -1, ['My', 'Old'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (replace)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 1, 2, ['My', 'World'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (replace, negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, -2, -1, ['My', 'World'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (replace, positive/negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 0, -1, ['My', 'World'])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (remove)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 1, 2, [])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (remove, negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, -2, -1, [])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+
+        It should NOT change a jumplist (remove, positive/negative)
+          let expect = split(execute('jumps'), '\r\?\n')
+          call Writer.replace(bufnr, 0, -1, [])
+          Assert Equals(split(execute('jumps'), '\r\?\n'), expect)
+        End
+      End
     End
 
-    It assigns a content of a {bufnr} buffer (cp1250) to {content} (cp1250)
-      edit foo1 | setlocal fileencoding=cp1250
-      vnew foo2
-      let bufnr = bufnr('foo1')
-      let content = readfile(cp1250_encoding)
-      call Writer.assign_content(bufnr, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'cp1250')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
-    End
+    Context Encoding
+      It replaces utf-8 content correctly when fileencoding is correct
+        let encoding = encodings['utf-8']
+        edit foo1 | execute('setlocal fileencoding=' . encoding.name)
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        let content = readfile(encoding.filename)
+        call Writer.replace(bufnr, 0, -1, content)
+        Assert Equals(getbufvar(bufnr, '&fileencoding'), encoding.name)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Unix EOL',
+              \ 'árvíztűrő tükörfúrógép',
+              \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+              \])
+      End
 
-    It assigns a content of a {bufnr} buffer (cp1250) to {content} (utf-8)
-      if !empty(&termencoding)
-        Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
-      endif
-      edit foo1 | setlocal fileencoding=cp1250
-      vnew foo2
-      let bufnr = bufnr('foo1')
-      let content = readfile(utf8_encoding)
-      call Writer.assign_content(bufnr, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
-            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
-            \])
+      It replaces sjis content correctly when fileencoding is correct
+        let encoding = encodings['sjis']
+        edit foo1 | execute('setlocal fileencoding=' . encoding.name)
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        let content = readfile(encoding.filename)
+        call Writer.replace(bufnr, 0, -1, content)
+        Assert Equals(getbufvar(bufnr, '&fileencoding'), encoding.name)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Unix EOL',
+              \ 'こんにちわ コンニチワ',
+              \ '今日和 ｺﾝﾆﾁﾜ',
+              \])
+      End
 
-    End
+      It replaces euc-jp content correctly when fileencoding is correct
+        let encoding = encodings['euc-jp']
+        edit foo1 | execute('setlocal fileencoding=' . encoding.name)
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        let content = readfile(encoding.filename)
+        call Writer.replace(bufnr, 0, -1, content)
+        Assert Equals(getbufvar(bufnr, '&fileencoding'), encoding.name)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Unix EOL',
+              \ 'こんにちわ コンニチワ',
+              \ '今日和 ｺﾝﾆﾁﾜ',
+              \])
+      End
 
-    It assigns a content of a current buffer to {content} if {bufnr} is v:null
-      edit foo1
-      let bufnr = bufnr('%')
-      call Writer.assign_content(v:null, ['Hello'])
-      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
+      It replaces cp932 content correctly when fileencoding is correct
+        let encoding = encodings['cp932']
+        edit foo1 | execute('setlocal fileencoding=' . encoding.name)
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        let content = readfile(encoding.filename)
+        call Writer.replace(bufnr, 0, -1, content)
+        Assert Equals(getbufvar(bufnr, '&fileencoding'), encoding.name)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Unix EOL',
+              \ 'こんにちわ コンニチワ',
+              \ '今日和 ｺﾝﾆﾁﾜ',
+              \])
+      End
 
-      call Writer.assign_content(v:null, ['Hello', 'World'])
-      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello', 'World'])
-
-      call Writer.assign_content(v:null, [])
-      Assert Equals(getbufline(bufnr, 1, '$'), [''])
-    End
-
-    It assigns a content of a current buffer (utf-8) to {content} (utf-8) if {bufnr} is v:null
-      edit foo1 | setlocal fileencoding=utf-8
-      let bufnr = bufnr('%')
-      let content = readfile(utf8_encoding)
-      call Writer.assign_content(v:null, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'utf-8')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
-    End
-
-    It assigns a content of a current buffer (utf-8) to {content} (cp1250) if {bufnr} is v:null
-      edit foo1 | setlocal fileencoding=utf-8
-      let bufnr = bufnr('%')
-      let content = readfile(cp1250_encoding)
-      call Writer.assign_content(v:null, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'utf-8')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
-            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
-            \])
-    End
-
-    It assigns a content of a current buffer (cp1250) to {content} (cp1250) if {bufnr} is v:null
-      edit foo1 | setlocal fileencoding=cp1250
-      let bufnr = bufnr('%')
-      let content = readfile(cp1250_encoding)
-      call Writer.assign_content(v:null, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding'), 'cp1250')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
-    End
-
-    It assigns a content of a current buffer (cp1250) to {content} (utf-8) if {bufnr} is v:null
-      if !empty(&termencoding)
-        Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
-      endif
-      edit foo1 | setlocal fileencoding=cp1250
-      let bufnr = bufnr('%')
-      let content = readfile(utf8_encoding)
-      call Writer.assign_content(v:null, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
-            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
-            \])
-
-    End
-  End
-
-  Describe .extend_content({bufnr}, {content})
-    It extends a content of a {bufnr} buffer with {content}
-      edit foo1
-      vnew foo2
-      let bufnr = bufnr('foo1')
-      call Writer.extend_content(bufnr, ['Hello'])
-      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
-
-      call Writer.extend_content(bufnr, ['Hello', 'World'])
-      Assert Equals(getbufline(bufnr, 1, '$'), ['HelloHello', 'World'])
-
-      call Writer.extend_content(bufnr, ['Hello', 'World'])
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'HelloHello',
-            \ 'WorldHello',
-            \ 'World',
-            \])
-
-      call Writer.extend_content(bufnr, ['Hello', 'World'])
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'HelloHello',
-            \ 'WorldHello',
-            \ 'WorldHello',
-            \ 'World',
-            \])
-
-      call Writer.extend_content(bufnr, [])
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'HelloHello',
-            \ 'WorldHello',
-            \ 'WorldHello',
-            \ 'World',
-            \])
-    End
-
-    It extends a content of a {bufnr} buffer (utf-8) with {content} (utf-8)
-      edit foo1 | setlocal fileencoding=utf-8
-      vnew foo2
-      let bufnr = bufnr('foo1')
-      let content = readfile(utf8_encoding)
-      call Writer.extend_content(bufnr, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'utf-8')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
-
-      call Writer.extend_content(bufnr, content)
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉPUnix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
-    End
-
-    It extends a content of a {bufnr} buffer (utf-8) with {content} (cp1250)
-      edit foo1 | setlocal fileencoding=utf-8
-      vnew foo2
-      let bufnr = bufnr('foo1')
-      let content = readfile(cp1250_encoding)
-      call Writer.extend_content(bufnr, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'utf-8')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
-            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
-            \])
-
-      call Writer.extend_content(bufnr, content)
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
-            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9PUnix EOL",
-            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
-            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
-            \])
-    End
-
-    It extends a content of a {bufnr} buffer (cp1250) with {content} (cp1250)
-      edit foo1 | setlocal fileencoding=cp1250
-      vnew foo2
-      let bufnr = bufnr('foo1')
-      let content = readfile(cp1250_encoding)
-      call Writer.extend_content(bufnr, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
-
-      call Writer.extend_content(bufnr, content)
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉPUnix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
-    End
-
-    It extends a content of a {bufnr} buffer (cp1250) with {content} (utf-8)
-      if !empty(&termencoding)
-        Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
-      endif
-      edit foo1 | setlocal fileencoding=cp1250
-      vnew foo2
-      let bufnr = bufnr('foo1')
-      let content = readfile(utf8_encoding)
-      call Writer.extend_content(bufnr, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
-            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
-            \])
-
-      call Writer.extend_content(bufnr, content)
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
-            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰PUnix EOL',
-            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
-            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
-            \])
-    End
-
-    It extends a content of a current buffer with {content} if {bufnr} is v:null
-      edit foo1
-      let bufnr = bufnr('%')
-      call Writer.extend_content(v:null, ['Hello'])
-      Assert Equals(getbufline(bufnr, 1, '$'), ['Hello'])
-
-      call Writer.extend_content(v:null, ['Hello', 'World'])
-      Assert Equals(getbufline(bufnr, 1, '$'), ['HelloHello', 'World'])
-
-      call Writer.extend_content(v:null, ['Hello', 'World'])
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'HelloHello',
-            \ 'WorldHello',
-            \ 'World',
-            \])
-
-      call Writer.extend_content(v:null, ['Hello', 'World'])
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'HelloHello',
-            \ 'WorldHello',
-            \ 'WorldHello',
-            \ 'World',
-            \])
-
-      call Writer.extend_content(v:null, [])
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'HelloHello',
-            \ 'WorldHello',
-            \ 'WorldHello',
-            \ 'World',
-            \])
-    End
-
-    It extends a content of a current buffer (utf-8) with {content} (utf-8) if {bufnr} is v:null
-      edit foo1 | setlocal fileencoding=utf-8
-      let bufnr = bufnr('%')
-      let content = readfile(utf8_encoding)
-      call Writer.extend_content(v:null, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'utf-8')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
-
-      call Writer.extend_content(v:null, content)
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉPUnix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
-    End
-
-    It extends a content of a current buffer (utf-8) with {content} (cp1250) if {bufnr} is v:null
-      edit foo1 | setlocal fileencoding=utf-8
-      let bufnr = bufnr('%')
-      let content = readfile(cp1250_encoding)
-      call Writer.extend_content(v:null, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'utf-8')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
-            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
-            \])
-
-      call Writer.extend_content(v:null, content)
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
-            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9PUnix EOL",
-            \ "\xe1rv\xedzt\xfbr\xf5 t\xfck\xf6rf\xfar\xf3g\xe9p",
-            \ "\xc1RV\xcdZT\xdbR\xd5 T\xdcK\xd6RF\xdaR\xd3G\xc9P",
-            \])
-    End
-
-    It extends a content of a current buffer (cp1250) with {content} (cp1250) if {bufnr} is v:null
-      edit foo1 | setlocal fileencoding=cp1250
-      let bufnr = bufnr('%')
-      let content = readfile(cp1250_encoding)
-      call Writer.extend_content(v:null, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
-
-      call Writer.extend_content(v:null, content)
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉPUnix EOL',
-            \ 'árvíztűrő tükörfúrógép',
-            \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
-            \])
-    End
-
-    It extends a content of a current buffer (cp1250) with {content} (utf-8) if {bufnr} is v:null
-      if !empty(&termencoding)
-        Skip &termencoding is specified. The test may fail by character treatement differenct so skip.
-      endif
-      edit foo1 | setlocal fileencoding=cp1250
-      let bufnr = bufnr('%')
-      let content = readfile(utf8_encoding)
-      call Writer.extend_content(v:null, content)
-      Assert Equals(getbufvar(bufnr, '&fileencoding', &encoding), 'cp1250')
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
-            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
-            \])
-
-      call Writer.extend_content(v:null, content)
-      Assert Equals(getbufline(bufnr, 1, '$'), [
-            \ 'Unix EOL',
-            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
-            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰PUnix EOL',
-            \ 'ĂˇrvĂ­ztĹ±rĹ‘ tĂĽkĂ¶rfĂşrĂłgĂ©p',
-            \ 'Ă??RVĂŤZTĹ°RĹ?? TĂśKĂ–RFĂšRĂ“GĂ‰P',
-            \])
+      It replaces cp1250 content correctly when fileencoding is correct
+        let encoding = encodings['cp1250']
+        edit foo1 | execute('setlocal fileencoding=' . encoding.name)
+        vnew foo2
+        let bufnr = bufnr('foo1')
+        let content = readfile(encoding.filename)
+        call Writer.replace(bufnr, 0, -1, content)
+        Assert Equals(getbufvar(bufnr, '&fileencoding'), encoding.name)
+        Assert Equals(getbufline(bufnr, 1, '$'), [
+              \ 'Unix EOL',
+              \ 'árvíztűrő tükörfúrógép',
+              \ 'ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP',
+              \])
+      End
     End
   End
 
@@ -419,49 +1011,202 @@ Describe Vim.Buffer.Writer
       Assert KeyExists(writer, 'updatetime')
       Assert KeyExists(writer, 'start')
       Assert KeyExists(writer, 'stop')
-      Assert KeyExists(writer, 'clear')
+      Assert KeyExists(writer, 'kill')
       Assert KeyExists(writer, 'write')
       Assert KeyExists(writer, 'flush')
     End
 
     Describe A writer instance
-      Before
-        edit foo1
-        vnew foo2
-        let bufnr = bufnr('foo1')
+      Context Buffer which is shown on the other window
+        Before
+          edit foo2
+          vnew foo1
+          let bufnr = bufnr('foo1')
+        End
+
+        It repeatedly flush a queued content into the assigned buffer
+          let waittime = (Writer.updatetime * 5) . 'm'
+          let writer = Writer.new({'bufnr': bufnr})
+          call writer.write(['Hello', ''])
+          call writer.write(['Hello', ''])
+          call writer.write(['Hello', ''])
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [''])
+
+          call writer.start()
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+
+          call writer.write(['Hello', ''])
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+
+          call writer.stop()
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \])
+        End
       End
 
-      It repeatedly flush a queued content into the assigned buffer
-        let waittime = (Writer.updatetime * 5) . 'm'
-        let writer = Writer.new({'bufnr': bufnr})
-        call writer.write(['Hello', ''])
-        call writer.write(['Hello', ''])
-        call writer.write(['Hello', ''])
-        execute 'sleep' waittime
-        Assert Equals(getbufline(bufnr, 1, '$'), [''])
-        call writer.start()
-        execute 'sleep' waittime
-        Assert Equals(getbufline(bufnr, 1, '$'), [
-              \ 'Hello',
-              \ 'Hello',
-              \ 'Hello',
-              \ '',
-              \])
-        call writer.write(['Hello', ''])
-        Assert Equals(getbufline(bufnr, 1, '$'), [
-              \ 'Hello',
-              \ 'Hello',
-              \ 'Hello',
-              \ '',
-              \])
-        execute 'sleep' waittime
-        Assert Equals(getbufline(bufnr, 1, '$'), [
-              \ 'Hello',
-              \ 'Hello',
-              \ 'Hello',
-              \ 'Hello',
-              \ '',
-              \])
+      Context Buffer which is shown on the other window
+        Before
+          edit foo1
+          vnew foo2
+          let bufnr = bufnr('foo1')
+        End
+
+        It repeatedly flush a queued content into the assigned buffer
+          let waittime = (Writer.updatetime * 5) . 'm'
+          let writer = Writer.new({'bufnr': bufnr})
+          call writer.write(['Hello', ''])
+          call writer.write(['Hello', ''])
+          call writer.write(['Hello', ''])
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [''])
+
+          call writer.start()
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+
+          call writer.write(['Hello', ''])
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+
+          call writer.stop()
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \])
+        End
+      End
+
+      Context Buffer which is hidden
+        Before
+          edit foo1 | setlocal bufhidden=hide
+          edit foo2 | setlocal bufhidden=hide
+          let bufnr = bufnr('foo1')
+        End
+
+        It does not flush content until the buffer is shown
+          let waittime = (Writer.updatetime * 5) . 'm'
+          let writer = Writer.new({'bufnr': bufnr})
+          call writer.write(['Hello', ''])
+          call writer.write(['Hello', ''])
+          call writer.write(['Hello', ''])
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [''])
+
+          call writer.start()
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [''])
+          execute printf('%dbuffer', bufnr)
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+
+          edit foo2
+          call writer.write(['Hello', ''])
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+          execute printf('%dbuffer', bufnr)
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+
+          " NOTE: Removing an extra line at EOF after 'stop' is not 'flush'
+          " so it is performed even the buffer is hidden after 'waittime'
+          edit foo2
+          call writer.stop()
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ '',
+                \])
+          execute 'sleep' waittime
+          Assert Equals(getbufline(bufnr, 1, '$'), [
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \ 'Hello',
+                \])
+        End
       End
     End
   End

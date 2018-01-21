@@ -37,6 +37,7 @@ Describe gina#command#chaperon
     It might be called without arguments
       execute 'edit' fnameescape(filename1)
       GinaSync chaperon
+      Assert Equals(tabpagenr('$'), 2)
       Assert Equals(winnr('$'), 3)
       " Focused buffer
       Assert Equals(bufname('%'), filename1)

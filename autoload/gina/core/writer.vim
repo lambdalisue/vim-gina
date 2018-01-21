@@ -1,18 +1,15 @@
 let s:Writer = vital#gina#import('Vim.Buffer.Writer')
 
-
 function! gina#core#writer#new(...) abort
-  let writer = call(s:Writer.new, a:000, s:Writer)
-  let writer.updatetime = g:gina#core#writer#updatetime
-  return writer
+  let options = extend({
+        \ 'updatetime': g:gina#core#writer#updatetime,
+        \}, a:0 ? a:1 : {},
+        \)
+  return s:Writer.new(options)
 endfunction
 
-function! gina#core#writer#assign_content(...) abort
-  return call(s:Writer.assign_content, a:000, s:Writer)
-endfunction
-
-function! gina#core#writer#extend_content(...) abort
-  return call(s:Writer.extend_content, a:000, s:Writer)
+function! gina#core#writer#replace(...) abort
+  return call(s:Writer.replace, a:000)
 endfunction
 
 

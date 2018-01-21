@@ -335,27 +335,10 @@ function! s:redraw_content() abort
         \   'format': args.params.format,
         \ }
         \)
-  if exists('b:gina_blame_writer')
-    call b:gina_blame_writer.kill()
-  endif
-  if !g:gina#command#blame#writer_threshold
-        \ || len(chunks) < g:gina#command#blame#writer_threshold
-    let winview_saved = winsaveview()
-    let content = []
-    call map(copy(chunks), 'extend(content, formatter.format(v:val))')
-    call gina#core#writer#assign_content(v:null, content)
-    call winrestview(winview_saved)
-    call gina#util#syncbind()
-  else
-    " To improve UX, use writer for chunks over 1000 (e.g. vim/src/eval.c)
-    let writer = gina#core#writer#new(s:writer)
-    let writer.formatter = formatter
-    call extend(writer, s:writer)
-    call writer.start()
-    call map(copy(chunks), 'writer.write(v:val)')
-    call writer.stop()
-    let b:gina_blame_writer = writer
-  endif
+  let content = []
+  call map(copy(chunks), 'extend(content, formatter.format(v:val))')
+  call gina#core#writer#replace('%', 0, -1, content)
+  call gina#util#syncbind()
   let b:gina_previous_winwidth = winwidth(0)
 endfunction
 
@@ -406,18 +389,6 @@ function! s:translate_candidate(rev, chunk, revisions) abort
         \ 'path': path,
         \ 'line': line,
         \})
-endfunction
-
-
-" Writer ---------------------------------------------------------------------
-let s:writer = {}
-
-function! s:writer.on_read(msg) abort
-  if a:msg is# v:null
-    retur a:msg
-  endif
-  let leading = a:msg.index == 0 ? [] : ['']
-  return leading + self.formatter.format(a:msg)
 endfunction
 
 

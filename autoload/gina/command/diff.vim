@@ -317,7 +317,7 @@ endfunction
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
-  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.opener = args.pop('--opener', '')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
   let args.params.partial = !empty(args.residual())
@@ -361,8 +361,8 @@ function! s:init(args) abort
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer>
           \ call gina#core#exception#call(function('s:BufReadCmd'), [])
-    autocmd BufWinEnter <buffer> call setbufvar(expand('<afile>'), '&buflisted', 1)
-    autocmd BufWinLeave <buffer> call setbufvar(expand('<afile>'), '&buflisted', 0)
+    autocmd BufWinEnter <buffer> call setbufvar(str2nr(expand('<abuf>')), '&buflisted', 1)
+    autocmd BufWinLeave <buffer> call setbufvar(str2nr(expand('<abuf>')), '&buflisted', 0)
   augroup END
 
   nnoremap <buffer><silent> <Plug>(gina-diff-jump)
@@ -387,12 +387,15 @@ endfunction
 
 
 " Writer ---------------------------------------------------------------------
-let s:writer = gina#util#inherit(gina#process#pipe#stream_writer())
-
-function! s:writer.on_stop() abort
-  call self.super(s:writer, 'on_stop')
+function! s:_writer_on_exit() abort dict
+  call call(s:original_writer.on_exit, [], self)
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
+
+let s:original_writer = gina#process#pipe#stream_writer()
+let s:writer = extend(deepcopy(s:original_writer), {
+      \ 'on_exit': function('s:_writer_on_exit'),
+      \})
 
 
 " Config ---------------------------------------------------------------------

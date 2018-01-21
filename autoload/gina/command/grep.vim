@@ -165,8 +165,8 @@ endfunction
 
 function! s:build_args(git, args) abort
   let args = a:args.clone()
-  let args.params.group = args.pop('--group', 'short')
-  let args.params.opener = args.pop('--opener', &previewheight . 'split')
+  let args.params.group = args.pop('--group', '')
+  let args.params.opener = args.pop('--opener', '')
   let args.params.partial = !empty(args.residual())
 
   " Ask pattern if no option has specified.
@@ -217,7 +217,7 @@ function! s:init(args) abort
   setlocal nomodifiable
 
   " Attach modules
-  call gina#core#anchor#attach()
+  call gina#core#locator#attach()
   call gina#action#attach(function('s:get_candidates'), {
         \ 'markable': 1,
         \})
@@ -290,12 +290,15 @@ endfunction
 
 
 " Writer ---------------------------------------------------------------------
-let s:writer = gina#util#inherit(gina#process#pipe#stream_writer())
-
-function! s:writer.on_stop() abort
-  call self.super(s:writer, 'on_stop')
+function! s:_writer_on_exit() abort dict
+  call call(s:original_writer.on_exit, [], self)
   call gina#core#emitter#emit('command:called', s:SCHEME)
 endfunction
+
+let s:original_writer = gina#process#pipe#stream_writer()
+let s:writer = extend(deepcopy(s:original_writer), {
+      \ 'on_exit': function('s:_writer_on_exit'),
+      \})
 
 
 " Config ---------------------------------------------------------------------

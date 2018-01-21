@@ -22,7 +22,7 @@ Describe gina#command#grep
     It might be called with {pattern}
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync grep a
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:grep', slit1.refname))
       Assert Equals(getline(1, '$'), [
@@ -56,7 +56,7 @@ Describe gina#command#grep
     It might be called with -e --color-text
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync grep -e --color-text
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:grep', slit1.refname))
       Assert Equals(getline(1, '$'), [
@@ -79,7 +79,7 @@ Describe gina#command#grep
     It might be called with -e{pattern} --or -e{pattern}
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync grep -ea --or -eb
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:grep', slit1.refname))
       Assert Equals(getline(1, '$'), [
@@ -135,7 +135,7 @@ Describe gina#command#grep
     It might be called with -e {pattern} --or -e {pattern}
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync grep -ea --or -eb
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:grep', slit1.refname))
       Assert Equals(getline(1, '$'), [
@@ -191,7 +191,7 @@ Describe gina#command#grep
     It might be called with {pattern} -- A/*.txt
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync grep a -- A/*.txt
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:grep:--', slit1.refname))
       Assert Equals(getline(1, '$'), [

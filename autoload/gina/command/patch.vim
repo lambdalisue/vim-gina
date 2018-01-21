@@ -74,7 +74,7 @@ function! s:build_args(git, args) abort
         \ args.pop('--group2', 'patch-c'),
         \ args.pop('--group3', 'patch-r'),
         \]
-  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.opener = args.pop('--opener', 'tabnew')
   let args.params.oneside = args.pop('--oneside', 0)
   call gina#core#args#extend_path(a:git, args, args.pop(1))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
@@ -122,6 +122,12 @@ function! s:call(range, args, mods) abort
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
+
+  " Validate if all requirements exist
+  call gina#core#treeish#validate(git, ':0', args.params.path, printf(join([
+        \ 'The "%s" does not have an index content.',
+        \ 'Use "chaperon" instead if you would like to patch on conflicted file',
+        \], "\n"), args.params.path))
 
   if args.params.oneside
     call s:open(1, mods, opener1, ':0', args.params)
@@ -316,7 +322,6 @@ function! s:BufWriteCmd() abort
   let git = gina#core#get_or_fail()
   let result = gina#core#exception#call(function('s:patch'), [git])
   if !empty(result)
-    call gina#process#inform(result)
     setlocal nomodified
   endif
   call gina#util#diffupdate()

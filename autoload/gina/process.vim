@@ -11,7 +11,7 @@ let s:runnings = {}
 
 
 function! gina#process#runnings() abort
-  return values(s:runnings)
+  return items(s:runnings)
 endfunction
 
 function! gina#process#register(job, ...) abort
@@ -20,7 +20,7 @@ function! gina#process#register(job, ...) abort
     call gina#core#emitter#emit('process:registered:pseudo', a:job)
   else
     let s:runnings['job:' . a:job.id()] = a:job
-    call gina#core#emitter#emit('process:registered', a:job.id(), a:job.params.scheme)
+    call gina#core#emitter#emit('process:registered', a:job.id(), a:job.params.scheme, a:job.args)
   endif
 endfunction
 
@@ -30,7 +30,7 @@ function! gina#process#unregister(job, ...) abort
     call gina#core#emitter#emit('process:unregistered:pseudo', a:job)
   else
     silent! unlet s:runnings['job:' . a:job.id()]
-    call gina#core#emitter#emit('process:unregistered', a:job.id(), a:job.params.scheme)
+    call gina#core#emitter#emit('process:unregistered', a:job.id(), a:job.params.scheme, a:job.args)
   endif
 endfunction
 
@@ -81,9 +81,9 @@ function! gina#process#call(git, args, ...) abort
   return {
         \ 'args': job.args,
         \ 'status': status,
-        \ 'stdout': pipe._stdout,
-        \ 'stderr': pipe._stderr,
-        \ 'content': pipe._content,
+        \ 'stdout': pipe.stdout,
+        \ 'stderr': pipe.stderr,
+        \ 'content': pipe.content,
         \}
 endfunction
 

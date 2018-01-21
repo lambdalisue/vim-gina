@@ -30,7 +30,7 @@ function! gina#component#traffic#ahead() abort
   if result.status
     return ''
   endif
-  let ahead = len(filter(result.stdout, '!empty(v:val)')) . ''
+  let ahead = len(filter(copy(result.stdout), '!empty(v:val)')) . ''
   call store.set(slug, ahead)
   return ahead
 endfunction
@@ -60,7 +60,7 @@ function! gina#component#traffic#behind() abort
   if result.status
     return ''
   endif
-  let behind = len(filter(result.stdout, '!empty(v:val)')) . ''
+  let behind = len(filter(copy(result.stdout), '!empty(v:val)')) . ''
   call store.set(slug, behind)
   return behind
 endfunction

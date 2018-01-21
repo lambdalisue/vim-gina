@@ -1,19 +1,11 @@
-let s:String = vital#gina#import('Data.String')
-
-let s:SCHEME = gina#command#scheme(expand('<sfile>'))
+let s:SCHEME = 'stash'
 
 
-function! gina#command#log#call(range, args, mods) abort
-  call gina#core#options#help_if_necessary(a:args, s:get_options())
+function! gina#command#stash#list#call(range, args, mods) abort
   let git = gina#core#get_or_fail()
   let args = s:build_args(git, a:args)
-  let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
-        \ 'path': args.params.path,
-        \ 'params': [
-        \   args.params.partial ? '--' : '',
-        \ ],
-        \ 'noautocmd': !empty(args.params.path),
-        \})
+
+  let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
         \ 'group': args.params.group,
@@ -26,13 +18,13 @@ function! gina#command#log#call(range, args, mods) abort
         \})
 endfunction
 
-function! gina#command#log#complete(arglead, cmdline, cursorpos) abort
+function! gina#command#stash#list#complete(arglead, cmdline, cursorpos) abort
   let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
-  if a:arglead[0] ==# '-' || !empty(args.get(1))
+  if a:arglead =~# '^-'
     let options = s:get_options()
     return options.complete(a:arglead, a:cmdline, a:cursorpos)
   endif
-  return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  return []
 endfunction
 
 
@@ -63,16 +55,7 @@ function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', '')
-  let args.params.partial = !empty(args.residual())
 
-  call args.set('--color', 'always')
-  call args.set('--pretty', "format:\e[32m%h\e[m %s \e[33;1m%cr\e[m \e[35;1m<%an>\e[m\e[36;1m%d\e[m")
-  call gina#core#args#extend_treeish(a:git, args, args.pop(1, v:null))
-  if args.params.path isnot# v:null
-    call args.residual([args.params.path] + args.residual())
-  elseif args.params.rev isnot# v:null
-    call args.set(1, args.params.rev)
-  endif
   return args.lock()
 endfunction
 
@@ -88,12 +71,15 @@ function! s:init(args) abort
   setlocal bufhidden=hide
   setlocal noswapfile
   setlocal nomodifiable
+  setlocal autoread
 
   " Attach modules
   call gina#core#locator#attach()
-  call gina#action#attach(function('s:get_candidates'))
+  call gina#action#attach(function('s:get_candidates'), {
+        \ 'markable': 1,
+        \})
 
-  augroup gina_command_log_internal
+  augroup gina_command_stash_list_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer>
           \ call gina#core#exception#call(function('s:BufReadCmd'), [])
@@ -106,29 +92,23 @@ function! s:BufReadCmd() abort
   let pipe = gina#process#pipe#stream(s:writer)
   call gina#core#buffer#assign_cmdarg()
   call gina#process#open(git, args, pipe)
-  setlocal filetype=gina-log
+  setlocal filetype=gina-stash-list
 endfunction
 
 function! s:get_candidates(fline, lline) abort
-  let args = gina#core#meta#get_or_fail('args')
-  let path = args.params.path
-  let residual = args.residual()
   let candidates = map(
         \ getline(a:fline, a:lline),
-        \ 's:parse_record(v:val, path, residual)'
+        \ 's:parse_record(v:val)'
         \)
   return filter(candidates, '!empty(v:val)')
 endfunction
 
-function! s:parse_record(record, path, residual) abort
-  let record = s:String.remove_ansi_sequences(a:record)
-  let rev = matchstr(record, '^[|/\* ]*\s*\zs[a-z0-9]\+')
-  return empty(rev) ? {} : {
-        \ 'word': record,
-        \ 'abbr': a:record,
-        \ 'path': a:path,
-        \ 'rev': rev,
-        \ 'residual': a:residual,
+function! s:parse_record(record) abort
+  let stash = matchstr(a:record, '^[^:]\+')
+  return {
+        \ 'word': a:record,
+        \ 'rev': stash,
+        \ 'stash': stash,
         \}
 endfunction
 
@@ -150,3 +130,4 @@ call gina#config(expand('<sfile>'), {
       \ 'use_default_aliases': 1,
       \ 'use_default_mappings': 1,
       \})
+

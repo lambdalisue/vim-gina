@@ -69,7 +69,7 @@ endfunction
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
-  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.opener = args.pop('--opener', '')
   let args.params.partial = !empty(args.residual())
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   " Enable --line/--col only when a path has specified
@@ -106,8 +106,8 @@ function! s:init(args) abort
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer>
           \ call gina#core#exception#call(function('s:BufReadCmd'), [])
-    autocmd BufWinEnter <buffer> call setbufvar(expand('<afile>'), '&buflisted', 1)
-    autocmd BufWinLeave <buffer> call setbufvar(expand('<afile>'), '&buflisted', 0)
+    autocmd BufWinEnter <buffer> call setbufvar(str2nr(expand('<abuf>')), '&buflisted', 1)
+    autocmd BufWinLeave <buffer> call setbufvar(str2nr(expand('<abuf>')), '&buflisted', 0)
   augroup END
 
   if a:args.params.path is# v:null
@@ -136,7 +136,7 @@ function! s:BufReadCmd() abort
   let args = s:reassign_rev(git, args.clone())
   let result = gina#process#call_or_fail(git, args)
   call gina#core#buffer#assign_cmdarg()
-  call gina#core#writer#assign_content(v:null, result.content)
+  call gina#core#writer#replace('%', 0, -1, result.content)
   call gina#core#emitter#emit('command:called', s:SCHEME)
   if args.params.path is# v:null
     setlocal nomodeline

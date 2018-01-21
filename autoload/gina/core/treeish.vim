@@ -69,6 +69,14 @@ function! gina#core#treeish#resolve(git, rev, ...) abort
   endif
 endfunction
 
+function! gina#core#treeish#validate(git, rev, path, ...) abort
+  let treeish = gina#core#treeish#build(a:rev, a:path)
+  let result = gina#process#call(a:git, ['rev-parse', treeish])
+  if result.status
+    throw gina#core#exception#warn(a:0 ? a:1 : join(result.stderr, "\n"))
+  endif
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:find_common_ancestor(git, rev1, rev2) abort

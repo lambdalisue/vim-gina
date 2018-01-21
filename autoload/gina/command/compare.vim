@@ -70,7 +70,7 @@ function! s:build_args(git, args) abort
         \ args.pop('--group1', 'compare-l'),
         \ args.pop('--group2', 'compare-r'),
         \]
-  let args.params.opener = args.pop('--opener', 'edit')
+  let args.params.opener = args.pop('--opener', 'tabnew')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
 
@@ -104,6 +104,14 @@ function! s:call(range, args, mods) abort
   endif
   if args.params.R
     let [rev2, rev1] = [rev1, rev2]
+  endif
+
+  " Validate if all requirements exist
+  if rev1 != s:WORKTREE
+    call gina#core#treeish#validate(git, rev1, args.params.path)
+  endif
+  if rev2 != s:WORKTREE
+    call gina#core#treeish#validate(git, rev2, args.params.path)
   endif
 
   diffoff!

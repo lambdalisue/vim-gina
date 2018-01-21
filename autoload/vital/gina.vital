@@ -3,7 +3,6 @@ bee84ae23effb0510137ad177e98c94d8b3657a6
 
 System.File
 Data.List
-Vim.Buffer.Anchor
 Vim.Buffer.Opener
 Vim.Console
 Config

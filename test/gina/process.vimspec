@@ -43,7 +43,7 @@ Describe gina#process
       execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
       let git = gina#core#get()
       let job = gina#process#open(git, ['branch'], options)
-      call job.wait()
+      Assert Equals(job.wait(2000), 0)
       Assert Equals(job.stdout, ['  develop', '* master', ''])
       Assert Equals(job.stderr, [''])
     End

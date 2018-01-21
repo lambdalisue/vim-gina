@@ -26,13 +26,40 @@ Describe gina#command#tag
     It might be called without arguments
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync tag
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:tag', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ 'v0.0.1',
             \ 'v0.0.2',
             \])
+    End
+
+    It might be called with -a
+      execute 'edit' fnameescape(slit1.path('A/foo.txt'))
+      GinaSync tag -a v0.0.3
+      Assert Equals(winnr('$'), 1)
+      " Focused buffer
+      Assert Equals(bufname('%'), printf('gina://%s:tag:edit', slit1.refname))
+      Assert Equals(getline(1, '$'), [
+            \ '',
+            \ '# ',
+            \ '# Write a message for tag:',
+            \ '#   v0.0.3',
+            \ '# Lines starting with ''#'' will be ignored.',
+            \])
+      " Apply tag
+      call setline(1, ['Test Message']) | wq
+      let content = slit1.execute('show v0.0.3')
+      Assert Equals(content[0], 'tag v0.0.3')
+      Assert Equals(content[3], '')
+      Assert Equals(content[4], 'Test Message')
+      Assert Equals(content[5], '')
+      Assert Equals(content[9], '')
+      Assert Equals(content[10], '    Second')
+      Assert Equals(content[11], '')
+      " Reset
+      call slit1.execute('reset --soft HEAD@{1}')
     End
   End
 End

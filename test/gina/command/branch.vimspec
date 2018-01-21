@@ -40,7 +40,7 @@ Describe gina#command#branch
   Describe Use cases
     It might be called without arguments
       GinaSync branch
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:branch', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ '  develop[m',
@@ -72,7 +72,7 @@ Describe gina#command#branch
 
     It might be called with --remotes
       GinaSync branch --remotes
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:branch', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ '  [31mext/master[m',
@@ -93,7 +93,7 @@ Describe gina#command#branch
 
     It might be called with --all
       GinaSync branch --all
-      Assert Equals(winnr('$'), 2)
+      Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:branch', slit1.refname))
       Assert Equals(getline(1, '$'), [
             \ '  develop[m',

@@ -1,6 +1,6 @@
 *gina.txt*		Asynchronously control git repositories from Vim
 
-Version: 0.3.2
+Version: 0.4.0-dev
 Author:  Alisue <lambdalisue@hashnote.net>
 Support: Vim 8.0.0107 and above
 Support: Neovim 0.2.0 and above
@@ -904,6 +904,9 @@ when users open a "gina-commit" buffer again.
 
 When users close the buffer with |:wq| command, no confirmation prompt will
 appear and the commit is immediately performed.
+
+When users close the buffer with |:q!| command, no confirmation prompt will
+appear and the commit is canceled.
 
 Note that no actions are available on this buffer.
 
@@ -2131,11 +2134,6 @@ g:gina#command#browse#translation_patterns
 	    \ ],
 	    \})
 <
-		*g:gina#command#grep#send_to_quickfix*
-g:gina#command#grep#send_to_quickfix
-	Send all candidates to quickfix after command execution.
-	Default: 1
-
 		*g:gina#process#command*
 g:gina#process#command
 	A command string used to execute a git process.
@@ -2167,21 +2165,37 @@ g:gina#core#emitter#modified_delay
 	Note: Users should not change the value unless you know what.
 	Default: 10
 
+		*g:gina#core#spinner#frames*
+g:gina#core#spinner#frames
+	A |List| of characters used for spinner animation.
+	Default:
+	['-', '\', '|', '/']				(LANG=C)
+	['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷']	(Other)
+
+		*g:gina#core#spinner#message*
+g:gina#core#spinner#message
+	A |String| message used in spinner.
+	Default: 'Loading ...'
+
+		*g:gina#core#spinner#delaytime*
+g:gina#core#spinner#delaytime
+	A delay-time in milliseconds. An actual spinner animation in a
+	'statusline' will be shown after this delay.
+	Note that negative value will disable the spinner animation
+	completely.
+	Default: 500
+
+		*g:gina#core#spinner#updatetime*
+g:gina#core#spinner#updatetime
+	A update-time in milliseconds. A spinner animation will be updated
+	every this update-time.
+	Default: 100
+
 		*g:gina#core#writer#updatetime*
 g:gina#core#writer#updatetime
 	A updatetime in millisecond used for a Vim.BufferWriter.
 	Users may need to increase this value for a large repository.
 	Default: 10
-
-		*g:gina#core#writer#use_python*
-g:gina#core#writer#use_python
-	Use |python| to update the buffer content if available.
-	Default: 1
-
-		*g:gina#core#writer#use_python3*
-g:gina#core#writer#use_python3
-	Use |python3| to update the buffer content if available.
-	Default: 1
 
 -----------------------------------------------------------------------------
 HIGHLIGHTS					*gina-highlights*

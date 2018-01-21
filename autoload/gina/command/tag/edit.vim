@@ -27,8 +27,8 @@ endfunction
 " Private --------------------------------------------------------------------
 function! s:build_args(args) abort
   let args = a:args.clone()
-  let args.params.group = args.pop('--group', 'short')
-  let args.params.opener = args.pop('--opener', &previewheight . 'split')
+  let args.params.group = args.pop('--group', '')
+  let args.params.opener = args.pop('--opener', '')
   return args.lock()
 endfunction
 
@@ -66,7 +66,7 @@ function! s:BufReadCmd() abort
         \ [git, args]
         \)
   call gina#core#buffer#assign_cmdarg()
-  call gina#core#writer#assign_content(v:null, content)
+  call gina#core#writer#replace('%', 0, -1, content)
   call gina#core#emitter#emit('command:called', s:SCHEME)
   setlocal filetype=conf
 endfunction
@@ -77,7 +77,16 @@ function! s:BufWriteCmd() abort
 endfunction
 
 function! s:QuitPre() abort
-  let b:gina_QuitPre = 1
+  " Do not perform commit when user hit :q!
+  if histget('cmd', -1) !~# '^q\%[uit]!'
+    let b:gina_QuitPre = 1
+    " If this is a last window, open a new window to prevent quit
+    if tabpagenr('$') == 1 && winnr('$') == 1
+      let win_id = win_getid()
+      silent tabnew
+      call win_gotoid(win_id)
+    endif
+  endif
   silent! unlet b:gina_BufWriteCmd
 endfunction
 

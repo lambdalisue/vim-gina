@@ -25,6 +25,7 @@ Describe gina#command#patch
     It might be called without arguments
       execute 'edit' fnameescape(filename1)
       GinaSync patch
+      Assert Equals(tabpagenr('$'), 2)
       Assert Equals(winnr('$'), 3)
       " Focused buffer
       Assert Equals(bufname('%'), printf('gina://%s:show/:A/foo.txt', slit1.refname))
@@ -52,7 +53,7 @@ Describe gina#command#patch
 
       " Patch should fail
       Assert Equals(split(execute('write'), '\r\?\n'), [
-            \ 'No difference between index and buffer',
+            \ '[gina] No difference between index and buffer',
             \])
       Assert Equals(slit1.execute('status --porcelain'), [
             \ 'MM A/foo.txt',
@@ -64,10 +65,7 @@ Describe gina#command#patch
             \ '3',
             \])
       " Patch should be able to perform and status become clear.
-      Assert Equals(split(execute('write'), '\r\?\n'), [
-            \ '[gina] Checking patch A/foo.txt...',
-            \ '[gina] Applied patch A/foo.txt cleanly.',
-            \])
+      Assert Equals(split(execute('write'), '\r\?\n'), [])
       Assert Equals(slit1.execute('status --porcelain'), [
             \ 'M  A/foo.txt',
             \])
@@ -78,10 +76,7 @@ Describe gina#command#patch
             \ '1',
             \])
       " Patch should be able to perform and status become clear.
-      Assert Equals(split(execute('write'), '\r\?\n'), [
-            \ '[gina] Checking patch A/foo.txt...',
-            \ '[gina] Applied patch A/foo.txt cleanly.',
-            \])
+      Assert Equals(split(execute('write'), '\r\?\n'), [])
       Assert Equals(slit1.execute('status --porcelain'), [
             \ ' M A/foo.txt',
             \])
