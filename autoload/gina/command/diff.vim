@@ -382,7 +382,7 @@ function! s:BufReadCmd() abort
   let pipe = gina#process#pipe#stream(s:writer)
   call gina#core#buffer#assign_cmdarg()
   call gina#process#open(git, args, pipe)
-  setlocal filetype=diff
+  setlocal filetype=gina-diff
 endfunction
 
 
