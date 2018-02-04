@@ -11,6 +11,7 @@ function! gina#command#tag#call(range, args, mods) abort
     let args = a:args.clone()
     call args.pop('--group')
     call args.pop('--opener')
+    call args.pop('--restore')
     " Call raw git command
     return gina#command#_raw#call(a:range, args, a:mods)
   endif
@@ -60,6 +61,10 @@ function! s:get_options() abort
   call options.define(
         \ '--group=',
         \ 'A window group name used for the buffer.',
+        \)
+  call options.define(
+        \ '--restore',
+        \ 'Restore the previous buffer when the window is closed.',
         \)
   call options.define(
         \ '-a|--annotate',
@@ -163,6 +168,8 @@ function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', '')
+  " Remove unused option
+  call args.pop('--restore')
 
   return args.lock()
 endfunction
