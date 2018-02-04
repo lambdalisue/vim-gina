@@ -103,6 +103,10 @@ function! s:_job_send(data) abort dict
   return ch_sendraw(self.__job, data)
 endfunction
 
+function! s:_job_close() abort dict
+  call ch_close_in(self.__job)
+endfunction
+
 function! s:_job_stop() abort dict
   call job_stop(self.__job)
   call timer_start(s:KILL_TIMEOUT_MS, { -> job_stop(self.__job, 'kill') })
@@ -133,6 +137,7 @@ let s:job = {
       \ 'id': function('s:_job_id'),
       \ 'status': function('s:_job_status'),
       \ 'send': function('s:_job_send'),
+      \ 'close': function('s:_job_close'),
       \ 'stop': function('s:_job_stop'),
       \ 'wait': function('s:_job_wait'),
       \}

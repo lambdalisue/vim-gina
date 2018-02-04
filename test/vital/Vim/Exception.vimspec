@@ -36,23 +36,20 @@ Describe Vim.Exception
     End
 
     It echos message part of {exception} if the category is Info
-      call Console.clear()
       call Exception.handle(Exception.info('foobar'))
-      let messages = join(Console.capture('messages'), "\n")
+      let messages = execute('messages')
       Assert Match(messages, '\<foobar\>')
     End
 
     It echomsgs message part of {exception} if the category is Warning
-      call Console.clear()
       call Exception.handle(Exception.warn('foobar'))
-      let messages = join(Console.capture('messages'), "\n")
+      let messages = execute('messages')
       Assert Match(messages, '\<foobar\>')
     End
 
     It echomsgs message part of {exception} if the category is Error
-      call Console.clear()
       call Exception.handle(Exception.error('foobar'))
-      let messages = join(Console.capture('messages'), "\n")
+      let messages = execute('messages')
       Assert Match(messages, '\<foobar\>')
     End
 
@@ -90,9 +87,8 @@ Describe Vim.Exception
       function instance.test_funcref(...) abort
         throw s:Exception.error('foo')
       endfunction
-      call Console.clear()
       call Exception.call(instance.test_funcref, args, instance)
-      let messages = join(Console.capture('messages'), "\n")
+      let messages = execute('messages')
       Assert Match(messages, '\<foo\>')
     End
   End

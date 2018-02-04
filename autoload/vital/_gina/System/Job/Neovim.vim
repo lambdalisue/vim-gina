@@ -63,9 +63,25 @@ function! s:_job_status() abort dict
   endtry
 endfunction
 
-function! s:_job_send(data) abort dict
-  return jobsend(self.__job, a:data)
-endfunction
+if exists('*chansend') " Neovim 0.2.3
+  function! s:_job_send(data) abort dict
+    return chansend(self.__job, a:data)
+  endfunction
+else
+  function! s:_job_send(data) abort dict
+    return jobsend(self.__job, a:data)
+  endfunction
+endif
+
+if exists('*chanclose') " Neovim 0.2.3
+  function! s:_job_close() abort dict
+    call chanclose(self.__job, 'stdin')
+  endfunction
+else
+  function! s:_job_close() abort dict
+    call jobclose(self.__job, 'stdin')
+  endfunction
+endif
 
 function! s:_job_stop() abort dict
   try
@@ -97,6 +113,7 @@ let s:job = {
       \ 'id': function('s:_job_id'),
       \ 'status': function('s:_job_status'),
       \ 'send': function('s:_job_send'),
+      \ 'close': function('s:_job_close'),
       \ 'stop': function('s:_job_stop'),
       \ 'wait': function('s:_job_wait'),
       \}

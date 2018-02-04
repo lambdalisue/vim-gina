@@ -4,7 +4,7 @@
 function! s:_SID() abort
   return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
 endfunction
-execute join(['function! vital#_gina#System#Job#import() abort', printf("return map({'_vital_depends': '', 'is_available': '', 'start': '', '_vital_loaded': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+execute join(['function! vital#_gina#System#Job#import() abort', printf("return map({'_vital_depends': '', '_vital_healthcheck': '', 'is_available': '', 'start': '', '_vital_loaded': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
 let s:t_string = type('')
@@ -25,22 +25,29 @@ function! s:_vital_depends() abort
         \]
 endfunction
 
+function! s:_vital_healthcheck() abort
+  if has('patch-8.0.0027') || has('nvim-0.2.0')
+    return
+  endif
+  return 'This module requires Vim 8.0.0027 or Neovim 0.2.0'
+endfunction
+
 
 " Note:
 " Vim does not raise E902 on Unix system even the prog is not found so use a
 " custom exception instead to make the method compatible.
+" Note:
+" Vim/Neovim treat String a bit differently so prohibit String as well
 function! s:_validate_args(args) abort
-  if type(a:args) != s:t_string && type(a:args) != s:t_list
-    throw 'vital: System.Job: Argument requires to be a String or List instance.'
+  if type(a:args) != s:t_list
+    throw 'vital: System.Job: Argument requires to be a List instance.'
   endif
-  if type(a:args) == s:t_list
-    if len(a:args) == 0
-      throw 'vital: System.Job: Argument vector must have at least one item.'
-    endif
-    let prog = a:args[0]
-    if !executable(prog)
-      throw printf('vital: System.Job: "%s" is not an executable', prog)
-    endif
+  if len(a:args) == 0
+    throw 'vital: System.Job: Argument vector must have at least one item.'
+  endif
+  let prog = a:args[0]
+  if !executable(prog)
+    throw printf('vital: System.Job: "%s" is not an executable', prog)
   endif
 endfunction
 
