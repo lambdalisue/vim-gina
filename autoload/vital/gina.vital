@@ -15,3 +15,4 @@ DateTime
 App.Emitter
 Vim.Buffer.Writer
 Vim.Buffer.Group
+App.Revelator

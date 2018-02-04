@@ -173,7 +173,7 @@ function! s:build_args(git, args) abort
   if !s:is_pattern_given(args)
     let pattern = gina#core#console#ask('Pattern: ')
     if empty(pattern)
-      throw gina#core#exception#info('Cancel')
+      throw gina#core#revelator#info('Cancel')
     endif
     call args.set('-e', pattern)
   endif
@@ -225,7 +225,7 @@ function! s:init(args) abort
   augroup gina_command_grep_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer>
-          \ call gina#core#exception#call(function('s:BufReadCmd'), [])
+          \ call gina#core#revelator#call(function('s:BufReadCmd'), [])
   augroup END
 endfunction
 

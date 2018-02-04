@@ -78,7 +78,7 @@ function! s:build_args(git, args) abort
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
   call gina#core#args#extend_col(a:git, args, args.pop('--col'))
   if empty(args.params.path)
-    throw gina#core#exception#warn(printf(
+    throw gina#core#revelator#warning(printf(
           \ 'No filename is specified. Did you mean "Gina compare %s:"?',
           \ args.params.rev,
           \))
@@ -134,7 +134,7 @@ endfunction
 
 function! s:open(n, mods, opener, rev, params) abort
   if s:Opener.is_preview_opener(a:opener)
-    throw gina#core#exception#warn(printf(
+    throw gina#core#revelator#warning(printf(
           \ 'An opener "%s" is not allowed.',
           \ a:opener,
           \))

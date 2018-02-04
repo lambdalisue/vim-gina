@@ -19,7 +19,7 @@ function! gina#core#get_or_fail(...) abort
   if !empty(git)
     return git
   endif
-  throw gina#core#exception#warn(printf(
+  throw gina#core#revelator#warning(printf(
         \ 'No git repository for a buffer "%s" is found.',
         \ expand(options.expr)
         \))

@@ -245,7 +245,7 @@ function! s:diff(git, path, buffer) abort
           \ tempfile2,
           \])
     if !result.status
-      throw gina#core#exception#info(
+      throw gina#core#revelator#info(
             \ 'No difference between index and buffer'
             \)
     endif
@@ -320,7 +320,7 @@ endfunction
 
 function! s:BufWriteCmd() abort
   let git = gina#core#get_or_fail()
-  let result = gina#core#exception#call(function('s:patch'), [git])
+  let result = gina#core#revelator#call(function('s:patch'), [git])
   if !empty(result)
     setlocal nomodified
   endif

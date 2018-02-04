@@ -100,7 +100,7 @@ function! s:parse_record(record) abort
           \ 'nlines': nterms == 3 ? 1 : (terms[3] + 0),
           \}
   endif
-  throw gina#core#exception#critical(printf(
+  throw gina#core#revelator#critical(printf(
         \ 'Failed to parse a record "%s"',
         \ a:record,
         \))

@@ -69,7 +69,7 @@ function! s:on_open(candidates, options) abort dict
   let chunk = a:candidates[0]
   if !empty(args.params.rev) && chunk.rev =~# '^' . args.params.rev
     if !has_key(chunk, 'previous')
-      throw gina#core#exception#info(printf(
+      throw gina#core#revelator#info(printf(
             \ 'No related parent commit exists and "%s" is already shown',
             \ chunk.rev,
             \))
@@ -78,7 +78,7 @@ function! s:on_open(candidates, options) abort dict
           \ 'A related parent commit "%s" exist. Do you want to move on?',
           \ chunk.previous,
           \), 'y')
-      throw gina#core#exception#info('Cancel')
+      throw gina#core#revelator#info('Cancel')
     endif
     let rev = matchstr(chunk.previous, '^\S\+')
     let path = matchstr(chunk.previous, '^\S\+\s\zs.*')
@@ -140,7 +140,7 @@ endfunction
 function! s:pop_history() abort
   let w:gina_blame_history = get(w:, 'gina_blame_history', [])
   if empty(w:gina_blame_history)
-    throw gina#core#exception#info('No navigational history is found')
+    throw gina#core#revelator#info('No navigational history is found')
   endif
   return remove(w:gina_blame_history, -1)
 endfunction

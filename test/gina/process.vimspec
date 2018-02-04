@@ -75,7 +75,7 @@ Describe gina#process
     It throws an exception when the command fail
       execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
       let git = gina#core#get()
-      Throws /vital: Vim.Exception: Error: Fail:/
+      Throws /vital: App.Revelator: ERROR: Fail:/
             \ gina#process#call_or_fail(git, ['false'])
     End
   End
@@ -108,7 +108,7 @@ Describe gina#process
       let git = gina#core#get()
       let result = gina#process#call(git, ['unknown-command'])
       let output = split(gina#process#errormsg(result), '\r\?\n')
-      Assert Match(output[0], '^vital: Vim.Exception: Error: Fail:.* git .* unknown-command$')
+      Assert Match(output[0], '^vital: App.Revelator: ERROR: Fail:.* git .* unknown-command$')
       Assert Equals(output[1], 'git: ''unknown-command'' is not a git command. See ''git --help''.')
     End
   End

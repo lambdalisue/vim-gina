@@ -29,7 +29,7 @@ endfunction
 function! gina#core#meta#get_or_fail(name) abort
   let meta = s:meta('%')
   if !meta.has(a:name)
-    throw gina#core#exception#critical(printf(
+    throw gina#core#revelator#critical(printf(
           \ 'A required meta value "%s" does not exist on "%s"',
           \ a:name,
           \ bufname('%'),

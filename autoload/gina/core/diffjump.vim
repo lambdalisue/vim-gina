@@ -95,7 +95,7 @@ endfunction
 function! gina#core#diffjump#jump(...) abort
   let opener = a:0 ? a:1 : ''
   let opener = empty(opener) ? 'edit' : opener
-  return gina#core#exception#call(
+  return gina#core#revelator#call(
         \ function('s:jump'),
         \ [opener],
         \)

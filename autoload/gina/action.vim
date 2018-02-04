@@ -29,7 +29,7 @@ function! gina#action#include(scheme) abort
     call gina#core#console#debug(v:exception)
     call gina#core#console#debug(v:throwpoint)
   endtry
-  throw gina#core#exception#error(printf(
+  throw gina#core#revelator#error(printf(
         \ 'No action script "gina/action/%s.vim" is found',
         \ a:scheme,
         \))
@@ -41,7 +41,7 @@ function! gina#action#alias(...) abort
     " TODO: raise an exception
     return
   endif
-  return gina#core#exception#call(binder.alias, a:000, binder)
+  return gina#core#revelator#call(binder.alias, a:000, binder)
 endfunction
 
 function! gina#action#shorten(action_scheme, ...) abort
@@ -67,7 +67,7 @@ function! gina#action#call(...) abort
     " TODO: raise an exception
     return
   endif
-  return gina#core#exception#call(binder.call, a:000, binder)
+  return gina#core#revelator#call(binder.call, a:000, binder)
 endfunction
 
 function! gina#action#candidates(...) abort
@@ -76,7 +76,7 @@ function! gina#action#candidates(...) abort
     " TODO: raise an exception
     return
   endif
-  return gina#core#exception#call(binder._get_candidates, a:000, binder)
+  return gina#core#revelator#call(binder._get_candidates, a:000, binder)
 endfunction
 
 

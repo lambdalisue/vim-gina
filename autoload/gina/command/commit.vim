@@ -261,12 +261,12 @@ function! s:BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
   if v:cmdbang
-    let content = gina#core#exception#call(
+    let content = gina#core#revelator#call(
           \ function('s:get_commitmsg_template'),
           \ [git, args]
           \)
   else
-    let content = gina#core#exception#call(
+    let content = gina#core#revelator#call(
           \ function('s:get_commitmsg'),
           \ [git, args]
           \)
@@ -281,7 +281,7 @@ function! s:BufWriteCmd() abort
   let b:gina_BufWriteCmd = 1
   let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
-  call gina#core#exception#call(
+  call gina#core#revelator#call(
         \ function('s:set_commitmsg'),
         \ [git, args, getline(1, '$')]
         \)
@@ -313,14 +313,14 @@ function! s:WinLeave() abort
     let args = gina#core#meta#get_or_fail('args')
     if exists('b:gina_BufWriteCmd')
       " User execute 'wq' so do not confirm
-      call gina#core#exception#call(
+      call gina#core#revelator#call(
             \ function('s:commit_commitmsg'),
             \ [git, args]
             \)
     else
       " User execute 'q' so confirm if commit message is written
       if !empty(s:get_cached_commitmsg(git, args))
-        call gina#core#exception#call(
+        call gina#core#revelator#call(
               \ function('s:commit_commitmsg_confirm'),
               \ [git, args]
               \)

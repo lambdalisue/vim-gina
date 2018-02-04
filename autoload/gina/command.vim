@@ -6,7 +6,7 @@ function! gina#command#call(bang, range, rargs, mods) abort
   endif
   let args = gina#core#args#new(a:rargs)
   try
-    call gina#core#exception#call(
+    call gina#core#revelator#call(
           \ printf('gina#command#%s#call', args.params.scheme),
           \ [a:range, args, a:mods],
           \)
@@ -33,7 +33,7 @@ function! gina#command#complete(arglead, cmdline, cursorpos) abort
   let scheme = substitute(scheme, '!$', '', '')
   let scheme = substitute(scheme, '\W', '_', 'g')
   try
-    return gina#core#exception#call(
+    return gina#core#revelator#call(
           \ printf('gina#command#%s#complete', scheme),
           \ [a:arglead, cmdline, a:cursorpos],
           \)[:g:gina#complete_threshold]

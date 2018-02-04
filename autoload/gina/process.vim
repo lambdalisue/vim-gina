@@ -106,7 +106,7 @@ function! gina#process#inform(result) abort
 endfunction
 
 function! gina#process#errormsg(result) abort
-  return gina#core#exception#error(printf(
+  return gina#core#revelator#error(printf(
         \ "Fail: %s\n%s",
         \ join(a:result.args),
         \ join(a:result.content, "\n")

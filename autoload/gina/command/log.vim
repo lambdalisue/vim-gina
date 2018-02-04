@@ -96,7 +96,7 @@ function! s:init(args) abort
   augroup gina_command_log_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer>
-          \ call gina#core#exception#call(function('s:BufReadCmd'), [])
+          \ call gina#core#revelator#call(function('s:BufReadCmd'), [])
   augroup END
 endfunction
 

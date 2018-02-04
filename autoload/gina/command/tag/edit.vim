@@ -61,7 +61,7 @@ endfunction
 function! s:BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
-  let content = gina#core#exception#call(
+  let content = gina#core#revelator#call(
         \ function('s:get_tagmsg_template'),
         \ [git, args]
         \)
@@ -101,13 +101,13 @@ function! s:WinLeave() abort
     let args = gina#core#meta#get_or_fail('args')
     if exists('b:gina_BufWriteCmd')
       " User execute 'wq' so do not confirm
-      call gina#core#exception#call(
+      call gina#core#revelator#call(
             \ function('s:apply_tagmsg'),
             \ [git, args]
             \)
     else
       " User execute 'q' so confirm
-      call gina#core#exception#call(
+      call gina#core#revelator#call(
             \ function('s:apply_tagmsg_confirm'),
             \ [git, args]
             \)

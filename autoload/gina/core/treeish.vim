@@ -73,7 +73,7 @@ function! gina#core#treeish#validate(git, rev, path, ...) abort
   let treeish = gina#core#treeish#build(a:rev, a:path)
   let result = gina#process#call(a:git, ['rev-parse', treeish])
   if result.status
-    throw gina#core#exception#warn(a:0 ? a:1 : join(result.stderr, "\n"))
+    throw gina#core#revelator#warning(a:0 ? a:1 : join(result.stderr, "\n"))
   endif
 endfunction
 

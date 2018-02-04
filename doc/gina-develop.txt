@@ -47,9 +47,9 @@ gina#core#get([{options}])
 gina#core#get_or_fail({options})
 	Similar to |gina#core#get()| but it throws an exception when no git
 	repository is found.
-	The exception is thrown by |gina#core#exception#warn()| so the
+	The exception is thrown by |gina#core#revelator#warning()| so the
 	exception is automatically catched and shown as |hl-WarningMsg| when
-	this function is called by |gina#core#exception#call()|.
+	this function is called by |gina#core#revelator#call()|.
 
 	While this function is used when a {git} instance is critical for an
 	operation, a default value of "cache" attribute of {options} is
@@ -175,55 +175,55 @@ gina#core#emitter#subscribe({name}, {listener} [, {instance}])
 gina#core#emitter#unsubscribe({name}, {listener} [, {instance}])
 	Unsubscribe a {name} event with {listener}.
 
-				*gina#core#exception#info()*
-gina#core#exception#info({msg})
+				*gina#core#revelator#info()*
+gina#core#revelator#info({msg})
 	Return an exception message which will be handled by a default
 	exception handler.
 	The message is shown as an information message and |v:throwpoint|
 	will be shown when |verbose| has specified.
 	The message is assigned to |v:statusmsg| as well.
 
-				*gina#core#exception#warn()*
-gina#core#exception#warn({msg})
+				*gina#core#revelator#warning()*
+gina#core#revelator#warning({msg})
 	Return an exception message which will be handled by a default
 	exception handler.
 	The message is shown as a warning message and |v:throwpoint|
 	will be shown when |verbose| has specified.
 	The message is assigned to |v:warningmsg| as well.
 
-				*gina#core#exception#error()*
-gina#core#exception#error({msg})
+				*gina#core#revelator#error()*
+gina#core#revelator#error({msg})
 	Return an exception message which will be handled by a default
 	exception handler.
 	The message is shown as an error message and |v:throwpoint|
 	will be shown when |verbose| has specified.
 	The message is assigned to |v:errmsg| as well.
 
-				*gina#core#exception#critical()*
-gina#core#exception#critical({msg})
+				*gina#core#revelator#critical()*
+gina#core#revelator#critical({msg})
 	Return an exception message which will be handled by a default
 	exception handler.
 	The message and |v:throwpoint| are shown as error messages.
 	The message is assigned to |v:errmsg| as well.
 
-				*gina#core#exception#call()*
-gina#core#exception#call({funcref}, {args} [, {instance}])
+				*gina#core#revelator#call()*
+gina#core#revelator#call({funcref}, {args} [, {instance}])
 	Similar to |call()| but exception occured in {funcref} will be handled
 	by registered exception handlers.
 	Use the following to create a special exception message to throw.
 
-	|gina#core#exception#info()|
-	|gina#core#exception#warn()|
-	|gina#core#exception#error()|
-	|gina#core#exception#critical()|
+	|gina#core#revelator#info()|
+	|gina#core#revelator#warning()|
+	|gina#core#revelator#error()|
+	|gina#core#revelator#critical()|
 
 	Usage example:
 >
 	function! s:foo() abort
-	  throw gina#core#exception#info('An information')
+	  throw gina#core#revelator#info('An information')
 	endfunction
 
-	call gina#core#exception#call(function('s:foo'), [])
+	call gina#core#revelator#call(function('s:foo'), [])
 	" -> "An information"
 <
 				*gina#core#meta#get()*
@@ -290,7 +290,7 @@ gina#process#inform({result})
 				*gina#process#errormsg()*
 gina#process#errormsg({result})
 	It return an exception message of {result} built by
-	|gina#core#exception#error()|.
+	|gina#core#revelator#error()|.
 
 				*gina#core#repo#expand()*
 gina#core#repo#expand({expr})

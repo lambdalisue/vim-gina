@@ -7,6 +7,6 @@ endfunction
 function! gina#core#options#help_if_necessary(args, options) abort
   if a:args.get('-h|--help')
     call a:options.help()
-    throw gina#core#exception#cancel()
+    throw gina#core#revelator#cancel()
   endif
 endfunction

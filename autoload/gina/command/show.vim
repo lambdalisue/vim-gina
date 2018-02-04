@@ -105,7 +105,7 @@ function! s:init(args) abort
   augroup gina_command_show_internal
     autocmd! * <buffer>
     autocmd BufReadCmd <buffer>
-          \ call gina#core#exception#call(function('s:BufReadCmd'), [])
+          \ call gina#core#revelator#call(function('s:BufReadCmd'), [])
     autocmd BufWinEnter <buffer> call setbufvar(str2nr(expand('<abuf>')), '&buflisted', 1)
     autocmd BufWinLeave <buffer> call setbufvar(str2nr(expand('<abuf>')), '&buflisted', 0)
   augroup END

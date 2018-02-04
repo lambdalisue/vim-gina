@@ -25,11 +25,11 @@ let s:MODIFIERS = [
 
 
 function! s:_vital_loaded(V) abort
-  let s:Exception = a:V.import('Vim.Exception')
+  let s:Revelator = a:V.import('App.Revelator')
 endfunction
 
 function! s:_vital_depends() abort
-  return ['Vim.Exception']
+  return ['App.Revelator']
 endfunction
 
 function! s:_vital_created(module) abort
@@ -245,7 +245,7 @@ function! s:binder.action(expr) abort
   " Shorter to Longer
   call sort(candidates, { a, b -> len(a) - len(b) })
   if empty(candidates)
-    throw s:Exception.warn(printf(
+    throw s:Revelator.warning(printf(
           \ 'No corresponding action has found for "%s"',
           \ a:expr
           \))
@@ -503,7 +503,7 @@ endfunction
 
 function! s:_call_for_mapping(name) abort range
   let binder = s:get()
-  return s:Exception.call(binder.call, [a:name, a:firstline, a:lastline], binder)
+  return s:Revelator.call(binder.call, [a:name, a:firstline, a:lastline], binder)
 endfunction
 
 function! s:_get_signs() abort

@@ -121,7 +121,7 @@ function! s:build_args(git, args, range) abort
   call gina#core#args#extend_treeish(a:git, args, args.pop(1, ':'))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
   if empty(args.params.path)
-    throw gina#core#exception#warn(printf(
+    throw gina#core#revelator#warning(printf(
           \ 'No filename is specified. Did you mean "Gina blame %s:"?',
           \ args.params.rev,
           \))
@@ -157,7 +157,7 @@ function! s:validate(args) abort
   " Get remaining
   let unknown = args.get('^-')
   if !empty(unknown)
-    throw gina#core#exception#error(printf(
+    throw gina#core#revelator#error(printf(
           \ 'Unknwon options %s has specified',
           \ string(unknown)
           \))
@@ -223,7 +223,7 @@ endfunction
 
 function! s:open(mods, opener, params) abort
   if s:Opener.is_preview_opener(a:opener)
-    throw gina#core#exception#warn(printf(
+    throw gina#core#revelator#warning(printf(
           \ 'An opener "%s" is not allowed.',
           \ a:opener,
           \))
@@ -272,7 +272,7 @@ function! s:init(args) abort
     autocmd WinLeave <buffer> call s:WinLeave()
     autocmd WinEnter <buffer> call s:WinEnter()
     autocmd BufReadCmd <buffer>
-          \ call gina#core#exception#call(function('s:BufReadCmd'), [])
+          \ call gina#core#revelator#call(function('s:BufReadCmd'), [])
   augroup END
 endfunction
 

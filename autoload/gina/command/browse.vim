@@ -99,7 +99,7 @@ function! s:call(range, args, mods) abort
         \ 'rev2': args.params.exact ? revinfo.hash2 : revinfo.commit2,
         \})
   if empty(url)
-    throw gina#core#exception#warn(printf(
+    throw gina#core#revelator#warning(printf(
           \ 'No url translation pattern for "%s" is found.',
           \ rev,
           \))

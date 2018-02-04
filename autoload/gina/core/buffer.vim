@@ -1,6 +1,5 @@
 let s:Buffer = vital#gina#import('Vim.Buffer')
 let s:String = vital#gina#import('Data.String')
-let s:Exception = vital#gina#import('Vim.Exception')
 let s:Guard = vital#gina#import('Vim.Guard')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 let s:Path = vital#gina#import('System.Filepath')
@@ -65,7 +64,7 @@ endfunction
 
 function! gina#core#buffer#param(expr, attr, ...) abort
   if !has_key(s:DEFAULT_PARAMS_ATTRIBUTES, a:attr)
-    throw gina#core#exception#critical(printf(
+    throw gina#core#revelator#critical(printf(
           \ 'Unknown attribute "%s" has specified',
           \ a:attr,
           \))
@@ -197,7 +196,7 @@ function! s:open_with_callback(bufname, options) abort
         \ a:options.callback
         \)
   if content != getline(1, '$')
-    throw gina#core#exception#critical(
+    throw gina#core#revelator#critical(
           \ 'A buffer content could not be modified by callback'
           \)
   endif

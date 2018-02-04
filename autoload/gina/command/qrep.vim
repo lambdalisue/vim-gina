@@ -189,7 +189,7 @@ function! s:build_args(git, args) abort
   if empty(args.params.pattern) && !(args.has('-e') || args.has('-f'))
     let pattern = gina#core#console#ask('Pattern: ')
     if empty(pattern)
-      throw gina#core#exception#info('Cancel')
+      throw gina#core#revelator#info('Cancel')
     endif
     let args.params.pattern = pattern
   endif
