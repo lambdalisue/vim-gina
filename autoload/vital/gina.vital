@@ -12,3 +12,4 @@ System.Job
 Vim.Buffer.ANSI
 Vim.Window
 DateTime
+App.Emitter

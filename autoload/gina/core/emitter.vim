@@ -1,4 +1,4 @@
-let s:Emitter = vital#gina#import('Emitter')
+let s:Emitter = vital#gina#import('App.Emitter')
 let s:modified_timer = v:null
 
 
