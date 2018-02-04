@@ -29,7 +29,10 @@ function! s:build_args(args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', '')
-  let args.params.restore = args.pop('--restore')
+  let args.params.restore = args.pop(
+        \ '--restore',
+        \ empty(args.params.opener) || args.params.opener ==# 'edit',
+        \)
   return args.lock()
 endfunction
 
