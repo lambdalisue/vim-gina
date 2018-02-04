@@ -1450,6 +1450,9 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
+	--restore
+		Restore the previous buffer after closing the commit buffer
+		with |:q| or |:wq|.
 
 	See also~
 	|gina-buffer-commit|
@@ -1755,6 +1758,9 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 		A window group name used for the buffer (|gina-options-group|)
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
+	--restore
+		Restore the previous buffer after closing the tag message
+		edit buffer with |:q| or |:wq|.
 
 	Note that it open a tag message edit buffer when "-a/--annotate",
 	"-s/--sign", or "-u{keyid}/--local-user={keyid}" has specified and
