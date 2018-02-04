@@ -13,3 +13,5 @@ Vim.Buffer.ANSI
 Vim.Window
 DateTime
 App.Emitter
+Vim.Buffer.Writer
+Vim.Buffer.Group
