@@ -2,7 +2,6 @@ let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
-let s:WORKTREE = '@@'
 
 
 function! gina#command#compare#call(range, args, mods) abort
@@ -75,6 +74,7 @@ function! s:build_args(git, args) abort
   let args.params.R = args.get('-R')
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1, ':'))
+  call gina#core#args#extend_diff(a:git, args, args.params.rev)
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
   call gina#core#args#extend_col(a:git, args, args.pop('--col'))
   if empty(args.params.path)
@@ -94,36 +94,16 @@ function! s:call(range, args, mods) abort
         \ : join(['keepalt', 'rightbelow', a:mods])
   let group = s:Group.new()
 
-  let [rev1, rev2] = gina#core#treeish#split(args.params.rev)
-  if args.params.cached
-    let rev1 = empty(rev1) ? 'HEAD' : rev1
-    let rev2 = empty(rev2) ? ':0' : rev2
-  else
-    let rev1 = empty(rev1) ? ':0' : rev1
-    let rev2 = empty(rev2) ? s:WORKTREE : rev2
-  endif
-  if args.params.R
-    let [rev2, rev1] = [rev1, rev2]
-  endif
-
-  " Validate if all requirements exist
-  if rev1 != s:WORKTREE
-    call gina#core#treeish#validate(git, rev1, args.params.path)
-  endif
-  if rev2 != s:WORKTREE
-    call gina#core#treeish#validate(git, rev2, args.params.path)
-  endif
-
   diffoff!
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
-  call s:open(0, mods, opener1, rev1, args.params)
+  call s:open(0, mods, opener1, args.params.rev1, args.params)
   call gina#util#diffthis()
   call group.add()
 
-  call s:open(1, mods, opener2, rev2, args.params)
+  call s:open(1, mods, opener2, args.params.rev2, args.params)
   call gina#util#diffthis()
   call group.add({'keep': 1})
 
@@ -139,7 +119,7 @@ function! s:open(n, mods, opener, rev, params) abort
           \ a:opener,
           \))
   endif
-  if a:rev ==# s:WORKTREE
+  if gina#core#args#is_worktree(a:rev)
     execute printf(
           \ '%s Gina edit %s %s %s %s %s %s',
           \ a:mods,

@@ -1,4 +1,9 @@
 let s:Argument = vital#gina#import('Argument')
+let s:WORKTREE = '@@'
+
+function! gina#core#args#is_worktree(rev) abort
+  return s:WORKTREE ==# a:rev
+endfunction
 
 function! gina#core#args#raw(rargs) abort
   return s:Argument.new(a:rargs)
@@ -51,6 +56,35 @@ function! gina#core#args#extend_path(git, args, path) abort
     let path = gina#core#repo#relpath(a:git, path)
     let a:args.params.path = path
   endif
+endfunction
+
+function! gina#core#args#extend_diff(git, args, treeish) abort
+  let [rev1, rev2] = gina#core#treeish#split(a:treeish)
+  if get(a:args.params, 'cached')
+    let rev1 = empty(rev1) ? 'HEAD' : rev1
+    let rev2 = empty(rev2) ? ':0' : rev2
+  else
+    let rev1 = empty(rev1) ? ':0' : rev1
+    let rev2 = empty(rev2) ? s:WORKTREE : rev2
+  endif
+  if get(a:args.params, 'R')
+    let [rev2, rev1] = [rev1, rev2]
+  endif
+
+  " Validate if all requirements exist
+  if !empty(get(a:args.params, 'path'))
+    if rev1 != s:WORKTREE
+      call gina#core#treeish#validate(a:git, rev1, a:args.params.path)
+    endif
+    if rev2 != s:WORKTREE
+      call gina#core#treeish#validate(a:git, rev2, a:args.params.path)
+    endif
+  endif
+
+  call extend(a:args.params, {
+        \ 'rev1': rev1,
+        \ 'rev2': rev2,
+        \})
 endfunction
 
 function! gina#core#args#extend_treeish(git, args, treeish) abort

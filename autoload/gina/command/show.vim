@@ -71,7 +71,12 @@ function! s:build_args(git, args) abort
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', '')
   let args.params.partial = !empty(args.residual())
+  let args.params.cached = 0
+  let args.params.R = args.get('-R')
+
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
+  call gina#core#args#extend_diff(a:git, args, args.params.rev)
+
   " Enable --line/--col only when a path has specified
   if args.params.path isnot# v:null
     call gina#core#args#extend_line(a:git, args, args.pop('--line'))

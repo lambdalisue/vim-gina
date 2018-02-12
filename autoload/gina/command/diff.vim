@@ -332,6 +332,7 @@ function! s:build_args(git, args) abort
   call args.pop('--ws-error-highlight')
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
+  call gina#core#args#extend_diff(a:git, args, args.params.rev)
   call args.set(1, args.params.rev)
   if args.params.path isnot# v:null
     call args.residual([args.params.path] + args.residual())
