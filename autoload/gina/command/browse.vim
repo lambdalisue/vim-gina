@@ -183,7 +183,7 @@ call gina#config(expand('<sfile>'), {
       \       '\vssh://git\@(%domain)/(.{-})/(.{-})%(\.git)?$',
       \     ], {
       \       '_': 'https://\1/\2/\3/src/%r0/%pt%{#cl-|}ls',
-      \       'root': 'https://\1/\2/\3/branch/%r0',
+      \       'root': 'https://\1/\2/\3/commits/%r0',
       \       'blame': 'https://\1/\2/\3/annotate/%r0/%pt',
       \       'compare': 'https://\1/\2/\3/diff/%pt?diff1=%h1&diff2=%h2',
       \     },
