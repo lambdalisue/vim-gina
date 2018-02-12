@@ -45,7 +45,7 @@ endfunction
 
 " Private --------------------------------------------------------------------
 function! s:_norm_term(term) abort
-  let m = matchlist(a:term, '^\(-\w\|--\w\+=\)\(.\+\)')
+  let m = matchlist(a:term, '^\(-\w\|--\S\+=\)\(.\+\)')
   if empty(m)
     return matchstr(a:term, s:NORM_PATTERN)
   endif
@@ -53,9 +53,9 @@ function! s:_norm_term(term) abort
 endfunction
 
 function! s:_parse_term(term) abort
-  let m = matchlist(a:term, '^\(-\w\|--\w\+=\)\(.\+\)')
+  let m = matchlist(a:term, '^\(-\w\|--\S\+=\)\(.\+\)')
   if empty(m)
-    return a:term =~# '^--\?\w\+' ? [a:term, 1] : ['', a:term]
+    return a:term =~# '^--\?\S\+' ? [a:term, 1] : ['', a:term]
   else
     return [substitute(m[1], '=$', '', ''), m[2]]
   endif
@@ -74,7 +74,7 @@ endfunction
 function! s:_build_pattern(query) abort
   let patterns = split(a:query, '|')
   call map(patterns, 's:String.escape_pattern(v:val)')
-  call map(patterns, 'v:val =~# ''^--\w\+'' ? v:val . ''\%(=\|$\)'' : v:val')
+  call map(patterns, 'v:val =~# ''^--\S\+'' ? v:val . ''\%(=\|$\)'' : v:val')
   return printf('^\%%(%s\)', join(patterns, '\|'))
 endfunction
 
