@@ -18,7 +18,7 @@ function! gina#command#commit#call(range, args, mods) abort
   endif
 
   let git = gina#core#get_or_fail()
-  let args = s:build_args(a:args)
+  let args = s:build_args(git, a:args)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME)
   call gina#core#buffer#open(bufname, {
         \ 'mods': a:mods,
@@ -191,7 +191,7 @@ function! s:get_options() abort
   return options
 endfunction
 
-function! s:build_args(args) abort
+function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', '')
@@ -200,6 +200,7 @@ function! s:build_args(args) abort
         \ empty(args.params.opener) || args.params.opener ==# 'edit',
         \)
   let args.params.amend = args.get('--amend')
+  call gina#core#args#extend_diff(a:git, args, '')
   return args.lock()
 endfunction
 
