@@ -68,6 +68,16 @@ function! s:build_args(git, args) abort
   let args.params.partial = !empty(args.residual())
   let args.params.rev = args.get(1, gina#core#buffer#param('%', 'rev'))
 
+  " Use {rev}^..{rev} instead
+  " https://github.com/lambdalisue/gina.vim/issues/147
+  if args.params.rev !~# '^.\{-}\.\.\.\?.*$'
+    let args.params.rev = printf(
+          \ '%s^..%s',
+          \ args.params.rev,
+          \ args.params.rev,
+          \)
+  endif
+
   " NOTE:
   " --stat is more human friendly but --stat with long filename truncate the
   " filename so could not be used.
