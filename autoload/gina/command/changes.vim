@@ -70,7 +70,7 @@ function! s:build_args(git, args) abort
 
   " Use {rev}^..{rev} instead
   " https://github.com/lambdalisue/gina.vim/issues/147
-  if args.params.rev !~# '^.\{-}\.\.\.\?.*$'
+  if !empty(args.params.rev) && args.params.rev !~# '^.\{-}\.\.\.\?.*$'
     let args.params.rev = printf(
           \ '%s^..%s',
           \ args.params.rev,
