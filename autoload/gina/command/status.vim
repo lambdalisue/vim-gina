@@ -169,11 +169,11 @@ function! s:parse_record_normal(record, residual) abort
         \ 'deleted by them': 'UD',
         \}
   let record = s:String.remove_ansi_sequences(a:record)
-  if record !~# '^\t'
+  if record !~# '^.\?\t'
     return {}
   endif
   let m = matchlist(record, printf(
-        \ '^\s\+\(%s\):\s\+\("[^"]\{-}"\|.\{-}\)\%( -> \("[^"]\{-}"\|[^ ]\+\)\)\?$',
+        \ '^.\?\s\+\(%s\):\s\+\("[^"]\{-}"\|.\{-}\)\%( -> \("[^"]\{-}"\|[^ ]\+\)\)\?$',
         \ join(keys(signs), '\|')
         \))
   if empty(m)
