@@ -32,6 +32,8 @@ function! gina#component#repo#branch() abort
     let branch = matchstr(content, '^ref:\s\+refs/heads/\zs.\+')
   elseif content =~# '^ref:'
     let branch = matchstr(content, '^ref:\s\+refs/\zs.\+')
+  elseif g:gina#component#repo#commit_length > 0
+    let branch = content[:(g:gina#component#repo#commit_length - 1)]
   else
     let branch = content
   endif
@@ -97,3 +99,8 @@ function! s:preset_fancy() abort
   endif
   return printf('%s [%s → %s]', name, branch, track)
 endfunction
+
+
+call gina#config(expand('<sfile>'), {
+      \ 'commit_length': 0,
+      \})

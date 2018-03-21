@@ -321,6 +321,9 @@ Gina provides the following raw component functions
 
 Note that the values are cached to improve the performance.
 
+See also
+|g:gina#component#repo#commit_length|
+
 
 =============================================================================
 CUSTOM						*gina-custom*
@@ -2140,6 +2143,12 @@ g:gina#command#browse#translation_patterns
 	    \ ],
 	    \})
 <
+		*g:gina#component#repo#commit_length*
+g:gina#component#repo#commit_length
+	A length of commit returned by |gina#component#repo#branch()|.
+	If the length is less than 1, full-length will be used.
+	Default: 0
+
 		*g:gina#process#command*
 g:gina#process#command
 	A command string used to execute a git process.
