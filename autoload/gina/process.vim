@@ -56,10 +56,15 @@ function! gina#process#open(git, args, ...) abort
   let pipe = extend(gina#process#pipe#default(), get(a:000, 0, {}))
   let pipe.params = get(args, 'params', {})
   let pipe.params.scheme = get(pipe.params, 'scheme', args.get(0, ''))
-  let guard = s:Guard.store(exists('$GIT_EDITOR') ? ['$GIT_EDITOR'] : [])
+  let guard = s:Guard.store(
+        \ exists('$GIT_EDITOR')
+        \   ? ['$LANGUAGE', '$GIT_EDITOR']
+        \   : ['$LANGUAGE']
+        \)
   try
+    let $LANGUAGE = 'C'
     if exists('$GIT_EDITOR')
-      let $GIT_EDITOR=''
+      let $GIT_EDITOR = ''
     endif
     let job = s:Job.start(s:build_raw_args(a:git, args), pipe)
   finally
