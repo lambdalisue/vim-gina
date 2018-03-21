@@ -103,6 +103,7 @@ function! s:define_highlihghts() abort
         \}, {
         \ 'default': 1,
         \})
+  highlight link VitalActionMarkSelectedLine Search
   highlight link VitalActionMarkSelected GinaActionMarkSelected
   let s:Action.mark_sign_text = g:gina#action#mark_sign_text
 endfunction

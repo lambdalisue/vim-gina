@@ -103,8 +103,9 @@ function! s:attach(candidates, ...) abort dict
   execute printf('imap <buffer> . <Plug>(%s-builtin-repeat)', binder.name)
   if binder.markable
     execute printf(
-          \ 'sign define %s texthl=%s text=%s',
+          \ 'sign define %s linehl=%s texthl=%s text=%s',
           \ 'VitalActionMarkSelectedSign',
+          \ 'VitalActionMarkSelectedLine',
           \ 'VitalActionMarkSelected',
           \ self.mark_sign_text,
           \)
@@ -562,7 +563,8 @@ endif
 
 " Highlight ------------------------------------------------------------------
 function! s:_define_mark_highlights() abort
-  highlight default link VitalActionMarkSelected SignColumn
+  highlight default link VitalActionMarkSelectedLine Search
+  highlight default link VitalActionMarkSelected Search
 endfunction
 
 augroup vital_action_internal
