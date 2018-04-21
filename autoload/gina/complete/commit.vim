@@ -81,7 +81,7 @@ function! s:get_available_branches(git, args) abort
   if result.status
     return []
   endif
-  let candidates = filter(result.stdout, 'v:val !~# ''^.* -> .*$''')
+  let candidates = filter(copy(result.stdout), 'v:val !~# ''^.* -> .*$''')
   call map(candidates, 'matchstr(v:val, ''^..\zs.*$'')')
   call map(candidates, 'substitute(v:val, ''^remotes/'', '''', '''')')
   return ['HEAD'] + filter(candidates, '!empty(v:val)')
