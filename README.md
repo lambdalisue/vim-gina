@@ -19,6 +19,11 @@ So gina.vim has most of the outstanding features of vim-gita and drops some unwi
 
 **gina.vim is in beta-phase, mean that the features were not completed yet and the features may be modified without backward compatibility**
 
+Presentation
+-------------------------------------------------------------------------------
+[![You've been Super Viman. After this talk, you could say you are Super Viman 2 -- Life with gina.vim](https://img.youtube.com/vi/zkANQ9l7YDM/0.jpg)](https://www.youtube.com/watch?v=zkANQ9l7YDM)
+
+I've talked about what the gina.vim is in [VimConf2017](http://vimconf.vim-jp.org/2017/) ([Slide](https://lambdalisue.github.io/vimconf2017/assets/player/KeynoteDHTMLPlayer.html)). Check it out if you would like to feel what the gina.vim is.
 
 Supports
 -------------------------------------------------------------------------------
