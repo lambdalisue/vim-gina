@@ -1073,6 +1073,28 @@ Users can disable the default aliases (shorten) and/or mappings by
 	|g:gina#command#reflog#use_default_mappings|
 
 -----------------------------------------------------------------------------
+REBASE						*gina-buffer-rebase*
+					{scheme}:	NONE
+					'filetype':	gitrebase
+
+This is not a gina's buffer but when user use 'git rebase -i' and 'gitrebase'
+buffer is opened. Gina provides the following mappings to help user.
+
+	<Return>	Preview a commit
+	<C-a>		Round up the command
+	<C-z>		Round down the command
+
+If you would like to use a bit different mappings, use the <Plug> mappings
+
+	<Plug>(gina-rebase-open)
+	<Plug>(gina-rebase-round-up)
+	<Plug>(gina-rebase-round-down)
+
+Users can disable this feature by
+
+	|g:gina_gitrebase_support_mappings|
+
+-----------------------------------------------------------------------------
 SHOW						*gina-buffer-show*
 					{scheme}:	show
 					'filetype':	git without {path}
@@ -1984,6 +2006,14 @@ gina#custom#mapping#imap({scheme}, {lhs}, {rhs} [, {options}])
 
 -----------------------------------------------------------------------------
 VARIABLES					*gina-variables*
+
+		*g:gina_gitrebase_support_mappings*
+g:gina_gitrebase_support_mappings
+	Add several mappings to 'gitrebase' buffer showed by 'git rebase -i'
+	command.
+	Default: 1
+
+	See also |gina-buffer-rebase|
 
 		*g:gina#action#index#discard_directories*
 g:gina#action#index#discard_directories
