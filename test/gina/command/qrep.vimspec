@@ -22,101 +22,200 @@ Describe gina#command#qrep
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync qrep a
       Assert Equals(winnr('$'), 1)
-      Assert Equals(getqflist(), [
-            \ {
-            \   'lnum': 1,
-            \   'bufnr': bufnr(slit1.path('A/foo.txt')),
-            \   'col': 1,
-            \   'valid': 1,
-            \   'vcol': 0,
-            \   'nr': 0,
-            \   'type': '',
-            \   'pattern': '',
-            \   'text': 'a'
-            \ },
-            \ {
-            \   'lnum': 1,
-            \   'bufnr': bufnr(slit1.path('C/foo.txt')),
-            \   'col': 1,
-            \   'valid': 1,
-            \   'vcol': 0,
-            \   'nr': 0,
-            \   'type': '',
-            \   'pattern': '',
-            \   'text': 'aa'
-            \ }
-            \])
+      if has('patch-8.0.1782')
+        Assert Equals(getqflist(), [
+              \ {
+              \   'lnum': 1,
+              \   'bufnr': bufnr(slit1.path('A/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'a',
+              \   'module': '',
+              \ },
+              \ {
+              \   'lnum': 1,
+              \   'bufnr': bufnr(slit1.path('C/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'aa',
+              \   'module': '',
+              \ }
+              \])
+      else
+        Assert Equals(getqflist(), [
+              \ {
+              \   'lnum': 1,
+              \   'bufnr': bufnr(slit1.path('A/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'a'
+              \ },
+              \ {
+              \   'lnum': 1,
+              \   'bufnr': bufnr(slit1.path('C/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'aa'
+              \ }
+              \])
+      endif
     End
 
     It might be called with -e{pattern} --or -e{pattern}
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync qrep -ea --or -eb
       Assert Equals(winnr('$'), 1)
-      Assert Equals(getqflist(), [
-            \ {
-            \   'lnum': 1,
-            \   'bufnr': bufnr(slit1.path('A/foo.txt')),
-            \   'col': 1,
-            \   'valid': 1,
-            \   'vcol': 0,
-            \   'nr': 0,
-            \   'type': '',
-            \   'pattern': '',
-            \   'text': 'a'
-            \ },
-            \ {
-            \   'lnum': 2,
-            \   'bufnr': bufnr(slit1.path('A/foo.txt')),
-            \   'col': 1,
-            \   'valid': 1,
-            \   'vcol': 0,
-            \   'nr': 0,
-            \   'type': '',
-            \   'pattern': '',
-            \   'text': 'b'
-            \ },
-            \ {
-            \   'lnum': 1,
-            \   'bufnr': bufnr(slit1.path('C/foo.txt')),
-            \   'col': 1,
-            \   'valid': 1,
-            \   'vcol': 0,
-            \   'nr': 0,
-            \   'type': '',
-            \   'pattern': '',
-            \   'text': 'aa'
-            \ },
-            \ {
-            \   'lnum': 2,
-            \   'bufnr': bufnr(slit1.path('C/foo.txt')),
-            \   'col': 1,
-            \   'valid': 1,
-            \   'vcol': 0,
-            \   'nr': 0,
-            \   'type': '',
-            \   'pattern': '',
-            \   'text': 'bb'
-            \ }
-            \])
+      if has('patch-8.0.1782')
+        Assert Equals(getqflist(), [
+              \ {
+              \   'lnum': 1,
+              \   'bufnr': bufnr(slit1.path('A/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'a',
+              \   'module': '',
+              \ },
+              \ {
+              \   'lnum': 2,
+              \   'bufnr': bufnr(slit1.path('A/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'b',
+              \   'module': '',
+              \ },
+              \ {
+              \   'lnum': 1,
+              \   'bufnr': bufnr(slit1.path('C/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'aa',
+              \   'module': '',
+              \ },
+              \ {
+              \   'lnum': 2,
+              \   'bufnr': bufnr(slit1.path('C/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'bb',
+              \   'module': '',
+              \ }
+              \])
+      else
+        Assert Equals(getqflist(), [
+              \ {
+              \   'lnum': 1,
+              \   'bufnr': bufnr(slit1.path('A/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'a'
+              \ },
+              \ {
+              \   'lnum': 2,
+              \   'bufnr': bufnr(slit1.path('A/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'b'
+              \ },
+              \ {
+              \   'lnum': 1,
+              \   'bufnr': bufnr(slit1.path('C/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'aa'
+              \ },
+              \ {
+              \   'lnum': 2,
+              \   'bufnr': bufnr(slit1.path('C/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'bb'
+              \ }
+              \])
+      endif
     End
 
     It might be called with {pattern} -- A/*.txt
       execute 'edit' fnameescape(slit1.path('A/foo.txt'))
       GinaSync qrep a -- A/*.txt
       Assert Equals(winnr('$'), 1)
-      Assert Equals(getqflist(), [
-            \ {
-            \   'lnum': 1,
-            \   'bufnr': bufnr(slit1.path('A/foo.txt')),
-            \   'col': 1,
-            \   'valid': 1,
-            \   'vcol': 0,
-            \   'nr': 0,
-            \   'type': '',
-            \   'pattern': '',
-            \   'text': 'a'
-            \ },
-            \])
+      if has('patch-8.0.1782')
+        Assert Equals(getqflist(), [
+              \ {
+              \   'lnum': 1,
+              \   'bufnr': bufnr(slit1.path('A/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'a',
+              \   'module': '',
+              \ },
+              \])
+      else
+        Assert Equals(getqflist(), [
+              \ {
+              \   'lnum': 1,
+              \   'bufnr': bufnr(slit1.path('A/foo.txt')),
+              \   'col': 1,
+              \   'valid': 1,
+              \   'vcol': 0,
+              \   'nr': 0,
+              \   'type': '',
+              \   'pattern': '',
+              \   'text': 'a'
+              \ },
+              \])
+      endif
     End
 
     It might be called with ! (bang)
