@@ -9,6 +9,7 @@ git:
 
 env:
   - PROFILE=.profile.vim.latest VIM=vim    TAG=latest
+  - PROFILE=.profile.vim.v8.1.0000 VIM=vim    TAG=v8.1.0000
   - PROFILE=.profile.vim.v8.0.0107 VIM=vim    TAG=v8.0.0107
   - PROFILE=.profile.neovim.latest VIM=neovim TAG=latest
   - PROFILE=.profile.neovim.v0.2.0 VIM=neovim TAG=v0.2.0

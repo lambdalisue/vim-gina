@@ -12,7 +12,7 @@ function install_vim($version, $arch) {
   (New-Object Net.WebClient).DownloadFile($url, $zip)
   [Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem') > $null
   [System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $Env:APPVEYOR_BUILD_FOLDER)
-  $Env:THEMIS_VIM = "$Env:APPVEYOR_BUILD_FOLDER\\vim\\vim80\\vim.exe"
+  $Env:THEMIS_VIM = "$(Get-ChildItem $Env:APPVEYOR_BUILD_FOLDER\\vim\\vim*\\vim.exe | Select -First 1)"
 }
 
 function install_neovim($version, $arch) {
