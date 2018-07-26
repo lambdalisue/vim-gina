@@ -25,7 +25,7 @@ addons:
 
 install:
   - pip3 install --user setuptools --upgrade
-  - pip3 install --user vim-vint
+  - pip3 install --user vim-vint typing
   - pip3 install --user coverage covimerage
   - docker --version
   - docker build -t ci-test --build-arg TAG=${TAG} -f .ci/Dockerfile.${VIM} .
