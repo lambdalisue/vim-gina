@@ -34,19 +34,18 @@ install:
   - pip3 install --user vim-vint typing
   - pip3 install --user coverage covimerage
   - docker --version
-  - docker build -t ci-test --build-arg TAG=${TAG} -f .ci/Dockerfile.${VIM} .
+  - make VIM=${VIM} TAG=${TAG} image
 
 before_script:
   - uname -a
   - python3 --version
   - vint --version
-  - docker run --rm -it ci-test --version
-  - docker run --rm -it lambdalisue/${VIM}-ci:${TAG} --version
+  - make VIM=${VIM} TAG=${TAG} version
 
 script:
   - vint autoload/gina autoload/vital/__gina__ plugin ftplugin
-  - docker run --rm --volume ${PWD}:/mnt/volume -e "PROFILE=${PROFILE}" -e "CI=docker" -it ci-test
-  - docker run --rm --volume ${PWD}:/mnt/volume -it lambdalisue/${VIM}-ci:${TAG} --cmd "try | helptags doc/ | catch | cquit | endtry" --cmd quit
+  - make VIM=${VIM} TAG=${TAG} ARGS="-e PROFILE=${PROFILE} -e CI=docker" test
+  - make VIM=${VIM} TAG=${TAG} helptags
 
 after_success:
   - covimerage write_coverage $PROFILE
