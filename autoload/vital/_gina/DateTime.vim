@@ -35,13 +35,6 @@ function! s:_vital_loaded(V) abort
   let s:AM_PM_TIMES = map([0, 12],
   \   's:from_date(1970, 1, 1, v:val, 0, 0, 0).unix_time()')
 
-  if s:Prelude.is_windows()
-    let key = 'HKLM\System\CurrentControlSet\Control\TimeZoneInformation'
-    let regs = s:Process.system(printf('reg query "%s" /v Bias', key))
-    let time = matchstr(regs, 'REG_DWORD\s*\zs0x\x\+')
-    let s:win_tz = empty(time) ? 0 : s:Bitwise.sign_extension(time) / -s:NUM_MINUTES
-  endif
-
   " default values
   call extend(s:DateTime, {
   \   '_year': 0,
@@ -810,10 +803,14 @@ function! s:_split_format(format) abort
   return res
 endfunction
 
-" TODO Use Prelude.is_windows() to avoid duplicate
-if has('win16') || has('win32') || has('win64')
+if has('win32') " This means any versions of windows https://github.com/vim-jp/vital.vim/wiki/Coding-Rule#how-to-check-if-the-runtime-os-is-windows
   function! s:_default_tz() abort
-    return s:win_tz
+    let hm = map(split(strftime('%H %M', 0), ' '), 'str2nr(v:val)')
+    if str2nr(strftime('%Y', 0)) != 1970
+      let tz_sec = s:SECONDS_OF_DAY - hm[0] * s:SECONDS_OF_HOUR - hm[1] * s:NUM_SECONDS
+      return printf('-%02d%02d', tz_sec / s:SECONDS_OF_HOUR, (tz_sec / s:NUM_SECONDS) % s:NUM_MINUTES)
+    endif
+    return printf('+%02d%02d', hm[0], hm[1])
   endfunction
 else
   function! s:_default_tz() abort

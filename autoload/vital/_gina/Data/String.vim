@@ -196,15 +196,16 @@ function! s:_split_by_wcswidth(body, x) abort
 endfunction
 
 function! s:trim(str) abort
-  return matchstr(a:str,'^\s*\zs.\{-}\ze\s*$')
+  return substitute(a:str,'\%#=1^[[:space:]]\+\|[[:space:]]\+$', '', 'g')
 endfunction
 
 function! s:trim_start(str) abort
-  return matchstr(a:str,'^\s*\zs.\{-}$')
+  return substitute(a:str,'\%#=1^[[:space:]]\+', '', '')
 endfunction
 
 function! s:trim_end(str) abort
-  return matchstr(a:str,'^.\{-}\ze\s*$')
+  let i = match(a:str, '\%#=2[[:space:]]*$')
+  return i is# 0 ? '' : a:str[: i-1]
 endfunction
 
 function! s:wrap(str,...) abort
