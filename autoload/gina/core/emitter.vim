@@ -43,20 +43,34 @@ function! s:on_modified(...) abort
   call win_gotoid(winid_saved)
 endfunction
 
-function! s:on_modified_delay() abort
-  if s:modified_timer isnot# v:null
-    " Do not emit 'modified' for previous 'modified:delay'
-    silent! call timer_stop(s:modified_timer)
-  endif
-  let s:modified_timer = timer_start(
-        \ g:gina#core#emitter#modified_delay,
-        \ function('s:emit_modified')
-        \)
-endfunction
+if has('nvim')
+  function! s:on_modified_delay() abort
+    if s:modified_timer isnot# v:null
+      " Do not emit 'modified' for previous 'modified:delay'
+      silent! call timer_stop(s:modified_timer)
+    endif
+    let s:modified_timer = timer_start(
+          \ g:gina#core#emitter#modified_delay,
+          \ function('s:emit_modified')
+          \)
+  endfunction
 
-function! s:emit_modified(...) abort
-  call gina#core#emitter#emit('modified')
-endfunction
+  function! s:emit_modified(...) abort
+    call gina#core#emitter#emit('modified')
+  endfunction
+else
+  " NOTE:
+  " 'exit_cb' would delayed up to 'updatetime' when a job has called from
+  " a timer callback.
+  " while 'modified:delay' is used to update contents of 'gina-status'
+  " window, this delay is quite annoying (user have to type or wait after
+  " executing 'stage' action or whatever).
+  " so do NOT use timer even with 'modified:delay' event.
+  " Ref: https://github.com/vim-jp/issues/issues/1164
+  function! s:on_modified_delay() abort
+    call gina#core#emitter#emit('modified')
+  endfunction
+endif
 
 if !exists('s:subscribed')
   let s:subscribed = 1
