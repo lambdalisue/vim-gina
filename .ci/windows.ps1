@@ -17,7 +17,7 @@ function install_vim($version, $arch) {
 
 function install_neovim($version, $arch) {
   if ($version -eq "latest") {
-    $url = "https://ci.appveyor.com/api/projects/neovim/neovim/artifacts/build/Neovim.zip?branch=master&job=Configuration%3A%20MINGW_${arch}"
+    $url = "https://github.com/neovim/neovim/releases/download/nightly/nvim-win${arch}.zip"
   }
   else {
     $url = "https://github.com/neovim/neovim/releases/download/v${version}/nvim-win${arch}.zip"
