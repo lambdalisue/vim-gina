@@ -81,6 +81,10 @@ Describe gina#process
   End
 
   Describe #inform({result})
+    Before
+      sleep 100m
+    End
+
     It shows a result content when success
       execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
       let git = gina#core#get()
@@ -103,6 +107,10 @@ Describe gina#process
   End
 
   Describe #error({result})
+    Before
+      sleep 100m
+    End
+
     It returns an error message for the {result}
       execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
       let git = gina#core#get()
