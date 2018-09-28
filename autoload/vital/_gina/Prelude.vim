@@ -227,7 +227,7 @@ else
   endfunction
 endif
 
-let s:is_windows = has('win16') || has('win32') || has('win64') || has('win95')
+let s:is_windows = has('win32') " This means any versions of windows https://github.com/vim-jp/vital.vim/wiki/Coding-Rule#how-to-check-if-the-runtime-os-is-windows
 let s:is_cygwin = has('win32unix')
 let s:is_mac = !s:is_windows && !s:is_cygwin
       \ && (has('mac') || has('macunix') || has('gui_macvim') ||

@@ -44,43 +44,45 @@ Describe gina#core#emitter
           \)
   End
 
-  It emits 'modified' event a bit later by 'modified:delay' event
-    Assert Equals(tracker.modified_called_count, 0)
-    Assert Equals(tracker.modified_delay_called_count, 0)
-    call gina#core#emitter#emit('modified:delay')
-    Assert Equals(tracker.modified_called_count, 0)
-    Assert Equals(tracker.modified_delay_called_count, 1)
-    execute 'sleep' (g:gina#core#emitter#modified_delay * 4) . 'm'
-    Assert Equals(tracker.modified_called_count, 1)
-    Assert Equals(tracker.modified_delay_called_count, 1)
-  End
+  if has('nvim')
+    It emits 'modified' event a bit later by 'modified:delay' event
+      Assert Equals(tracker.modified_called_count, 0)
+      Assert Equals(tracker.modified_delay_called_count, 0)
+      call gina#core#emitter#emit('modified:delay')
+      Assert Equals(tracker.modified_called_count, 0)
+      Assert Equals(tracker.modified_delay_called_count, 1)
+      execute 'sleep' (g:gina#core#emitter#modified_delay * 4) . 'm'
+      Assert Equals(tracker.modified_called_count, 1)
+      Assert Equals(tracker.modified_delay_called_count, 1)
+    End
 
-  It squashes 'modified:delay' events emitted within 'modified_delay' milliseconds
-    Assert Equals(tracker.modified_called_count, 0)
-    Assert Equals(tracker.modified_delay_called_count, 0)
-    call gina#core#emitter#emit('modified:delay')
-    call gina#core#emitter#emit('modified:delay')
-    call gina#core#emitter#emit('modified:delay')
-    call gina#core#emitter#emit('modified:delay')
-    call gina#core#emitter#emit('modified:delay')
-    Assert Equals(tracker.modified_called_count, 0)
-    Assert Equals(tracker.modified_delay_called_count, 5)
-    execute 'sleep' (g:gina#core#emitter#modified_delay * 4) . 'm'
-    Assert Equals(tracker.modified_called_count, 1)
-    Assert Equals(tracker.modified_delay_called_count, 5)
-  End
+    It squashes 'modified:delay' events emitted within 'modified_delay' milliseconds
+      Assert Equals(tracker.modified_called_count, 0)
+      Assert Equals(tracker.modified_delay_called_count, 0)
+      call gina#core#emitter#emit('modified:delay')
+      call gina#core#emitter#emit('modified:delay')
+      call gina#core#emitter#emit('modified:delay')
+      call gina#core#emitter#emit('modified:delay')
+      call gina#core#emitter#emit('modified:delay')
+      Assert Equals(tracker.modified_called_count, 0)
+      Assert Equals(tracker.modified_delay_called_count, 5)
+      execute 'sleep' (g:gina#core#emitter#modified_delay * 4) . 'm'
+      Assert Equals(tracker.modified_called_count, 1)
+      Assert Equals(tracker.modified_delay_called_count, 5)
+    End
 
-  It emits 'modified:delay' event by modifing a buffer in a git repository
-    execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
-    Assert Equals(tracker.modified_called_count, 0)
-    Assert Equals(tracker.modified_delay_called_count, 0)
-    execute "normal! ifoobar\<Esc>:w\<CR>"
-    Assert Equals(tracker.modified_called_count, 0)
-    Assert Equals(tracker.modified_delay_called_count, 1)
-    execute 'sleep' (g:gina#core#emitter#modified_delay * 4) . 'm'
-    Assert Equals(tracker.modified_called_count, 1)
-    Assert Equals(tracker.modified_delay_called_count, 1)
-  End
+    It emits 'modified:delay' event by modifing a buffer in a git repository
+      execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
+      Assert Equals(tracker.modified_called_count, 0)
+      Assert Equals(tracker.modified_delay_called_count, 0)
+      execute "normal! ifoobar\<Esc>:w\<CR>"
+      Assert Equals(tracker.modified_called_count, 0)
+      Assert Equals(tracker.modified_delay_called_count, 1)
+      execute 'sleep' (g:gina#core#emitter#modified_delay * 4) . 'm'
+      Assert Equals(tracker.modified_called_count, 1)
+      Assert Equals(tracker.modified_delay_called_count, 1)
+    End
+  endif
 
   It DOES NOT emits 'modified:delay' event by modifing a buffer NOT in a git repository
     execute 'edit' fnameescape(Path.join(slit3.worktree, 'foo.txt'))

@@ -72,14 +72,14 @@ function! gina#core#args#extend_diff(git, args, treeish) abort
   endif
 
   " Validate if all requirements exist
-  if !empty(get(a:args.params, 'path'))
-    if rev1 != s:WORKTREE
-      call gina#core#treeish#validate(a:git, rev1, a:args.params.path)
-    endif
-    if rev2 != s:WORKTREE
-      call gina#core#treeish#validate(a:git, rev2, a:args.params.path)
-    endif
-  endif
+  " if !empty(get(a:args.params, 'path'))
+  "   if rev1 != s:WORKTREE
+  "     call gina#core#treeish#validate(a:git, rev1, a:args.params.path)
+  "   endif
+  "   if rev2 != s:WORKTREE
+  "     call gina#core#treeish#validate(a:git, rev2, a:args.params.path)
+  "   endif
+  " endif
 
   call extend(a:args.params, {
         \ 'rev1': rev1,

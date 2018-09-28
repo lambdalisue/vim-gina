@@ -19,6 +19,30 @@ environment:
       VIM_ARCH: x64
       PROFILE: .profile.vim.x64.v8.1.0001
     - VIM: vim
+      VIM_VERSION: 8.1.0342
+      VIM_ARCH: x86
+      PROFILE: .profile
+    - VIM: vim
+      VIM_VERSION: 8.1.0342
+      VIM_ARCH: x64
+      PROFILE: .profile
+    - VIM: vim
+      VIM_VERSION: 8.1.0351
+      VIM_ARCH: x86
+      PROFILE: .profile
+    - VIM: vim
+      VIM_VERSION: 8.1.0351
+      VIM_ARCH: x64
+      PROFILE: .profile
+    - VIM: vim
+      VIM_VERSION: 8.1.0369
+      VIM_ARCH: x86
+      PROFILE: .profile
+    - VIM: vim
+      VIM_VERSION: 8.1.0369
+      VIM_ARCH: x64
+      PROFILE: .profile
+    - VIM: vim
       VIM_VERSION: latest
       VIM_ARCH: x86
       PROFILE: .profile.vim.x86.latest
@@ -42,6 +66,22 @@ environment:
       VIM_VERSION: 0.2.2
       VIM_ARCH: 64
       PROFILE: .profile.neovim.64.v0.2.2
+    - VIM: nvim
+      VIM_VERSION: 0.3.0
+      VIM_ARCH: 32
+      PROFILE: .profile
+    - VIM: nvim
+      VIM_VERSION: 0.3.0
+      VIM_ARCH: 64
+      PROFILE: .profile
+    - VIM: nvim
+      VIM_VERSION: 0.3.1
+      VIM_ARCH: 32
+      PROFILE: .profile
+    - VIM: nvim
+      VIM_VERSION: 0.3.1
+      VIM_ARCH: 64
+      PROFILE: .profile
     - VIM: nvim
       VIM_VERSION: latest
       VIM_ARCH: 32
