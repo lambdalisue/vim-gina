@@ -150,6 +150,27 @@ function! gina#action#commit#define(binder) abort
         \ 'requirements': ['rev'],
         \ 'options': {'sign': 1},
         \})
+  call a:binder.define('commit:tag:lightweight:force', function('s:on_tag'), {
+        \ 'hidden': 1,
+        \ 'description': 'Create a lightweight tag',
+        \ 'mapping_mode': 'nv',
+        \ 'requirements': ['rev'],
+        \ 'options': {'force': 1},
+        \})
+  call a:binder.define('commit:tag:annotate:force', function('s:on_tag'), {
+        \ 'hidden': 1,
+        \ 'description': 'Create an unsigned, annotated tag',
+        \ 'mapping_mode': 'nv',
+        \ 'requirements': ['rev'],
+        \ 'options': {'annotate': 1, 'force': 1},
+        \})
+  call a:binder.define('commit:tag:sign:force', function('s:on_tag'), {
+        \ 'hidden': 1,
+        \ 'description': 'Create a GPG-signed tag',
+        \ 'mapping_mode': 'nv',
+        \ 'requirements': ['rev'],
+        \ 'options': {'sign': 1, 'force': 1},
+        \})
   " Alias
   call a:binder.alias('commit:tag', 'commit:tag:annotate')
 endfunction
@@ -292,16 +313,18 @@ function! s:on_tag(candidates, options) abort
   let options = extend({
         \ 'annotate': 0,
         \ 'sign': 0,
+        \ 'force': 0,
         \}, a:options)
   for candidate in a:candidates
     let name = gina#core#console#ask_or_cancel(
           \ 'Name: ', '',
           \)
     execute printf(
-          \ '%s Gina tag %s %s %s %s',
+          \ '%s Gina tag %s %s %s %s %s',
           \ options.mods,
           \ options.annotate ? '--annotate' : '',
           \ options.sign ? '--sign' : '',
+          \ options.force ? '--force' : '',
           \ gina#util#shellescape(name),
           \ gina#util#shellescape(candidate.rev),
           \)

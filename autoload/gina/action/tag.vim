@@ -17,6 +17,27 @@ function! gina#action#tag#define(binder) abort
         \ 'requirements': [],
         \ 'options': {'sign': 1},
         \})
+  call a:binder.define('tag:new:lightweight:force', function('s:on_new'), {
+        \ 'hidden': 1,
+        \ 'description': 'Create a lightweight tag',
+        \ 'mapping_mode': 'n',
+        \ 'requirements': [],
+        \ 'options': {'force': 1},
+        \})
+  call a:binder.define('tag:new:annotate:force', function('s:on_new'), {
+        \ 'hidden': 1,
+        \ 'description': 'Create an unsigned, annotated tag',
+        \ 'mapping_mode': 'n',
+        \ 'requirements': [],
+        \ 'options': {'annotate': 1, 'force': 1},
+        \})
+  call a:binder.define('tag:new:sign:force', function('s:on_new'), {
+        \ 'hidden': 1,
+        \ 'description': 'Create a GPG-signed tag',
+        \ 'mapping_mode': 'n',
+        \ 'requirements': [],
+        \ 'options': {'sign': 1, 'force': 1},
+        \})
   call a:binder.define('tag:delete', function('s:on_delete'), {
         \ 'description': 'Delete a tag',
         \ 'mapping_mode': 'nv',
@@ -42,6 +63,7 @@ function! s:on_new(candidates, options) abort
   let options = extend({
         \ 'annotate': 0,
         \ 'sign': 0,
+        \ 'force': 0,
         \}, a:options)
   for candidate in a:candidates
     let name = gina#core#console#ask_or_cancel(
@@ -52,10 +74,11 @@ function! s:on_new(candidates, options) abort
           \ function('gina#complete#commit#branch')
           \)
     execute printf(
-          \ '%s Gina tag %s %s %s %s',
+          \ '%s Gina tag %s %s %s %s %s',
           \ options.mods,
           \ options.annotate ? '--annotate' : '',
           \ options.sign ? '--sign' : '',
+          \ options.force ? '--force' : '',
           \ gina#util#shellescape(name),
           \ gina#util#shellescape(from),
           \)
