@@ -2203,6 +2203,11 @@ g:gina#core#askpass#force_internal
 	See |gina-misc-askpass| for detail about "askpass".
 	Default: 0
 
+		*g:gina#core#console#enable_message_history*
+g:gina#core#console#enable_message_history
+	Save command messages in |message-history|.
+	Default: 0
+
 		*g:gina#core#emitter#modified_delay*
 g:gina#core#emitter#modified_delay
 	A delay in millisecon until "modified" event is emitted by
