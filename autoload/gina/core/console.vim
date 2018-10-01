@@ -4,7 +4,7 @@ let s:Console.prefix = '[gina] '
 
 if has('nvim')
   function! gina#core#console#message(msg) abort
-    return gina#core#console#echo(a:msg)
+    return s:message(a:msg)
   endfunction
 else
   " NOTE:
@@ -25,7 +25,7 @@ else
   function! s:message_callback() abort
     while !empty(s:message_queue)
       let msg = remove(s:message_queue, 0)
-      call gina#core#console#echo(msg)
+      call s:message(msg)
     endwhile
     augroup gina_core_console_message_internal
       autocmd! *
@@ -76,3 +76,14 @@ function! gina#core#console#ask_or_cancel(...) abort
   endif
   return result
 endfunction
+
+function! s:message(msg) abort
+  if g:gina#core#console#enable_message_history
+      return gina#core#console#echomsg(a:msg)
+  endif
+  return gina#core#console#echo(a:msg)
+endfunction
+
+call gina#config(expand('<sfile>'), {
+      \ 'enable_message_history': 0,
+      \})
