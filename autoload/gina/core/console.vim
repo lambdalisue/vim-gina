@@ -79,7 +79,7 @@ endfunction
 
 function! s:message(msg) abort
   if g:gina#core#console#enable_message_history
-      return gina#core#console#echomsg(a:msg)
+    return gina#core#console#echomsg(a:msg)
   endif
   return gina#core#console#echo(a:msg)
 endfunction
