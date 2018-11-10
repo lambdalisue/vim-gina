@@ -126,7 +126,7 @@ function! s:_job_wait(...) abort dict
       if status !=# 'run'
         return status ==# 'dead' ? job_info(job).exitval : -3
       endif
-      call getchar(0)
+      sleep 1m
     endwhile
   catch /^Vim:Interrupt$/
     call self.stop()
