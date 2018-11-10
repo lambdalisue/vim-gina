@@ -21,17 +21,17 @@ function! s:start(args, options) abort
         \ 'timeout': 0,
         \}
   if has_key(job, 'on_stdout')
-    let job_options.out_cb = function('s:_out_cb', [job])
+    let job_options.out_cb = funcref('s:_out_cb', [job])
   else
     let job_options.out_io = 'null'
   endif
   if has_key(job, 'on_stderr')
-    let job_options.err_cb = function('s:_err_cb', [job])
+    let job_options.err_cb = funcref('s:_err_cb', [job])
   else
     let job_options.err_io = 'null'
   endif
   if has_key(job, 'on_exit')
-    let job_options.exit_cb = function('s:_exit_cb', [job])
+    let job_options.exit_cb = funcref('s:_exit_cb', [job])
   endif
   if has_key(job, 'cwd') && has('patch-8.0.0902')
     let job_options.cwd = job.cwd
@@ -126,7 +126,7 @@ function! s:_job_wait(...) abort dict
       if status !=# 'run'
         return status ==# 'dead' ? job_info(job).exitval : -3
       endif
-      sleep 1m
+      call getchar(0)
     endwhile
   catch /^Vim:Interrupt$/
     call self.stop()
@@ -137,11 +137,11 @@ endfunction
 
 " To make debug easier, use funcref instead.
 let s:job = {
-      \ 'id': function('s:_job_id'),
-      \ 'pid': function('s:_job_pid'),
-      \ 'status': function('s:_job_status'),
-      \ 'send': function('s:_job_send'),
-      \ 'close': function('s:_job_close'),
-      \ 'stop': function('s:_job_stop'),
-      \ 'wait': function('s:_job_wait'),
+      \ 'id': funcref('s:_job_id'),
+      \ 'pid': funcref('s:_job_pid'),
+      \ 'status': funcref('s:_job_status'),
+      \ 'send': funcref('s:_job_send'),
+      \ 'close': funcref('s:_job_close'),
+      \ 'stop': funcref('s:_job_stop'),
+      \ 'wait': funcref('s:_job_wait'),
       \}
