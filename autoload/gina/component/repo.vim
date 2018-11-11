@@ -55,18 +55,18 @@ function! gina#component#repo#track() abort
   if !empty(branch)
     return branch
   endif
-  let result = gina#process#call(git, [
-        \ 'rev-parse',
-        \ '--abbrev-ref',
-        \ '--symbolic-full-name',
-        \ '@{upstream}',
-        \])
-  if result.status
-    return ''
+  if !exists('s:track_job')
+    let pipe = gina#process#pipe#store()
+    let pipe.__on_exit = pipe.on_exit
+    let pipe.on_exit = funcref('s:track_on_exit', [store, slug])
+    let s:track_job = gina#process#open(git, [
+          \ 'rev-parse',
+          \ '--abbrev-ref',
+          \ '--symbolic-full-name',
+          \ '@{upstream}',
+          \], pipe)
   endif
-  let branch = get(result.stdout, 0)
-  call store.set(slug, branch)
-  return branch
+  return ''
 endfunction
 
 function! gina#component#repo#preset(...) abort
@@ -80,6 +80,15 @@ endfunction
 
 
 " Private --------------------------------------------------------------------
+function! s:track_on_exit(store, slug, exitval) abort dict
+  call self.__on_exit(a:exitval)
+  silent! unlet! s:track_job
+  if a:exitval
+    return
+  endif
+  call a:store.set(a:slug, get(self.stdout, 0))
+endfunction
+
 function! s:preset_ascii() abort
   let name = gina#component#repo#name()
   let branch = gina#component#repo#branch()

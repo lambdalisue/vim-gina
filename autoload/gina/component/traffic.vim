@@ -22,17 +22,17 @@ function! gina#component#traffic#ahead() abort
   if !empty(ahead)
     return ahead
   endif
-  let result = gina#process#call(git, [
-        \ 'log',
-        \ '--oneline',
-        \ '@{upstream}..',
-        \])
-  if result.status
-    return ''
+  if !exists('s:ahead_job')
+    let pipe = gina#process#pipe#store()
+    let pipe.__on_exit = pipe.on_exit
+    let pipe.on_exit = funcref('s:ahead_on_exit', [store, slug])
+    let s:ahead_job = gina#process#open(git, [
+          \ 'log',
+          \ '--oneline',
+          \ '@{upstream}..',
+          \], pipe)
   endif
-  let ahead = len(filter(copy(result.stdout), '!empty(v:val)')) . ''
-  call store.set(slug, ahead)
-  return ahead
+  return ''
 endfunction
 
 function! gina#component#traffic#behind() abort
@@ -52,17 +52,17 @@ function! gina#component#traffic#behind() abort
   if !empty(behind)
     return behind
   endif
-  let result = gina#process#call(git, [
-        \ 'log',
-        \ '--oneline',
-        \ '..@{upstream}',
-        \])
-  if result.status
-    return ''
+  if !exists('s:behind_job')
+    let pipe = gina#process#pipe#store()
+    let pipe.__on_exit = pipe.on_exit
+    let pipe.on_exit = funcref('s:behind_on_exit', [store, slug])
+    let s:behind_job = gina#process#open(git, [
+          \ 'log',
+          \ '--oneline',
+          \ '..@{upstream}',
+          \], pipe)
   endif
-  let behind = len(filter(copy(result.stdout), '!empty(v:val)')) . ''
-  call store.set(slug, behind)
-  return behind
+  return ''
 endfunction
 
 function! gina#component#traffic#preset(...) abort
@@ -75,6 +75,26 @@ function! gina#component#traffic#preset(...) abort
 endfunction
 
 " Private --------------------------------------------------------------------
+function! s:ahead_on_exit(store, slug, exitval) abort dict
+  call self.__on_exit(a:exitval)
+  silent! unlet! s:ahead_job
+  if a:exitval
+    return
+  endif
+  let ahead = len(filter(copy(self.stdout), '!empty(v:val)')) . ''
+  call a:store.set(a:slug, ahead)
+endfunction
+
+function! s:behind_on_exit(store, slug, exitval) abort dict
+  call self.__on_exit(a:exitval)
+  silent! unlet! s:behind_job
+  if a:exitval
+    return
+  endif
+  let behind = len(filter(copy(self.stdout), '!empty(v:val)')) . ''
+  call a:store.set(a:slug, behind)
+endfunction
+
 function! s:get_tracking_ref(git) abort
   let slug = eval(s:Store.get_slug_expr())
   let store = s:Store.of([
@@ -85,17 +105,26 @@ function! s:get_tracking_ref(git) abort
   if !empty(ref)
     return ref
   endif
-  let result = gina#process#call(a:git, [
-        \ 'rev-parse',
-        \ '--symbolic-full-name',
-        \ '@{upstream}',
-        \])
-  if result.status
-    return ''
+  if !exists('s:tracking_ref_job')
+    let pipe = gina#process#pipe#store()
+    let pipe.__on_exit = pipe.on_exit
+    let pipe.on_exit = funcref('s:tracking_ref_on_exit', [store, slug])
+    let s:tracking_ref_job = gina#process#open(a:git, [
+          \ 'rev-parse',
+          \ '--symbolic-full-name',
+          \ '@{upstream}',
+          \], pipe)
   endif
-  let ref = get(result.stdout, 0)
-  call store.set(slug, ref)
-  return ref
+  return ''
+endfunction
+
+function! s:tracking_ref_on_exit(store, slug, exitval) abort dict
+  call self.__on_exit(a:exitval)
+  silent! unlet! s:tracking_ref_job
+  if a:exitval
+    return
+  endif
+  call a:store.set(a:slug, get(self.stdout, 0))
 endfunction
 
 function! s:preset_ascii() abort

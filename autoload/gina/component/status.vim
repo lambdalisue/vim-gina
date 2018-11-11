@@ -60,20 +60,35 @@ function! s:status_count(git) abort
   if !empty(status_count)
     return status_count
   endif
-  let result = gina#process#call(a:git, [
-        \ 'status',
-        \ '--porcelain',
-        \ '--ignore-submodules',
-        \])
-  if result.status
-    return {}
+  if !exists('s:status_job')
+    let pipe = gina#process#pipe#store()
+    let pipe.__on_exit = pipe.on_exit
+    let pipe.on_exit = funcref('s:status_on_exit', [store])
+    let s:status_job = gina#process#open(a:git, [
+          \ 'status',
+          \ '--porcelain',
+          \ '--ignore-submodules',
+          \], pipe)
+  endif
+  return {
+        \ 'staged': 0,
+        \ 'unstaged': 0,
+        \ 'conflicted': 0,
+        \}
+endfunction
+
+function! s:status_on_exit(store, exitval) abort dict
+  call self.__on_exit(a:exitval)
+  silent! unlet! s:status_job
+  if a:exitval
+    return
   endif
   let status_count = {
         \ 'staged': 0,
         \ 'unstaged': 0,
         \ 'conflicted': 0,
         \}
-  for record in result.stdout
+  for record in self.stdout
     let sign = record[:1]
     if sign =~# '^\%(DD\|AU\|UD\|UA\|DU\|AA\|UU\)$'
       let status_count.conflicted += 1
@@ -88,8 +103,7 @@ function! s:status_count(git) abort
       endif
     endif
   endfor
-  call store.set(s:SLUG, status_count)
-  return status_count
+  call a:store.set(s:SLUG, status_count)
 endfunction
 
 function! s:preset_ascii() abort
