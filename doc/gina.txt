@@ -146,7 +146,7 @@ in the next section.
 ACTION						*gina-usage-action*
 
 When |:Gina| opens a non file-like buffer (e.g. "gina-status" buffer), users
-may able to perform pre-defined actions on candidates shown in the buffer.
+may perform pre-defined actions on candidates shown in the buffer.
 
 For example, ":Gina status -s" opens a "gina-status" buffer with short format
 which looks like
@@ -1285,7 +1285,7 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 						*:Gina!!*
 :Gina!! {command} [{options}]
 	Call a git raw {command} under the shell.
-	It use |:!| or |:terminal| to call a git raw {command} to allow git's
+	It uses |:!| or |:terminal| to call a git raw {command} to allow git's
 	interactive features such as "git add -p" or "git rebase -i".
 	Note that Vim users may need to hit <C-J> instead of <CR> to send
 	a newline to the shell.
@@ -1392,7 +1392,7 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 	--opener={opener}
 		An opener command for the new buffer (|gina-options-opener|)
 
-	It use "git diff --numstat" internally so see "man git-diff" for
+	It uses "git diff --numstat" internally so see "man git-diff" for
 	other available {options}.
 
 	See also~
