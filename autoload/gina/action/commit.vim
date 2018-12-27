@@ -7,7 +7,6 @@ function! gina#action#commit#define(binder) abort
         \ 'options': {},
         \})
   call a:binder.define('commit:checkout:track', function('s:on_checkout_track'), {
-        \ 'hidden': 1,
         \ 'description': 'Checkout a commit with a tracking branch',
         \ 'mapping_mode': 'nv',
         \ 'requirements': ['rev'],
