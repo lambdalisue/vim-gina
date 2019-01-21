@@ -164,25 +164,13 @@ endfunction
 
 function! gina#util#diffthis() abort
   diffthis
-  augroup gina_internal_util_diffthis
-    autocmd! *
-    autocmd BufWinEnter *
-          \ if &diff && s:diffcount() == 1 |
-          \   call s:diffoff(0) |
-          \ endif
-  augroup END
   augroup gina_internal_util_diffthis_local
     autocmd! * <buffer>
-    autocmd BufWinLeave <buffer>
-          \ if &diff && s:diffcount() == 2 |
-          \   call s:diffoff_all() |
-          \ elseif &diff |
-          \   call s:diffoff(1) |
+    autocmd BufReadPost <buffer>
+          \ if &diff && &foldmethod !=# 'diff' |
+          \   setlocal foldmethod=diff |
           \ endif
-    autocmd BufWinEnter  <buffer> call gina#util#diffthis()
-    autocmd BufWritePost <buffer> call s:diffupdate(bufnr('%'))
   augroup END
-  call gina#util#diffupdate()
 endfunction
 
 function! gina#util#diffupdate() abort
