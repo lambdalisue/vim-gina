@@ -162,7 +162,7 @@ endfunction
 " Config ---------------------------------------------------------------------
 call gina#config(expand('<sfile>'), {
       \ 'translation_patterns': {
-      \   'github.com': [
+      \   'github\.com': [
       \     [
       \       '\vhttps?://(%domain)/(.{-})/(.{-})%(\.git)?$',
       \       '\vgit://(%domain)/(.{-})/(.{-})%(\.git)?$',
@@ -175,7 +175,7 @@ call gina#config(expand('<sfile>'), {
       \       'compare': 'https://\1/\2/\3/compare/%h1...%h2',
       \     },
       \   ],
-      \   'bitbucket.org': [
+      \   'bitbucket\.org': [
       \     [
       \       '\vhttps?://(%domain)/(.{-})/(.{-})%(\.git)?$',
       \       '\vgit://(%domain)/(.{-})/(.{-})%(\.git)?$',
@@ -186,6 +186,14 @@ call gina#config(expand('<sfile>'), {
       \       'root': 'https://\1/\2/\3/commits/%r0',
       \       'blame': 'https://\1/\2/\3/annotate/%r0/%pt',
       \       'compare': 'https://\1/\2/\3/diff/%pt?diff1=%h1&diff2=%h2',
+      \     },
+      \   ],
+      \   '.*\.visualstudio\.com': [
+      \     [
+      \       '\vhttps?://(%domain)/(.{-})/_git/(.{-})$',
+      \     ], {
+      \       '_': 'https://\1/\2/_git/\3/?path=%pt&version=GB%r0',
+      \       'root': 'https://\1/\2/_git/\3/?version=GB%r0',
       \     },
       \   ],
       \ },
