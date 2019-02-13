@@ -192,7 +192,7 @@ call gina#config(expand('<sfile>'), {
       \     [
       \       '\vhttps?://(%domain)/(.{-})/_git/(.{-})$',
       \     ], {
-      \       '_': 'https://\1/\2/_git/\3/?path=%pt&version=GB%r0',
+      \       '_': 'https://\1/\2/_git/\3/?path=%pt&version=GB%r0%{&line=|}ls%{&lineEnd=|}le',
       \       'root': 'https://\1/\2/_git/\3/?version=GB%r0',
       \     },
       \   ],
