@@ -134,11 +134,16 @@ function! s:replace(expr, start, end, replacement) abort
   endif
   let data = s:_iconv(bufnr, a:replacement)
   let modifiable = getbufvar(bufnr, '&modifiable')
+  let buflisted = getbufvar(bufnr, '&buflisted')
+  let readonly = getbufvar(bufnr, '&readonly')
   try
     call setbufvar(bufnr, '&modifiable', 1)
+    call setbufvar(bufnr, '&readonly', 0)
     return s:_replace(bufnr, a:start, a:end, data)
   finally
     call setbufvar(bufnr, '&modifiable', modifiable)
+    call setbufvar(bufnr, '&buflisted', buflisted)
+    call setbufvar(bufnr, '&readonly', readonly)
   endtry
 endfunction
 
