@@ -255,17 +255,4 @@ Describe gina#util
       " NO TEST
     End
   End
-
-  Describe #diffthis()
-    It adds autocmd to call "diffoff" when a buffer is closed
-      call gina#util#diffthis()
-      Assert True(exists('#gina_internal_util_diffthis'))
-    End
-  End
-
-  Describe #diffupdate()
-    It calls a "diffupdate" command a bit later
-      " NO TEST
-    End
-  End
 End
