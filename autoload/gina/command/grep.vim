@@ -189,6 +189,9 @@ function! s:build_args(git, args) abort
   call args.pop('--heading')
 
   " Force required options
+  if !args.has('--no-column')
+    call insert(args.raw, '--no-column', 1)
+  endif
   if !args.has('--line-number')
     call insert(args.raw, '--line-number', 1)
   endif

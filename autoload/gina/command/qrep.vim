@@ -194,6 +194,7 @@ function! s:build_args(git, args) abort
     let args.params.pattern = pattern
   endif
 
+  call args.set('--no-column', 1)
   call args.set('--line-number', 1)
   call args.set('--color', 'always')
   call args.set(0, 'grep')
