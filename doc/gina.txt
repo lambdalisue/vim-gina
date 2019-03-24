@@ -2077,7 +2077,7 @@ g:gina#command#blame#formatter#format
 
 	Additionally, the format is splitted by "%=" like |statusline|.
 
-	Default: "%su%=on %ti by %au %ma%in"
+	Default: "%su%=on %ti %ma%in"
 
 		*g:gina#command#blame#formatter#separator*
 g:gina#command#blame#formatter#separator
