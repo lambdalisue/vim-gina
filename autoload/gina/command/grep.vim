@@ -39,8 +39,17 @@ function! gina#command#grep#parse_record(...) abort
   return call('s:parse_record', a:000)
 endfunction
 
+function! gina#command#grep#_is_column_supported(version) abort
+  return s:is_column_supported(a:version)
+endfunction
+
 
 " Private --------------------------------------------------------------------
+function! s:is_column_supported(version) abort
+  " https://github.com/git/git/blob/master/Documentation/RelNotes/2.19.0.txt#L18-L19
+  return a:version =~# '\%(^[^012]\|^2\.[^01]\|^2\.19\)'
+endfunction
+
 function! s:get_options() abort
   let options = gina#core#options#new()
   call options.define(
@@ -189,7 +198,7 @@ function! s:build_args(git, args) abort
   call args.pop('--heading')
 
   " Force required options
-  if !args.has('--no-column')
+  if !args.has('--no-column') && s:is_column_supported(gina#core#git_version())
     call insert(args.raw, '--no-column', 1)
   endif
   if !args.has('--line-number')

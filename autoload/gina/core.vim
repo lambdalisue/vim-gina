@@ -67,6 +67,15 @@ function! gina#core#get(...) abort
   return git
 endfunction
 
+function! gina#core#git_version() abort
+  if exists('s:git_version')
+    return s:git_version
+  endif
+  let r = gina#process#call(gina#core#get(), ['--version'])
+  let s:git_version = matchstr(join(r.stdout, "\n"), '\%(\d\+\.\)\+\d')
+  return s:git_version
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:is_file_buffer(expr) abort
