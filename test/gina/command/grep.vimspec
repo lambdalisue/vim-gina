@@ -211,4 +211,33 @@ Describe gina#command#grep
             \])
     End
   End
+
+  Describe #_is_column_supported()
+    It returns 1 for version 3.0, 3.0.0, ...
+      Assert True(gina#command#grep#_is_column_supported('3.0'))
+      Assert True(gina#command#grep#_is_column_supported('3.0.0'))
+      Assert True(gina#command#grep#_is_column_supported('4.0'))
+      Assert True(gina#command#grep#_is_column_supported('5'))
+    End
+
+    It returns 1 for version 2.20, 2.20.0, ...
+      Assert True(gina#command#grep#_is_column_supported('2.20'))
+      Assert True(gina#command#grep#_is_column_supported('2.20.0'))
+      Assert True(gina#command#grep#_is_column_supported('2.3'))
+    End
+
+    It returns 1 for version 2.19, 2.19.1, ...
+      Assert True(gina#command#grep#_is_column_supported('2.19'))
+      Assert True(gina#command#grep#_is_column_supported('2.19.1'))
+      Assert True(gina#command#grep#_is_column_supported('2.190'))
+    End
+
+    It returns 0 for version 2.18, 2.0, ...
+      Assert False(gina#command#grep#_is_column_supported('2.18'))
+      Assert False(gina#command#grep#_is_column_supported('2.18.1'))
+      Assert False(gina#command#grep#_is_column_supported('2.0'))
+      Assert False(gina#command#grep#_is_column_supported('1.0'))
+      Assert False(gina#command#grep#_is_column_supported('0.1'))
+    End
+  End
 End
