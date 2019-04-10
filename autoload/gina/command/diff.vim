@@ -325,11 +325,13 @@ function! s:build_args(git, args) abort
   " Remove unsupported options
   call args.pop('-z')
   call args.pop('--color')
-  call args.pop('--no-color')
   call args.pop('--word-diff')
   call args.pop('--word-diff-regex')
   call args.pop('--color-words')
   call args.pop('--ws-error-highlight')
+
+  " Force --no-color
+  call args.set('--no-color', 1)
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1))
   call gina#core#args#extend_diff(a:git, args, args.params.rev)
