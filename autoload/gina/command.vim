@@ -5,6 +5,15 @@ function! gina#command#call(bang, range, rargs, mods) abort
     return gina#command#call('', a:range, '_raw ' . a:rargs, a:mods)
   endif
   let args = gina#core#args#new(a:rargs)
+  if empty(args.params.scheme)
+    " The scheme becomes empty when Gina-xxxxx is given
+    call gina#core#console#error(printf(
+          \ 'The "Gina%s" is not correct gina command. You may want ":Gina %s"',
+          \ a:rargs,
+          \ a:rargs[1:],
+          \))
+    return
+  endif
   try
     call gina#core#revelator#call(
           \ printf('gina#command#%s#call', args.params.scheme),
