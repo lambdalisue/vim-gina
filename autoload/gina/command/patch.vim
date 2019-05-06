@@ -1,4 +1,3 @@
-let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:Path = vital#gina#import('System.Filepath')
 let s:String = vital#gina#import('Data.String')
 
@@ -74,6 +73,7 @@ function! s:build_args(git, args) abort
         \ args.pop('--group2', 'patch-c'),
         \ args.pop('--group3', 'patch-r'),
         \]
+  let args.params.no_group = args.pop('--no-group', 0)
   let args.params.opener = args.pop('--opener', 'tabnew')
   let args.params.oneside = args.pop('--oneside', 0)
   call gina#core#args#extend_path(a:git, args, args.pop(1))
@@ -115,7 +115,6 @@ function! s:call(range, args, mods) abort
   let mods = gina#util#contain_direction(a:mods)
         \ ? 'keepalt ' . a:mods
         \ : join(['keepalt', 'rightbelow', a:mods])
-  let group = s:Group.new()
 
   diffoff!
   let opener1 = args.params.opener
@@ -148,7 +147,6 @@ function! s:call(range, args, mods) abort
 
   " WORKTREE
   call gina#util#diffthis()
-  call group.add({'keep': 1})
   call s:define_plug_mapping('diffput', bufnr2)
   call s:define_plug_mapping('diffget', bufnr2)
   if g:gina#command#patch#use_default_mappings
@@ -160,7 +158,6 @@ function! s:call(range, args, mods) abort
   if !args.params.oneside
     execute printf('%dwincmd w', bufwinnr(bufnr1))
     call gina#util#diffthis()
-    call group.add()
     call s:define_plug_mapping('diffput', bufnr2)
     if g:gina#command#patch#use_default_mappings
       nmap dp <Plug>(gina-diffput)
@@ -170,7 +167,6 @@ function! s:call(range, args, mods) abort
   " INDEX
   execute printf('%dwincmd w', bufwinnr(bufnr2))
   call gina#util#diffthis()
-  call group.add()
   call s:define_plug_mapping('diffput', bufnr3)
   if !args.params.oneside
     call s:define_plug_mapping('diffget', bufnr1, '-l')

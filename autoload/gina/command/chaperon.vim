@@ -1,4 +1,3 @@
-let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:String = vital#gina#import('Data.String')
 
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
@@ -88,7 +87,6 @@ function! s:call(range, args, mods) abort
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
         \ : 'vsplit'
-  let group = s:Group.new()
 
   diffoff!
   call s:open(0, mods, opener1, ':2', args.params)
@@ -102,7 +100,6 @@ function! s:call(range, args, mods) abort
 
   " :3 Theirs (REMOTE)
   call gina#util#diffthis()
-  call group.add()
   call s:define_plug_mapping('diffput', bufnr2)
   if g:gina#command#chaperon#use_default_mappings
     nmap dp <Plug>(gina-diffput)
@@ -111,7 +108,6 @@ function! s:call(range, args, mods) abort
   " :2 Ours (Local)
   execute printf('%dwincmd w', bufwinnr(bufnr1))
   call gina#util#diffthis()
-  call group.add()
   call s:define_plug_mapping('diffput', bufnr2)
   if g:gina#command#chaperon#use_default_mappings
     nmap dp <Plug>(gina-diffput)
@@ -120,7 +116,6 @@ function! s:call(range, args, mods) abort
   " WORKTREE
   execute printf('%dwincmd w', bufwinnr(bufnr2))
   call gina#util#diffthis()
-  call group.add({'keep': 1})
   call s:define_plug_mapping('diffget', bufnr1, '-l')
   call s:define_plug_mapping('diffget', bufnr3, '-r')
   if g:gina#command#chaperon#use_default_mappings

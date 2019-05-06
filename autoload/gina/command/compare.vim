@@ -1,4 +1,3 @@
-let s:Group = vital#gina#import('Vim.Buffer.Group')
 let s:Opener = vital#gina#import('Vim.Buffer.Opener')
 
 let s:SCHEME = gina#command#scheme(expand('<sfile>'))
@@ -92,7 +91,6 @@ function! s:call(range, args, mods) abort
   let mods = gina#util#contain_direction(a:mods)
         \ ? 'keepalt ' . a:mods
         \ : join(['keepalt', 'rightbelow', a:mods])
-  let group = s:Group.new()
 
   diffoff!
   let opener1 = args.params.opener
@@ -101,11 +99,9 @@ function! s:call(range, args, mods) abort
         \ : 'vsplit'
   call s:open(0, mods, opener1, args.params.rev1, args.params)
   call gina#util#diffthis()
-  call group.add()
 
   call s:open(1, mods, opener2, args.params.rev2, args.params)
   call gina#util#diffthis()
-  call group.add({'keep': 1})
 
   call gina#util#diffupdate()
   normal! zm
