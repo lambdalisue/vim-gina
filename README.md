@@ -79,7 +79,7 @@ Pros.
   - `:Gina!! {command}` will execute a git raw command in a shell (mainly for `:Gina!! add -p` or `:Gina!! rebase -i`)
 - Action based. Users do not need to remember tons of mappings
   - `?` to see the help
-  - `<Tab>` to select an action to perform
+  - `a` to select an action to perform (complete with `<Tab>`)
   - `.` to repeat previous action
   - All action can map to an actual keymap
 - Author tried to follow Vim's flavor
