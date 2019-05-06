@@ -158,7 +158,7 @@ The buffer contents indiceate the index status of each files.
 The first line indicates that a "foo.txt" is staged and the last line
 indicates a "bar.txt" isn't.
 
-When users hit <Tab> on the last line, users will be asked to select an
+When users hit "a" on the last line, users will be asked to select an
 action to perform with a prompt like
 >
 	action: 
@@ -167,8 +167,8 @@ So now, type "sta" on that prompt like
 >
 	action: sta
 <
-And now, hit <Tab> again and "stage" is completed. This is a basic behavior
-of |cmdline-completion| so read that if you are not familiar with.
+And now, hit <Tab> and "stage" is completed. This is a basic behavior of
+|cmdline-completion| so read that if you are not familiar with.
 
 And now, hit <Return> to perform the action. This will perform an
 "index:stage" action which is aliased to "stage", what users just input.
@@ -181,7 +181,7 @@ Which indicates all changes are staged into the index.
 
 So now, let's unstage "foo.txt" with an "index:unstage" action which is
 aliased to "unstage".
-Start a prompt by hitting <Tab> on the first line and type "uns" like
+Start a prompt by hitting "a" on the first line and type "uns" like
 >
 	action: uns
 <
@@ -233,7 +233,7 @@ message like below will be displayed.
 >
 	       browse    [browse] Bro..... <Plug>(gina-a...)[n]
 	...
-	<Tab>  b..choice [choice] Sel..... <Plug>(gina-a...)[nvi]
+	a      b..choice [choice] Sel..... <Plug>(gina-a...)[nvi]
 	?      b..help   [help]   Sho..... <Plug>(gina-a...)[n]
 	...
 <
