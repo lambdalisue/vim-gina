@@ -19,8 +19,8 @@ function! gina#process#register(job, ...) abort
     let s:runnings['pseudo:' . a:job] = a:job
     call gina#core#emitter#emit('process:registered:pseudo', a:job)
   else
-    let s:runnings['job:' . a:job.id()] = a:job
-    call gina#core#emitter#emit('process:registered', a:job.id(), a:job.params.scheme, a:job.args)
+    let s:runnings['job:' . a:job.pid()] = a:job
+    call gina#core#emitter#emit('process:registered', a:job.pid(), a:job.params.scheme, a:job.args)
   endif
 endfunction
 
@@ -29,8 +29,8 @@ function! gina#process#unregister(job, ...) abort
     silent! unlet s:runnings['pseudo:' . a:job]
     call gina#core#emitter#emit('process:unregistered:pseudo', a:job)
   else
-    silent! unlet s:runnings['job:' . a:job.id()]
-    call gina#core#emitter#emit('process:unregistered', a:job.id(), a:job.params.scheme, a:job.args)
+    silent! unlet s:runnings['job:' . a:job.pid()]
+    call gina#core#emitter#emit('process:unregistered', a:job.pid(), a:job.params.scheme, a:job.args)
   endif
 endfunction
 
