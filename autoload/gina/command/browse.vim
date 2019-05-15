@@ -175,6 +175,19 @@ call gina#config(expand('<sfile>'), {
       \       'compare': 'https://\1/\2/\3/compare/%h1...%h2',
       \     },
       \   ],
+      \   'gitlab\.com': [
+      \     [
+      \       '\vhttps?://(%domain)/(.{-})/(.{-})%(\.git)?$',
+      \       '\vgit://(%domain)/(.{-})/(.{-})%(\.git)?$',
+      \       '\vgit\@(%domain):(.{-})/(.{-})%(\.git)?$',
+      \       '\vssh://git\@(%domain)/(.{-})/(.{-})%(\.git)?$',
+      \     ], {
+      \       '_': 'https://\1/\2/\3/blob/%r0/%pt%{#L|}ls%{-L|}le',
+      \       'root': 'https://\1/\2/\3/tree/%r0/',
+      \       'blame': 'https://\1/\2/\3/blame/%r0/%pt%{#L|}ls%{-L|}le',
+      \       'compare': 'https://\1/\2/\3/compare/%h1...%h2',
+      \     },
+      \   ],
       \   'bitbucket\.org': [
       \     [
       \       '\vhttps?://(%domain)/(.{-})/(.{-})%(\.git)?$',
