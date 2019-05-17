@@ -282,7 +282,7 @@ function! s:on_revert(candidates, options) abort
     execute printf(
           \ '%s Gina revert %s %s',
           \ options.mods,
-          \ gina#util#shellescape(options.mainline, '--mainline'),
+          \ empty(options.mainline) ? '' : printf('--mainline %s', options.mainline),
           \ gina#util#shellescape(candidate.rev),
           \)
   endfor
@@ -299,7 +299,7 @@ function! s:on_cherry_pick(candidates, options) abort
     execute printf(
           \ '%s Gina cherry-pick %s %s',
           \ options.mods,
-          \ gina#util#shellescape(options.mainline, '--mainline'),
+          \ empty(options.mainline) ? '' : printf('--mainline %s', options.mainline),
           \ gina#util#shellescape(candidate.rev),
           \)
   endfor
