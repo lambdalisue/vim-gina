@@ -173,7 +173,7 @@ function! s:parse_record_normal(record, residual) abort
     return {}
   endif
   let m = matchlist(record, printf(
-        \ '^.\?\s\+\(%s\):\s\+\("[^"]\{-}"\|.\{-}\)\%( -> \("[^"]\{-}"\|[^ ]\+\)\)\?$',
+        \ '^.\?\s\+\(%s\):\s\+\("[^"]\{-}"\|.\{-}\)\%%( -> \("[^"]\{-}"\|[^ ]\+\)\)\?$',
         \ join(keys(signs), '\|')
         \))
   if empty(m)
