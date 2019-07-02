@@ -372,7 +372,8 @@ function! s:DateTime.quarter() abort
 endfunction
 function! s:DateTime.unix_time() abort
   if !has_key(self, '__unix_time')
-    if self._year < 1969 || 2038 < self._year
+    if self._year < 1969 ||
+          \ (!has('num64') && (2038 < self._year))
       let self.__unix_time = -1
     else
       let utc = self.to(0)
