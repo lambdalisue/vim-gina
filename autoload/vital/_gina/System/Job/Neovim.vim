@@ -30,6 +30,7 @@ function! s:start(args, options) abort
     let job_options.on_exit = funcref('s:_on_exit_raw', [job])
   endif
   let job.__job = jobstart(a:args, job_options)
+  let job.__pid = s:_jobpid_safe(job.__job)
   let job.__exitval = v:null
   let job.args = a:args
   return job
@@ -72,6 +73,17 @@ function! s:_on_exit_raw(job, job_id, exitval, event) abort
   let a:job.__exitval = a:exitval
 endfunction
 
+function! s:_jobpid_safe(job) abort
+  try
+    return jobpid(a:job)
+  catch /^Vim\%((\a\+)\)\=:E900/
+    " NOTE:
+    " Vim does not raise exception even the job has already closed so fail
+    " silently for 'E900: Invalid job id' exception
+    return 0
+  endtry
+endfunction
+
 " Instance -------------------------------------------------------------------
 function! s:_job_id() abort dict
   if &verbose
@@ -83,7 +95,7 @@ function! s:_job_id() abort dict
 endfunction
 
 function! s:_job_pid() abort dict
-  return jobpid(self.__job)
+  return self.__pid
 endfunction
 
 function! s:_job_status() abort dict

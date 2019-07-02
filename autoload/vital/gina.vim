@@ -158,19 +158,52 @@ function! s:_import(name) abort dict
       call module._vital_loaded(vital#{s:plugin_name}#new())
     catch
       unlet s:loaded[a:name]
-      throw 'vital: fail to call ._vital_loaded(): ' . v:exception
+      throw 'vital: fail to call ._vital_loaded(): ' . v:exception . " from:\n" . s:_format_throwpoint(v:throwpoint)
     endtry
   endif
   return copy(s:loaded[a:name])
 endfunction
 let s:Vital._import = function('s:_import')
 
+function! s:_format_throwpoint(throwpoint) abort
+  let funcs = []
+  let stack = matchstr(a:throwpoint, '^function \zs.*\ze, line \d\+$')
+  for line in split(stack, '\.\.')
+    let m = matchlist(line, '^\%(<SNR>\(\d\+\)_\)\?\(.\+\)\[\(\d\+\)\]$')
+    if empty(m)
+      call add(funcs, line)
+      continue
+    endif
+    let [sid, name, lnum] = m[1:3]
+    let attr = ''
+    if !empty(sid)
+      let name = printf('<SNR>%d_%s', sid, name)
+    endif
+    let file = s:_get_file_by_func_name(name)
+    call add(funcs, printf('function %s(...)%s Line:%d (%s)', name, attr, lnum, file))
+  endfor
+  return join(funcs, "\n")
+endfunction
+
+function! s:_get_file_by_func_name(name) abort
+  try
+    redir => body
+    silent execute 'verbose function' a:name
+  finally
+    redir END
+  endtry
+  let lines = split(body, "\n")
+  let signature = matchstr(lines[0], '^\s*\zs.*')
+  let file = matchstr(lines[1], '^\t\%(Last set from\|.\{-}:\)\s*\zs.*$')
+  return substitute(file, '[/\\]\+', '/', 'g')
+endfunction
+
 " s:_get_module() returns module object wihch has all script local functions.
 function! s:_get_module(name) abort dict
   let funcname = s:_import_func_name(self.plugin_name(), a:name)
   try
     return call(funcname, [])
-  catch /^Vim\%((\a\+)\)\?:E117/
+  catch /^Vim\%((\a\+)\)\?:E117:/
     return s:_get_builtin_module(a:name)
   endtry
 endfunction
