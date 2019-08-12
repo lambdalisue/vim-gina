@@ -1295,7 +1295,7 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
             [-M{num}] [-C{num}] [--since={date}] [{treeish}]
 	Open a "gina-blame" buffer to blame changes of the content.
 	If {treeish} is missing, ':' is used as a default treeish.
-	If {path} part of the {treeish} is omitted, it warn and fail.
+	If {path} part of the {treeish} is omitted, it warns and fails.
 
 	The followings are allowed in {options}.
 
@@ -1488,7 +1488,7 @@ Additionally [+cmd] and [++opt] are supported. See |gina-buffer-+cmd| and
 	Open two buffers to compare the content of {path} between 1) working
 	tree vs index or {rev}, 2) index vs HEAD or {rev}.
 	If {treeish} is missing, ':' is used as a default treeish.
-	If {path} part of the {treeish} is omitted, it warn and fail.
+	If {path} part of the {treeish} is omitted, it warns and fails.
 
 	The followings are allowed in {options}
 
