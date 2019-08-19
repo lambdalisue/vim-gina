@@ -302,7 +302,7 @@ function! s:QuitPre() abort
   let args = gina#core#meta#get('args', v:null)
   if args isnot# v:null && get(args.params, 'restore')
     let win_id = win_getid()
-    if len(bufname('#')) && bufnr('#') != -1
+    if !empty(bufname('#')) && bufnr('#') isnot# -1
       silent keepalt keepjumps 1split #
     else
       silent keepalt keepjumps 1new
