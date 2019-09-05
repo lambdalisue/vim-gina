@@ -270,15 +270,9 @@ function! s:BufReadCmd() abort
   let git = gina#core#get_or_fail()
   let args = gina#core#meta#get_or_fail('args')
   if v:cmdbang
-    let content = gina#core#revelator#call(
-          \ function('s:get_commitmsg_template'),
-          \ [git, args]
-          \)
+    let content = s:get_commitmsg_template(git, args)
   else
-    let content = gina#core#revelator#call(
-          \ function('s:get_commitmsg'),
-          \ [git, args]
-          \)
+    let content = s:get_commitmsg(git, args)
   endif
   call gina#core#buffer#assign_cmdarg()
   call gina#core#writer#replace('%', 0, -1, content)
@@ -392,7 +386,7 @@ function! s:get_commitmsg_template(git, args) abort
     call args.pop('--no-edit')
     call args.set('-e|--edit', 1)
     let result = gina#process#call(a:git, args)
-    if !result.status
+    if !result.status || match(result.stderr, 'error: unable to start editor') is# -1
       " While git is executed with '-c core.editor=false', the command above
       " should fail after that create a COMMIT_EDITMSG for the current
       " situation
