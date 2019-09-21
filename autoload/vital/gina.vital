@@ -1,5 +1,5 @@
 gina
-6ba634458b1b776aa8bea97f9f8c4d1064f4e14a
+f18d7c763a94ecfa00892f2412229aa8c2307a78
 
 System.File
 Data.List
@@ -16,3 +16,4 @@ App.Emitter
 Vim.Buffer.Writer
 Vim.Buffer.Group
 App.Revelator
+Vim.Highlight

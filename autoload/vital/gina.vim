@@ -275,7 +275,7 @@ function! s:_sid(path, filter_pattern) abort
   return 0
 endfunction
 
-" We want to use a execute() builtin function instead of s:_execute(),
+" We want to use an execute() builtin function instead of s:_execute(),
 " however there is a bug in execute().
 " execute() returns empty string when it is called in
 " completion function of user defined ex command.
