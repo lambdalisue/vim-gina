@@ -44,8 +44,11 @@ function! s:_parse_attrs(attrs) abort
   endif
   let attrs = {}
   for term in split(a:attrs, ' ')
-    let [key, val] = split(term, '=')
-    let attrs[key] = val
+    let m = split(term, '=')
+    if len(m) < 2
+      continue
+    endif
+    let attrs[m[0]] = join(m[1:], '=')
   endfor
   return attrs
 endfunction
