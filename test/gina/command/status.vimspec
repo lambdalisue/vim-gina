@@ -31,20 +31,8 @@ Describe gina#command#status
       GinaSync status
       Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:status', slit1.refname))
-      Assert Equals(getline(1, '$'), [
-            \ 'On branch master',
-            \ 'Changes to be committed:',
-            \ '  (use "git reset HEAD <file>..." to unstage)',
-            \ '',
-            \ '	[32mmodified:   A/foo.txt[m',
-            \ '',
-            \ 'Changes not staged for commit:',
-            \ '  (use "git add <file>..." to update what will be committed)',
-            \ '  (use "git checkout -- <file>..." to discard changes in working directory)',
-            \ '',
-            \ '	[31mmodified:   A/foo.txt[m',
-            \ '',
-            \])
+      Assert Match(join(getline(1, '$'), "\n"), '[32mmodified:   A/foo.txt[m')
+      Assert Match(join(getline(1, '$'), "\n"), '[31mmodified:   A/foo.txt[m')
     End
 
     It might be called with -- A/*.txt
@@ -52,20 +40,8 @@ Describe gina#command#status
       GinaSync status -- A/*.txt
       Assert Equals(winnr('$'), 1)
       Assert Equals(bufname('%'), printf('gina://%s:status:--', slit1.refname))
-      Assert Equals(getline(1, '$'), [
-            \ 'On branch master',
-            \ 'Changes to be committed:',
-            \ '  (use "git reset HEAD <file>..." to unstage)',
-            \ '',
-            \ '	[32mmodified:   A/foo.txt[m',
-            \ '',
-            \ 'Changes not staged for commit:',
-            \ '  (use "git add <file>..." to update what will be committed)',
-            \ '  (use "git checkout -- <file>..." to discard changes in working directory)',
-            \ '',
-            \ '	[31mmodified:   A/foo.txt[m',
-            \ ''
-            \])
+      Assert Match(join(getline(1, '$'), "\n"), '[32mmodified:   A/foo.txt[m')
+      Assert Match(join(getline(1, '$'), "\n"), '[31mmodified:   A/foo.txt[m')
     End
 
     It might be called with -- A/*.vim
