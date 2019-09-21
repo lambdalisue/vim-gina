@@ -228,15 +228,17 @@ Describe gina#util
       augroup END
       " exists('#BufReadPre') returns 1 while BufReadPre foo:* is registered
       Assert True(exists('#BufReadPre'))
-      " But a builtin doautocmd shows 'No matching autocommands' warning while
-      " a current buffer does not match with the registered pattern.
-      try
-        redir => content
-        doautocmd BufReadPre
-      finally
-        redir END
-      endtry
-      Assert Equals(split(content, "\n"), ['No matching autocommands'])
+      if !has('nvim-0.4.0')
+        " But a builtin doautocmd shows 'No matching autocommands' warning while
+        " a current buffer does not match with the registered pattern.
+        try
+          redir => content
+          doautocmd BufReadPre
+        finally
+          redir END
+        endtry
+        Assert Equals(split(content, "\n"), ['No matching autocommands'])
+      endif
       " But gina#util#doautocmd does not call autocmd in this case
       try
         redir => content

@@ -11,15 +11,11 @@ env:
   - PROFILE=.profile VIM=vim    TAG=latest
   - PROFILE=.profile VIM=vim    TAG=v8.0.0107
   - PROFILE=.profile VIM=vim    TAG=v8.1.0000
-  - PROFILE=.profile VIM=vim    TAG=v8.1.0342
-  - PROFILE=.profile VIM=vim    TAG=v8.1.0349
-  - PROFILE=.profile VIM=vim    TAG=v8.1.0367
+  - PROFILE=.profile VIM=vim    TAG=v8.1.2000
   - PROFILE=.profile VIM=neovim TAG=latest
-  - PROFILE=.profile VIM=neovim TAG=v0.2.0
-  - PROFILE=.profile VIM=neovim TAG=v0.2.1
-  - PROFILE=.profile VIM=neovim TAG=v0.2.2
   - PROFILE=.profile VIM=neovim TAG=v0.3.0
-  - PROFILE=.profile VIM=neovim TAG=v0.3.1
+  - PROFILE=.profile VIM=neovim TAG=v0.4.0
+  - PROFILE=.profile VIM=neovim TAG=v0.4.2
 
 
 addons:
