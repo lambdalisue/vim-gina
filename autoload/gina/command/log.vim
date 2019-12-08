@@ -6,7 +6,7 @@ let s:SCHEME = gina#command#scheme(expand('<sfile>'))
 function! gina#command#log#call(range, args, mods) abort
   call gina#core#options#help_if_necessary(a:args, s:get_options())
   let git = gina#core#get_or_fail()
-  let args = s:build_args(git, a:args)
+  let args = s:build_args(git, a:args, a:range)
   let bufname = gina#core#buffer#bufname(git, s:SCHEME, {
         \ 'path': args.params.path,
         \ 'params': [
@@ -63,7 +63,7 @@ function! s:get_options() abort
   return options
 endfunction
 
-function! s:build_args(git, args) abort
+function! s:build_args(git, args, range) abort
   let args = a:args.clone()
   let args.params.group = args.pop('--group', '')
   let args.params.opener = args.pop('--opener', '')
@@ -75,10 +75,14 @@ function! s:build_args(git, args) abort
   endif
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1, v:null))
-  if args.params.path isnot# v:null
-    call args.residual([args.params.path] + args.residual())
-  elseif args.params.rev isnot# v:null
-    call args.set(1, args.params.rev)
+  if a:range[0] != a:range[1]
+    call args.set("-L", printf("%d,%d:%s", a:range[0], a:range[1], bufname("%")))
+  else
+    if args.params.path isnot# v:null
+      call args.residual([args.params.path] + args.residual())
+    elseif args.params.rev isnot# v:null
+      call args.set(1, args.params.rev)
+    endif
   endif
   return args.lock()
 endfunction
