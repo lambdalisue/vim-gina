@@ -1,4 +1,4 @@
-if exists('g:loaded_gina') && v:version < 800
+if exists('g:loaded_gina') || v:version < 800
   finish
 endif
 let g:loaded_gina = 1
