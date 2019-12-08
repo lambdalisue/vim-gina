@@ -56,6 +56,10 @@ function! s:get_options() abort
         \ '--follow',
         \ 'Continue listing the history of a file beyond renames',
         \)
+  call options.define(
+        \ '--raw',
+        \ 'Do NOT use pretty print',
+        \)
   return options
 endfunction
 
@@ -66,7 +70,10 @@ function! s:build_args(git, args) abort
   let args.params.partial = !empty(args.residual())
 
   call args.set('--color', 'always')
-  call args.set('--pretty', "format:\e[32m%h\e[m %s \e[33;1m%cr\e[m \e[35;1m<%an>\e[m\e[36;1m%d\e[m")
+  if empty(args.pop('--raw', ''))
+    call args.set('--pretty', "format:\e[32m%h\e[m %s \e[33;1m%cr\e[m \e[35;1m<%an>\e[m\e[36;1m%d\e[m")
+  endif
+
   call gina#core#args#extend_treeish(a:git, args, args.pop(1, v:null))
   if args.params.path isnot# v:null
     call args.residual([args.params.path] + args.residual())
