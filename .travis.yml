@@ -27,7 +27,6 @@ addons:
 
 install:
   - pip3 install --user setuptools --upgrade
-  - pip3 install --user vim-vint typing
   - pip3 install --user coverage covimerage
   - docker --version
   - make VIM=${VIM} TAG=${TAG} image
@@ -35,11 +34,9 @@ install:
 before_script:
   - uname -a
   - python3 --version
-  - vint --version
   - make VIM=${VIM} TAG=${TAG} version
 
 script:
-  - vint autoload/gina autoload/vital/__gina__ plugin ftplugin
   - make VIM=${VIM} TAG=${TAG} ARGS="-e PROFILE=${PROFILE} -e CI=docker" test
   - make VIM=${VIM} TAG=${TAG} helptags
 

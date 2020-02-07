@@ -41,14 +41,14 @@ version-themis: ## Show vim-themis version in a docker image
 .PHONY: test
 test: ## Run unittests by using a docker image
 	@echo "${GREEN}Running unittests by using a docker image (${IMAGE}:${TAG})${RESET}"
-	@docker run --rm --volume ${PWD}:/mnt/volume ${ARGS} -it ${IMAGE}:${TAG}
+	@docker run --rm --volume ${PWD}:/mnt/volume ${ARGS} ${IMAGE}:${TAG}
 
 .PHONY: helptags
 helptags: ## Build helptags by using a docker image
 	@echo "${GREEN}Building helptags by using a docker image (${IMAGE}:${TAG})${RESET}"
 	@docker run --rm --entrypoint= \
 	    --volume ${PWD}:/mnt/volume \
-	    -it ${IMAGE}:${TAG} \
+	    ${IMAGE}:${TAG} \
 	    /usr/local/bin/${VIME} \
 	    --cmd "try | helptags doc/ | catch | cquit | endtry" \
 	    --cmd quit
