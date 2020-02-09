@@ -2,8 +2,6 @@
 
 Version: 1.0.0
 Author:  Alisue <lambdalisue@hashnote.net>
-Support: Vim 8.0.0107 and above
-Support: Neovim 0.2.0 and above
 License: MIT License (See LICENSE)
 
 

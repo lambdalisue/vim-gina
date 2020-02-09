@@ -2,9 +2,9 @@
 
 [![Gitter](https://img.shields.io/gitter/room/lambdalisue/gina-vim.svg?style=flat-square)](https://gitter.im/gina-vim)
 ![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-yellow.svg?style=flat-square)
-![Support Vim 8.0.0107 or above](https://img.shields.io/badge/support-Vim%208.0.0107%20or%20above-yellowgreen.svg?style=flat-square)
-![Support Neovim 0.2.0 or above](https://img.shields.io/badge/support-Neovim%200.2.0%20or%20above-yellowgreen.svg?style=flat-square)
-![Support Git 1.8.5.6 or above](https://img.shields.io/badge/support-Git%201.8.5.6%20or%20above-green.svg?style=flat-square)
+![Support Vim 8.1 or above](https://img.shields.io/badge/support-Vim%208.1%20or%20above-yellowgreen.svg?style=flat-square)
+![Support Neovim 0.4 or above](https://img.shields.io/badge/support-Neovim%200.4%20or%20above-yellowgreen.svg?style=flat-square)
+![Support Git 2.25 or above](https://img.shields.io/badge/support-Git%202.25%20or%20above-green.svg?style=flat-square)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Doc](https://img.shields.io/badge/doc-%3Ah%20gina-orange.svg?style=flat-square)](doc/gina.txt)
 [![Powered by vital.vim](https://img.shields.io/badge/powered%20by-vital.vim-80273f.svg?style=flat-square)](https://github.com/vim-jp/vital.vim)
@@ -19,15 +19,6 @@ So gina.vim has most of the outstanding features of vim-gita and drops some unwi
 [![You've been Super Viman. After this talk, you could say you are Super Viman 2 -- Life with gina.vim](https://img.youtube.com/vi/zkANQ9l7YDM/0.jpg)](https://www.youtube.com/watch?v=zkANQ9l7YDM)
 
 I've talked about what the gina.vim is in [VimConf2017](http://vimconf.vim-jp.org/2017/) ([Slide](https://lambdalisue.github.io/vimconf2017/assets/player/KeynoteDHTMLPlayer.html)). Check it out if you would like to feel what the gina.vim is.
-
-## Supports
-
-- Git 1.8.5.6 or above
-- Vim 8.0.0107 or above or Neovim 0.2.0
-- All major platforms
-  - Linux (Tested on TravisCI, author use Linux)
-  - macOS (Tested on TravisCI, author use OS X Elcapitan)
-  - Windows (Tested on AppVeyor, main contributor use Windows)
 
 ## Usage
 
