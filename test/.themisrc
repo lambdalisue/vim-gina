@@ -1,12 +1,6 @@
 if &encoding ==# 'latin1'
   set encoding=utf-8
 endif
-" Profile ------------------------------------------------------------------
-if $PROFILE !=# ''
-  execute 'profile start' $PROFILE
-  profile! file ./autoload/gina/*
-  profile! file ./autoload/vital/__gina__/*
-endif
 
 " Force English interface
 try
