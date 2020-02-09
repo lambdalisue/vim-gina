@@ -386,7 +386,10 @@ function! s:get_commitmsg_template(git, args) abort
     call args.pop('--no-edit')
     call args.set('-e|--edit', 1)
     let result = gina#process#call(a:git, args)
-    if !result.status || match(result.stderr, 'error: unable to start editor') is# -1
+    if !result.status || (
+          \ match(result.stderr, 'error: unable to start editor') is# -1 &&
+          \ match(result.stderr, 'error: There was a problem with the editor') is# -1
+          \)
       " While git is executed with '-c core.editor=false', the command above
       " should fail after that create a COMMIT_EDITMSG for the current
       " situation
