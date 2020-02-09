@@ -2757,7 +2757,7 @@ CHANGELOG					*gina-changelog*
 	  - Gina show --opener=edit :
 	  - Gina init
 
-2017.09.29 (v1.0.0)
+2018.09.29 (v1.0.0)
 	Release a first stable version.
 
 
