@@ -250,7 +250,7 @@ function! s:diff(git, path, buffer, tempfile1, tempfile2) abort
           \)
   endif
   return s:replace_filenames_in_diff(
-        \ result.content,
+        \ result.stdout,
         \ a:tempfile1,
         \ a:tempfile2,
         \ a:path,
@@ -262,7 +262,7 @@ function! s:index(git, path) abort
   if result.status
     return []
   endif
-  return result.content
+  return result.stdout
 endfunction
 
 function! s:replace_filenames_in_diff(content, filename1, filename2, repl) abort

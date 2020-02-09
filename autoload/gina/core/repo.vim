@@ -31,7 +31,7 @@ function! gina#core#repo#config(git) abort
     throw gina#process#errormsg(result)
   endif
   let config = {}
-  for record in filter(copy(result.content), '!empty(v:val)')
+  for record in filter(copy(result.stdout), '!empty(v:val)')
     call s:extend_config(config, record)
   endfor
   call store.set(slug, config)
