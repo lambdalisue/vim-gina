@@ -72,29 +72,6 @@ if !exists('s:subscribed')
 endif
 
 
-" Emit 'modified' when a file content is modified ----------------------------
-function! s:on_BufWritePre() abort
-  if empty(&buftype) && !empty(gina#core#get())
-    let b:gina_internal_emitter_modified = &modified
-  endif
-endfunction
-
-function! s:on_BufWritePost() abort
-  if exists('b:gina_internal_emitter_modified')
-    if b:gina_internal_emitter_modified && !&modified
-      call gina#core#emitter#emit('modified:delay')
-    endif
-    unlet b:gina_internal_emitter_modified
-  endif
-endfunction
-
-augroup gina_internal_util_emitter
-  autocmd! *
-  autocmd BufWritePre  * call s:on_BufWritePre()
-  autocmd BufWritePost * nested call s:on_BufWritePost()
-augroup END
-
-
 call gina#config(expand('<sfile>'), {
       \ 'modified_delay': 10,
       \})

@@ -70,18 +70,6 @@ Describe gina#core#emitter
     Assert Equals(tracker.modified_delay_called_count, 5)
   End
 
-  It emits 'modified:delay' event by modifing a buffer in a git repository
-    execute 'edit' fnameescape(Path.join(slit1.worktree, 'foo.txt'))
-    Assert Equals(tracker.modified_called_count, 0)
-    Assert Equals(tracker.modified_delay_called_count, 0)
-    execute "normal! ifoobar\<Esc>:w\<CR>"
-    Assert Equals(tracker.modified_called_count, 0)
-    Assert Equals(tracker.modified_delay_called_count, 1)
-    execute 'sleep' (g:gina#core#emitter#modified_delay * 10) . 'm'
-    Assert Equals(tracker.modified_called_count, 1)
-    Assert Equals(tracker.modified_delay_called_count, 1)
-  End
-
   It DOES NOT emits 'modified:delay' event by modifing a buffer NOT in a git repository
     execute 'edit' fnameescape(Path.join(slit3.worktree, 'foo.txt'))
     Assert Equals(tracker.modified_called_count, 0)

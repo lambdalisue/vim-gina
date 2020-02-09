@@ -464,6 +464,7 @@ function! s:commit_commitmsg(git, args) abort
     call gina#process#inform(result)
     call s:remove_cached_commitmsg(a:git)
     call gina#core#emitter#emit('command:called:commit')
+    bwipeout
   finally
     call delete(tempfile)
   endtry
