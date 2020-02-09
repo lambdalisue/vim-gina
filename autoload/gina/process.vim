@@ -56,15 +56,23 @@ function! gina#process#open(git, args, ...) abort
   let pipe = extend(gina#process#pipe#default(), get(a:000, 0, {}))
   let pipe.params = get(args, 'params', {})
   let pipe.params.scheme = get(pipe.params, 'scheme', args.get(0, ''))
-  let LC_ALL_saved = $LC_ALL
-  let GIT_EDITOR_saved = $GIT_EDITOR
+  let LC_ALL_saved = exists('$LC_ALL') ? $LC_ALL : v:null
+  let GIT_EDITOR_saved = exists('$GIT_EDITOR') ? $GIT_EDITOR : v:null
   try
     let $LC_ALL = 'C'
-    let $GIT_EDITOR = ''
+    unlet $GIT_EDITOR
     let job = s:Job.start(s:build_raw_args(a:git, args), pipe)
   finally
-    let $LC_ALL = LC_ALL_saved
-    let $GIT_EDITOR = GIT_EDITOR_saved
+    if LC_ALL_saved is# v:null
+      unlet $LC_ALL
+    else
+      let $LC_ALL = LC_ALL_saved
+    endif
+    if GIT_EDITOR_saved is# v:null
+      unlet $GIT_EDITOR
+    else
+      let $GIT_EDITOR = GIT_EDITOR_saved
+    endif
   endtry
   call job.on_start()
   call gina#core#console#debug(printf('process: %s', join(job.args)))
