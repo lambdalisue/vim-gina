@@ -1,9 +1,7 @@
 *gina.txt*		Asynchronously control git repositories from Vim
 
-Version: 1.0.0
+Version: 1.0
 Author:  Alisue <lambdalisue@hashnote.net>
-Support: Vim 8.0.0107 and above
-Support: Neovim 0.2.0 and above
 License: MIT License (See LICENSE)
 
 
@@ -2757,9 +2755,8 @@ CHANGELOG					*gina-changelog*
 	  - Gina show --opener=edit :
 	  - Gina init
 
-2017.09.29 (v1.0.0)
+2018.09.29 (v1.0.0)
 	Release a first stable version.
-
 
 =============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

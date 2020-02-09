@@ -212,49 +212,49 @@ function! s:patch(git) abort
         \ '--',
         \ s:Path.realpath(abspath),
         \])
-  let diff = s:diff(a:git, path, getline(1, '$'))
-  let result = s:apply(a:git, diff)
-  return result
-endfunction
-
-function! s:diff(git, path, buffer) abort
   let tempfile = tempname()
   let tempfile1 = tempfile . '.index'
   let tempfile2 = tempfile . '.buffer'
   try
-    if writefile(s:index(a:git, a:path), tempfile1) == -1
-      return
-    endif
-    if writefile(a:buffer, tempfile2) == -1
-      return
-    endif
-    " NOTE:
-    " --no-index force --exit-code option.
-    " --exit-code mean that the program exits with 1 if there were differences
-    " and 0 means no differences
-    let result = gina#process#call(a:git, [
-          \ 'diff',
-          \ '--no-index',
-          \ '--unified=1',
-          \ '--',
-          \ tempfile1,
-          \ tempfile2,
-          \])
-    if !result.status
-      throw gina#core#revelator#info(
-            \ 'No difference between index and buffer'
-            \)
-    endif
-    return s:replace_filenames_in_diff(
-          \ result.content,
-          \ tempfile1,
-          \ tempfile2,
-          \ a:path,
-          \)
+    let diff = s:diff(a:git, path, getline(1, '$'), tempfile1, tempfile2)
+    let result = s:apply(a:git, diff)
   finally
     silent! call delete(tempfile1)
     silent! call delete(tempfile2)
   endtry
+  return result
+endfunction
+
+function! s:diff(git, path, buffer, tempfile1, tempfile2) abort
+  if writefile(s:index(a:git, a:path), a:tempfile1) == -1
+    return ''
+  endif
+  if writefile(a:buffer, a:tempfile2) == -1
+    return ''
+  endif
+  " NOTE:
+  " --no-index force --exit-code option.
+  " --exit-code mean that the program exits with 1 if there were differences
+  " and 0 means no differences
+  let result = gina#process#call(a:git, [
+        \ 'diff',
+        \ '--no-index',
+        \ '--unified=1',
+        \ '--',
+        \ a:tempfile1,
+        \ a:tempfile2,
+        \])
+  if !result.status
+    throw gina#core#revelator#info(
+          \ 'No difference between index and buffer'
+          \)
+  endif
+  return s:replace_filenames_in_diff(
+        \ result.stdout,
+        \ a:tempfile1,
+        \ a:tempfile2,
+        \ a:path,
+        \)
 endfunction
 
 function! s:index(git, path) abort
@@ -262,7 +262,7 @@ function! s:index(git, path) abort
   if result.status
     return []
   endif
-  return result.content
+  return result.stdout
 endfunction
 
 function! s:replace_filenames_in_diff(content, filename1, filename2, repl) abort

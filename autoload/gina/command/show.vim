@@ -141,7 +141,7 @@ function! s:BufReadCmd() abort
   let args = s:reassign_rev(git, args.clone())
   let result = gina#process#call_or_fail(git, args)
   call gina#core#buffer#assign_cmdarg()
-  call gina#core#writer#replace('%', 0, -1, result.content)
+  call gina#core#writer#replace('%', 0, -1, result.stdout)
   call gina#core#emitter#emit('command:called', s:SCHEME)
   if args.params.path is# v:null
     setlocal nomodeline
