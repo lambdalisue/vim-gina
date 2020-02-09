@@ -1,18 +1,19 @@
-# gina
+# 👣 gina.vim
 
-[![Gitter](https://img.shields.io/gitter/room/lambdalisue/gina-vim.svg?style=flat-square)](https://gitter.im/gina-vim)
-![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-yellow.svg?style=flat-square)
-![Support Vim 8.1 or above](https://img.shields.io/badge/support-Vim%208.1%20or%20above-yellowgreen.svg?style=flat-square)
-![Support Neovim 0.4 or above](https://img.shields.io/badge/support-Neovim%200.4%20or%20above-yellowgreen.svg?style=flat-square)
-![Support Git 2.25 or above](https://img.shields.io/badge/support-Git%202.25%20or%20above-green.svg?style=flat-square)
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
-[![Doc](https://img.shields.io/badge/doc-%3Ah%20gina-orange.svg?style=flat-square)](doc/gina.txt)
-[![Powered by vital.vim](https://img.shields.io/badge/powered%20by-vital.vim-80273f.svg?style=flat-square)](https://github.com/vim-jp/vital.vim)
+![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-yellow.svg)
+![Support Vim 8.1 or above](https://img.shields.io/badge/support-Vim%208.1%20or%20above-yellowgreen.svg)
+![Support Neovim 0.4 or above](https://img.shields.io/badge/support-Neovim%200.4%20or%20above-yellowgreen.svg)
+![Support Git 2.25 or above](https://img.shields.io/badge/support-Git%202.25%20or%20above-green.svg)
+[![Powered by vital.vim](https://img.shields.io/badge/powered%20by-vital.vim-80273f.svg)](https://github.com/vim-jp/vital.vim)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Doc](https://img.shields.io/badge/doc-%3Ah%20gina-orange.svg)](doc/gina.txt)
+[![Doc (dev)](https://img.shields.io/badge/doc-%3Ah%20gina--develop-orange.svg)](doc/gina-develop.txt)
+
+[![reviewdog](https://github.com/lambdalisue/gina.vim/workflows/reviewdog/badge.svg)](https://github.com/lambdalisue/gina.vim/actions?query=workflow%3Areviewdog)
+[![vim](https://github.com/lambdalisue/gina.vim/workflows/vim/badge.svg)](https://github.com/lambdalisue/gina.vim/actions?query=workflow%3Avim)
+[![neovim](https://github.com/lambdalisue/gina.vim/workflows/neovim/badge.svg)](https://github.com/lambdalisue/gina.vim/actions?query=workflow%3Aneovim)
 
 gina.vim (gina) is a plugin to asynchronously control git repositories.
-
-The plugin was developed based on the success of [lambdalisue/vim-gita][].
-So gina.vim has most of the outstanding features of vim-gita and drops some unwilling points.
 
 ## Presentation
 
