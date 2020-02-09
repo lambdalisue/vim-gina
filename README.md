@@ -1,6 +1,6 @@
 # 👣 gina.vim
 
-![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-yellow.svg)
+![Version 1.0](https://img.shields.io/badge/version-1.0-yellow.svg)
 ![Support Vim 8.1 or above](https://img.shields.io/badge/support-Vim%208.1%20or%20above-yellowgreen.svg)
 ![Support Neovim 0.4 or above](https://img.shields.io/badge/support-Neovim%200.4%20or%20above-yellowgreen.svg)
 ![Support Git 2.25 or above](https://img.shields.io/badge/support-Git%202.25%20or%20above-green.svg)
