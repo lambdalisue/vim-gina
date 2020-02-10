@@ -20,7 +20,7 @@ function! gina#component#traffic#ahead() abort
         \])
   let ahead = store.get(slug, '')
   if !empty(ahead)
-    return ahead
+    return str2nr(ahead)
   endif
   if !exists('s:ahead_job')
     let pipe = gina#process#pipe#store()
@@ -50,7 +50,7 @@ function! gina#component#traffic#behind() abort
         \])
   let behind = store.get(slug, '')
   if !empty(behind)
-    return behind
+    return str2nr(behind)
   endif
   if !exists('s:behind_job')
     let pipe = gina#process#pipe#store()
