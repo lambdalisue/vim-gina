@@ -141,7 +141,11 @@ function! s:get_remote_url(git, commit1, commit2) abort
     endif
   endfor
   let remote_name = empty(remote_name) ? 'origin' : remote_name
-  return get(config, printf('remote.%s.url', remote_name), '')
+  let result = gina#process#call(a:git, ['remote', 'get-url', remote_name])
+  if result.status
+    throw gina#process#errormsg(result)
+  endif
+  return result.content[0]
 endfunction
 
 function! s:build_base_url(remote_url, scheme) abort
