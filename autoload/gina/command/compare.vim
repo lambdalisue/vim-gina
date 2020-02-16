@@ -59,18 +59,23 @@ function! s:get_options() abort
         \ '-R',
         \ 'Reverse the buffer order',
         \)
+  call options.define(
+        \ '--diffoff',
+        \ 'Call diffoff! prior to open buffers.',
+        \)
   return options
 endfunction
 
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.groups = [
-        \ args.pop('--group1', 'compare-l'),
-        \ args.pop('--group2', 'compare-r'),
+        \ args.pop('--group1', ''),
+        \ args.pop('--group2', ''),
         \]
   let args.params.opener = args.pop('--opener', 'tabnew')
   let args.params.cached = args.get('--cached')
   let args.params.R = args.get('-R')
+  let args.params.diffoff = args.pop('--diffoff')
 
   call gina#core#args#extend_treeish(a:git, args, args.pop(1, ':'))
   call gina#core#args#extend_diff(a:git, args, args.params.rev)
@@ -92,7 +97,10 @@ function! s:call(range, args, mods) abort
         \ ? 'keepalt ' . a:mods
         \ : join(['keepalt', 'rightbelow', a:mods])
 
-  diffoff!
+  if !empty(args.params.diffoff)
+    diffoff!
+  endif
+
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'
