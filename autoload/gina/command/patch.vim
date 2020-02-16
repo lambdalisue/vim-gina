@@ -63,6 +63,10 @@ function! s:get_options() abort
         \ '--oneside',
         \ 'Use two buffers instead of three buffers.',
         \)
+  call options.define(
+        \ '--diffoff',
+        \ 'Call diffoff! prior to open buffers.',
+        \)
   return options
 endfunction
 
@@ -76,6 +80,7 @@ function! s:build_args(git, args) abort
   let args.params.no_group = args.pop('--no-group', 0)
   let args.params.opener = args.pop('--opener', 'tabnew')
   let args.params.oneside = args.pop('--oneside', 0)
+  let args.params.diffoff = args.pop('--diffoff')
   call gina#core#args#extend_path(a:git, args, args.pop(1))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
   call gina#core#args#extend_col(a:git, args, args.pop('--col'))
@@ -116,7 +121,10 @@ function! s:call(range, args, mods) abort
         \ ? 'keepalt ' . a:mods
         \ : join(['keepalt', 'rightbelow', a:mods])
 
-  diffoff!
+  if !empty(args.params.diffoff)
+    diffoff!
+  endif
+
   let opener1 = args.params.opener
   let opener2 = empty(matchstr(&diffopt, 'vertical'))
         \ ? 'split'

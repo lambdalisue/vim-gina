@@ -60,6 +60,10 @@ function! s:get_options() abort
         \ '--col=',
         \ 'An initial column number.',
         \)
+  call options.define(
+        \ '--diffoff',
+        \ 'Call diffoff! prior to open buffers.',
+        \)
   return options
 endfunction
 
@@ -71,6 +75,7 @@ function! s:build_args(git, args) abort
         \ args.pop('--group3', 'chaperon-r'),
         \]
   let args.params.opener = args.pop('--opener', 'tabnew')
+  let args.params.diffoff = args.pop('--diffoff')
   call gina#core#args#extend_path(a:git, args, args.pop(1))
   call gina#core#args#extend_line(a:git, args, args.pop('--line'))
   call gina#core#args#extend_col(a:git, args, args.pop('--col'))
@@ -88,7 +93,10 @@ function! s:call(range, args, mods) abort
         \ ? 'split'
         \ : 'vsplit'
 
-  diffoff!
+  if !empty(args.params.diffoff)
+    diffoff!
+  endif
+
   call s:open(0, mods, opener1, ':2', args.params)
   let bufnr1 = bufnr('%')
 
