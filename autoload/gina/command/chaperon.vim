@@ -70,9 +70,9 @@ endfunction
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.groups = [
-        \ args.pop('--group1', 'chaperon-l'),
-        \ args.pop('--group2', 'chaperon-c'),
-        \ args.pop('--group3', 'chaperon-r'),
+        \ args.pop('--group1', ''),
+        \ args.pop('--group2', ''),
+        \ args.pop('--group3', ''),
         \]
   let args.params.opener = args.pop('--opener', 'tabnew')
   let args.params.diffoff = args.pop('--diffoff')

@@ -73,9 +73,9 @@ endfunction
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.groups = [
-        \ args.pop('--group1', 'patch-l'),
-        \ args.pop('--group2', 'patch-c'),
-        \ args.pop('--group3', 'patch-r'),
+        \ args.pop('--group1', ''),
+        \ args.pop('--group2', ''),
+        \ args.pop('--group3', ''),
         \]
   let args.params.no_group = args.pop('--no-group', 0)
   let args.params.opener = args.pop('--opener', 'tabnew')

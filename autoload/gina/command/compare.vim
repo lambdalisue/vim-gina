@@ -69,8 +69,8 @@ endfunction
 function! s:build_args(git, args) abort
   let args = a:args.clone()
   let args.params.groups = [
-        \ args.pop('--group1', 'compare-l'),
-        \ args.pop('--group2', 'compare-r'),
+        \ args.pop('--group1', ''),
+        \ args.pop('--group2', ''),
         \]
   let args.params.opener = args.pop('--opener', 'tabnew')
   let args.params.cached = args.get('--cached')
