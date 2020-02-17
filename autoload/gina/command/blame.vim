@@ -104,8 +104,8 @@ endfunction
 function! s:build_args(git, args, range) abort
   let args = a:args.clone()
   let args.params.groups = [
-        \ args.pop('--group1', ''),
-        \ args.pop('--group2', ''),
+        \ args.pop('--group1', 'blame-body'),
+        \ args.pop('--group2', 'blame-navi'),
         \]
   let args.params.opener = args.pop('--opener', 'tabnew')
   let args.params.width = args.pop('--width', v:null)
