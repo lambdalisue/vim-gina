@@ -23,12 +23,8 @@ endfunction
 
 function! s:_vital_created(module) abort
   " Expose script-local funcref
-  if exists('s:strchars')
-    let a:module.strchars = s:strchars
-  endif
-  if exists('s:wcswidth')
-    let a:module.wcswidth = s:wcswidth
-  endif
+  let a:module.strchars = function('strchars')
+  let a:module.wcswidth = function('strwidth')
 endfunction
 
 " Substitute a:from => a:to by string.
@@ -112,50 +108,41 @@ function! s:nsplit(expr, n, ...) abort
   if a:n <= 1
     return [expr]
   endif
-  while 1
+
+  while len(ret) < a:n - 1
     let pos = match(expr, pattern)
-    if pos == -1
-      if expr !~ pattern || keepempty
-        call add(ret, expr)
-      endif
-      break
-    elseif pos >= 0
+    if pos >= 0 " matched
       let left = pos > 0 ? expr[:pos-1] : ''
+      let ml = len(matchstr(expr, pattern))
+      let right = expr[pos+ml :]
       if pos > 0 || keepempty
         call add(ret, left)
       endif
-      let ml = len(matchstr(expr, pattern))
       if pos == 0 && ml == 0
         let pos = 1
       endif
-      let expr = expr[pos+ml :]
-    endif
-    if len(expr) == 0
-      break
-    endif
-    if len(ret) == a:n - 1
-      call add(ret, expr)
+      let expr = right
+    else " pos == -1 means no more matches
+      if expr !~ pattern || keepempty
+        call add(ret, expr)
+      endif
+      let expr = v:none
       break
     endif
   endwhile
+
+  " node count last check
+  if len(ret) == a:n - 1 && type(expr) == type('')
+    if len(expr) > 0 || keepempty
+      call add(ret, expr)
+    endif
+  endif
   return ret
 endfunction
 
-" Returns the number of character in a:str.
-" NOTE: This returns proper value
-" even if a:str contains multibyte character(s).
-" s:strchars(str) {{{
-if exists('*strchars')
-  let s:strchars = function('strchars')
-else
-  function! s:strchars(str) abort
-    return strlen(substitute(copy(a:str), '.', 'x', 'g'))
-  endfunction
-endif "}}}
-
 " Returns the bool of contains any multibyte character in s:str
 function! s:contains_multibyte(str) abort "{{{
-  return strlen(a:str) != s:strchars(a:str)
+  return strlen(a:str) != strchars(a:str)
 endfunction "}}}
 
 " Remove last character from a:str.
@@ -180,14 +167,14 @@ endfunction "}}}
 " FIXME don't repeat yourself
 function! s:_split_by_wcswidth_once(body, x) abort
   let fst = s:strwidthpart(a:body, a:x)
-  let snd = s:strwidthpart_reverse(a:body, s:wcswidth(a:body) - s:wcswidth(fst))
+  let snd = s:strwidthpart_reverse(a:body, strwidth(a:body) - strwidth(fst))
   return [fst, snd]
 endfunction
 
 function! s:_split_by_wcswidth(body, x) abort
   let memo = []
   let body = a:body
-  while s:wcswidth(body) > a:x
+  while strwidth(body) > a:x
     let [tmp, body] = s:_split_by_wcswidth_once(body, a:x)
     call add(memo, tmp)
   endwhile
@@ -461,10 +448,10 @@ function! s:truncate(str, width) abort
   endif
 
   let ret = a:str
-  let width = s:wcswidth(a:str)
+  let width = strwidth(a:str)
   if width > a:width
     let ret = s:strwidthpart(ret, a:width)
-    let width = s:wcswidth(ret)
+    let width = strwidth(ret)
   endif
 
   if width < a:width
@@ -475,11 +462,11 @@ function! s:truncate(str, width) abort
 endfunction
 
 function! s:truncate_skipping(str, max, footer_width, separator) abort
-  let width = s:wcswidth(a:str)
+  let width = strwidth(a:str)
   if width <= a:max
     let ret = a:str
   else
-    let header_width = a:max - s:wcswidth(a:separator) - a:footer_width
+    let header_width = a:max - strwidth(a:separator) - a:footer_width
     let ret = s:strwidthpart(a:str, header_width) . a:separator
           \ . s:strwidthpart_reverse(a:str, a:footer_width)
   endif
@@ -494,11 +481,9 @@ endfunction
 
 function! s:strwidthpart_reverse(str, width) abort
   let str = tr(a:str, "\t", ' ')
-  let vcol = s:wcswidth(str) - a:width
+  let vcol = strwidth(str) - a:width
   return matchstr(str, '\%>' . (vcol < 0 ? 0 : vcol) . 'v.*')
 endfunction
-
-let s:wcswidth = function('strwidth')
 
 function! s:remove_ansi_sequences(text) abort
   return substitute(a:text, '\e\[\%(\%(\d\+;\)*\d\+\)\?[mK]', '', 'g')

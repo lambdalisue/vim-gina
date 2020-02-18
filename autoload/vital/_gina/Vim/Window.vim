@@ -4,20 +4,13 @@
 function! s:_SID() abort
   return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
 endfunction
-execute join(['function! vital#_gina#Vim#Window#import() abort', printf("return map({'focus_buffer': '', '_vital_healthcheck': '', 'focus_window': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+execute join(['function! vital#_gina#Vim#Window#import() abort', printf("return map({'focus_buffer': '', 'focus_window': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
 let s:t_string = type('')
 let s:DEFAULT_OPTIONS = {
       \ 'range': 'tabpage',
       \}
-
-function! s:_vital_healthcheck() abort
-  if (!has('nvim') && v:version >= 800) || has('nvim-0.2.0')
-    return
-  endif
-  return 'This module requires Vim 8.0.0000 or Neovim 0.2.0'
-endfunction
 
 function! s:focus_window(expr, ...) abort
   let options = extend(copy(s:DEFAULT_OPTIONS), a:0 ? a:1 : {})

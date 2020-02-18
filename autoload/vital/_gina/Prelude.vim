@@ -4,7 +4,7 @@
 function! s:_SID() abort
   return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
 endfunction
-execute join(['function! vital#_gina#Prelude#import() abort', printf("return map({'escape_pattern': '', 'is_funcref': '', 'path2directory': '', 'wcswidth': '', 'is_string': '', 'input_helper': '', 'is_number': '', 'is_cygwin': '', 'path2project_directory': '', 'strwidthpart_reverse': '', 'input_safe': '', 'is_list': '', 'truncate_skipping': '', 'glob': '', 'truncate': '', 'is_dict': '', 'set_default': '', 'is_numeric': '', 'getchar_safe': '', 'substitute_path_separator': '', 'is_mac': '', 'strwidthpart': '', 'getchar': '', 'is_unix': '', 'is_windows': '', 'globpath': '', 'escape_file_searching': '', 'is_float': '', 'smart_execute_command': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+execute join(['function! vital#_gina#Prelude#import() abort', printf("return map({'escape_pattern': '', 'is_funcref': '', 'path2directory': '', 'wcswidth': '', 'is_string': '', 'input_helper': '', 'is_number': '', 'is_cygwin': '', 'path2project_directory': '', 'strwidthpart_reverse': '', 'input_safe': '', 'is_list': '', 'truncate_skipping': '', 'glob': '', 'truncate': '', 'is_dict': '', 'set_default': '', 'is_numeric': '', 'getchar_safe': '', 'substitute_path_separator': '', 'is_infinity': '', 'is_mac': '', 'strwidthpart': '', 'getchar': '', 'is_unix': '', 'is_windows': '', 'globpath': '', 'is_float': '', 'smart_execute_command': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
 let s:save_cpo = &cpo
@@ -69,6 +69,25 @@ endfunction
 function! s:is_float(Value) abort
   return type(a:Value) ==# s:__TYPE_FLOAT
 endfunction
+
+" Infinity
+if exists('*isinf')
+  function! s:is_infinity(Value) abort
+    return isinf(a:Value)
+  endfunction
+else
+  function! s:is_infinity(Value) abort
+    if type(a:Value) ==# s:__TYPE_FLOAT
+      let s = string(a:Value)
+      if s ==# 'inf'
+        return 1
+      elseif s ==# '-inf'
+        return -1
+      endif
+    endif
+    return 0
+  endfunction
+endif
 
 
 function! s:truncate_skipping(str, max, footer_width, separator) abort
@@ -185,7 +204,7 @@ function! s:smart_execute_command(action, word) abort
   execute a:action . ' ' . (a:word ==# '' ? '' : '`=a:word`')
 endfunction
 
-function! s:escape_file_searching(buffer_name) abort
+function! s:_escape_file_searching(buffer_name) abort
   return escape(a:buffer_name, '*[]?{}, ')
 endfunction
 
@@ -259,7 +278,7 @@ function! s:_path2project_directory_svn(path) abort
   let search_directory = a:path
   let directory = ''
 
-  let find_directory = s:escape_file_searching(search_directory)
+  let find_directory = s:_escape_file_searching(search_directory)
   let d = finddir('.svn', find_directory . ';')
   if d ==# ''
     return ''
@@ -284,7 +303,7 @@ function! s:_path2project_directory_others(vcs, path) abort
   let vcs = a:vcs
   let search_directory = a:path
 
-  let find_directory = s:escape_file_searching(search_directory)
+  let find_directory = s:_escape_file_searching(search_directory)
   let d = finddir(vcs, find_directory . ';')
   if d ==# ''
     return ''
@@ -316,7 +335,7 @@ function! s:path2project_directory(path, ...) abort
     for d in ['build.xml', 'prj.el', '.project', 'pom.xml', 'package.json',
           \ 'Makefile', 'configure', 'Rakefile', 'NAnt.build',
           \ 'P4CONFIG', 'tags', 'gtags']
-      let d = findfile(d, s:escape_file_searching(search_directory) . ';')
+      let d = findfile(d, s:_escape_file_searching(search_directory) . ';')
       if d !=# ''
         let directory = fnamemodify(d, ':p:h')
         break

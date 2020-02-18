@@ -4,18 +4,11 @@
 function! s:_SID() abort
   return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
 endfunction
-execute join(['function! vital#_gina#App#Emitter#import() abort', printf("return map({'subscribe': '', 'unsubscribe': '', 'emit': '', '_vital_healthcheck': '', 'remove_middleware': '', 'add_middleware': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+execute join(['function! vital#_gina#App#Emitter#import() abort', printf("return map({'subscribe': '', 'unsubscribe': '', 'emit': '', 'add_middleware': '', 'remove_middleware': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
 let s:listeners = {}
 let s:middlewares = []
-
-function! s:_vital_healthcheck() abort
-  if (!has('nvim') && v:version >= 800) || has('nvim-0.2.0')
-    return
-  endif
-  return 'This module requires Vim 8.0.0000 or Neovim 0.2.0'
-endfunction
 
 function! s:subscribe(name, listener, ...) abort
   let dict = get(a:000, 0, v:null)

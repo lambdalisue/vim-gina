@@ -59,9 +59,7 @@ if has('num64')
   " NOTE:
   " An int literal larger than or equal to 0x8000000000000000 will be rounded
   " to 0x7FFFFFFFFFFFFFFF after Vim 8.0.0219, so create it without literal
-  let s:xFFFFFFFF00000000 = has('patch-8.0.0219')
-        \ ? 0xFFFFFFFF * s:pow2[and(32, s:mask)]
-        \ : 0xFFFFFFFF00000000
+  let s:xFFFFFFFF00000000 = 0xFFFFFFFF * s:pow2[and(32, s:mask)]
   function! s:sign_extension(n) abort
     if and(a:n, 0x80000000)
       return or(a:n, s:xFFFFFFFF00000000)

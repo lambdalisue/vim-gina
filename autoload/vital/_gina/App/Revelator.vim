@@ -4,19 +4,12 @@
 function! s:_SID() abort
   return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
 endfunction
-execute join(['function! vital#_gina#App#Revelator#import() abort', printf("return map({'info': '', '_vital_depends': '', 'unregister': '', '_vital_created': '', 'register': '', 'call': '', 'message': '', '_vital_healthcheck': '', 'critical': '', 'get_default_receiver': '', 'warning': '', 'error': '', '_vital_loaded': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+execute join(['function! vital#_gina#App#Revelator#import() abort', printf("return map({'info': '', '_vital_depends': '', 'unregister': '', '_vital_created': '', 'register': '', 'call': '', 'message': '', 'warning': '', 'critical': '', 'get_default_receiver': '', 'error': '', '_vital_loaded': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
 let s:t_number = type(0)
 let s:receivers = []
 
-
-function! s:_vital_healthcheck() abort
-  if (!has('nvim') && v:version >= 800) || has('nvim-0.2.0')
-    return
-  endif
-  return 'This module requires Vim 8.0.0000 or Neovim 0.2.0'
-endfunction
 
 function! s:_vital_loaded(V) abort
   let s:Console = a:V.import('Vim.Console')

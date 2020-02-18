@@ -4,16 +4,9 @@
 function! s:_SID() abort
   return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
 endfunction
-execute join(['function! vital#_gina#Vim#Highlight#import() abort', printf("return map({'set': '', '_vital_healthcheck': '', 'get': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+execute join(['function! vital#_gina#Vim#Highlight#import() abort', printf("return map({'set': '', 'get': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
-function! s:_vital_healthcheck() abort
-  if (!has('nvim') && v:version >= 800) || has('nvim-0.2.0')
-    return
-  endif
-  return 'This module requires Vim 8.0.0000 or Neovim 0.2.0'
-endfunction
-
 function! s:get(...) abort
   let name = a:0 ? a:1 : ''
   let records = split(s:_highlight(name), '\r\?\n')
@@ -60,8 +53,11 @@ function! s:_parse_attrs(attrs) abort
   endif
   let attrs = {}
   for term in split(a:attrs, ' ')
-    let [key, val] = split(term, '=')
-    let attrs[key] = val
+    let m = split(term, '=')
+    if len(m) < 2
+      continue
+    endif
+    let attrs[m[0]] = join(m[1:], '=')
   endfor
   return attrs
 endfunction

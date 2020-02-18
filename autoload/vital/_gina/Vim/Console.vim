@@ -4,17 +4,10 @@
 function! s:_SID() abort
   return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
 endfunction
-execute join(['function! vital#_gina#Vim#Console#import() abort', printf("return map({'info': '', 'select': '', 'echo': '', 'ask': '', 'echomsg': '', '_vital_created': '', 'debug': '', 'warn': '', 'inputlist': '', '_vital_healthcheck': '', 'input': '', 'confirm': '', 'error': '', 'echon': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+execute join(['function! vital#_gina#Vim#Console#import() abort', printf("return map({'info': '', 'select': '', 'echo': '', 'ask': '', '_vital_created': '', 'debug': '', 'warn': '', 'inputlist': '', 'confirm': '', 'input': '', 'echomsg': '', 'error': '', 'echon': ''}, \"vital#_gina#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
 let s:t_string = type('')
-
-function! s:_vital_healthcheck() abort
-  if (!has('nvim') && v:version >= 800) || has('nvim-0.2.0')
-    return
-  endif
-  return 'This module requires Vim 8.0.0000 or Neovim 0.2.0'
-endfunction
 
 function! s:_vital_created(module) abort
   let a:module.prefix = ''
