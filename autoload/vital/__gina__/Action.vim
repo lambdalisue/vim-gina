@@ -312,9 +312,7 @@ function! s:_action_help(candidates, options) abort dict
           \ : printf('%s [%s]', action.name, alias)
     let hidden = action.hidden ? '*' : ' '
     let description = action.description
-    let mapping = get(a:options, 'all')
-          \ ? printf('%s [%s]', action.mapping, action.mapping_mode)
-          \ : ''
+    let mapping = printf('%s [%s]', action.mapping, action.mapping_mode)
     call add(rows, [
           \ lhs,
           \ identifier,
