@@ -221,6 +221,8 @@ function! s:is_raw_command(args) abort
     return 1
   elseif a:args.get('-t|--template')
     return 0
+  elseif !empty(a:args.get('--fixup', ''))
+    return 1
   endif
   return 0
 endfunction
