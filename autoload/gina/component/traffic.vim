@@ -132,7 +132,7 @@ function! s:preset_ascii() abort
   let behind = gina#component#traffic#behind()
   let ahead = empty(ahead) ? '' : ('^' . ahead)
   let behind = empty(behind) ? '' : ('v' . behind)
-  return join([ahead, behind])
+  return join(filter([ahead, behind], '!empty(v:val)'))
 endfunction
 
 function! s:preset_fancy() abort
@@ -140,5 +140,5 @@ function! s:preset_fancy() abort
   let behind = gina#component#traffic#behind()
   let ahead = empty(ahead) ? '' : ('↑' . ahead)
   let behind = empty(behind) ? '' : ('↓' . behind)
-  return join([ahead, behind])
+  return join(filter([ahead, behind], '!empty(v:val)'))
 endfunction
