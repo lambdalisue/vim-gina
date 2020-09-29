@@ -100,7 +100,7 @@ function! s:get_cached_instance(expr) abort
 endfunction
 
 function! s:set_cached_instance(expr, git) abort
-  if bufexists(a:expr)
+  if bufexists(bufname(a:expr))
     call setbufvar(a:expr, 'gina', {
           \ 'refname': get(a:git, 'refname', ''),
           \ 'bufname': simplify(bufname(a:expr)),
