@@ -351,6 +351,9 @@ endfunction
 function! s:get_candidates(fline, lline) abort
   let args = gina#core#meta#get_or_fail('args')
   let chunks = gina#core#meta#get_or_fail('chunks')
+  if empty(chunks)
+    return []
+  endif
   let revisions = gina#core#meta#get_or_fail('revisions')
   let fidx = s:binary_search(chunks, a:fline, 0, len(chunks) - 1)
   let lidx = s:binary_search(chunks, a:lline, 0, len(chunks) - 1)
