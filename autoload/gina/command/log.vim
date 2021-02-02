@@ -66,7 +66,8 @@ function! s:build_args(git, args) abort
   let args.params.partial = !empty(args.residual())
 
   call args.set('--color', 'always')
-  call args.set('--pretty', "format:\e[32m%h\e[m %s \e[33;1m%cr\e[m \e[35;1m<%an>\e[m\e[36;1m%d\e[m")
+  call args.set('--date', 'human')
+  call args.set('--pretty', "format:\e[32m%h\e[m %<(30,trunc)%s \e[33;1m%cd\e[m \e[35;1m%an\e[m\e[36;1m%d\e[m")
   call gina#core#args#extend_treeish(a:git, args, args.pop(1, v:null))
   if args.params.path isnot# v:null
     call args.residual([args.params.path] + args.residual())
