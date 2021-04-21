@@ -8,7 +8,14 @@ function! gina#command#_raw#call(range, args, mods) abort
 endfunction
 
 function! gina#command#_raw#complete(arglead, cmdline, cursorpos) abort
-  return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if empty(args.get(1))
+    return gina#complete#common#raw_command(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  if args.get(1) =~# '^\%(fetch\|pull\|push\|switch\)$'
+    return s:{args.get(1)}_complete(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return []
 endfunction
 
 
@@ -20,6 +27,47 @@ function! s:build_args(git, args) abort
     call args.pop(0)
   endif
   return args.lock()
+endfunction
+
+function! s:fetch_complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if empty(args.get(2))
+    return gina#complete#common#remote(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  if empty(args.get(3))
+    " TODO: Return refspecs in remote repository "args.get(2)".
+  endif
+  return []
+endfunction
+
+function! s:pull_complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if empty(args.get(2))
+    return gina#complete#common#remote(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  if empty(args.get(3))
+    " TODO: Return refspecs in remote repository "args.get(2)".
+  endif
+  return []
+endfunction
+
+function! s:push_complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if empty(args.get(2))
+    return gina#complete#common#remote(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  if empty(args.get(3))
+    return gina#complete#commit#local_branch(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return []
+endfunction
+
+function! s:switch_complete(arglead, cmdline, cursorpos) abort
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if empty(args.get(2))
+    return gina#complete#commit#local_branch(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return []
 endfunction
 
 
