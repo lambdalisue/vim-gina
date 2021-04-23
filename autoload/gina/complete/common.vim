@@ -69,6 +69,14 @@ function! gina#complete#common#raw_command(arglead, cmdline, cursorpos) abort
         \])
 endfunction
 
+function! gina#complete#common#remote(arglead, cmdline, cursorpos) abort
+  let git = gina#core#get_or_fail()
+  let result = gina#process#call(git, ['remote'])
+  if result.status
+    return []
+  endif
+  return gina#util#filter(a:arglead, result.stdout)
+endfunction
 
 " Private --------------------------------------------------------------------
 function! s:get_cache() abort
