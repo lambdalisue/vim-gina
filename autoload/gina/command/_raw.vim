@@ -8,7 +8,11 @@ function! gina#command#_raw#call(range, args, mods) abort
 endfunction
 
 function! gina#command#_raw#complete(arglead, cmdline, cursorpos) abort
-  return gina#complete#filename#any(a:arglead, a:cmdline, a:cursorpos)
+  let args = gina#core#args#new(matchstr(a:cmdline, '^.*\ze .*'))
+  if empty(args.get(1))
+    return gina#complete#common#raw_command(a:arglead, a:cmdline, a:cursorpos)
+  endif
+  return []
 endfunction
 
 

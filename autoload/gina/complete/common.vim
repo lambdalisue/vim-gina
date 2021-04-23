@@ -41,6 +41,34 @@ function! gina#complete#common#command(arglead, cmdline, cursorpos) abort
   return gina#util#filter(a:arglead, command_names, '^_')
 endfunction
 
+function! gina#complete#common#raw_command(arglead, cmdline, cursorpos) abort
+  return gina#util#filter(a:arglead, [
+        \ 'add',
+        \ 'bisect',
+        \ 'branch',
+        \ 'checkout',
+        \ 'clone',
+        \ 'commit',
+        \ 'diff',
+        \ 'fetch',
+        \ 'grep',
+        \ 'init',
+        \ 'log',
+        \ 'merge',
+        \ 'mv',
+        \ 'pull',
+        \ 'push',
+        \ 'rebase',
+        \ 'reset',
+        \ 'restore',
+        \ 'rm',
+        \ 'show',
+        \ 'status',
+        \ 'switch',
+        \ 'tag',
+        \])
+endfunction
+
 
 " Private --------------------------------------------------------------------
 function! s:get_cache() abort
