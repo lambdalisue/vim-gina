@@ -158,8 +158,8 @@ function! s:call(range, args, mods) abort
   call s:define_plug_mapping('diffput', bufnr2)
   call s:define_plug_mapping('diffget', bufnr2)
   if g:gina#command#patch#use_default_mappings
-    nmap dp <Plug>(gina-diffput)
-    nmap do <Plug>(gina-diffget)
+    nmap <buffer> dp <Plug>(gina-diffput)
+    nmap <buffer> do <Plug>(gina-diffget)
   endif
 
   " HEAD
@@ -168,7 +168,7 @@ function! s:call(range, args, mods) abort
     call gina#util#diffthis()
     call s:define_plug_mapping('diffput', bufnr2)
     if g:gina#command#patch#use_default_mappings
-      nmap dp <Plug>(gina-diffput)
+      nmap <buffer> dp <Plug>(gina-diffput)
     endif
   endif
 
@@ -181,11 +181,11 @@ function! s:call(range, args, mods) abort
   endif
   call s:define_plug_mapping('diffget', bufnr3, '-r')
   if g:gina#command#patch#use_default_mappings
-    nmap dp <Plug>(gina-diffput)
+    nmap <buffer> dp <Plug>(gina-diffput)
     if !args.params.oneside
-      nmap dol <Plug>(gina-diffget-l)
+      nmap <buffer> dol <Plug>(gina-diffget-l)
     endif
-    nmap dor <Plug>(gina-diffget-r)
+    nmap <buffer> dor <Plug>(gina-diffget-r)
   endif
 
   setlocal buftype=acwrite
