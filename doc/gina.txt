@@ -696,7 +696,7 @@ Where
 			e.g. "HEAD:README.md", ":autoload/gina.vim"
 
 When a command supports filtering candidates by "-- {pathspec}..." and the
-filteratio has performed, "--" is applied to {params} like
+filteration has performed, "--" is applied to {params} like
 >
 	:Gina log
 	" --> Open gina://xxxxx:log for entire log
