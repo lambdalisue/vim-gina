@@ -102,13 +102,17 @@ function! s:QuitPre() abort
       call win_gotoid(win_id)
     endif
   endif
-  silent! unlet b:gina_BufWriteCmd
+  " Clear the flag set by :w but keep it when user hit :wq
+  if histget('cmd', -1) !~# '^\(wq\|x\%[it]\|exi\%[t]\)'
+    silent! unlet b:gina_BufWriteCmd
+  endif
 endfunction
 
 " NOTE:
 " :w      -- BufWriteCmd
 " <C-w>p  -- WinLeave
-" :wq     -- QuitPre -> BufWriteCmd -> WinLeave
+" :wq     -- QuitPre -> BufWriteCmd -> WinLeave (-8.2.2899)
+"            BufWriteCmd -> QuitPre -> WinLeave (8.2.2900-)
 " :q      -- QuitPre -> WinLeave
 function! s:WinLeave() abort
   if exists('b:gina_QuitPre')
