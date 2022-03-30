@@ -13,6 +13,14 @@
 [![vim](https://github.com/lambdalisue/gina.vim/workflows/vim/badge.svg)](https://github.com/lambdalisue/gina.vim/actions?query=workflow%3Avim)
 [![neovim](https://github.com/lambdalisue/gina.vim/workflows/neovim/badge.svg)](https://github.com/lambdalisue/gina.vim/actions?query=workflow%3Aneovim)
 
+---
+
+**WARNING**
+
+Development of gina.vim is stopped. Users should be patient with existing bugs or check [gin.vim](https://github.com/lambdalisue/gin.vim) that is under active development. Any further improvements of features will be applied to gin.vim instead.
+
+---
+
 gina.vim (gina) is a plugin to asynchronously control git repositories.
 
 ## Presentation
